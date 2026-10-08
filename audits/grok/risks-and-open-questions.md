@@ -91,11 +91,12 @@
 | attribute-storage-options (вариант G) | асинхронная проекция | синхронная | фасеты не должны врать после сохранения; объём проекции мал (только фильтруемые) |
 | logical-schema-candidate / design-hypotheses | fallback-цепочка и значения по каналу | один уровень, без каналов | предсказуемость; §1.8 |
 | ecosystem-conventions | Corex/Agentools не исследовались | CoreX — главный источник конвенций | раскладка STR-006, словарь суффиксов, DATA-004, ADR-003/004 |
-| ecosystem-conventions / Chatom | подмена моделей как приём экосистемы | без подмены | модели в `Internal`; last-wins без диагностики |
+| design-hypotheses (replace model) | подмена моделей — «спорный escape hatch» | закрываем: без подмены | модели в `Internal`; их же довод — last-wins без диагностики |
+| ecosystem-conventions (таблицы) | `cmz_` + опциональная per-table map | `cmz_` **без** per-table map, префикс заморожен | карта имён умножает пути к таблице (миграции, raw SQL, диагностика); переименование — миграцией |
 | ChatGPT architecture-appendix §2 | 12 пакетов | 6 | `stores`/`support` — ядро; `search`/`integrations` — порты |
 | ChatGPT architecture-appendix | `BIGINT` PK + `public_id` | UUIDv7 | экосистема (CoreX ADR-003, Chatom), ID до INSERT, слияние БД; одна колонка вместо двух |
 | ChatGPT architecture-appendix §6.3 | typed EAV с атомами/группами | JSONB-документ + проекция | карточка за 1 строку; фильтры по проекции; оси — реляционно |
-| Unbox (analysis-unbox) | ≤ 6 «сложных» свойств | лимит не нужен | ограничение — следствие их EAV; у нас стоимость атрибута ≈ ключ в документе |
+| logical-schema-candidate §12 | критерий отказа: «потребитель с 6 полями создаёт десятки definitions» | не срабатывает | 6 сложных свойств Unbox = 6 строк `cmz_attributes` (+ при нужде тип-плагин) |
 
 **Согласны:** оплата ≠ физическое движение (design-hypotheses §10); без поиска глобального оптимума скидок (§9);
-формула доступности наборов (ChatGPT §8.5); PostgreSQL-first; снимок заказа не зависит от каталога.
+формула доступности наборов (ChatGPT §8.5); префикс `cmz_` и детерминированное сокращение имён (ecosystem-conventions); PostgreSQL-first; снимок заказа не зависит от каталога.
