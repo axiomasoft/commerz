@@ -42,11 +42,11 @@ enum ReservationTiming: string
 enum StockMovementKind: string
 {
     case Receipt = 'receipt';
-    case Shipment = 'shipment';
+    case Sale = 'sale';               // отгрузка заказа: on_hand −q, бронь consumed
     case Adjustment = 'adjustment';
     case Count = 'count';
     case TransferOut = 'transfer_out';
     case TransferIn = 'transfer_in';
-    case ReturnRestock = 'return_restock';
+    case Return = 'return';           // возврат, принятый как годный (или в локацию quarantine)
     case Correction = 'correction';   // сторно ошибочного движения; журнал не редактируется
 }

@@ -12,6 +12,7 @@ use Commerz\Attributes\Api;
 #[Api(since: '1.0')]
 enum OrderState: string
 {
+    case Draft = 'draft';           // заказ, собираемый менеджером вручную; корзина — отдельная сущность
     case Placed = 'placed';
     case Completed = 'completed';   // оплачен и полностью исполнен (или возвращён)
     case Cancelled = 'cancelled';
@@ -20,6 +21,7 @@ enum OrderState: string
     public function allowedTransitions(): array
     {
         return match ($this) {
+            self::Draft => [self::Placed, self::Cancelled],
             self::Placed => [self::Completed, self::Cancelled],
             self::Completed, self::Cancelled => [],
         };
@@ -34,13 +36,12 @@ enum OrderState: string
 #[Api(since: '1.0')]
 enum PaymentState: string
 {
-    case Pending = 'pending';
+    case Unpaid = 'unpaid';
     case Authorized = 'authorized';
     case PartiallyPaid = 'partially_paid';
     case Paid = 'paid';
     case PartiallyRefunded = 'partially_refunded';
     case Refunded = 'refunded';
-    case Voided = 'voided';
 
     /** Выводится из сумм платежей, а не выставляется руками: authorized/captured/refunded_minor заказа. */
     public static function derive(int $totalMinor, int $authorizedMinor, int $capturedMinor, int $refundedMinor): self
@@ -51,7 +52,7 @@ enum PaymentState: string
             $capturedMinor >= $totalMinor => self::Paid,
             $capturedMinor > 0 => self::PartiallyPaid,
             $authorizedMinor >= $totalMinor => self::Authorized,
-            default => self::Pending,
+            default => self::Unpaid,
         };
     }
 }
@@ -65,7 +66,7 @@ enum FulfillmentState: string
     case PartiallyReturned = 'partially_returned';
     case Returned = 'returned';
 
-    /** Тоже выводится — из количеств строк (fulfilled/cancelled/returned_quantity). */
+    /** Тоже выводится — из количеств строк; $orderedQty = Σ(quantity − cancelled_quantity). */
     public static function derive(int $orderedQty, int $fulfilledQty, int $returnedQty): self
     {
         return match (true) {

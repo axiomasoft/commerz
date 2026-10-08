@@ -60,7 +60,7 @@ return new class extends CommerzMigration
         });
         $this->namePrimaryKey($movements);
         $this->check($movements, 'delta', 'delta <> 0');
-        $this->check($movements, 'kind', "kind IN ('receipt','shipment','adjustment','count','transfer_out','transfer_in','return_restock','correction')");
+        $this->check($movements, 'kind', "kind IN ('receipt','sale','adjustment','count','transfer_out','transfer_in','return','correction')");
         DB::connection($this->getConnection())->statement("CREATE INDEX {$movements}_recorded_at_ix ON {$movements} USING brin (recorded_at)");
 
         $schema->create($reservations, function (Blueprint $table) use ($reservations, $levels): void {
