@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Ports\Sellables\Exceptions;
+
+use Commerz\Attributes\Api;
+use Commerz\Errors\CommerzException;
+use Commerz\Errors\ErrorCategory;
+
+/** The provider of the ref type does not know the ref (deleted, never existed, or hidden from the channel). */
+#[Api(since: '0.1')]
+final class SellableUnavailable extends CommerzException
+{
+    public function __construct(public readonly string $sellable, public readonly string $reason = 'unknown')
+    {
+        parent::__construct("Sellable '{$sellable}' is unavailable: {$reason}.");
+    }
+
+    public function code(): string
+    {
+        return 'sellables.unavailable';
+    }
+
+    public function category(): ErrorCategory
+    {
+        return ErrorCategory::NotFound;
+    }
+
+    public function context(): array
+    {
+        return ['sellable' => $this->sellable, 'reason' => $this->reason];
+    }
+}

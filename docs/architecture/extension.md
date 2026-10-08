@@ -92,11 +92,14 @@ snapshots, presented codes, optional delivery selection) into a `QuoteResult`.
   order, delivery), a negative amount, its `source` key, promotion and coupon,
   and an explanation; rejected promotions and codes are recorded with a reason.
 - Core stages: `base` (prices via `PriceResolver::resolveMany`) and `totals`
-  (sums, "total ≥ 0" check, `MoneyAllocator` spreads order-level discounts over
-  lines). An anchor without a contributing package is skipped.
+  (sums, "total ≥ 0" check, `MoneyAllocator` spreads each order-level
+  discount over lines by what is left of them after line discounts and
+  earlier shares). An anchor without a contributing package is skipped. A
+  money change after `totals` drops the totals and fails the quote.
 - The result holds lines with allocated adjustments and taxes, totals
   (`subtotal`, `discountTotal`, `deliveryTotal`, `taxTotal`, `total`),
-  rejections and a `fingerprint` (hash of input and rule versions).
+  rejections and a `fingerprint` (sha256 of the whole input, context time
+  included, and the key and plugin version of every stage that ran).
 - Stackable promotions within one stage apply sequentially to the already
   reduced price, ordered by `priority DESC, key ASC` (D15).
 
@@ -106,7 +109,7 @@ Every port has a core default so a partial installation works:
 
 | Port | Core default |
 |---|---|
-| `StockAvailability`, `StockReservations` | `UnlimitedStock` when `commerz.stock = unlimited`; `inventory` without the package → `InvalidConfiguration` at boot |
+| `StockAvailability`, `StockReservations` | `UnlimitedStock` when `commerz.stock = unlimited`; `inventory` without the package → `InvalidConfiguration` on first use of the port |
 | `PriceResolver` | `SnapshotPriceResolver` (sellable base price, otherwise `PriceNotFound`) |
 | `PromotionUsage` | `NullPromotionUsage` (nothing applied) |
 | `CustomerDirectory` | guests only |

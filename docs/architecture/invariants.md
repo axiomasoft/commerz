@@ -36,7 +36,8 @@ PlaceOrder(cartId, idempotencyKey, expectedTotal)
    2. expectedTotal ≠ quote.total → QuoteChanged (the client re-quotes)
    3. allocation strategy (inventory, inside reserve) only proposes
  Transactions::run(lockTimeoutMs: 3000):
-   4. OperationReceipts::once('sales.place_order', key, fingerprint(cartId, cart.version, quote.fingerprint))
+   4. OperationReceipts::once('sales.place_order', key, fingerprint(cartId, cart.version, expectedTotal))
+      (not quote.fingerprint: it includes the context time, so a retry would conflict)
    5. SELECT cart FOR UPDATE; cart.version matches and cart.state = open, otherwise CartChanged / AlreadyPlaced
    6. INSERT order (UNIQUE cart_id) + snapshot lines + adjustments + taxes + addresses
    7. StockReservations::reserve(demand 'order:{id}', lines)   — level locks ordered by (stock_item_id, location_id)

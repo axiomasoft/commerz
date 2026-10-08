@@ -7,6 +7,8 @@ namespace Commerz\Plugins;
 use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidConfiguration;
 use Commerz\Plugins\Internal\PluginDeclarations;
+use Commerz\Ports\Sellables\Contracts\SellableProvider;
+use Commerz\Quotes\Contracts\QuoteStage;
 use LogicException;
 
 /**
@@ -40,6 +42,26 @@ final readonly class PluginRegistrar
     {
         $this->guard();
         $this->declarations->addContribution($kind, $contribution);
+    }
+
+    /**
+     * Serves sellables of the ref type equal to the provider's key.
+     *
+     * @param  SellableProvider|class-string<SellableProvider>  $provider
+     */
+    public function sellableProvider(SellableProvider|string $provider): void
+    {
+        $this->contribute(SellableProvider::KIND, $provider);
+    }
+
+    /**
+     * Adds a stage to the quote pipeline.
+     *
+     * @param  QuoteStage|class-string<QuoteStage>  $stage
+     */
+    public function quoteStage(QuoteStage|string $stage): void
+    {
+        $this->contribute(QuoteStage::KIND, $stage);
     }
 
     private function guard(): void

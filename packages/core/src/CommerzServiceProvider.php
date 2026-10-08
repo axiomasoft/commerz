@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Commerz;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\StockMode;
 use Commerz\Console\DoctorCommand;
 use Commerz\Console\InstallCommand;
+use Commerz\Errors\InvalidConfiguration;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Internal\Console\PruneOperationsCommand;
@@ -23,6 +25,22 @@ use Commerz\Plugins\Internal\Console\PluginsCommand;
 use Commerz\Plugins\Internal\CorePlugin;
 use Commerz\Plugins\Internal\PluginCatalog;
 use Commerz\Plugins\Internal\PluginGraphCompiler;
+use Commerz\Ports\Customers\Contracts\CustomerDirectory;
+use Commerz\Ports\Customers\Internal\GuestOnlyDirectory;
+use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
+use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
+use Commerz\Ports\Delivery\Internal\NoDelivery;
+use Commerz\Ports\Prices\Contracts\PriceResolver;
+use Commerz\Ports\Prices\Internal\SnapshotPriceResolver;
+use Commerz\Ports\Promotions\Contracts\PromotionUsage;
+use Commerz\Ports\Promotions\Internal\NullPromotionUsage;
+use Commerz\Ports\Sellables\Contracts\Sellables;
+use Commerz\Ports\Sellables\Internal\SellableRouter;
+use Commerz\Ports\Stock\Contracts\StockAvailability;
+use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Internal\UnlimitedStock;
+use Commerz\Quotes\Contracts\QuotePipeline;
+use Commerz\Quotes\Internal\StagedQuotePipeline;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Commerz\Schema\Internal\SchemaOwnershipRegistry;
 use Commerz\Schema\TableNames;
@@ -64,12 +82,53 @@ final class CommerzServiceProvider extends ServiceProvider
 
         $this->app->singleton(Stores::class, DatabaseStores::class);
         $this->app->singleton(Channels::class, DatabaseChannels::class);
+        $this->app->singleton(Sellables::class, SellableRouter::class);
+        $this->app->singleton(QuotePipeline::class, StagedQuotePipeline::class);
+        $this->registerPortDefaults();
         $this->app->singleton(Commerz::class);
 
         CommerzPlugins::builtIn(CorePlugin::class);
 
         $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
             $ownership->declare('commerz.core', self::NOUNS);
+        });
+    }
+
+    /**
+     * Core defaults of the cross-package ports, bound only when nothing else is: a feature package overrides them
+     * with a plain bind in its own provider, whatever the provider order.
+     */
+    private function registerPortDefaults(): void
+    {
+        $this->app->singletonIf(PriceResolver::class, SnapshotPriceResolver::class);
+        $this->app->singletonIf(PromotionUsage::class, NullPromotionUsage::class);
+        $this->app->singletonIf(DeliveryOptions::class, NoDelivery::class);
+        $this->app->singletonIf(ShipmentBooking::class, NoDelivery::class);
+
+        $unlimited = static function (Application $app): UnlimitedStock {
+            if ($app->make(CommerzConfig::class)->stock === StockMode::Inventory) {
+                throw new InvalidConfiguration('commerz.stock', "'inventory' needs a package implementing StockAvailability and StockReservations (axiomasoft/commerz-inventory); install it or set 'unlimited'");
+            }
+
+            return new UnlimitedStock;
+        };
+        $this->app->singletonIf(StockAvailability::class, $unlimited);
+        $this->app->singletonIf(StockReservations::class, $unlimited);
+
+        $this->app->singletonIf(CustomerDirectory::class, static function (Application $app): CustomerDirectory {
+            $class = $app->make(CommerzConfig::class)->customers;
+
+            if ($class === null) {
+                return new GuestOnlyDirectory;
+            }
+
+            $directory = $app->make($class);
+
+            if (! $directory instanceof CustomerDirectory) {
+                throw new InvalidConfiguration('commerz.customers', "{$class} does not implement ".CustomerDirectory::class);
+            }
+
+            return $directory;
         });
     }
 

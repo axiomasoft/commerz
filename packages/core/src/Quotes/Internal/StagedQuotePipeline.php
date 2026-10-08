@@ -1,0 +1,137 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Quotes\Internal;
+
+use BackedEnum;
+use Commerz\Errors\InvalidConfiguration;
+use Commerz\Operations\Fingerprint;
+use Commerz\Plugins\Contracts\Contributions;
+use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Quotes\Contracts\QuotePipeline;
+use Commerz\Quotes\Contracts\QuoteStage;
+use Commerz\Quotes\Data\Adjustment;
+use Commerz\Quotes\Data\QuoteInput;
+use Commerz\Quotes\Data\QuoteResult;
+use Commerz\Quotes\Data\QuoteState;
+use Commerz\Quotes\Enums\AdjustmentTarget;
+use Commerz\Quotes\Enums\StagePosition;
+use Commerz\Quotes\Exceptions\QuoteFailed;
+use DateTimeInterface;
+use Stringable;
+use Throwable;
+use UnitEnum;
+
+/**
+ * Orders the `quote_stage` contributions once per process (the registry is frozen): by anchor, then
+ * `Before → At → After`, then key; two `At` stages on one anchor are a configuration error.
+ */
+final class StagedQuotePipeline implements QuotePipeline
+{
+    /** @var list<QuoteStage>|null */
+    private ?array $stages = null;
+
+    /** @var array<string, string> stage key => "plugin@version" */
+    private array $recipe = [];
+
+    public function __construct(
+        private readonly Contributions $contributions,
+        private readonly PluginInspector $plugins,
+    ) {}
+
+    public function run(QuoteInput $input): QuoteResult
+    {
+        $stages = $this->stages();
+        $fingerprint = Fingerprint::of(['input' => self::normalize($input), 'stages' => $this->recipe]);
+        $state = QuoteState::start($input);
+
+        foreach ($stages as $stage) {
+            try {
+                $state = $stage->apply($state);
+            } catch (QuoteFailed $failed) {
+                throw $failed;
+            } catch (Throwable $error) {
+                throw QuoteFailed::byStage($stage->key(), $error);
+            }
+        }
+
+        $totals = $state->totals ?? throw new QuoteFailed('totals', 'totals_missing', 'the quote was not settled; a stage after totals changed amounts');
+
+        return new QuoteResult(
+            $input->context,
+            $state->settledLines,
+            array_values(array_filter($state->adjustments, static fn (Adjustment $a): bool => $a->target === AdjustmentTarget::Order)),
+            $state->delivery,
+            array_values(array_filter($state->adjustments, static fn (Adjustment $a): bool => $a->target === AdjustmentTarget::Delivery)),
+            $state->taxLines,
+            $totals,
+            $state->rejections,
+            $input->codes,
+            $fingerprint,
+        );
+    }
+
+    /** @return list<QuoteStage> */
+    private function stages(): array
+    {
+        if ($this->stages !== null) {
+            return $this->stages;
+        }
+
+        $stages = array_map(
+            fn (string $key): QuoteStage => $this->contributions->get(QuoteStage::KIND, $key, QuoteStage::class),
+            $this->contributions->keys(QuoteStage::KIND),
+        );
+
+        usort($stages, static fn (QuoteStage $a, QuoteStage $b): int => [$a->anchor()->order(), $a->position()->order(), $a->key()]
+            <=> [$b->anchor()->order(), $b->position()->order(), $b->key()]);
+
+        $owners = [];
+
+        foreach ($stages as $stage) {
+            if ($stage->position() !== StagePosition::At) {
+                continue;
+            }
+
+            $anchor = $stage->anchor()->value;
+
+            if (isset($owners[$anchor])) {
+                throw new InvalidConfiguration('commerz.plugins', "quote stages '{$owners[$anchor]}' and '{$stage->key()}' both run At anchor '{$anchor}'; only the anchor's owner may");
+            }
+
+            $owners[$anchor] = $stage->key();
+        }
+
+        $versions = [];
+
+        foreach ($this->plugins->describe() as $plugin) {
+            foreach ($plugin->contributions as $contribution) {
+                if ($contribution->kind === QuoteStage::KIND) {
+                    $versions[$contribution->key] = "{$plugin->id}@{$plugin->version}";
+                }
+            }
+        }
+
+        foreach ($stages as $stage) {
+            $this->recipe[$stage->key()] = $versions[$stage->key()] ?? 'unknown';
+        }
+
+        return $this->stages = $stages;
+    }
+
+    /** Public data of the input as plain values for the fingerprint. */
+    private static function normalize(mixed $value): mixed
+    {
+        return match (true) {
+            $value === null, is_scalar($value) => $value,
+            $value instanceof BackedEnum => $value->value,
+            $value instanceof UnitEnum => $value->name,
+            $value instanceof DateTimeInterface => $value->format('Y-m-d\TH:i:s.uP'),
+            $value instanceof Stringable => (string) $value,
+            is_array($value) => array_map(self::normalize(...), $value),
+            is_object($value) => array_map(self::normalize(...), get_object_vars($value)),
+            default => get_debug_type($value),
+        };
+    }
+}

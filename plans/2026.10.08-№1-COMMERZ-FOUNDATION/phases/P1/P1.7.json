@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P1.7",
   "title": "Kernel ports, quote pipeline, defaults and testkit fakes",
-  "status": "todo",
+  "status": "done_with_deviations",
   "summary": "Объявить в ядре межпакетные порты (Sellables+SellableProvider, StockAvailability/StockReservations, PriceResolver, PromotionUsage, DeliveryOptions/ShipmentBooking, CustomerDirectory) и QuotePipeline с якорями и стадиями base/totals; дефолтные реализации (SnapshotPriceResolver, UnlimitedStock, NullPromotionUsage, GuestOnlyDirectory); in-memory fakes всех портов в testkit; сценарный тест «CRM без каталога»: хост-SellableProvider → QuoteResult.",
   "why": "Порты — это контракт, по которому P2–P7 разрабатываются параллельно; их сигнатуры фиксируются здесь и меняются потом только с записью deviation. Неверный порт = переделка нескольких пакетов.",
   "scope": {
@@ -120,6 +120,36 @@
     "need": "none",
     "status": "not_needed"
   },
-  "result": null,
-  "updated_at": "2026-10-08T17:15:26Z"
+  "result": {
+    "started_at": "2026-10-08T18:46:02Z",
+    "finished_at": "2026-10-08T19:02:58Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "4878cb44-b7d5-44d2-9eb2-307b70db68f3"
+    },
+    "notes": "Ports (Sellables, Stock, Prices, Promotions, Delivery, Customers) with DTOs/exceptions; QuotePipeline with anchors, Before/At/After ordering, base + totals stages, MoneyAllocator allocation, fingerprint; core defaults via singletonIf (inventory mode fails on first use); sellable_provider/quote_stage kinds + registrar sugar; Commerz::quotes()/sellables(); testkit fakes + Commerce::fake(); CRM scenario test. 208 tests green on PG17; lint, phpstan, rector clean.",
+    "deviations": [
+      "Extra port/quote types (AvailabilityLine/LineAvailability, StockLines, ReservationNotFound, QuotedLine, QuoteFailed), pipeline-computed fingerprint, sequential order-level allocation, facade + docs (PlaceOrder fingerprint fix), FakeSellableRouter"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T19:02:58Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T19:02:58Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T19:02:58Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T19:02:58Z"
 }
