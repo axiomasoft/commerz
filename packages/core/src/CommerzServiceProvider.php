@@ -14,6 +14,13 @@ use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
 use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
+use Commerz\Plugins\CommerzPlugins;
+use Commerz\Plugins\Contracts\Contributions;
+use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Plugins\Internal\Console\PluginsCommand;
+use Commerz\Plugins\Internal\CorePlugin;
+use Commerz\Plugins\Internal\PluginCatalog;
+use Commerz\Plugins\Internal\PluginGraphCompiler;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Commerz\Schema\Internal\SchemaOwnershipRegistry;
 use Commerz\Schema\TableNames;
@@ -43,6 +50,14 @@ final class CommerzServiceProvider extends ServiceProvider
         $this->app->singleton(Outbox::class, DatabaseOutbox::class);
         $this->app->singleton(OutboxRelay::class);
 
+        $this->app->singleton(PluginCatalog::class);
+        $this->app->singleton(Contributions::class, static fn (Application $app): Contributions => $app->make(PluginGraphCompiler::class)->compile(
+            $app->make(PluginCatalog::class)->seal()->entries($app->make(CommerzConfig::class)),
+        ));
+        $this->app->alias(Contributions::class, PluginInspector::class);
+
+        CommerzPlugins::builtIn(CorePlugin::class);
+
         $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
             $ownership->declare('commerz.core', self::NOUNS);
         });
@@ -60,6 +75,7 @@ final class CommerzServiceProvider extends ServiceProvider
             $this->commands([
                 RelayOutboxCommand::class,
                 PruneOperationsCommand::class,
+                PluginsCommand::class,
             ]);
         }
     }

@@ -10,6 +10,11 @@ use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Internal\OutboxRelay;
+use Commerz\Plugins\CommerzPlugins;
+use Commerz\Plugins\Contracts\CommerzPlugin;
+use Commerz\Plugins\Contracts\Contributions;
+use Commerz\Plugins\PluginManifest;
+use Commerz\Plugins\PluginRegistrar;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
 
@@ -27,6 +32,19 @@ final readonly class FileLogConsumer implements OutboxConsumer
     public function consume(IntegrationEvent $event): void
     {
         file_put_contents($this->log, $event->eventId."\n", FILE_APPEND | LOCK_EX);
+    }
+}
+
+final class FileLogPlugin implements CommerzPlugin
+{
+    public function manifest(): PluginManifest
+    {
+        return new PluginManifest('test.file-log', '1.0.0');
+    }
+
+    public function register(PluginRegistrar $registrar): void
+    {
+        $registrar->contribute(OutboxConsumer::KIND, FileLogConsumer::class);
     }
 }
 
@@ -97,7 +115,8 @@ it('lets parallel relays share the backlog without delivering an event twice', f
     });
 
     app()->instance(FileLogConsumer::class, new FileLogConsumer($this->log));
-    app()->tag([FileLogConsumer::class], OutboxRelay::CONSUMER_TAG);
+    CommerzPlugins::builtIn(FileLogPlugin::class);
+    app(Contributions::class); // compiled before the workers fork
 
     $delivered = Concurrency::run(3, function (): int {
         $total = 0;

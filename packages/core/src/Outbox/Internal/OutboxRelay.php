@@ -7,14 +7,13 @@ namespace Commerz\Outbox\Internal;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Events\IntegrationEventDelivered;
+use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
-use LogicException;
 use Throwable;
 
 /**
@@ -25,8 +24,6 @@ use Throwable;
  */
 final readonly class OutboxRelay
 {
-    public const string CONSUMER_TAG = 'commerz.outbox_consumers';
-
     public const int LEASE_SECONDS = 300;
 
     public const int BASE_BACKOFF_SECONDS = 30;
@@ -37,7 +34,7 @@ final readonly class OutboxRelay
         private TableNames $tables,
         private ConnectionResolverInterface $connections,
         private Dispatcher $events,
-        private Container $container,
+        private Contributions $contributions,
     ) {}
 
     public function relay(int $batch): RelayReport
@@ -111,20 +108,13 @@ final readonly class OutboxRelay
         );
     }
 
-    /** @return list<OutboxConsumer> */
+    /** @return list<OutboxConsumer> in plugin load order */
     private function consumers(): array
     {
-        $consumers = [];
-
-        foreach ($this->container->tagged(self::CONSUMER_TAG) as $consumer) {
-            if (! $consumer instanceof OutboxConsumer) {
-                throw new LogicException('Services tagged '.self::CONSUMER_TAG.' must implement '.OutboxConsumer::class.'; got '.get_debug_type($consumer).'.');
-            }
-
-            $consumers[] = $consumer;
-        }
-
-        return $consumers;
+        return array_map(
+            fn (string $key): OutboxConsumer => $this->contributions->get(OutboxConsumer::KIND, $key, OutboxConsumer::class),
+            $this->contributions->keys(OutboxConsumer::KIND),
+        );
     }
 
     private static function event(mixed $row): IntegrationEvent

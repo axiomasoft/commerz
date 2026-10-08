@@ -13,4 +13,5 @@ parameters:
         - packages/shipping/src
         - packages/sales/src
         - packages/testkit/src
+        - packages/testkit/tests
     tmpDir: build/phpstan

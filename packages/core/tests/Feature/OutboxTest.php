@@ -11,6 +11,10 @@ use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Events\IntegrationEventDelivered;
 use Commerz\Outbox\Internal\OutboxRelay;
+use Commerz\Plugins\CommerzPlugins;
+use Commerz\Plugins\Contracts\CommerzPlugin;
+use Commerz\Plugins\PluginManifest;
+use Commerz\Plugins\PluginRegistrar;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -39,6 +43,19 @@ final class RecordingConsumer implements OutboxConsumer
     }
 }
 
+final class RecordingConsumerPlugin implements CommerzPlugin
+{
+    public function manifest(): PluginManifest
+    {
+        return new PluginManifest('test.recording', '1.0.0');
+    }
+
+    public function register(PluginRegistrar $registrar): void
+    {
+        $registrar->contribute(OutboxConsumer::KIND, RecordingConsumer::class);
+    }
+}
+
 function recordEvent(IntegrationEvent $event): void
 {
     app(Transactions::class)->run(fn () => app(Outbox::class)->record($event));
@@ -47,7 +64,7 @@ function recordEvent(IntegrationEvent $event): void
 function consumer(): RecordingConsumer
 {
     app()->singletonIf(RecordingConsumer::class);
-    app()->tag([RecordingConsumer::class], OutboxRelay::CONSUMER_TAG);
+    CommerzPlugins::builtIn(RecordingConsumerPlugin::class);
 
     return app(RecordingConsumer::class);
 }
