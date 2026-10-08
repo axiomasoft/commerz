@@ -1,0 +1,166 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P1.3",
+  "title": "Kernel primitives: markers, money, measures, identity, context, errors, config",
+  "status": "done_with_deviations",
+  "summary": "В packages/core реализовать базовые публичные типы ядра: маркеры #[Api]/#[Spi], Money/Currency/Rate/RoundingMode/MoneyAllocator, Quantity/Measure/LocalizedText, EntityId (UUIDv7) и Refs, IdempotencyKey, CommerceContext, иерархию CommerzException и типизированный CommerzConfig.",
+  "why": "Все пакеты и порты строятся на этих типах; их форма — первая SemVer-поверхность. Ошибки в арифметике денег (распределение копеек) потом размножаются по всем пакетам.",
+  "scope": {
+    "include": [
+      "Commerz\\Attributes\\{Api,Spi,SpiKind}",
+      "Commerz\\Money\\{Money,Currency,Rate,RoundingMode,MoneyAllocator}: Money::of('19.90','RUB') парсит десятичную строку по exponent валюты; plus/minus/multiply(int)/percentage(Rate, RoundingMode)/isZero/isNegative/compare; запрет смешения валют (CurrencyMismatch)",
+      "Currency: ISO 4217 код + exponent из встроенной таблицы (RUB 2, USD 2, EUR 2, JPY 0, KZT 2, BYN 2, UZS 2, KRW 0 и др.; неизвестный → InvalidCurrency)",
+      "MoneyAllocator::allocate(Money $total, list<int> $weights): list<Money> — метод наибольших остатков, сумма строго равна total, детерминированный tie-break по индексу",
+      "Commerz\\Measures\\{Quantity (int value ≥0 + unit string), Measure (numeric-string + unit), LocalizedText (map locale→string, resolve(locale, fallback))}",
+      "Commerz\\Identity\\{EntityId (abstract final-readonly-friendly: fromString валидирует UUID, generate() через Uuid7), Uuid7 (генератор; тестовый seam Uuid7::fixed()), SellableRef/CustomerRef/ActorRef (type: [a-z0-9_.-]{1,64}, id: 1..120 байт; of(), fromString('type:id'), __toString), IdempotencyKey (1..191 байт)}",
+      "Commerz\\Context\\{CommerceContext (channel ChannelId — объявить класс ChannelId здесь же или в Stores\\Data и импортировать; currency, locale, ?customer, customerGroups, at), Contracts\\ContextResolver}",
+      "Commerz\\Errors\\{CommerzException (abstract; code(): string, category(): ErrorCategory, context(): array<string,scalar|null>), ErrorCategory enum, InvalidCommand, NotFound, IdempotencyConflict, InvalidConfiguration, UnsupportedContribution}",
+      "Commerz\\Configuration\\{CommerzConfig::fromArray(array, path) — connection ?string, tablePrefix string /^[a-z][a-z0-9]{1,6}_$/, stock StockMode(Inventory|Unlimited), customers class-string|null, plugins list<class-string>, operations.receiptTtlDays int}",
+      "config/commerz.php с этими ключами и комментариями",
+      "Unit-тесты на всё выше"
+    ],
+    "exclude": [
+      "БД, схема, плагины, порты (следующие item'ы)"
+    ]
+  },
+  "depends_on": [
+    "P1.2"
+  ],
+  "related": [],
+  "decisions": [
+    "D7",
+    "D8",
+    "D12"
+  ],
+  "skills": [
+    "php:php-patterns",
+    "php:named-arguments"
+  ],
+  "reads": [
+    {
+      "path": "audits/grok/code-examples/Core/Money.php",
+      "why": "проверенный прототип Money (не копировать слепо: сверить с API ниже)",
+      "required": false
+    },
+    {
+      "path": "audits/grok/code-examples/Core/CommerzConfig.php",
+      "why": "прототип типизированного конфига",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/core/src/Attributes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Money/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Measures/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Identity/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Context/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Errors/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Configuration/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/config/commerz.php",
+      "change": "any"
+    },
+    {
+      "path": "packages/core/tests/Unit/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Все публичные типы — final readonly (кроме abstract EntityId/CommerzException) с #[Api(since: '0.1')]; контракты для реализации хостом — #[Spi].",
+    "Никакого float в API; деньги — int minor + brick/math внутри.",
+    "Валидация инвариантов формы — в конструкторе, бросает InvalidCommand с именем поля.",
+    "Ни одного обращения к Laravel helpers (config(), app()) в Money/Measures/Identity/Context — чистый PHP."
+  ],
+  "guidance": "Ключевые разделы знаний (уже в context pack): `knowledge/kernel-contracts#overview` — перечень и размещение типов по модулям.\n\nКод ошибок: `<module>.<snake_reason>` (например `money.currency_mismatch`, `identity.invalid_ref`). CommerceContext: `for(ChannelId, Currency, string $locale = 'en', ?DateTimeImmutable $at = null)`, `withCustomer(CustomerRef, list<string> $groups = [])`, `withAt()`. Uuid7: использовать `Symfony\\Component\\Uid\\UuidV7` или `Ramsey\\Uuid\\Uuid::uuid7()` — то, что уже в зависимостях Laravel 13; проверить `composer show`.\n\nОбразцы экосистемы вне репозитория (только чтение, по необходимости):\n- `/home/vostrikov/projects/packages/chatom/packages/core/src/Messages/Data/SendMessage.php` — стиль final readonly DTO с валидацией в конструкторе и именованными аргументами",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 vendor/bin/pest packages/core/tests/Unit",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модули Attributes, Money, Measures, Identity, Context, Errors, Configuration в packages/core/src",
+    "unit-тесты (в т.ч. MoneyAllocator: 100/3 → 34,33,33; веса 0; отрицательные суммы; JPY)"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-08T17:47:55Z",
+    "finished_at": "2026-10-08T17:54:46Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "3f4c26be-d4f6-44c1-a76a-46e6af2136fe"
+    },
+    "notes": "Kernel primitives implemented in packages/core with 92 unit tests; lint, phpstan max, rector and full pest green.",
+    "deviations": [
+      "Uuid7 implemented in-house instead of Ramsey/Symfony; see logged deviation and assumptions."
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T17:54:46Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T17:54:46Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T17:54:46Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T17:54:46Z"
+}

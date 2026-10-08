@@ -1,0 +1,125 @@
+<?php
+
+declare(strict_types=1);
+
+use Commerz\Errors\InvalidCommand;
+use Commerz\Money\Currency;
+use Commerz\Money\CurrencyMismatch;
+use Commerz\Money\InvalidCurrency;
+use Commerz\Money\Money;
+use Commerz\Money\Rate;
+use Commerz\Money\RoundingMode;
+
+it('parses decimal strings by currency exponent', function (string $amount, string $currency, int $minor): void {
+    expect(Money::of($amount, $currency)->amountMinor)->toBe($minor);
+})->with([
+    ['19.90', 'RUB', 1990],
+    ['19.9', 'RUB', 1990],
+    ['-0.05', 'USD', -5],
+    ['500', 'JPY', 500],
+    ['1.234', 'KWD', 1234],
+]);
+
+it('rejects amounts finer than the currency allows or malformed', function (string $amount, string $currency): void {
+    expect(fn () => Money::of($amount, $currency))->toThrow(InvalidCommand::class);
+})->with([
+    ['19.999', 'RUB'],
+    ['10.5', 'JPY'],
+    ['1e3', 'RUB'],
+    ['', 'RUB'],
+    ['9223372036854775808', 'JPY'],
+]);
+
+it('rejects unknown currencies with a stable code', function (): void {
+    try {
+        Currency::of('XXX');
+        $this->fail('expected InvalidCurrency');
+    } catch (InvalidCurrency $e) {
+        expect($e->code())->toBe('money.invalid_currency')->and($e->context())->toHaveKey('reason');
+    }
+    expect(fn () => Currency::of('rub'))->toThrow(InvalidCurrency::class);
+});
+
+it('knows exponents', function (): void {
+    expect(Currency::of('RUB')->exponent)->toBe(2)
+        ->and(Currency::of('JPY')->exponent)->toBe(0)
+        ->and(Currency::of('KRW')->exponent)->toBe(0)
+        ->and(Currency::of('KZT')->exponent)->toBe(2)
+        ->and((string) Currency::of('USD'))->toBe('USD');
+});
+
+it('adds, subtracts, multiplies and negates', function (): void {
+    $a = Money::of('10.00', 'EUR');
+    $b = Money::of('2.50', 'EUR');
+
+    expect($a->plus($b)->amountMinor)->toBe(1250)
+        ->and($a->minus($b)->amountMinor)->toBe(750)
+        ->and($b->multiply(3)->amountMinor)->toBe(750)
+        ->and($b->negate()->amountMinor)->toBe(-250)
+        ->and($b->negate()->isNegative())->toBeTrue()
+        ->and(Money::zero('EUR')->isZero())->toBeTrue()
+        ->and($a->isPositive())->toBeTrue();
+});
+
+it('forbids mixing currencies', function (): void {
+    $rub = Money::of('1', 'RUB');
+    $usd = Money::of('1', 'USD');
+
+    foreach ([fn () => $rub->plus($usd), fn () => $rub->minus($usd), fn () => $rub->compare($usd)] as $call) {
+        try {
+            $call();
+            $this->fail('expected CurrencyMismatch');
+        } catch (CurrencyMismatch $e) {
+            expect($e->code())->toBe('money.currency_mismatch');
+        }
+    }
+    expect($rub->equals($usd))->toBeFalse();
+});
+
+it('compares', function (): void {
+    expect(Money::of('1', 'RUB')->compare(Money::of('2', 'RUB')))->toBe(-1)
+        ->and(Money::of('2', 'RUB')->compare(Money::of('2', 'RUB')))->toBe(0)
+        ->and(Money::of('3', 'RUB')->compare(Money::of('2', 'RUB')))->toBe(1)
+        ->and(Money::of('2', 'RUB')->equals(Money::ofMinor(200, 'RUB')))->toBeTrue();
+});
+
+it('fails loudly on int64 overflow', function (): void {
+    $max = Money::ofMinor(PHP_INT_MAX, 'JPY');
+
+    expect(fn () => $max->plus(Money::ofMinor(1, 'JPY')))->toThrow(InvalidCommand::class)
+        ->and(fn () => $max->multiply(2))->toThrow(InvalidCommand::class)
+        ->and(fn () => Money::ofMinor(PHP_INT_MIN, 'JPY')->negate())->toThrow(InvalidCommand::class)
+        ->and(fn () => $max->percentage(Rate::bp(20_000), RoundingMode::HalfUp))->toThrow(InvalidCommand::class);
+});
+
+it('applies percentages with explicit rounding', function (RoundingMode $mode, int $base, int $expected): void {
+    // 12.5% of base
+    expect(Money::ofMinor($base, 'USD')->percentage(Rate::percent('12.5'), $mode)->amountMinor)->toBe($expected);
+})->with([
+    'half up positive' => [RoundingMode::HalfUp, 4, 1],   // 0.5 -> 1
+    'half down' => [RoundingMode::HalfDown, 4, 0],        // 0.5 -> 0
+    'half even 0.5' => [RoundingMode::HalfEven, 4, 0],
+    'half even 1.5' => [RoundingMode::HalfEven, 12, 2],   // 1.5 -> 2
+    'up' => [RoundingMode::Up, 1, 1],                     // 0.125 -> 1
+    'down' => [RoundingMode::Down, 15, 1],                // 1.875 -> 1
+    'ceiling negative' => [RoundingMode::Ceiling, -15, -1],
+    'floor negative' => [RoundingMode::Floor, -15, -2],
+    'up negative' => [RoundingMode::Up, -1, -1],
+    'exact' => [RoundingMode::HalfUp, 800, 100],
+]);
+
+it('formats a decimal string', function (): void {
+    expect(Money::ofMinor(1990, 'RUB')->toDecimal())->toBe('19.90')
+        ->and(Money::ofMinor(-5, 'USD')->toDecimal())->toBe('-0.05')
+        ->and(Money::ofMinor(500, 'JPY')->toDecimal())->toBe('500');
+});
+
+it('parses rates', function (): void {
+    expect(Rate::percent('20')->basisPoints)->toBe(2000)
+        ->and(Rate::percent('12.5')->basisPoints)->toBe(1250)
+        ->and(Rate::percent('0.01')->basisPoints)->toBe(1)
+        ->and(Rate::bp(0)->isZero())->toBeTrue()
+        ->and(fn () => Rate::percent('12.345'))->toThrow(InvalidCommand::class)
+        ->and(fn () => Rate::percent('-1'))->toThrow(InvalidCommand::class)
+        ->and(fn () => Rate::bp(-1))->toThrow(InvalidCommand::class);
+});
