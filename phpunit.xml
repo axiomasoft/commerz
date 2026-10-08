@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnRisky="true">
+    <testsuites>
+        <testsuite name="Core"><directory>packages/core/tests</directory></testsuite>
+        <testsuite name="Catalog"><directory>packages/catalog/tests</directory></testsuite>
+        <testsuite name="Inventory"><directory>packages/inventory/tests</directory></testsuite>
+        <testsuite name="Pricing"><directory>packages/pricing/tests</directory></testsuite>
+        <testsuite name="Promotions"><directory>packages/promotions/tests</directory></testsuite>
+        <testsuite name="Shipping"><directory>packages/shipping/tests</directory></testsuite>
+        <testsuite name="Sales"><directory>packages/sales/tests</directory></testsuite>
+        <testsuite name="Testkit"><directory>packages/testkit/tests</directory></testsuite>
+        <testsuite name="Arch"><directory>tests/Arch</directory></testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="54329"/>
+        <env name="DB_DATABASE" value="commerz_test"/>
+        <env name="DB_USERNAME" value="commerz"/>
+        <env name="DB_PASSWORD" value="commerz"/>
+    </php>
+</phpunit>

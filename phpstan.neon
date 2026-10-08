@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - packages/core/src
+        - packages/catalog/src
+        - packages/inventory/src
+        - packages/pricing/src
+        - packages/promotions/src
+        - packages/shipping/src
+        - packages/sales/src
+        - packages/testkit/src
+    tmpDir: build/phpstan

@@ -1,0 +1,40 @@
+{
+    "name": "axiomasoft/commerz-testkit",
+    "description": "Commerz testkit: package test case, port fakes and contract tests.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/contracts": "^13.0",
+        "illuminate/support": "^13.0",
+        "axiomasoft/commerz": "^0.1@dev",
+        "illuminate/database": "^13.0",
+        "orchestra/testbench": "^11.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Commerz\\Testkit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Commerz\\Testkit\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
+}

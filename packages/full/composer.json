@@ -1,0 +1,27 @@
+{
+    "name": "axiomasoft/commerz-full",
+    "description": "Commerz metapackage: core and all domain packages.",
+    "type": "metapackage",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz-catalog": "^0.1@dev",
+        "axiomasoft/commerz-inventory": "^0.1@dev",
+        "axiomasoft/commerz-pricing": "^0.1@dev",
+        "axiomasoft/commerz-promotions": "^0.1@dev",
+        "axiomasoft/commerz-shipping": "^0.1@dev",
+        "axiomasoft/commerz-sales": "^0.1@dev"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
+}

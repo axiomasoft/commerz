@@ -1,0 +1,71 @@
+{
+    "name": "axiomasoft/commerz-monorepo",
+    "description": "Commerz monorepo: embeddable Laravel commerce package family.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/*",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz-catalog": "^0.1@dev",
+        "axiomasoft/commerz-inventory": "^0.1@dev",
+        "axiomasoft/commerz-pricing": "^0.1@dev",
+        "axiomasoft/commerz-promotions": "^0.1@dev",
+        "axiomasoft/commerz-shipping": "^0.1@dev",
+        "axiomasoft/commerz-sales": "^0.1@dev",
+        "axiomasoft/commerz-full": "^0.1@dev"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2",
+        "larastan/larastan": "^3",
+        "laravel/pint": "^1",
+        "orchestra/testbench": "^11.3",
+        "pestphp/pest": "^5.2",
+        "phpstan/phpstan": "^2",
+        "phpstan/phpstan-strict-rules": "^2",
+        "rector/rector": "^2",
+        "axiomasoft/commerz-testkit": "^0.1@dev"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Commerz\\Tests\\": "packages/core/tests/",
+            "Commerz\\Catalog\\Tests\\": "packages/catalog/tests/",
+            "Commerz\\Inventory\\Tests\\": "packages/inventory/tests/",
+            "Commerz\\Pricing\\Tests\\": "packages/pricing/tests/",
+            "Commerz\\Promotions\\Tests\\": "packages/promotions/tests/",
+            "Commerz\\Shipping\\Tests\\": "packages/shipping/tests/",
+            "Commerz\\Sales\\Tests\\": "packages/sales/tests/"
+        }
+    },
+    "scripts": {
+        "lint": "pint packages tests",
+        "lint:check": "pint --test packages tests",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "refactor": "rector",
+        "refactor:check": "rector --dry-run",
+        "test": "pest",
+        "test:arch": "pest --testsuite=Arch"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

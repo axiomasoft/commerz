@@ -1,0 +1,224 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P1.2",
+  "title": "Monorepo tooling, CI and package skeletons",
+  "status": "done_with_deviations",
+  "summary": "Корневой монорепо-каркас: composer с path-репозиториями и скриптами качества, Pint/PHPStan(max)/Rector/Pest+Testbench, PostgreSQL 17 в docker compose, scripts/php84, CI (PHP 8.4 × Laravel 13 × PG 17) и скелеты всех 9 пакетов с ServiceProvider, конфигом и smoke-тестом загрузки.",
+  "why": "P2–P7 должны стартовать параллельно, не трогая корневые файлы; поэтому все пакеты и их регистрация создаются здесь один раз. Локальный php = 8.3 — без обёртки php84 проверки дадут ложный результат.",
+  "scope": {
+    "include": [
+      "composer.json корня → name axiomasoft/commerz-monorepo, type project, require всех пакетов @dev через repositories path packages/*; require-dev: pestphp/pest ^5.2, orchestra/testbench ^11.3, larastan/larastan ^3, phpstan/phpstan ^2, phpstan/phpstan-strict-rules ^2, laravel/pint ^1, rector/rector ^2, driftingly/rector-laravel ^2",
+      "scripts: lint (pint), lint:check (pint --test), analyse (phpstan analyse --memory-limit=1G), refactor (rector), refactor:check (rector --dry-run), test (pest), test:arch (pest --testsuite=Arch)",
+      "packages/{core,catalog,inventory,pricing,promotions,shipping,sales,testkit}: composer.json (name из knowledge/architecture#packages, php ^8.4, illuminate/support|database|contracts ^13, brick/math ^0.13 только в core; feature-пакеты require axiomasoft/commerz), PSR-4 Commerz\\ / Commerz\\<Pkg>\\, extra.laravel.providers, src/<Pkg>ServiceProvider.php, config/commerz[-<pkg>].php (пустой массив с комментарием-заглушкой допустим), tests/Feature/BootTest.php",
+      "packages/full/composer.json — metapackage, require всех 6 доменных + core",
+      "packages/testkit/src/PackageTestCase.php — Orchestra Testbench TestCase: регистрирует провайдеры из getPackageProviders, подключение pgsql из env (DB_HOST, DB_PORT=54329, DB_DATABASE=commerz_test, DB_USERNAME=commerz, DB_PASSWORD=commerz), RefreshDatabase-совместимость",
+      "phpunit.xml: testsuites Core, Catalog, Inventory, Pricing, Promotions, Shipping, Sales, Testkit (directories packages/<pkg>/tests), Arch (tests/Arch); env для pgsql",
+      "tests/Pest.php: uses(PackageTestCase::class)->in('../packages/*/tests/Feature') — или per-package Pest.php, как удобнее Pest 5",
+      "phpstan.neon: level max, strict-rules, larastan, paths packages/*/src; tmpDir build/phpstan",
+      "pint.json (preset laravel, declare_strict_types, final_class off), rector.php (php 8.4 set, laravel 13 set) — только src/tests пакетов",
+      "docker-compose.yml: сервис postgres (image postgres:17, порт 54329:5432, db commerz_test, user/pass commerz, healthcheck pg_isready)",
+      "scripts/php84 — скопировать из /home/vostrikov/projects/packages/corex/scripts/php84 и адаптировать (тот же контракт: --check и exec)",
+      ".github/workflows/ci.yml: jobs lint (pint/phpstan/rector/agent-docs) и tests (services postgres:17, php 8.4, extensions pdo_pgsql, pcntl, bcmath, intl) — Laravel только 13.*",
+      ".gitignore: vendor, build, .phpunit.cache, composer.lock НЕ игнорировать"
+    ],
+    "exclude": [
+      "доменный код любых пакетов",
+      "Arch-тесты (P1.8)"
+    ]
+  },
+  "related": [],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3"
+  ],
+  "skills": [
+    "php-packages:laravel-package-compatibility",
+    "php:static-analysis"
+  ],
+  "reads": [
+    {
+      "path": "composer.json",
+      "why": "текущая заготовка корня",
+      "required": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "why": "существующий CI — переписать под PG и Laravel 13",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "composer.json",
+      "change": "modify"
+    },
+    {
+      "path": "packages/*/composer.json",
+      "change": "create"
+    },
+    {
+      "path": "packages/*/src/*ServiceProvider.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/*/config/*.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/*/tests/Feature/BootTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/testkit/src/PackageTestCase.php",
+      "change": "create"
+    },
+    {
+      "path": "phpunit.xml",
+      "change": "create"
+    },
+    {
+      "path": "tests/Pest.php",
+      "change": "create"
+    },
+    {
+      "path": "phpstan.neon",
+      "change": "create"
+    },
+    {
+      "path": "pint.json",
+      "change": "create"
+    },
+    {
+      "path": "rector.php",
+      "change": "create"
+    },
+    {
+      "path": "docker-compose.yml",
+      "change": "create"
+    },
+    {
+      "path": "scripts/php84",
+      "change": "create"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "change": "modify"
+    },
+    {
+      "path": ".gitignore",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Версии зависимостей проверить фактическим `composer require`/`update` — если указанная константа не резолвится, взять ближайшую совместимую с Laravel 13 и записать в log --type deviation.",
+    "Ни один feature-пакет не require другой feature-пакет.",
+    "Не ослаблять PHPStan до уровня ниже max; baseline не создавать.",
+    "composer.lock коммитится."
+  ],
+  "guidance": "Порядок: php84 → корневой composer + пакеты → `scripts/php84 composer update` → конфиги инструментов → docker compose → smoke-тесты (BootTest: провайдер пакета зарегистрирован, `config('commerz')` или `config('commerz-<pkg>')` — массив) → CI. ServiceProvider-скелеты: `final class <Pkg>ServiceProvider extends ServiceProvider` с mergeConfigFrom и publishes(config). Имена конфигов: core → config/commerz.php (ключ commerz), остальные → config/commerz-<pkg>.php.\n\nОбразцы экосистемы вне репозитория (только чтение, по необходимости):\n- `/home/vostrikov/projects/packages/corex/scripts/php84` — образец обёртки PHP 8.4\n- `/home/vostrikov/projects/packages/chatom/composer.json` — образец path-репозиториев и скриптов монорепо\n- `/home/vostrikov/projects/packages/chatom/packages/testkit/src/PackageTestCase.php` — образец базового TestCase",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 --check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer validate --strict",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V6",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 composer test",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "рабочий монорепо: composer install/lint/analyse/refactor/test зелёные на PHP 8.4 + PG 17",
+    "9 скелетов пакетов",
+    "CI workflow"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-08T17:41:29Z",
+    "finished_at": "2026-10-08T17:45:20Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "32fde98d-3590-4ef9-a030-f9d24b24d500"
+    },
+    "notes": "Monorepo tooling, 9 package skeletons, CI, docker-compose, php84 done.",
+    "deviations": [
+      "V6: 'docker compose up' fails — user not in docker group (permission denied on docker.sock); 'composer test' alone passes (8 tests, smoke tests need no DB). PG-backed run unverified until owner fixes docker access. Also brick/math constraint widened; path deps use ^0.1@dev + branch-alias 0.1.x-dev (composer validate --strict forbids bare @dev); lint scripts scoped to 'packages tests' so pint does not rewrite research corpus."
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T17:45:20Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T17:45:20Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T17:45:20Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-08T17:45:20Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-08T17:45:20Z"
+      },
+      {
+        "id": "V6",
+        "exit": 1,
+        "at": "2026-10-08T17:45:20Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T17:45:20Z"
+}

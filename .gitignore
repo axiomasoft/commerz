@@ -1,0 +1,76 @@
+# --- PHP / Laravel package ---
+/var/
+/vendor/
+.phpunit.result.cache
+.phpunit.cache/
+.php-cs-fixer.cache
+.pint.cache
+build/
+coverage/
+.env
+.env.*
+!.env.example
+dist/
+
+# --- Machine-specific / ecosystem (mAInd swissknifeman) — НЕ коммитим ---
+# Несут абсолютные локальные пути или зависят от локального реестра swissknifeman.
+# Коммитятся только *.example.
+.mcp.json
+.mcp.json.bak
+.serena/
+.claude/settings.json
+.claude/settings.local.json
+.claude/settings.json.bak
+.claude/settings.local.json.bak
+.claude/auto-approve.env.ini
+.claude/memory.env.ini
+.claude/review-gate.env.ini
+.claude/maind-*.sh
+.claude/agent-pack.lock.json
+.swissknife/
+.swissknife.json.bak
+.swissknifeman/
+
+# connect-канал: плагины из реестра swissknifeman — не исходники пакета
+# Skills (.claude/skills/, .agents/skills/) — shared artifacts, must be committed
+.agents/plugins/
+
+# Codex / Cursor: артефакты провайдеров (harness render), не коммитим
+.codex/
+.cursor/
+
+.ai/route-evidence-tmp.json
+
+# Локальные бэкапы и одноразовые логи
+*.bak
+CLAUDE.md.bak
+.claude/.maind-feature-log.last
+.claude/run-report.env.ini
+
+# symlink на кэш плагина task@swissknifeman — машинный путь, не коммитим
+/packages/task
+
+# Accidental machine-local trees (never package source)
+packages/**/home/
+
+# Task plan session cache (regenerated per invocation)
+**/.plan-cache/
+
+node_modules/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+
+# Independent package test harnesses
+/packages/*/vendor/
+/packages/*/composer.lock
+/packages/*/.phpunit.cache/
+.grok/config.toml
+.grok/state/
+.agents/.swissknifeman-codex-links.json
+
+# Plan tooling output (regenerated locally; not versioned)
+plans/*/log.jsonl
+plans/*/views/

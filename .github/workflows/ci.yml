@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, mbstring, pdo_pgsql, pcntl, bcmath, intl
+          coverage: none
+          tools: composer:v2
+      - id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-lint-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-lint-
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: composer lint:check
+      - run: composer analyse
+      - run: composer refactor:check
+      - run: bash scripts/build-agent-docs.sh --check
+
+  tests:
+    name: Tests (PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, PostgreSQL 17)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4']
+        laravel: ['13.*']
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: commerz_test
+          POSTGRES_USER: commerz
+          POSTGRES_PASSWORD: commerz
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U commerz -d commerz_test"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 54329
+      DB_DATABASE: commerz_test
+      DB_USERNAME: commerz
+      DB_PASSWORD: commerz
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, mbstring, pdo_pgsql, pcntl, bcmath, intl
+          coverage: none
+          tools: composer:v2
+      - run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update --no-interaction
+      - run: composer update --prefer-dist --no-interaction --no-progress
+      - run: composer test

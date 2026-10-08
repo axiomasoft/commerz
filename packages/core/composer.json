@@ -1,0 +1,44 @@
+{
+    "name": "axiomasoft/commerz",
+    "description": "Embeddable commerce domain core: money, context, ports, plugins, stores, outbox.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/contracts": "^13.0",
+        "illuminate/support": "^13.0",
+        "illuminate/database": "^13.0",
+        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17"
+    },
+    "autoload": {
+        "psr-4": {
+            "Commerz\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Commerz\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Commerz\\CommerzServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
