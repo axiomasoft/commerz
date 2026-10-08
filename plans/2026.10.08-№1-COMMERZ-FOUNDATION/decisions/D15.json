@@ -1,0 +1,30 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D15",
+  "title": "Сложение скидок",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Как складываются несколько stackable-акций внутри одной стадии?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Последовательно от уже сниженной цены (10% + 5% = 14,5%), порядок priority DESC, key ASC",
+      "pros": "итог никогда не уходит в минус, предсказуемо"
+    },
+    {
+      "id": "B",
+      "text": "От исходной цены (10% + 5% = 15%, как Shopify)"
+    }
+  ],
+  "decision": "A — Последовательно от уже сниженной цены (10% + 5% = 14,5%), порядок priority DESC, key ASC",
+  "rationale": "Безопаснее для бюджета; видимое поведение фиксируется один раз и документируется. Владелец может пересмотреть до P5.",
+  "applies_to": [
+    "P5"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

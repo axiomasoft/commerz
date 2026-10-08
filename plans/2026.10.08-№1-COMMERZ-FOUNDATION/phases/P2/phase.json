@@ -1,0 +1,28 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P2",
+  "title": "Catalog package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-catalog: товары, варианты и оси опций (разреженная генерация, уникальность комбинаций), атрибуты (contribution kind attribute_type, JSONB-документ + синхронная проекция cmz_attribute_index для фасетов с семантикой одного варианта), типы товаров (product_kind), категории, публикации по каналам, SellableProvider 'variant', поиск/фильтры через SQL-проекцию.",
+  "context": "Решение по хранению свойств — D9. Инварианты CAT-01..03 (knowledge/invariants). Unbox-уроки: опции ≠ спецификации, стабильные ID значений, снимок в заказе. Детализировать после подтверждения архитектуры.",
+  "scope": {
+    "include": [
+      "packages/catalog/**"
+    ],
+    "exclude": [
+      "медиа-хранилище (seam ProductMediaStore, реализация — мост Vaulter позже)",
+      "поисковые движки (порт CatalogIndexer, SQL-реализация по умолчанию)"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Catalog API (products, variants, attributes, productTypes, categories, listings)",
+    "встроенные типы атрибутов",
+    "фасетный фильтр same-variant",
+    "тесты CAT-01..03"
+  ],
+  "items": [],
+  "batches": []
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D2",
+  "title": "СУБД: только PostgreSQL ≥16",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Поддерживать одну СУБД или паритет нескольких?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Только PostgreSQL ≥16 (CI 17)",
+      "pros": "EXCLUDE, частичные уникальные индексы, jsonb, транзакционный DDL, проверенные прототипы Grok E1–E8; совпадает с CoreX",
+      "cons": "хосты на MySQL не поддерживаются"
+    },
+    {
+      "id": "B",
+      "text": "PostgreSQL + MySQL 8",
+      "cons": "двойная матрица, теряются EXCLUDE/partial index — инварианты переезжают в код"
+    }
+  ],
+  "decision": "A — Только PostgreSQL ≥16 (CI 17)",
+  "rationale": "Инварианты склада/цен/лимитов опираются на возможности PostgreSQL; свежий стек (M2) и CoreX — PG-only. MySQL — отдельное решение после 0.1 при реальном потребителе.",
+  "global": true,
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "audits/grok/ecosystem-alignment.md#2"
+    },
+    {
+      "kind": "repo",
+      "ref": "/home/vostrikov/projects/packages/corex/docs/dev-doctrine.md"
+    }
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

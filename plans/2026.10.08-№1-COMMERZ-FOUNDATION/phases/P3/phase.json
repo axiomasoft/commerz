@@ -1,0 +1,26 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P3",
+  "title": "Inventory package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-inventory: места хранения, складская номенклатура и связи sellable→item (с коэффициентом), уровни (on_hand/reserved) + append-only журнал, резервы по demand с истечением, перемещения, источники каналов с приоритетом и allocation_strategy, реализация StockAvailability/StockReservations, сверка commerz:inventory:reconcile.",
+  "context": "Решение D10 (levels+movements+reservations, резерв при размещении по умолчанию). Инварианты INV-02..04, порядок блокировок — knowledge/invariants. Обязательны конкурентные тесты на PostgreSQL.",
+  "scope": {
+    "include": [
+      "packages/inventory/**"
+    ],
+    "exclude": [
+      "ячейки, партии, серийные номера, себестоимость"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Inventory API",
+    "конкурентные тесты последней единицы и expire vs consume",
+    "reconcile-команда"
+  ],
+  "items": [],
+  "batches": []
+}

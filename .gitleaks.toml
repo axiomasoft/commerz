@@ -1,0 +1,14 @@
+# gitleaks v8.24.2 reads a single [allowlist]. [[allowlists]] is ignored by this image.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test canaries and package test fixtures."
+regexTarget = "line"
+paths = [
+  '''(^|/)packages/[^/]+/tests/''',
+]
+regexes = [
+  # File-digest maps: "some/path": "<sha256>". Not a free-form secret assignment.
+  '''"[^"\r\n]*"\s*:\s*"[0-9a-f]{64}"''',
+]

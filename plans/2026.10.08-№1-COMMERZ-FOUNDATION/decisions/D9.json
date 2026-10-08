@@ -1,0 +1,36 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D9",
+  "title": "Хранение свойств товара: гибрид",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Как хранить атрибуты и варианты?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Операционные поля — колонки; оси вариантов — реляционно (опции, значения, UNIQUE option_signature); прочие атрибуты — JSONB-документ, валидируемый attribute_type-кодеками; фильтруемые — синхронная проекция cmz_attribute_index (с variant_id для same-variant фасетов)",
+      "pros": "карточка одной строкой, фасеты корректны сразу после сохранения, новые атрибуты без миграций"
+    },
+    {
+      "id": "B",
+      "text": "Typed EAV",
+      "cons": "много JOIN, сложная ownership/locale"
+    },
+    {
+      "id": "C",
+      "text": "Фиксированная схема (профиль Unbox)",
+      "cons": "не переиспользуемо"
+    }
+  ],
+  "decision": "A — Операционные поля — колонки; оси вариантов — реляционно (опции, значения, UNIQUE option_signature); прочие атрибуты — JSONB-документ, валидируемый attribute_type-кодеками; фильтруемые — синхронная проекция cmz_attribute_index (с variant_id для same-variant фасетов)",
+  "rationale": "Сильнейший кандидат по корпусу (Grok E8, Codex attribute-storage-options); кейс «6 сложных свойств» Unbox = 6 определений + при нужде тип-плагин.",
+  "applies_to": [
+    "P2"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D7",
+  "title": "Идентификаторы: UUIDv7; журналы — bigint identity",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Стратегия первичных ключей?",
+  "options": [
+    {
+      "id": "A",
+      "text": "UUIDv7 из приложения (uuid), журналы bigint identity, ссылки на хост/чужие пакеты — *_ref varchar(191) 'type:id'",
+      "pros": "CoreX ADR-003, Chatom default; ID до INSERT; слияние БД"
+    },
+    {
+      "id": "B",
+      "text": "BIGINT + public_id",
+      "cons": "две колонки, ID только после INSERT"
+    },
+    {
+      "id": "C",
+      "text": "Настраиваемая стратегия",
+      "cons": "тройная матрица DDL/тестов"
+    }
+  ],
+  "decision": "A — UUIDv7 из приложения (uuid), журналы bigint identity, ссылки на хост/чужие пакеты — *_ref varchar(191) 'type:id'",
+  "rationale": "Экосистемный канон; без настройки, чтобы не множить матрицу.",
+  "global": true,
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

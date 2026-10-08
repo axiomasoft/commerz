@@ -1,0 +1,32 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D14",
+  "title": "Доставка vs исполнение",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Где граница пакетов shipping и sales?",
+  "options": [
+    {
+      "id": "A",
+      "text": "shipping: зоны, методы, тарифы, перевозчики, DeliveryOptions/ShipmentBooking; sales: fulfillments заказа (что отгружено, consume резервов, трекинг)",
+      "pros": "инвариант ordered = cancelled+fulfilled+outstanding у владельца заказа"
+    },
+    {
+      "id": "B",
+      "text": "Всё в sales (Grok)",
+      "cons": "владелец просил отдельный модуль доставки; тарифы нужны и без заказов (калькулятор)"
+    }
+  ],
+  "decision": "A — shipping: зоны, методы, тарифы, перевозчики, DeliveryOptions/ShipmentBooking; sales: fulfillments заказа (что отгружено, consume резервов, трекинг)",
+  "rationale": "«Доставка стоит 300» ≠ «отправление отгружено»: котировка и бронь у перевозчика — shipping, учёт исполнения заказа — sales.",
+  "applies_to": [
+    "P6",
+    "P7"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

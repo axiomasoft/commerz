@@ -1,0 +1,27 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P6",
+  "title": "Shipping (delivery) package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-shipping: зоны доставки (страна/регион/индекс), методы по каналам, тарифы (delivery_rate: flat, weight_table, free_over), перевозчики (carrier SPI, встроенный manual), DeliveryOptions и ShipmentBooking, стадия Delivery конвейера.",
+  "context": "Решение D14: shipping = варианты, цена и бронирование у перевозчика; записи исполнения (fulfillments) — в sales. Сеть перевозчика — вне транзакций.",
+  "scope": {
+    "include": [
+      "packages/shipping/**"
+    ],
+    "exclude": [
+      "конкретные адаптеры перевозчиков (CDEK и т.п.)",
+      "пункты выдачи как справочник (позже)"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Shipping API",
+    "стадия delivery",
+    "тесты зон/тарифов"
+  ],
+  "items": [],
+  "batches": []
+}

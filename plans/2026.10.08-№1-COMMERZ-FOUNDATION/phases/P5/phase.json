@@ -1,0 +1,28 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P5",
+  "title": "Promotions & coupons package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-promotions: акции с условиями/эффектами по стабильным ключам и config_version, активаторы automatic/coupon, стадии promotions.catalog/cart/delivery, детерминированный stacking (priority, stackable/exclusive/stop_further), распределение скидок, объяснение отказов, купоны (коды, генерация партий, нормализация), лимиты total/per-customer и бюджеты, PromotionUsage consume/restore.",
+  "context": "Решения D5 (купоны внутри пакета через тот же SPI), D13 (расход при размещении, restore по политике), D15 (последовательное сложение внутри стадии). Инварианты PRM-01/02.",
+  "scope": {
+    "include": [
+      "packages/promotions/**"
+    ],
+    "exclude": [
+      "подарочные сертификаты, бонусные баллы",
+      "поиск глобального оптимума комбинаций"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Promotions API",
+    "встроенные условия/эффекты",
+    "конкурентный тест последней квоты",
+    "golden-тесты распределения"
+  ],
+  "items": [],
+  "batches": []
+}

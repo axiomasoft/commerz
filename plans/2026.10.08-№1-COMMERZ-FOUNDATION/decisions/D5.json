@@ -1,0 +1,31 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D5",
+  "title": "Купоны — модуль пакета promotions через публичный SPI",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Купоны — отдельный пакет или часть promotions?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Модуль Coupons внутри commerz-promotions, подключён как activator 'coupon' через тот же SPI, что доступен сторонним плагинам",
+      "pros": "меньше пакетов, быстрее; dogfooding SPI сохраняется"
+    },
+    {
+      "id": "B",
+      "text": "Отдельный пакет commerz-coupons (Grok)",
+      "cons": "купоны нужны почти всегда вместе с акциями; лишняя единица выпуска"
+    }
+  ],
+  "decision": "A — Модуль Coupons внутри commerz-promotions, подключён как activator 'coupon' через тот же SPI, что доступен сторонним плагинам",
+  "rationale": "Сохраняет главное достоинство варианта Grok (движок акций не знает слова «купон», активатор — плагин) без отдельного пакета.",
+  "applies_to": [
+    "P5"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}

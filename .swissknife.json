@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/academici/swissknifeman/main/packages/skiller/schema/swissknife.schema.json",
+  "plugins": [
+    "core",
+    "laravel-testing",
+    "php",
+    "php-packages",
+    "quality",
+    "task"
+  ],
+  "providers": {
+    "selection": {
+      "claude-code": {
+        "enabled": true
+      },
+      "codex": {
+        "enabled": false
+      },
+      "cursor": {
+        "enabled": false
+      },
+      "grok": {
+        "enabled": false
+      }
+    },
+    "contract_version": "1.0.0"
+  }
+}

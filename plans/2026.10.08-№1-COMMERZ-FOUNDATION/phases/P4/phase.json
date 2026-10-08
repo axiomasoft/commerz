@@ -1,0 +1,26 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P4",
+  "title": "Pricing & tax package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-pricing: прайс-листы (валюта, каналы, приоритет), цены по sellable с группами покупателей, ступенями количества и окнами действия (EXCLUDE на пересечения), compare-at, детерминированный PriceResolver с объяснением источника; налоговые классы, зоны и ставки (bp), tax_calculator 'rates', стадия Tax с учётом prices_include_tax канала.",
+  "context": "Порт PriceResolver и якорь Tax — knowledge/kernel-contracts. Налог после скидок; выделение НДС из цены при prices_include_tax.",
+  "scope": {
+    "include": [
+      "packages/pricing/**"
+    ],
+    "exclude": [
+      "внешние налоговые движки (только SPI tax_calculator)"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Pricing API",
+    "PRC-01 тест",
+    "стадия tax с golden-тестами округления"
+  ],
+  "items": [],
+  "batches": []
+}

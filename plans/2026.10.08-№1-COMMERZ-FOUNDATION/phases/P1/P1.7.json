@@ -1,0 +1,125 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P1.7",
+  "title": "Kernel ports, quote pipeline, defaults and testkit fakes",
+  "status": "todo",
+  "summary": "Объявить в ядре межпакетные порты (Sellables+SellableProvider, StockAvailability/StockReservations, PriceResolver, PromotionUsage, DeliveryOptions/ShipmentBooking, CustomerDirectory) и QuotePipeline с якорями и стадиями base/totals; дефолтные реализации (SnapshotPriceResolver, UnlimitedStock, NullPromotionUsage, GuestOnlyDirectory); in-memory fakes всех портов в testkit; сценарный тест «CRM без каталога»: хост-SellableProvider → QuoteResult.",
+  "why": "Порты — это контракт, по которому P2–P7 разрабатываются параллельно; их сигнатуры фиксируются здесь и меняются потом только с записью deviation. Неверный порт = переделка нескольких пакетов.",
+  "scope": {
+    "include": [
+      "Commerz\\Ports\\Sellables, \\Stock, \\Prices, \\Promotions, \\Delivery, \\Customers — контракты, DTO, исключения строго по knowledge/kernel-contracts#ports",
+      "Commerz\\Quotes — QuoteAnchor, StagePosition, QuoteStage (#[Spi]), QuotePipeline, QuoteInput, QuoteLineInput, DeliverySelection, QuoteState, QuoteLine, Adjustment, AdjustmentTarget, TaxLine, DeliveryCharge, Rejection, QuoteResult, QuoteTotals — по knowledge/kernel-contracts#quotes",
+      "contribution kinds ядра: sellable_provider, quote_stage (+ сахар PluginRegistrar::sellableProvider/quoteStage)",
+      "Internal\\SellableRouter (Sellables → провайдер по ref.type; неизвестный type → UnsupportedContribution)",
+      "встроенные стадии base (PriceResolver::resolveMany для всех строк) и totals (суммы, распределение order-level корректировок по строкам MoneyAllocator пропорционально subtotal после line-скидок, проверка total ≥ 0, fingerprint = sha256 канонического входа + ключей/версий стадий)",
+      "упорядочивание стадий: по якорю (порядок enum), внутри якоря Before → At → After, затем key ASC; две At-стадии на одном якоре → InvalidConfiguration",
+      "дефолты: биндинги портов в CommerzServiceProvider через bindIf/singletonIf — feature-пакеты переопределяют обычным bind в своих провайдерах; StockMode::Inventory без привязанной реализации → InvalidConfiguration при первом обращении",
+      "Commerz root: quotes(), sellables()",
+      "packages/testkit: Fakes\\{FakeSellables (in-memory SellableProvider 'fake'), FakeStock (лимиты на ref, фиксирует reserve/release/consume), FakePrices, FakePromotionUsage, FakeDelivery, FakeCustomers} + хелпер Commerz\\Testkit\\Commerce::fake() для подмены всех портов",
+      "тесты: порядок стадий, детерминизм (одинаковый вход → тот же fingerprint), распределение 100.00 скидки на 3 строки, отрицательный итог → QuoteFailed, CRM-сценарий: хост-провайдер 'crm.service' с basePrice → QuoteResult total, без каталога/склада"
+    ],
+    "exclude": [
+      "реализации портов в feature-пакетах",
+      "стадии promotions/delivery/tax (P4–P6)"
+    ]
+  },
+  "depends_on": [
+    "P1.6"
+  ],
+  "related": [],
+  "decisions": [
+    "D3",
+    "D8",
+    "D11",
+    "D12"
+  ],
+  "reads": [
+    {
+      "path": "audits/grok/code-examples/Core/Pricing.php",
+      "why": "прототип конвейера (сверить с якорями выше)",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/core/src/Ports/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Quotes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Plugins/PluginRegistrar.php",
+      "change": "any"
+    },
+    {
+      "path": "packages/core/src/Commerz.php",
+      "change": "any"
+    },
+    {
+      "path": "packages/core/src/CommerzServiceProvider.php",
+      "change": "any"
+    },
+    {
+      "path": "packages/testkit/src/Fakes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/testkit/src/Commerce.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/tests/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Стадии — чистые функции: не пишут в БД, не вызывают сеть; QuotePipeline::run не открывает транзакцию.",
+    "Порты-мутации (reserve/release/consume/consume usage) документируют в PHPDoc: присоединяются к транзакции вызывающего; не делают сетевых вызовов.",
+    "Любое отклонение от сигнатур knowledge/kernel-contracts → plan.py log PLAN1 P1.7 --type deviation с причиной."
+  ],
+  "guidance": "Ключевые разделы знаний (уже в context pack): `knowledge/kernel-contracts#ports` — точные сигнатуры портов; `knowledge/kernel-contracts#quotes` — конвейер, якоря, состояние; `knowledge/api-blueprint#crm-scenario` — приёмочный сценарий встраивания в CRM.\n\nРаспределение order-level скидки: веса = subtotal строки после line-корректировок (в minor), MoneyAllocator; строки с нулевым весом получают 0. QuoteResult хранит для каждой строки: unitPrice, quantity, subtotal, adjustments (собственные + распределённые), taxLines, total. Rejection: {source, promotionId?, code?, reason code, message}.",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/core/tests packages/testkit/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модули Ports и Quotes ядра",
+    "дефолтные реализации",
+    "testkit fakes",
+    "тест CRM-сценария"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": null,
+  "updated_at": "2026-10-08T17:15:26Z"
+}

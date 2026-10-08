@@ -1,0 +1,112 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P1.6",
+  "title": "Stores & channels module, Commerz root API, install/doctor",
+  "status": "todo",
+  "summary": "Модуль Stores ядра (cmz_stores, cmz_channels; контракты Stores/Channels с create/update/archive/find/list), корневой API-класс Commerz\\Commerz и фасад, команды commerz:install (publish config + migrate) и commerz:doctor (конфиг, fingerprint, плагины, неподдержанные вклады).",
+  "why": "Канал — обязательная часть CommerceContext всех продаж; корневой API задаёт стиль, который повторят все пакеты (D12).",
+  "scope": {
+    "include": [
+      "Commerz\\Stores\\Data\\{StoreId, ChannelId (если ещё не создан в P1.3 — перенести сюда и обновить импорты), CreateStore, UpdateStore, ArchiveStore, StoreView, CreateChannel, UpdateChannel, ArchiveChannel, ChannelView, ListChannels}",
+      "Commerz\\Stores\\Enums\\{StoreStatus, ChannelStatus}",
+      "Commerz\\Stores\\Contracts\\{Stores, Channels}",
+      "Commerz\\Stores\\Events\\{StoreCreated, ChannelCreated, ChannelUpdated}",
+      "Commerz\\Stores\\Exceptions\\{StoreNotFound, ChannelNotFound, DuplicateCode, CurrencyNotAllowed}",
+      "Internal: модели/репозитории, миграции cmz_stores (id uuid, code unique, name, default_currency char(3), order_number_prefix, status, timestamps), cmz_channels (id, store_id fk, code unique, name, currencies jsonb (список ISO), locales jsonb, default_locale, prices_include_tax bool, status, timestamps)",
+      "Правило: default currency канала ∈ currencies; архивированный канал нельзя использовать в новом CommerceContext (Channels::assertActive)",
+      "Commerz\\Commerz (#[Api]) — stores(), channels(), plugins(); остальные аксессоры (quotes, sellables) добавит P1.7",
+      "Commerz\\Facades\\Commerz",
+      "artisan commerz:install, commerz:doctor",
+      "Feature-тесты на PG"
+    ],
+    "exclude": [
+      "связи канал↔склад (inventory P3)",
+      "прайс-листы канала (pricing P4)"
+    ]
+  },
+  "depends_on": [
+    "P1.5"
+  ],
+  "related": [],
+  "decisions": [
+    "D4",
+    "D12"
+  ],
+  "reads": [],
+  "task_files": [
+    {
+      "path": "packages/core/src/Stores/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Commerz.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Facades/Commerz.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Console/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/database/migrations/*",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/CommerzServiceProvider.php",
+      "change": "any"
+    },
+    {
+      "path": "packages/core/tests/Feature/Stores/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Контракты возвращают View DTO, не модели; list() — курсорная Page<T> (создать Commerz\\Pagination\\{Page, Cursor}, если ещё нет).",
+    "Коды уникальны в установке; нарушение → DuplicateCode (ловить unique violation, не pre-check)."
+  ],
+  "guidance": "Ключевые разделы знаний (уже в context pack): `knowledge/api-blueprint#kernel` — целевая форма вызовов.\n\nОбразцы экосистемы вне репозитория (только чтение, по необходимости):\n- `/home/vostrikov/projects/packages/chatom/packages/core/src/Chatom.php` — образец корневого API-класса\n- `/home/vostrikov/projects/packages/chatom/packages/core/src/Messages/Contracts/Messages.php` — образец доменного контракта (команда → View, Page)",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/core/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модуль Stores",
+    "Commerz root + facade",
+    "commerz:install, commerz:doctor"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": null,
+  "updated_at": "2026-10-08T17:15:25Z"
+}

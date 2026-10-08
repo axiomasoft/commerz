@@ -1,0 +1,28 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P7",
+  "title": "Sales package",
+  "design": "skeleton",
+  "goal": "axiomasoft/commerz-sales: корзины (канал/валюта фиксированы, version), расчёт через QuotePipeline, размещение заказа одной транзакцией (снимки, резерв, расход лимитов, outbox), черновые заказы для CRM, три независимых состояния, платежи (payment_gateway SPI, manual, события провайдера с дедупом, reconciliation неизвестного исхода), исполнение (fulfillments, consume резервов), отмена/истечение неоплаченных, возвраты и refunds (приёмка ≠ restock).",
+  "context": "Решения D11, D13, D14. Инварианты ORD-01..03, PAY-01/02, REF-01, CTX-01 и транзакция размещения — knowledge/invariants#placement. Работает только через порты: без catalog/inventory/pricing — с SellableProvider хоста, UnlimitedStock и ценой из снимка.",
+  "scope": {
+    "include": [
+      "packages/sales/**"
+    ],
+    "exclude": [
+      "конкретные PSP-адаптеры",
+      "подписки",
+      "многовалютная конвертация"
+    ]
+  },
+  "depends_on": [
+    "P1"
+  ],
+  "deliverables": [
+    "Sales API",
+    "конкурентные тесты двойного submit и двойного webhook",
+    "сценарий CRM на fakes"
+  ],
+  "items": [],
+  "batches": []
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:phase:v1",
+  "id": "P8",
+  "title": "Assembly, end-to-end & release 0.1",
+  "design": "skeleton",
+  "goal": "Собрать семейство: commerz-full, сквозные сценарии на реальных пакетах (интернет-магазин: каталог→склад→цены→акции→доставка→заказ→оплата→отгрузка→возврат; CRM: SellableProvider хоста без catalog/inventory), конкурентный набор на PostgreSQL через все пакеты, документация (VitePress-структура как у Chatom), API manifest (#[Api]/#[Spi] → docs/reference), CHANGELOG и тег 0.1.0.",
+  "context": "Финальная интеграция после P2–P7. Здесь же подтверждается, что порты из P1 выдержали реальные реализации; расхождения закрываются до 0.1.",
+  "scope": {
+    "include": [
+      "packages/full",
+      "tests/EndToEnd",
+      "docs/**",
+      "scripts/api-manifest"
+    ],
+    "exclude": [
+      "публикация на Packagist",
+      "HTTP/Filament"
+    ]
+  },
+  "depends_on": [
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7"
+  ],
+  "deliverables": [
+    "e2e-сценарии магазина и CRM",
+    "docs",
+    "api manifest",
+    "релиз 0.1.0 (локальный тег)"
+  ],
+  "items": [],
+  "batches": []
+}

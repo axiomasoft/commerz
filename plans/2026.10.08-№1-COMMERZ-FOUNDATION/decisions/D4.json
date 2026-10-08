@@ -1,0 +1,31 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D4",
+  "title": "Магазины и каналы — модуль ядра",
+  "date": "2026-10-08",
+  "status": "accepted",
+  "question": "Где живут Store/Channel?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Модуль Stores в axiomasoft/commerz",
+      "pros": "каналы нужны каждому пакету; 2 таблицы; нет обязательного лишнего пакета"
+    },
+    {
+      "id": "B",
+      "text": "Отдельный пакет commerz-stores",
+      "cons": "все остальные пакеты зависят от него — фактически второе ядро"
+    }
+  ],
+  "decision": "A — Модуль Stores в axiomasoft/commerz",
+  "rationale": "Канал — часть CommerceContext любой операции; отдельный пакет нарушил бы правило «feature → только ядро». Для владельца это всё ещё отдельный модуль (Commerz::stores()/channels()).",
+  "applies_to": [
+    "P1"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "answered_by": "agent"
+}
