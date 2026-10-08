@@ -1,0 +1,50 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:plan:v1",
+  "id": "2026.10.08-№1-COMMERZ-FOUNDATION",
+  "short_id": "PLAN1",
+  "title": "Plan №1 — Commerz — embeddable commerce package family: architecture, API and v0 build",
+  "status": "active",
+  "created": "2026-10-08",
+  "updated_at": "2026-10-08T17:30:22Z",
+  "repository": "commerz",
+  "owner": "Dmitry Vostrikov",
+  "authoring": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh"
+  },
+  "goal": "Построить Commerz — headless, transport-agnostic семейство Laravel-пакетов электронной коммерции (ядро + catalog, inventory, pricing, promotions, shipping, sales), которое встраивается и в CRM, и в интернет-магазины, с чистым типизированным API в стиле Chatom/AzGuard/Vaulter и дисциплиной CoreX. Результат плана — рабочий релиз 0.1: все пакеты с публичным API, портами, плагинами, проверенными инвариантами (склад, лимиты акций, размещение заказа, платежи) и сквозными сценариями магазина и CRM.",
+  "context": "Репозиторий содержит только исследовательский корпус (docs/discovery/2026-10-08, audits/chatgpt, audits/grok) и корневые заготовки (composer.json, CI, agent docs); кода пакетов нет. Корпус синтезирован в knowledge/architecture (решения и карта пакетов), knowledge/api-blueprint (целевой публичный API), knowledge/kernel-contracts (порты ядра и сигнатуры), knowledge/invariants (инварианты, транзакции, порядок блокировок). Соседние пакеты экосистемы: /home/vostrikov/projects/packages/{chatom,azguard,vaulter,corex} — источники стиля, не зависимости. Стратегия D16 (rolling wave): архитектура и API всех фаз зафиксированы в knowledge; P1 исполняется сразу; после закрытия P1 фазы P2–P7 детализируются одним проходом против реального кода ядра и исполняются параллельными lanes; затем P8. P2–P7 зависят только от P1 и могут выполняться параллельно.",
+  "non_goals": [
+    "HTTP/REST API, админка (Filament), storefront UI — отдельные будущие пакеты commerz-http/commerz-filament",
+    "Мосты экосистемы (commerz-corex, -azguard, -vaulter, -chatom) и конкретные платёжные/доставочные адаптеры — после 0.1",
+    "WMS (ячейки, партии, серийные номера), себестоимость, закупки, marketplace-расчёты, подписки, подарочные сертификаты и бонусы",
+    "Поддержка MySQL/SQLite, Laravel < 13, PHP < 8.4",
+    "Публикация на Packagist и split-зеркала"
+  ],
+  "rules": [
+    "Стек фиксирован: PHP ^8.4, Laravel ^13, PostgreSQL ≥16 (CI/тесты на 17). Локальный php по умолчанию 8.3 — все PHP/Composer-команды запускать через scripts/php84.",
+    "Feature-пакет зависит только от axiomasoft/commerz (ядро); межпакетное взаимодействие — только через порты Commerz\\Ports\\* и события; чужой Internal не импортировать; писать только в свои таблицы.",
+    "Публичный тип вне Internal обязан нести #[Api] или #[Spi]; в публичных сигнатурах нет Eloquent-моделей, Builder, Request, float для денег/количеств.",
+    "Каждая мутация — command-DTO внутрь, иммутабельный View/Result наружу; команда сама владеет своим инвариантом (без низкоуровневых increment-API).",
+    "Сетевые вызовы (платёж, перевозчик) никогда не внутри транзакции БД; многоресурсные транзакции соблюдают глобальный порядок блокировок из knowledge/invariants#placement.",
+    "Расхождение реализации с knowledge/kernel-contracts или api-blueprint фиксировать plan.py log --type deviation с причиной, а не молча.",
+    "Проверка item'а: lint:check, analyse и тесты затронутого пакета; arch-гейт — при изменении границ. Без повторов успешных проверок ради ритуала.",
+    "Владелец делегировал архитектуру агенту (M3, CLAUDE.md «Owner delegation»): решать и записывать решение (plan.py add-decision/decide --by agent), спрашивать только о необратимых внешних действиях, потере данных, секретах или конфликте с целями; найденные дефекты исправлять сразу, в том числе в ранее сделанном."
+  ],
+  "phases": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7",
+    "P8"
+  ],
+  "settings": {
+    "design_audit": "none",
+    "scout": "off",
+    "context_pack": "scoped"
+  }
+}

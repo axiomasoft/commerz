@@ -1,0 +1,150 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P1.1",
+  "title": "Architecture baseline in docs/architecture",
+  "status": "done_with_deviations",
+  "summary": "Записать принятую архитектуру Commerz в репозиторий на английском: docs/architecture/* (обзор, пакеты и зависимости, API-конвенции, модель расширения, соглашения данных, инварианты, журнал решений D1–D15) и обновить agent entrypoint.",
+  "why": "CLAUDE.md требует сохранять границы, записанные в docs/; план — временный носитель, а будущие исполнители и ревьюеры читают репозиторий. Это также точка, где владелец видит итоговую архитектуру одним документом.",
+  "scope": {
+    "include": [
+      "docs/architecture/README.md — назначение, позиционирование, карта документов",
+      "docs/architecture/packages.md — таблица пакетов, владение таблицами, правила зависимостей, будущие пакеты",
+      "docs/architecture/api.md — принципы API + сокращённые примеры по пакетам",
+      "docs/architecture/extension.md — 5 механизмов, contribution kinds, QuotePipeline якоря",
+      "docs/architecture/data.md — префикс, ключи, деньги, количества, снимки, tenancy/контекст",
+      "docs/architecture/invariants.md — реестр инвариантов, транзакция размещения, порядок блокировок",
+      "docs/architecture/decisions.md — D1–D15 (статус, решение, причина)",
+      ".ai/guidelines/agent-entrypoint.md — добавить строку-указатель на docs/architecture (≤2048 байт) и пересобрать CLAUDE.md/AGENTS.md"
+    ],
+    "exclude": [
+      "изменения docs/discovery и audits/*",
+      "код"
+    ]
+  },
+  "related": [],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "D10",
+    "D11",
+    "D12",
+    "D13",
+    "D14",
+    "D15"
+  ],
+  "reads": [
+    {
+      "path": ".ai/guidelines/agent-entrypoint.md",
+      "why": "текущий entrypoint; лимит 2048 байт",
+      "required": true
+    },
+    {
+      "path": "scripts/build-agent-docs.sh",
+      "why": "как пересобирается CLAUDE.md/AGENTS.md",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "docs/architecture/*.md",
+      "change": "create"
+    },
+    {
+      "path": ".ai/guidelines/agent-entrypoint.md",
+      "change": "modify"
+    },
+    {
+      "path": "CLAUDE.md",
+      "change": "modify",
+      "note": "только через build-agent-docs.sh"
+    },
+    {
+      "path": "AGENTS.md",
+      "change": "modify",
+      "note": "только через build-agent-docs.sh"
+    }
+  ],
+  "rules": [
+    "Язык документов — английский, термины и идентификаторы как в knowledge (Commerz\\Ports\\..., cmz_ и т.д.).",
+    "Не пересказывать исследование: только принятые правила и причина одной строкой; ссылки на docs/discovery допустимы.",
+    "Решения брать из плана: `plan.py get PLAN1 D<n>` для каждого D1–D15."
+  ],
+  "guidance": "Ключевые разделы знаний (уже в context pack): `knowledge/kernel-contracts#overview` — перечень модулей ядра для packages.md; `knowledge/invariants` — источник invariants.md.\n\nПолучить решения: `python3 ~/.claude/plugins/cache/swissknifeman/task/0.28.3/scripts/plan.py list PLAN1 --kind decision` (или get по id). Структура каждого файла: заголовок, 1 абзац назначения, таблицы/списки правил. В README.md — схема зависимостей пакетов текстом (mermaid flowchart допустим). Entrypoint: одна строка вида `- Architecture rules live in docs/architecture/ (packages, API, extension, data, invariants, decisions).`",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "bash scripts/build-agent-docs.sh --check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "test -f docs/architecture/README.md && test -f docs/architecture/packages.md && test -f docs/architecture/api.md && test -f docs/architecture/extension.md && test -f docs/architecture/data.md && test -f docs/architecture/invariants.md && test -f docs/architecture/decisions.md",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "grep -q 'axiomasoft/commerz-shipping' docs/architecture/packages.md && grep -q 'D15' docs/architecture/decisions.md && grep -q 'docs/architecture' .ai/guidelines/agent-entrypoint.md",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "docs/architecture/{README,packages,api,extension,data,invariants,decisions}.md",
+    "обновлённые entrypoint/CLAUDE.md/AGENTS.md"
+  ],
+  "route": {
+    "class": "economy",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-08T17:33:38Z",
+    "finished_at": "2026-10-08T17:37:21Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "181e873c-315a-44e6-b876-839d99ef40ae"
+    },
+    "notes": "docs/architecture/{README,packages,api,extension,data,invariants,decisions}.md written in English from knowledge docs and D1-D15; entrypoint pointer added (1931 bytes), CLAUDE.md/AGENTS.md rebuilt.",
+    "deviations": [
+      "API examples reconciled to kernel-contracts port signatures (see log)"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T17:37:21Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T17:37:21Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T17:37:21Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T17:37:21Z"
+}
