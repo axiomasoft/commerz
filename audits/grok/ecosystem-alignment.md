@@ -91,7 +91,8 @@ Enum-случай — значение: `ReservationState::Active` (`:68`).
 | Vaulter | `v_` | `DatabaseConfig::table()` | `vaulter/packages/core/config/vaulter.php:37`; `src/Configuration/DatabaseConfig.php:17–27` |
 | Chatom | `chatom_` | `SchemaSpace::table()` = map ?? `{prefix}_{logical}`, fingerprint схемы | `chatom/packages/core/src/Schema/Data/SchemaSpace.php:34–37` |
 
-Имена ограничений в CoreX единообразны: `{table}_{columns}_{pk|uq|ix|fk|ck}` (весь каталог `table-ownership.md`),
+Имена ограничений в CoreX единообразны: `{table}_{columns}_{uq|ix|fk|ck}` и `{table}_pk` (весь каталог `table-ownership.md`;
+Laravel на PostgreSQL игнорирует имя PK, поэтому CoreX переименовывает `_pkey` → `_pk`: `corex/packages/tasks/database/migrations/tenant/2026_10_01_160020_create_tsk_stages.php:16,31`),
 длинные — с hash-суффиксом (`med_conversions_file_id_profile_key_profile_digest__67e95e41_uq`). Chatom сокращает до
 63 байт детерминированно (`chatom/packages/core/src/Schema/Internal/Services/SchemaNames.php:30`).
 

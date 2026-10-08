@@ -1,0 +1,5 @@
+parameters:
+  level: max
+  paths: [..]
+  excludePaths: [vendor, ../verify]
+  treatPhpDocTypesAsCertain: false
