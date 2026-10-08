@@ -1,0 +1,979 @@
+{
+  "captured_at": "2026-10-08T14:13:43.032187+00:00",
+  "root": "/home/vostrikov/projects/unbox",
+  "head": "4e0d338c5316bb5e216239c4bfb0b62ce60c5a88",
+  "status": [
+    "?? tests/Feature/Media/"
+  ],
+  "method": "Static read of tracked sources. No .env, credentials, database access, PHP bootstrap or tests. Full numbered snapshots make this discovery self-contained.",
+  "files": [
+    {
+      "path": "Modules/Buyer/app/Enums/Order/PaymentMethod.php",
+      "sha256": "c78277b44206863ba9a7fff570086716631f2ce23af0ff79832e5fa2ffaadf01",
+      "lines": 22,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Enums/Order/PaymentStatus.php",
+      "sha256": "d07f77e2ead6c9897d5f407dd6216c2cc0e254022cb78747cf12100672301cd4",
+      "lines": 25,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Enums/Order/RefundStatus.php",
+      "sha256": "4eeb95f6413ebc93c4e260cdf26a80fb96cf0e37979e55a53df4ccb7455c6407",
+      "lines": 25,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Enums/Order/Status.php",
+      "sha256": "301e4cafa712b1c8891c689fc657df33ee3a06a82cee8f26bff185587586471c",
+      "lines": 34,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Enums/Order/UpdateAction.php",
+      "sha256": "e29dc883e67d454658234e75a8418377541da43d18a25a0d3a5185a8baf74f31",
+      "lines": 19,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Filament/Resources/Orders/Schemas/OrderForm.php",
+      "sha256": "a763cdc0c4d03397a4e0b8ca29afe00e7eaef933be36debec659c9de7d3788e1",
+      "lines": 80,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Livewire/Components/Cart/CartSlideOver.php",
+      "sha256": "220fb40d36d3ee0f2d92886576758b248147717819cfba6a7b2afc1cd3acdd47",
+      "lines": 156,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Livewire/Components/CartWidget.php",
+      "sha256": "1953ab0d1a2cf5b029c1d1a2fc6da72e58c8f351ffc52473244a4c6e913e6746",
+      "lines": 82,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Models/Order/Customer.php",
+      "sha256": "0dee077d77e4623c7db73e14853486cddff703c4429bfe1d3f399cd707ef1225",
+      "lines": 97,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Models/Order/Item.php",
+      "sha256": "29cf10021a8e833785175ee799b58e33aa4ffeb536be5186b9d4e60f2fc60b90",
+      "lines": 99,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Models/Order/Order.php",
+      "sha256": "a7962c30bf1aab7a40b17cfbea011269711b8ee2f2300395f17d85c8ec5a7770",
+      "lines": 213,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Models/Order/OrderUpdate.php",
+      "sha256": "36fb04a27603893896b4eb8e3a917e6e0e271ada2b0d71c63056f548d1989d0b",
+      "lines": 87,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/app/Models/Order/RefundRequest.php",
+      "sha256": "a398a09ad6819bb309a0368fad45966ffe05772adde751b2a89cffc493b991f1",
+      "lines": 104,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/composer.json",
+      "sha256": "19b1a1352967dadb768d2d2d0cabd2882dc5f9b62bc944fc4053a741258d767f",
+      "lines": 30,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/database/migrations/2025_10_21_132001_create_buyer_order_customers_table.php",
+      "sha256": "4915d7e0dc5b053753244da27dd7894808ae678407cdd5d3407761d4ebf5bfae",
+      "lines": 39,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/database/migrations/2025_10_21_132002_create_buyer_orders_table.php",
+      "sha256": "6cfc36f6acc4160161bc065b29c5fd42e01656ef321aabb60afa86fab5b6380d",
+      "lines": 52,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/database/migrations/2025_10_21_132419_create_buyer_order_items_table.php",
+      "sha256": "e36228e97d635fa3ec0315ba86a35ffd38aa10e4814434e03239b85a76a85f37",
+      "lines": 43,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/database/migrations/2025_10_21_132614_create_buyer_order_updates_table.php",
+      "sha256": "2826201bdf435dbd1c632182db2d60ec14d373171d3bcecfb5d1cee4991e5c34",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/database/migrations/2025_10_21_134028_create_buyer_order_refund_requests_table.php",
+      "sha256": "475354eda811f52288e04c34152eeb47be322e352296703099e689e7bdc46142",
+      "lines": 40,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Buyer/routes/web.php",
+      "sha256": "5df72d059c38ea8b4ac17e35a13a9ae89adaea2d07c40af335a5e21fbb8e91f3",
+      "lines": 10,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/BlockType.php",
+      "sha256": "7ace5f2317644bc2b4496cc7a08dcb093e8af1b1cdbf735a541b63d20f9216a7",
+      "lines": 23,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/Condition.php",
+      "sha256": "a892e34a98b7631831250f01dbf5eab54e1255ffd94834f94cb2bd5063aa8f2b",
+      "lines": 22,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/PropertyControl.php",
+      "sha256": "94fbaa091a471b524827e325c5caf4f1146941680094dabd084ecdb1f860a909",
+      "lines": 31,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/PropertyType.php",
+      "sha256": "1ca7899a652b45965347ba1e621a5f32fc11861bda27c7dafe189b0402b20240",
+      "lines": 28,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/PropertyUnit.php",
+      "sha256": "4d479972042ac83fbde5d75e40541023811f4ded3c66bd3077a1da21a66b7c65",
+      "lines": 19,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/Status.php",
+      "sha256": "227baf6c23305d72a72e50bb356f709bcdc92811acf9ea07f4c8928581aa6f15",
+      "lines": 25,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Enums/Product/Tag.php",
+      "sha256": "50b565883d1357e40fd9c02f90d460633abd913e16cbf7fd4032b6d273c78be5",
+      "lines": 21,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/Pages/CreateProperty.php",
+      "sha256": "f0f815680136a1d26d050c33472a547e3df483ccaeafa97886baca52b5be5147",
+      "lines": 13,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/Pages/EditProperty.php",
+      "sha256": "48c0e2c37c4ade1dc2774b8fa49529533caabceff5c9f12642245c933722677d",
+      "lines": 21,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/Pages/ListProperties.php",
+      "sha256": "1472e5c5b42ea9ec888222ec4546e2cf3ddacbcd90e0c4bc6c98318b26d8308b",
+      "lines": 21,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/PropertyResource.php",
+      "sha256": "1d07db3c25c02882cbf0e7c7831e3b5747880474f6afa67a471e9deabeb00662",
+      "lines": 55,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/RelationManagers/PropertyValuesRelationManager.php",
+      "sha256": "b94309e551c1af0eeda02253e100b6bbb8fb3cd4db8f5b6c5ab91016bedce270",
+      "lines": 156,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/Schemas/PropertyForm.php",
+      "sha256": "780095ab2f2fe8c5154447b578133ef1c8730dad309602be9cb3048bc5e37a05",
+      "lines": 64,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Filament/Resources/Properties/Tables/PropertiesTable.php",
+      "sha256": "0c214f6e598b8ee2faf9d7747cced259240a6ae9288e53b04e46c37c467471dc",
+      "lines": 57,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Livewire/Components/Product/Card.php",
+      "sha256": "4185cdc29b0b8d2c72bc9021d54fb237f151accbfe165cf6184ac29c68160310",
+      "lines": 209,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Brand.php",
+      "sha256": "9154e66c25e3c201cd4c28a26f67c22c3efe8478ff0a67aa4d3daf30d4689fdf",
+      "lines": 58,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Category.php",
+      "sha256": "7002ae1bc5166e89fa824772dc57075f3d46df9a1a3126d0535d724439378f29",
+      "lines": 199,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Collection/Collection.php",
+      "sha256": "f58517f1b737294fad007d406482d47a73a8835c3b5a5435f3fd416d00fff65a",
+      "lines": 240,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Collection/CollectionBlock.php",
+      "sha256": "133c285bbe0fd37e3f2d84f9b936e21efa7cb9744e2fdbbcdbe2b9b597ab095c",
+      "lines": 44,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Collection/CollectionHasTag.php",
+      "sha256": "e2b583938edea26c14be9c8f1ef98452e4bbd6bf832ea4a5d5bc582e3d9e90c0",
+      "lines": 49,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Collection/Tag.php",
+      "sha256": "bf26a12c481295a35178fda6dfa7b3e0e0e5a7486cd1fcb21730aa05031d0368",
+      "lines": 47,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/Product.php",
+      "sha256": "f38f6f8e7192d030e3432296d9f3304b7ef33cd13c517e937cb01c7d90cfd5c6",
+      "lines": 376,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductBlock.php",
+      "sha256": "ca6f0a48a4eba6130db4f65a31cb41d9e4270641257cc91147bc8466ee953991",
+      "lines": 36,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductCategory.php",
+      "sha256": "d1c13024285647c4a4415db3ef4560928234f65ad7f2ebca1a19a3431853e7b8",
+      "lines": 57,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductCollection.php",
+      "sha256": "7b9e217f9ba178556d1ec18168475dcd03f188592f43d7421f5abcd07db55ea7",
+      "lines": 60,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductColor.php",
+      "sha256": "f646e66d1b04e5fae758a4d56ce2742e391992ca4282f7ed72de7f212be18852",
+      "lines": 45,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductOffer.php",
+      "sha256": "f4b02e664bda62d6dac40da41c158e6afbe0d0887feaa0d43c1e833b064f2f2e",
+      "lines": 136,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductOfferPropertyValue.php",
+      "sha256": "6ff52227b60528fa1c62d957d1a13054256d9499eff706cc3540ed17c0a1fd94",
+      "lines": 44,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductProperty.php",
+      "sha256": "3ce9a282acd2521eb2e7607d0669290f124d43ed8e9fd2864e103d38593c1aca",
+      "lines": 59,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductPropertyPivot.php",
+      "sha256": "549c9ffed86c1f3e884773d5da4647a2dfb07b5f6a0d0fc4a7d3c7a9c53706f9",
+      "lines": 37,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductSpecificationGroup.php",
+      "sha256": "7b62f711ba7071a2751ba9a523eda6f3e6f19c622cc869ef11d7d47643782b82",
+      "lines": 100,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductSpecificationOption.php",
+      "sha256": "d2c68a3292002031b7185c5c3ca4eaf47d4d5828d9872fb20628965bd5d255a4",
+      "lines": 94,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/ProductTag.php",
+      "sha256": "8703900a696a2122968a063156cd714484339d9f8b5dcc1f7ee99d7b6fb00b2b",
+      "lines": 34,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Product/SpecificationGroup.php",
+      "sha256": "6fce4d2f8f5a817c3f7f982c1e4152dd64c718c6b853b7665261824645d876c7",
+      "lines": 82,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Property.php",
+      "sha256": "31526d4a6a261f7262cbddd375af70e2dfd05f22fe536b002d9a6ced15d230ee",
+      "lines": 82,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/PropertyValue.php",
+      "sha256": "c326f5bf6eae997317625ca01da84ee051a76ec58ab57b89a95a9658b1b68c79",
+      "lines": 51,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Models/Tag.php",
+      "sha256": "4e24e8e0d064d034f2fcdc760f2223d7a2162b5244f4da282b0a9a0ddca24da1",
+      "lines": 22,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Observers/ProductObserver.php",
+      "sha256": "edc38927780ab2e0140be4723afdc7d1c8fbba25859855efa99ce0b095790eaa",
+      "lines": 57,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/app/Repositories/ProductsRepository.php",
+      "sha256": "74e5a94e61ce8af54859144814d845daf377c47d43e19d25be06f2e9153ed9df",
+      "lines": 111,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/composer.json",
+      "sha256": "b3908323523b7384f59940789172eaa3fa75dfd2f162c5ff824e41a4e6267bf5",
+      "lines": 30,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_180840_create_cat_categories_table.php",
+      "sha256": "eeb899910f798e2bfd8c58c5b691d40da447de31d41d69ffa2a0f2167b2af7fc",
+      "lines": 41,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_180850_create_cat_brands_table.php",
+      "sha256": "9057d2c0915a1862339459cd3e7a7c0dc2bca5e7bd2393d8c92d13ed9f00cd9b",
+      "lines": 32,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185324_create_cat_collections_table.php",
+      "sha256": "6a00746cd3661cdf3c2aa083ced23181c13dae2af2ecb9527ed0da68f8fb8213",
+      "lines": 41,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185330_create_cat_properties_table.php",
+      "sha256": "3e24cfbd1a739722bf8857511c5840fee7c6506deffa28ed9ce7b57055ca8b55",
+      "lines": 32,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185331_create_cat_products_table.php",
+      "sha256": "ce37a5d4730237ed01c707854fb3b5ed3835953ba17ebc8fa23901be52da1c2e",
+      "lines": 60,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185332_create_cat_product_properties_table.php",
+      "sha256": "34e45d9601eaa338ad0fb6a55554277749c8601e142d3766a0067f49e4b47181",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185334_create_cat_property_values_table.php",
+      "sha256": "179362e321b284b47255262b88ca2c15428f1d5b591671ef4a426853b3d84d9c",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185343_create_cat_product_categories_table.php",
+      "sha256": "083390df363439d5a12c3bee87b9cfbf0907f7df20b2425ee4c7b3f330ae4bca",
+      "lines": 33,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185348_create_cat_product_collections_table.php",
+      "sha256": "e055f88d203fe9643924bb3b2bc8c6e04d7ba611930e9a9881eeec38aab36548",
+      "lines": 33,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185426_create_cat_product_offers_table.php",
+      "sha256": "d8fb7664bd465e95a0bcccafb9d5fd93936ffc0d8cbfe1cdc97a5db014f5b59e",
+      "lines": 37,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_19_185427_create_cat_product_offer_property_values_table.php",
+      "sha256": "4529c2e23a461de30875b7241366bbf40e7f49355e9712936b0a675749838058",
+      "lines": 28,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_21_171356_create_cat_specification_groups_table.php",
+      "sha256": "50654b38e0b1c6793726088bd7c97194e5ef8f30d45d926b06bf4efd7061997b",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_10_21_172114_create_cat_product_specification_groups_table.php",
+      "sha256": "490951bfff33cacecff812b33c7539cb00630a5e7f8b0d9d95078cb83f185598",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_05_205034_create_cat_product_specification_options_table.php",
+      "sha256": "9d4afa6cf9a2803ddbdcc18a5eac7e5f8d6b8d500868795276ad2aa22a62dd4c",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_05_212217_create_cat_product_blocks_table.php",
+      "sha256": "abbac3a3829119d224406f96ca254426a1ea40ab381f1050fa9ef9686ad31b92",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_05_213417_create_cat_tags_table.php",
+      "sha256": "e7956309a3b4045ebb5df0a5b316f521005e23a9ff2d931911fcfa56de823ef7",
+      "lines": 32,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_05_213449_create_cat_product_tags_table.php",
+      "sha256": "da50f3a04c55b60602ff11c61aeb4ef6489597baa349292c03d1dbf1008ee90c",
+      "lines": 33,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_09_102351_create_cat_product_colors_table.php",
+      "sha256": "6c1730745ee4d31be26234c95c81f29a97b361657380dc5e9636ff7f3373ae97",
+      "lines": 29,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_09_103243_create_cat_collection_blocks_table.php",
+      "sha256": "7590f84bcb2e60fdb1e787decebfdc22e164911d60ddc110e4fb9bf11dd52793",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_11_200906_create_cat_collection_tags_table.php",
+      "sha256": "ea8d79a71ec016c22430afc740054ada0fba93652346424a45dd5d806d69971d",
+      "lines": 34,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/database/migrations/2025_12_11_200913_create_cat_collection_has_tags_table.php",
+      "sha256": "a586f7a4fa7665b4fd61b1e68cc1333ad3ef52818df35177e432f1247f37ad5b",
+      "lines": 31,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Catalog/routes/web.php",
+      "sha256": "2f91ca6275683149fbab83ec1a897c0948f16b3bbf56be75c203fbc60dff6a34",
+      "lines": 5,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Enums/Company/LegalStatus.php",
+      "sha256": "ae786367a5226a9abc1a82c107bfb8111af9db19a460d1a13e233613553f1808",
+      "lines": 29,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Enums/SalesPlatform.php",
+      "sha256": "cc0bb3de11b3ce22ff3a2c124edeec3a47c9108dd652b6713d74708e635528de",
+      "lines": 26,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Enums/Shop/InventoryPolicy.php",
+      "sha256": "15686a3b8a3fc6fddb314cf13ca96f960ded9b7d51bd07a1a567db432ef800c4",
+      "lines": 23,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Enums/TeamPermission.php",
+      "sha256": "e6781a7e0a039ba27cf974d80b454319e0fa8aedce98c0f74e6a58c6118b0bde",
+      "lines": 26,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/CharacteristicsForm.php",
+      "sha256": "80ed2341da3beb0bcdc3532f11f4de075792187a9b71cb8249f5c712205aeea1",
+      "lines": 41,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/ClassificationForm.php",
+      "sha256": "a85c68e477e26b2982235731ed0f502f705e792520552d85254eb8e8e3905c14",
+      "lines": 43,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/ContentForm.php",
+      "sha256": "be6129ec190c6c2445f532caebfbeee8bd53d5956e391e46a43428e0321f65bd",
+      "lines": 66,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/MediaForm.php",
+      "sha256": "dc06e7c03bce1d23c8f1c4589ac0700924f6edae36e81cf563551db7b941e0a2",
+      "lines": 53,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/OffersForm.php",
+      "sha256": "fa25e161143273719a8fd7975d1224fb26e0ddd882a2cf97b203e8d77c7641ae",
+      "lines": 91,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/ProductMainForm.php",
+      "sha256": "a9499f6eafb6ee7bf07f8620bbce8dacdd114ae253195e5070ee87c3d0d25014",
+      "lines": 54,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/PropertiesForm.php",
+      "sha256": "49d43aece9663f81d3f306788c872e73df1075dcee6abcc8404aeb7109e83a86",
+      "lines": 87,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Components/Forms/Product/SpecificationForm.php",
+      "sha256": "2f255e82098babac5252ab73feb3e9adfdfbce3a0cb0e0ae4295104784946139",
+      "lines": 169,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/CharacteristicsForm.php",
+      "sha256": "04bf2cb961f34a8e78402317bb9ae66ef19bbc43b207d7ef1f77ec14cced808f",
+      "lines": 66,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/ClassificationForm.php",
+      "sha256": "53b68b84624b41588a0b3cf2d4dd73bac5b24547f56ba6b0fbf0f0cf13a2ed86",
+      "lines": 58,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/ContentForm.php",
+      "sha256": "3b30e3967bc9c9ad86bc88708a8993e696fb5b53345771864b7fa0daa5e312b7",
+      "lines": 204,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/MediaForm.php",
+      "sha256": "8e6c1323c8bbc3a0e705b8421a04fb4edb87b4aa7a9f0c09161ada665c46839c",
+      "lines": 80,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/OffersForm.php",
+      "sha256": "43c0075d46fe4468924edd4e3ef376976d5f82261e86ab0ff305b3eb84f5f6b2",
+      "lines": 549,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/ProductMainForm.php",
+      "sha256": "1ab002ad8dd1910de8a175ca9f5d09cb10b504dc55c34891977f037b24388bac",
+      "lines": 177,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/PropertiesForm.php",
+      "sha256": "5c851cbc9a9844058a982929e4b5493cd2a9af6574f2ce52b4ff2add84e2df6d",
+      "lines": 536,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Forms/Product/SpecificationForm.php",
+      "sha256": "969198d70f862c0e5d3722136fcf3d75cf5d46565d6a8c34b5a9e8e027f6e495",
+      "lines": 186,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Livewire/Pages/Catalog/Products/ProductPage.php",
+      "sha256": "bd82ad0a5c8f0d11ac3fb201a9c40feebe4820284a805d2dfb20443ecdb9b773",
+      "lines": 89,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Company/BusinessType.php",
+      "sha256": "1051ca5af5cf49de872adb2ee3e168ea0a32b057ffc3b1964564d385afb94e93",
+      "lines": 43,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Company/Company.php",
+      "sha256": "406b39d94948ae38d4476fc6141a853bdbaa6c4fd49e2544a0dbef8a20fac9b8",
+      "lines": 179,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/Contact.php",
+      "sha256": "97c13b77954ddbb24948b508a2fe36d21c017cc948fb78fc01e9f0ca9e12118f",
+      "lines": 117,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/SalesModeration.php",
+      "sha256": "5bf997343f679ce1858395a740f4bcb004f80559e1a7ff2053918e05e6a05527",
+      "lines": 50,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/Seller.php",
+      "sha256": "33448170d405540a63e0c8135a441a9703b14f299ac9a50809ebf09b807b4548",
+      "lines": 165,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/SellerBusinessType.php",
+      "sha256": "867e30c4195f1ca9b5976472651e345134787d71e40ec0aefcb6bb04485db558",
+      "lines": 84,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/Settings.php",
+      "sha256": "723de4cd9b0cfa1441f1a26fd382c9ccecdcc1b836dd141c77f213b6a648bf6e",
+      "lines": 74,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/Team.php",
+      "sha256": "5cfe5c95dd40699077cfc7e12517d4cd80a9b8f6b45dcc9d1bf3c2c66755d789",
+      "lines": 80,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/TeamPermission.php",
+      "sha256": "26487192f146b95d30b97e50f6662f20e45a358e09cccb13c1bc105b9ae54120",
+      "lines": 57,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Seller/Warehouse.php",
+      "sha256": "991f10277f12e7d40b33433dc40a88f142032ac2cc7bc5ff74b41eee590d3c01",
+      "lines": 64,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Shop/Info.php",
+      "sha256": "69f6410c9f7d137950e3bb680dac46a7b4e3fe7fa1556f9c3f49f907a0dadf9f",
+      "lines": 80,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Models/Shop/Shop.php",
+      "sha256": "3a29324d87922a59082f3e04b7f692d8ce64d44f322061aded95d0125a6f71fe",
+      "lines": 144,
+      "snapshot": "models-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Repositories/Collections/CollectionRepository.php",
+      "sha256": "96f24bc3293b4374de9f922912fb36cd2beb15b0081f8eabfc1a539d7069e63d",
+      "lines": 29,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Repositories/Products/ProductOffersRepository.php",
+      "sha256": "276039373b3840deb206e1de7960a571b4b88de316be51902995fd527d02ae8b",
+      "lines": 128,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Repositories/Products/ProductRepository.php",
+      "sha256": "a68d95452b2ab2ac0e66528fb2aa5df9cf9b602a476c3a029108c0a840719ad7",
+      "lines": 29,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Repositories/Sellers/RegisterRepository.php",
+      "sha256": "7fdb3692d2b0d6b0cd4163e866fbbf8e502af7de66cde10641102cbafb82c3a6",
+      "lines": 282,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/app/Repositories/Sellers/SellerRepository.php",
+      "sha256": "8861dd517ca214fa389eef93f0c6af2917329e04cdca0d816ed45b0f3a5a4144",
+      "lines": 31,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/composer.json",
+      "sha256": "ae9586a29a0218502c4f79f3a6b75dc7b37462c9b18c0f1fb7a19e56ab369ace",
+      "lines": 29,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_172009_create_sales_sellers_table.php",
+      "sha256": "7c23dc4e201bfb537d2c3075458d7530eea4ac3930c0dfb50d08a7b2195a3c74",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_174526_create_sales_companies_table.php",
+      "sha256": "74ed42ca6155238390c2a81ead726467e6cdc6bc96d0fc5d252d976936b96140",
+      "lines": 47,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_180520_create_sales_company_business_types_table.php",
+      "sha256": "0c770857e500d0b894d250db8cfcac867d1aac3b2fcaed1cce86a5ac98a394df",
+      "lines": 32,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_180531_create_sales_seller_business_types_table.php",
+      "sha256": "3d358cc9e9e29611eb1aaf9394380e95a883801d76c10d2789da4fcf6a9c6f85",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_180535_create_sales_seller_teams_table.php",
+      "sha256": "61a92090b0e112f9b153bd616cd4f249b53f0ec8ae95af190a04c5febb9a850c",
+      "lines": 34,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_180537_create_sales_seller_team_permissions_table.php",
+      "sha256": "f7cbee56c31f0c402556790bcb19c3181351b647327e46dd727a894788619541",
+      "lines": 32,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_181141_create_sales_shops_table.php",
+      "sha256": "302c6a261ed55f95cae5502edfdd52e9709d32af37d5fcc6eba69300ac4ff46e",
+      "lines": 37,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_183237_create_sales_shop_info_table.php",
+      "sha256": "4fed5273db7f7961935925d293bedd4b84eb242e1f444f26cb291ec96b67dd27",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_19_183239_create_sales_seller_warehouses_table.php",
+      "sha256": "bc38d9d932f12d000b7947ab6e388bb85807503fdc2f4d0a5ff9de643c24a88b",
+      "lines": 35,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_20_191620_create_sales_seller_settings_table.php",
+      "sha256": "1422c5ef5a83a2a19ddcb7e2776a233cb658209c9c45a9999be96cf5c5522827",
+      "lines": 36,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_10_21_071621_create_sales_seller_contacts_table.php",
+      "sha256": "e3b7560d7f92c6901dcc5985c7ea8c53d17e6798f686f87df7c45493f42e21a6",
+      "lines": 40,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/database/migrations/2025_11_27_111513_create_sales_moderations_table.php",
+      "sha256": "ea8e4a7aead8510a1306f787cdc0da63287cbc3b0f8254befe2f988d152fb444",
+      "lines": 39,
+      "snapshot": "schema-sources.md"
+    },
+    {
+      "path": "Modules/Sales/resources/views/livewire/components/forms/product/properties-form.blade.php",
+      "sha256": "e84dd27b73271761914a2ce15d04d584cc7aa3bb63c5e99d891c982628d9adda",
+      "lines": 339,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/resources/views/livewire/components/product-form.blade.php",
+      "sha256": "998912009ee0afa0eb9ba570645b43fbd879b7a49204cbc7384aac60ee8964fd",
+      "lines": 136,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "Modules/Sales/routes/web.php",
+      "sha256": "0c9aa78e9de8ba3e51845d6de1f65be7fb8cb64538aadf45a527bed8e075092e",
+      "lines": 38,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "app/Console/Commands/MakeDemo.php",
+      "sha256": "031fc24307f7f5528fe4755a662a0315890360f79d2b5b3bac8f9e46fe48e44f",
+      "lines": 469,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "app/Livewire/Pages/Catalog/ProductPage.php",
+      "sha256": "6e86d36be001e90395a57dcccf2363fa787114b5f9a85ad4dec8226effad6f0a",
+      "lines": 299,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "composer.json",
+      "sha256": "4e71e1ad4604f74799fcd3f291cb85dbde4fca128401f3fdf62465a5e134081a",
+      "lines": 142,
+      "snapshot": "workflows-sources.md"
+    },
+    {
+      "path": "tests/Feature/ProductFormTest.php",
+      "sha256": "73e4a6509f3ef4cb04b53f7b2a40e31d8d52ff3b9c25bc8dc5b5d0d15d1211e7",
+      "lines": 7,
+      "snapshot": "tests-sources.md"
+    },
+    {
+      "path": "tests/Feature/ProductOffersIntegrationTest.php",
+      "sha256": "54d5c07bb656d0fd78ec3fac2ba5b0a54e8f43d26b4078c70597fae8f1df69a5",
+      "lines": 28,
+      "snapshot": "tests-sources.md"
+    },
+    {
+      "path": "tests/Feature/Sales/Catalog/ProductPageTest.php",
+      "sha256": "c8043ecf7eeea27261d3555d27b233131fea67aa3734677e1d4f238bede3e3ef",
+      "lines": 195,
+      "snapshot": "tests-sources.md"
+    },
+    {
+      "path": "tests/Feature/Sales/Catalog/ProductsIndexTest.php",
+      "sha256": "275b87a9c357da56a66e0ba7804b9f71c21ccb4830bc3c9a57705f824e7ab130",
+      "lines": 80,
+      "snapshot": "tests-sources.md"
+    }
+  ],
+  "locked_versions": {
+    "bavix/laravel-wallet": "11.4.3",
+    "filament/filament": "v4.3.1",
+    "laravel/framework": "v12.43.1",
+    "livewire/livewire": "v3.7.2",
+    "lukepolo/laracart": "2.6.1",
+    "nwidart/laravel-modules": "v12.0.4",
+    "spatie/laravel-data": "4.18.0",
+    "spatie/laravel-medialibrary": "11.17.7",
+    "spatie/laravel-query-builder": "6.3.6",
+    "pestphp/pest": "v4.2.0"
+  },
+  "composer_lock_sha256": "a1151c8dfc0adfbfed5f2a83ca94bd1b52897c0d22ec459b8e009e964963e4cb",
+  "database_configuration_evidence": {
+    "captured_at": "2026-10-08T14:27:06.167979+00:00",
+    "head": "4e0d338c5316bb5e216239c4bfb0b62ce60c5a88",
+    "status": [
+      "?? tests/Feature/Media/"
+    ],
+    "method": "Five tracked sources, selected safe excerpts only; no .env, credential fields, config expansion, DB access or execution. Full source file SHA-256 retained for comparison.",
+    "files": [
+      {
+        "path": "config/database.php",
+        "sha256": "d6e7ca26cd95012304342e346c00f0370ee6fd10a2cdb374b267ad647ec36501",
+        "lines": 184,
+        "captured_lines": [
+          21,
+          36,
+          37,
+          47,
+          48,
+          50,
+          51,
+          67,
+          68,
+          87,
+          88,
+          90,
+          91,
+          102,
+          103
+        ],
+        "snapshot": "database-config-evidence.md",
+        "capture": "selected safe excerpts only"
+      },
+      {
+        "path": "docker-compose.yml",
+        "sha256": "cf765de2472e57b077ebe793377b1f4988472dafa2b4befc8c34f3b25268f958",
+        "lines": 238,
+        "captured_lines": [
+          42,
+          43,
+          44,
+          93,
+          94,
+          95,
+          141,
+          142,
+          143,
+          185,
+          186,
+          187,
+          210,
+          211,
+          212,
+          220,
+          222
+        ],
+        "snapshot": "database-config-evidence.md",
+        "capture": "selected safe excerpts only"
+      },
+      {
+        "path": "README.md",
+        "sha256": "25aa31fd41d72731cfb02096cec863ed912c4f49128c7a700cbab936c6efd8ca",
+        "lines": 1547,
+        "captured_lines": [
+          25,
+          77,
+          84,
+          87,
+          90
+        ],
+        "snapshot": "database-config-evidence.md",
+        "capture": "selected safe excerpts only"
+      },
+      {
+        "path": "docker/README.md",
+        "sha256": "6369f8637101b36741512769f920a8f38545bf5f63ba80112940a173775b2a2b",
+        "lines": 594,
+        "captured_lines": [
+          3,
+          21,
+          22,
+          23
+        ],
+        "snapshot": "database-config-evidence.md",
+        "capture": "selected safe excerpts only"
+      },
+      {
+        "path": "Dockerfile",
+        "sha256": "8f3ebb4bc23d3552af2403c7f817eb349c0873c36864313cf3b6f80fcf03b8bf",
+        "lines": 33,
+        "captured_lines": [
+          1
+        ],
+        "snapshot": "database-config-evidence.md",
+        "capture": "selected safe excerpts only"
+      }
+    ]
+  }
+}

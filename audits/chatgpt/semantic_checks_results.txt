@@ -1,0 +1,21 @@
+test_01_numeric_sort_is_not_lexical_sort (__main__.CommerceSemanticChecks.test_01_numeric_sort_is_not_lexical_sort) ... ok
+test_02_color_and_size_must_match_the_same_variant (__main__.CommerceSemanticChecks.test_02_color_and_size_must_match_the_same_variant) ... ok
+test_03_price_and_availability_must_match_the_selected_variant (__main__.CommerceSemanticChecks.test_03_price_and_availability_must_match_the_selected_variant) ... ok
+test_04_repeated_object_predicates_must_match_the_same_row (__main__.CommerceSemanticChecks.test_04_repeated_object_predicates_must_match_the_same_row) ... ok
+test_05_facets_count_distinct_products_not_variants (__main__.CommerceSemanticChecks.test_05_facets_count_distinct_products_not_variants) ... ok
+test_06_disjunctive_size_facet_excludes_only_the_size_filter (__main__.CommerceSemanticChecks.test_06_disjunctive_size_facet_excludes_only_the_size_filter) ... ok
+test_07_clear_is_not_missing_in_scope_fallback (__main__.CommerceSemanticChecks.test_07_clear_is_not_missing_in_scope_fallback) ... ok
+test_08_shared_warehouse_does_not_multiply_inventory (__main__.CommerceSemanticChecks.test_08_shared_warehouse_does_not_multiply_inventory) ... ok
+test_09_concurrent_last_unit_has_one_success_in_sqlite_fixture (__main__.CommerceSemanticChecks.test_09_concurrent_last_unit_has_one_success_in_sqlite_fixture) ... ok
+test_10_duplicate_command_has_no_duplicate_effect (__main__.CommerceSemanticChecks.test_10_duplicate_command_has_no_duplicate_effect) ... ok
+test_11_shipment_reduces_physical_and_reserved_once (__main__.CommerceSemanticChecks.test_11_shipment_reduces_physical_and_reserved_once) ... ok
+test_12_stocktake_can_reveal_a_shortage_without_erasing_reservations (__main__.CommerceSemanticChecks.test_12_stocktake_can_reveal_a_shortage_without_erasing_reservations) ... ok
+test_13_measurement_normalization_is_exact_for_finite_decimal_conversion (__main__.CommerceSemanticChecks.test_13_measurement_normalization_is_exact_for_finite_decimal_conversion) ... ok
+test_14_bundle_co_location_changes_availability (__main__.CommerceSemanticChecks.test_14_bundle_co_location_changes_availability) ... ok
+test_15_snapshot_projection_rejects_older_versions (__main__.CommerceSemanticChecks.test_15_snapshot_projection_rejects_older_versions) ... ok
+test_16_nullable_unique_scope_is_not_a_portable_uniqueness_guarantee (__main__.CommerceSemanticChecks.test_16_nullable_unique_scope_is_not_a_portable_uniqueness_guarantee) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.088s
+
+OK

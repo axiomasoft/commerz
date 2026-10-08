@@ -1,0 +1,6879 @@
+[
+  {
+    "id": 1195883256,
+    "full_name": "revoltify/subscriptionify",
+    "html_url": "https://github.com/revoltify/subscriptionify",
+    "description": "Feature-based subscription management for Laravel",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "1.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-06T04:29:21Z"
+  },
+  {
+    "id": 1160803052,
+    "full_name": "Foysal50x/tashil",
+    "html_url": "https://github.com/Foysal50x/tashil",
+    "description": "A comprehensive subscription management package for Laravel with built-in Redis caching, feature-gated access, usage tracking, billing, and analytics",
+    "language": "PHP",
+    "topics": [
+      "billing",
+      "laravel-package",
+      "subscription",
+      "use-tracking"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-04T04:44:10Z"
+  },
+  {
+    "id": 1110007739,
+    "full_name": "ken-de-nigerian/payzephyr",
+    "html_url": "https://github.com/ken-de-nigerian/payzephyr",
+    "description": "Unified Payments. One Simple API to rule them all.",
+    "language": "PHP",
+    "topics": [
+      "fintech",
+      "flutterwave",
+      "laravel",
+      "payment",
+      "paystack"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T11:29:17Z"
+  },
+  {
+    "id": 1144078387,
+    "full_name": "MiranSalehi/mksine",
+    "html_url": "https://github.com/MiranSalehi/mksine",
+    "description": "Laravel + Filament 5 CMS foundation: visual page builder, installable plugins & themes, hooks, menus, media library, settings, translations, and a Super Admin console. Composer package for building content-driven sites and extensible admin panels without forking Laravel.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T14:00:38Z"
+  },
+  {
+    "id": 1332984685,
+    "full_name": "MrPunyapal/laravel-auditor",
+    "html_url": "https://github.com/MrPunyapal/laravel-auditor",
+    "description": "Evidence-based audit methodology and read-only Laravel context tools for existing AI coding agents.",
+    "language": "PHP",
+    "topics": [
+      "ai-agents",
+      "audit",
+      "auditing",
+      "code-quality",
+      "context",
+      "dev-tool",
+      "laravel",
+      "mcp"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T17:56:15Z"
+  },
+  {
+    "id": 1304341126,
+    "full_name": "mathiasonea/laravel-rulebook",
+    "html_url": "https://github.com/mathiasonea/laravel-rulebook",
+    "description": "A Laravel package for selecting which code-defined business rule applies to a subject at any point in time—and explaining why.",
+    "language": "PHP",
+    "topics": [
+      "business-rules",
+      "effective-dates",
+      "eligibility",
+      "explainable-decisions",
+      "laravel",
+      "php",
+      "pricing",
+      "rule-resolution",
+      "temporal-rules"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T08:04:31Z"
+  },
+  {
+    "id": 1284990775,
+    "full_name": "square1-io/laravel-mpp",
+    "html_url": "https://github.com/square1-io/laravel-mpp",
+    "description": "Add machine payment capabilities to your Laravel APIs",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-17T09:28:18Z"
+  },
+  {
+    "id": 1256178093,
+    "full_name": "laravel/head",
+    "html_url": "https://github.com/laravel/head",
+    "description": "Head and metadata management for Laravel applications.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-26T18:55:42Z"
+  },
+  {
+    "id": 1273586859,
+    "full_name": "laravel/doctor",
+    "html_url": "https://github.com/laravel/doctor",
+    "description": "Diagnostics for Laravel applications",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-12T20:45:13Z"
+  },
+  {
+    "id": 56006251,
+    "full_name": "MarcinOrlowski/laravel-api-response-builder",
+    "html_url": "https://github.com/MarcinOrlowski/laravel-api-response-builder",
+    "description": "Builds nice, normalized and easy to consume REST JSON responses for Laravel powered APIs.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "api-helper",
+      "chained-apis",
+      "json",
+      "json-response",
+      "laravel",
+      "php",
+      "rest-api"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-17T19:40:53Z"
+  },
+  {
+    "id": 1297553204,
+    "full_name": "zaber-dev/laravel-quota",
+    "html_url": "https://github.com/zaber-dev/laravel-quota",
+    "description": "Application-level quota management for Laravel with calendar periods, Eloquent integration, middleware, and multiple storage backends.",
+    "language": "PHP",
+    "topics": [
+      "calendar-periods",
+      "database",
+      "eloquent",
+      "laravel",
+      "laravel-11",
+      "laravel-12",
+      "laravel-13",
+      "laravel-package",
+      "learn",
+      "middleware",
+      "php",
+      "quota",
+      "rate-limiting",
+      "redis",
+      "usage-limits",
+      "usage-tracking"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-15T16:29:16Z"
+  },
+  {
+    "id": 1272585317,
+    "full_name": "promptphp/intercept",
+    "html_url": "https://github.com/promptphp/intercept",
+    "description": "A modular, drop-in middleware collection for Laravel AI SDK agents. Offers middleware across security, observability, performance and guidance.",
+    "language": "PHP",
+    "topics": [
+      "ai",
+      "laravel",
+      "laravel-ai",
+      "laravel-ai-sdk",
+      "middleware",
+      "observability",
+      "pii",
+      "pii-detection",
+      "pii-redaction",
+      "prompt-injection",
+      "security",
+      "security-tools"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-27T11:48:06Z"
+  },
+  {
+    "id": 391671857,
+    "full_name": "fresns/fresns",
+    "html_url": "https://github.com/fresns/fresns",
+    "description": "Fresns core library: Cross-platform general-purpose multiple content forms social network service software",
+    "language": "PHP",
+    "topics": [
+      "bbs",
+      "communities",
+      "community",
+      "forum",
+      "group",
+      "laravel",
+      "sns",
+      "social"
+    ],
+    "default_branch": "3.x",
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "archived": false,
+    "pushed_at": "2026-06-05T22:15:11Z"
+  },
+  {
+    "id": 1244631652,
+    "full_name": "masterix21/laravel-entitlements",
+    "html_url": "https://github.com/masterix21/laravel-entitlements",
+    "description": "Simple and flexible entitlement management for Laravel applications, with support for plans, features, limits, and usage tracking.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-01T00:35:53Z"
+  },
+  {
+    "id": 1274572099,
+    "full_name": "ludoguenet/usaige",
+    "html_url": "https://github.com/ludoguenet/usaige",
+    "description": "USAIGE — Laravel AI SDK Usage Tracker",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-19T16:54:50Z"
+  },
+  {
+    "id": 1255359164,
+    "full_name": "shipfastlabs/toolkit",
+    "html_url": "https://github.com/shipfastlabs/toolkit",
+    "description": "Reusable AI tools for the Laravle AI SDK",
+    "language": "PHP",
+    "topics": [
+      "agents",
+      "ai-sdk",
+      "laravel",
+      "tools",
+      "toolset"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T15:58:31Z"
+  },
+  {
+    "id": 652194733,
+    "full_name": "kettasoft/filterable",
+    "html_url": "https://github.com/kettasoft/filterable",
+    "description": "A powerful and flexible Laravel package for advanced, clean, and scalable filtering of Eloquent models using multiple customizable engines.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "engines",
+      "filter",
+      "filter-design",
+      "filterable",
+      "filtering",
+      "filtering-data",
+      "filters",
+      "filtersystem",
+      "laravel",
+      "model",
+      "php",
+      "query-builder",
+      "search",
+      "search-engine",
+      "searchable",
+      "searching"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-12T11:38:58Z"
+  },
+  {
+    "id": 1245232114,
+    "full_name": "mokhdesigns/laravel-migralign",
+    "html_url": "https://github.com/mokhdesigns/laravel-migralign",
+    "description": null,
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-04T06:55:23Z"
+  },
+  {
+    "id": 1253520333,
+    "full_name": "shipfastlabs/parsel",
+    "html_url": "https://github.com/shipfastlabs/parsel",
+    "description": "A fast, helpful, and open-source document parser for PHP",
+    "language": "PHP",
+    "topics": [
+      "docs",
+      "ocr",
+      "pdf",
+      "text-extarction"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T07:17:40Z"
+  },
+  {
+    "id": 1257498079,
+    "full_name": "PeteBishwhip/laradocs",
+    "html_url": "https://github.com/PeteBishwhip/laradocs",
+    "description": "Maintain beautiful, version-controlled documentation alongside your Laravel codebase. Markdown in, a polished docs site out.",
+    "language": "PHP",
+    "topics": [
+      "documentation",
+      "laravel",
+      "markdown",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T21:44:28Z"
+  },
+  {
+    "id": 1264168792,
+    "full_name": "lattice-php/lattice",
+    "html_url": "https://github.com/lattice-php/lattice",
+    "description": "Server Driven UI with Laravel & React",
+    "language": "TypeScript",
+    "topics": [
+      "laravel",
+      "react",
+      "ui",
+      "ui-integration"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-12T13:18:55Z"
+  },
+  {
+    "id": 1244609949,
+    "full_name": "Akshayp2002/scheduler-list-laravel",
+    "html_url": "https://github.com/Akshayp2002/scheduler-list-laravel",
+    "description": "Laravel Scheduler viewer",
+    "language": "Blade",
+    "topics": [
+      "laravel",
+      "laravel-package",
+      "php",
+      "scheduler"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-26T07:13:06Z"
+  },
+  {
+    "id": 293022479,
+    "full_name": "shopperlabs/shopper",
+    "html_url": "https://github.com/shopperlabs/shopper",
+    "description": "Headless e-commerce administration built with Laravel to create and manage online store. ",
+    "language": "PHP",
+    "topics": [
+      "admin-dashboard",
+      "e-commerce",
+      "laravel",
+      "laravel-ecommerce",
+      "laravel-shopper",
+      "livewire",
+      "tailwindcss"
+    ],
+    "default_branch": "2.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T13:05:45Z"
+  },
+  {
+    "id": 193061961,
+    "full_name": "openclassify/openclassify",
+    "html_url": "https://github.com/openclassify/openclassify",
+    "description": "OpenClassify is modular and advanced open source classified platform with Laravel 13 & PHP 8.5",
+    "language": "PHP",
+    "topics": [
+      "car",
+      "classified",
+      "classified-ads",
+      "classified-script",
+      "classified-software",
+      "classified-web-app",
+      "classifieds",
+      "job",
+      "laravel",
+      "laravel-classified",
+      "listings",
+      "php",
+      "php7",
+      "php8",
+      "pyrocms",
+      "real-estate"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-09-20T17:57:40Z"
+  },
+  {
+    "id": 1225705009,
+    "full_name": "WendellAdriel/laravel-expressive",
+    "html_url": "https://github.com/WendellAdriel/laravel-expressive",
+    "description": "Typed Objects for Eloquent",
+    "language": "PHP",
+    "topics": [
+      "data-mapper",
+      "dto",
+      "eloquent",
+      "eloquent-orm",
+      "laravel",
+      "laravel-package"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-10T18:54:13Z"
+  },
+  {
+    "id": 129502391,
+    "full_name": "kylekatarnls/business-day",
+    "html_url": "https://github.com/kylekatarnls/business-day",
+    "description": "Carbon mixin to handle business days",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-23T07:52:51Z"
+  },
+  {
+    "id": 349793148,
+    "full_name": "ryangjchandler/orbit",
+    "html_url": "https://github.com/ryangjchandler/orbit",
+    "description": "A flat-file database driver for Eloquent. 🗄",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "1.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-19T19:12:03Z"
+  },
+  {
+    "id": 1212389344,
+    "full_name": "JustSteveKing/api-skill",
+    "html_url": "https://github.com/JustSteveKing/api-skill",
+    "description": "An opinionated agent skill that encodes production-ready patterns for building REST APIs in Laravel 13+.",
+    "language": null,
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-22T10:20:14Z"
+  },
+  {
+    "id": 1189879273,
+    "full_name": "YanGusik/laravel-spawn",
+    "html_url": "https://github.com/YanGusik/laravel-spawn",
+    "description": "Laravel Spawn is an async runtime for Laravel powered by PHP TrueAsync. It runs multiple requests concurrently in isolated coroutines within a single worker, eliminating shared state issues while delivering high performance without threads or process overhead.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-10-06T19:12:08Z"
+  },
+  {
+    "id": 1173763111,
+    "full_name": "php-debugger/php-debugger",
+    "html_url": "https://github.com/php-debugger/php-debugger",
+    "description": "Zero-overhead debugging for PHP",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T04:46:49Z"
+  },
+  {
+    "id": 1164718781,
+    "full_name": "JustSteveKing/kit",
+    "html_url": "https://github.com/JustSteveKing/kit",
+    "description": "Opinionated Laravel API starter kit for token-based authentication with strong defaults around API design, documentation, testing, and security.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-10-08T10:21:20Z"
+  },
+  {
+    "id": 277400779,
+    "full_name": "InterNACHI/modular",
+    "html_url": "https://github.com/InterNACHI/modular",
+    "description": "Modularize your Laravel application",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-21T14:59:12Z"
+  },
+  {
+    "id": 815452535,
+    "full_name": "Hi-Folks/data-block",
+    "html_url": "https://github.com/Hi-Folks/data-block",
+    "description": "PHP Package for handling, querying, filtering, and setting nested data structures",
+    "language": "PHP",
+    "topics": [
+      "data",
+      "data-structure",
+      "hacktoberfest",
+      "json-data",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-22T20:44:28Z"
+  },
+  {
+    "id": 1121621410,
+    "full_name": "Grazulex/laravel-apiroute",
+    "html_url": "https://github.com/Grazulex/laravel-apiroute",
+    "description": "Complete API versioning lifecycle management for Laravel",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "laravel",
+      "package"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T09:24:47Z"
+  },
+  {
+    "id": 1090596349,
+    "full_name": "franbarbalopez/mirror",
+    "html_url": "https://github.com/franbarbalopez/mirror",
+    "description": "Mirror is an elegant user impersonation package for Laravel. It allows administrators to seamlessly log in as other users to troubleshoot issues, provide support, or test user experiences",
+    "language": "PHP",
+    "topics": [
+      "impersonate",
+      "impersonation",
+      "laravel",
+      "laravel-package",
+      "php"
+    ],
+    "default_branch": "2.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-30T18:10:33Z"
+  },
+  {
+    "id": 889594660,
+    "full_name": "Climactic/laravel-credits",
+    "html_url": "https://github.com/Climactic/laravel-credits",
+    "description": "A ledger-based Laravel package for managing credit-based systems in your application.",
+    "language": "PHP",
+    "topics": [
+      "credit-management-system",
+      "hacktoberfest",
+      "laravel",
+      "laravel-credits",
+      "laravel-package"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T06:17:15Z"
+  },
+  {
+    "id": 969601176,
+    "full_name": "EG-Mohamed/Referenceable",
+    "html_url": "https://github.com/EG-Mohamed/Referenceable",
+    "description": "Referenceable Is an advanced Laravel package for generating customizable model reference numbers with flexible formats, sequential numbering, and comprehensive configuration options",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-package"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-05T12:57:09Z"
+  },
+  {
+    "id": 1048069453,
+    "full_name": "hdaklue/porter",
+    "html_url": "https://github.com/hdaklue/porter",
+    "description": "Lightweight Access Control for Laravel — no bloat, no 🤯 yet 💪 ",
+    "language": "PHP",
+    "topics": [
+      "access-control",
+      "authorization",
+      "laravel",
+      "laravel-package",
+      "laravel11",
+      "laravel12"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2025-10-21T14:06:27Z"
+  },
+  {
+    "id": 1032633447,
+    "full_name": "Grazulex/laravel-multipersona",
+    "html_url": "https://github.com/Grazulex/laravel-multipersona",
+    "description": "🎭 Laravel MultiPersona is a lightweight context-layer system for Laravel users.   It allows a single user to switch between different roles, accounts, or tenants dynamically, without creating multiple logins or sessions.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php",
+      "user-management"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T09:37:39Z"
+  },
+  {
+    "id": 974203080,
+    "full_name": "php-mcp/server",
+    "html_url": "https://github.com/php-mcp/server",
+    "description": "Core PHP implementation for the Model Context Protocol (MCP) server",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-08-09T21:46:22Z"
+  },
+  {
+    "id": 992203739,
+    "full_name": "aliziodev/laravel-taxonomy",
+    "html_url": "https://github.com/aliziodev/laravel-taxonomy",
+    "description": "Laravel package for managing taxonomies, categories, tags, and hierarchical data structures. The package implements a nested-set model for optimal query performance and provides a rich API for organizing and querying hierarchical data in Laravel applications.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-19T19:35:11Z"
+  },
+  {
+    "id": 845734396,
+    "full_name": "pdphilip/elasticlens",
+    "html_url": "https://github.com/pdphilip/elasticlens",
+    "description": "ElasticLens for Laravel: Full-text Elasticsearch for your SQL models",
+    "language": "PHP",
+    "topics": [
+      "elasticsearch",
+      "laravel",
+      "search"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-20T15:55:39Z"
+  },
+  {
+    "id": 983740359,
+    "full_name": "PHP-WebRTC/webrtc",
+    "html_url": "https://github.com/PHP-WebRTC/webrtc",
+    "description": "A pure PHP implementation of WebRTC",
+    "language": "PHP",
+    "topics": [
+      "live-streaming",
+      "php",
+      "php8-4",
+      "webrtc",
+      "webrtc-video"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2025-10-08T22:00:42Z"
+  },
+  {
+    "id": 346887069,
+    "full_name": "serversideup/financial-freedom",
+    "html_url": "https://github.com/serversideup/financial-freedom",
+    "description": "🔥🔥🔥 An open source alternative to Mint, YNAB, and more. Stay on budget and build wealth without sacrificing your privacy.",
+    "language": "Vue",
+    "topics": [
+      "budgeting",
+      "finance",
+      "financial-independence",
+      "laravel",
+      "vuejs"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-09-28T15:15:59Z"
+  },
+  {
+    "id": 789582601,
+    "full_name": "beacon-hq/bag",
+    "html_url": "https://github.com/beacon-hq/bag",
+    "description": "Immutable Value Objects for PHP",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-22T20:57:15Z"
+  },
+  {
+    "id": 849355210,
+    "full_name": "zero-to-prod/data-model",
+    "html_url": "https://github.com/zero-to-prod/data-model",
+    "description": "Transform Data to Type-Safe DTOs",
+    "language": "PHP",
+    "topics": [
+      "dto",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-02T00:41:16Z"
+  },
+  {
+    "id": 969651436,
+    "full_name": "YorCreative/Laravel-Argonaut-DTO",
+    "html_url": "https://github.com/YorCreative/Laravel-Argonaut-DTO",
+    "description": "Argonaut is a lightweight Data Transfer Object (DTO) package for Laravel that supports nested casting, recursive serialization, and validation out of the box. Ideal for service layers, APIs, and clean architecture workflows.",
+    "language": "PHP",
+    "topics": [
+      "archict",
+      "architecture-patterns",
+      "backend-development",
+      "data-transfer-object",
+      "dto",
+      "laravel",
+      "laravel-architecture",
+      "laravel-dto",
+      "laravel-package",
+      "nested-dto",
+      "object-oriented-programming",
+      "php-dto",
+      "serialization",
+      "service-layer",
+      "solid-principles",
+      "validation"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-12T22:32:13Z"
+  },
+  {
+    "id": 947013716,
+    "full_name": "willvincent/laravel-unique",
+    "html_url": "https://github.com/willvincent/laravel-unique",
+    "description": "Provides a model trait to automatically append a value to model values that should be unique.",
+    "language": "PHP",
+    "topics": [
+      "deduplication",
+      "eloquent",
+      "laravel",
+      "model-observer",
+      "multi-value-constraint",
+      "multitenant",
+      "trait"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T16:14:11Z"
+  },
+  {
+    "id": 948508507,
+    "full_name": "justbetter/laravel-unique-values",
+    "html_url": "https://github.com/justbetter/laravel-unique-values",
+    "description": "Generate unique values with support for concurrency",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-02T11:11:29Z"
+  },
+  {
+    "id": 920995405,
+    "full_name": "aureuserp/aureuserp",
+    "html_url": "https://github.com/aureuserp/aureuserp",
+    "description": "Free and Open Source ERP platform",
+    "language": "PHP",
+    "topics": [
+      "accounting",
+      "erp",
+      "erp-software",
+      "filamentphp",
+      "hrm",
+      "inventory-management",
+      "invoice",
+      "laravel",
+      "maintenance",
+      "manufacturing",
+      "open-source-erp",
+      "pms",
+      "purchase-order",
+      "recruitment",
+      "sale-or",
+      "sales",
+      "warehouse-management"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-30T12:03:22Z"
+  },
+  {
+    "id": 930448708,
+    "full_name": "mrmarchone/laravel-auto-crud",
+    "html_url": "https://github.com/mrmarchone/laravel-auto-crud",
+    "description": "Laravel Auto CRUD Generator is a package that simplifies CRUD (Create, Read, Update, Delete) operations for your Laravel application. With a single command, you can generate all necessary files and logic for a selected model, reducing development time and effort.",
+    "language": "PHP",
+    "topics": [
+      "laravel"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-17T23:40:20Z"
+  },
+  {
+    "id": 860700500,
+    "full_name": "benbjurstrom/otpz",
+    "html_url": "https://github.com/benbjurstrom/otpz",
+    "description": "🔒 First Factor One-Time Passwords for Laravel (Passwordless OTP Login)",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-15T14:30:44Z"
+  },
+  {
+    "id": 915554732,
+    "full_name": "avocet-shores/laravel-rewind",
+    "html_url": "https://github.com/avocet-shores/laravel-rewind",
+    "description": "Version control for Eloquent models. Rewind, fast-forward, restore, diff, and query point-in-time state.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "eloquent-models",
+      "eloquent-orm",
+      "laravel",
+      "laravel-framework",
+      "laravel-package",
+      "versioning"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T14:13:41Z"
+  },
+  {
+    "id": 885870340,
+    "full_name": "codeartbtw/laravel-debounce",
+    "html_url": "https://github.com/codeartbtw/laravel-debounce",
+    "description": "a laravel package that gives you a debounce effect on jobs, notifications and artisan commands with a nice report of occurrences.",
+    "language": "PHP",
+    "topics": [
+      "artisan-commands",
+      "composer",
+      "debounce",
+      "laravel",
+      "notifications",
+      "package",
+      "php",
+      "queues"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-29T23:36:24Z"
+  },
+  {
+    "id": 907562511,
+    "full_name": "peckphp/peck",
+    "html_url": "https://github.com/peckphp/peck",
+    "description": "Peck is a powerful CLI tool designed to identify pure wording or spelling (grammar) mistakes in your codebase.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-13T21:01:01Z"
+  },
+  {
+    "id": 899576499,
+    "full_name": "AustinW/laravel-union-paginator",
+    "html_url": "https://github.com/AustinW/laravel-union-paginator",
+    "description": "UnionPaginator combines data from multiple Eloquent models into a single unified query using SQL unions, allowing for consistent pagination and customization across diverse data sources.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-07-15T05:58:00Z"
+  },
+  {
+    "id": 740655523,
+    "full_name": "wirechat/wirechat",
+    "html_url": "https://github.com/wirechat/wirechat",
+    "description": "A Laravel Livewire Chat messaging ecosystem package ",
+    "language": "PHP",
+    "topics": [
+      "aplinejs",
+      "chat",
+      "chat-app",
+      "chat-application",
+      "laravel",
+      "laravel-package",
+      "livewire",
+      "livewire-components",
+      "tailwindcss",
+      "websocket"
+    ],
+    "default_branch": "0.6x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T18:56:11Z"
+  },
+  {
+    "id": 874283332,
+    "full_name": "OussamaMater/Laravel-Tips",
+    "html_url": "https://github.com/OussamaMater/Laravel-Tips",
+    "description": "Daily Laravel and PHP tips.",
+    "language": "Shell",
+    "topics": [
+      "laravel",
+      "pestphp",
+      "php",
+      "tips"
+    ],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-05-08T17:45:13Z"
+  },
+  {
+    "id": 642076110,
+    "full_name": "sprout-laravel/sprout",
+    "html_url": "https://github.com/sprout-laravel/sprout",
+    "description": "A flexible, seamless and easy to use multitenancy solution for Laravel",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-multi-tenancy",
+      "laravel-multi-tenant",
+      "laravel-multitenancy",
+      "laravel-package",
+      "multi-tenancy",
+      "multitenancy",
+      "package",
+      "php",
+      "php8"
+    ],
+    "default_branch": "1.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-03T11:09:07Z"
+  },
+  {
+    "id": 664571619,
+    "full_name": "tempestphp/tempest-framework",
+    "html_url": "https://github.com/tempestphp/tempest-framework",
+    "description": "The PHP framework that gets out of your way",
+    "language": "PHP",
+    "topics": [
+      "framework",
+      "mvc",
+      "php"
+    ],
+    "default_branch": "3.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-02T12:52:24Z"
+  },
+  {
+    "id": 181287524,
+    "full_name": "yiisoft/mailer",
+    "html_url": "https://github.com/yiisoft/mailer",
+    "description": "Generic mailer",
+    "language": "PHP",
+    "topics": [
+      "email",
+      "email-sender",
+      "hacktoberfest",
+      "mail",
+      "mailer",
+      "yii3"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2026-09-04T14:41:56Z"
+  },
+  {
+    "id": 509882147,
+    "full_name": "cerbero90/enum",
+    "html_url": "https://github.com/cerbero90/enum",
+    "description": "🎲 Zero-dependencies package to supercharge enum functionalities.",
+    "language": "PHP",
+    "topics": [
+      "enum",
+      "enumeration",
+      "php"
+    ],
+    "default_branch": "develop",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-11-25T11:14:52Z"
+  },
+  {
+    "id": 833004587,
+    "full_name": "unopim/unopim",
+    "html_url": "https://github.com/unopim/unopim",
+    "description": "Open source Product Information Management (PIM) and Digital Asset Management (DAM) platform built on Laravel — manage, enrich, and scale product data and digital assets beyond 10 million products. Free forever.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "open-source",
+      "opensource",
+      "php",
+      "pim",
+      "product",
+      "product-information-management",
+      "product-management",
+      "pxm"
+    ],
+    "default_branch": "3.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:15:24Z"
+  },
+  {
+    "id": 709147463,
+    "full_name": "HiEventsDev/Hi.Events",
+    "html_url": "https://github.com/HiEventsDev/Hi.Events",
+    "description": "Open-source event management and ticket selling platform — perfect for concerts, conferences, and everything in between 🎟️  If you find this project helpful, please consider giving us a star ⭐️ ",
+    "language": "PHP",
+    "topics": [
+      "attendize-alternative",
+      "door-management",
+      "event-check-in",
+      "event-management",
+      "event-registration",
+      "event-ticketing",
+      "eventbrite-alternative",
+      "events",
+      "laravel",
+      "open-source",
+      "php",
+      "react",
+      "self-hosted",
+      "sell-tickets",
+      "sell-tickets-online",
+      "ticket-selling",
+      "ticketing-system",
+      "tickettailor-alternative",
+      "tito-alternative"
+    ],
+    "default_branch": "develop",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T16:50:48Z"
+  },
+  {
+    "id": 771720975,
+    "full_name": "pinkary-project/pinkary.com",
+    "html_url": "https://github.com/pinkary-project/pinkary.com",
+    "description": "Create a landing page for all your links and connect with like-minded people without the noise.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php",
+      "social-network"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T13:14:24Z"
+  },
+  {
+    "id": 521720102,
+    "full_name": "dedoc/scramble",
+    "html_url": "https://github.com/dedoc/scramble",
+    "description": "Modern Laravel OpenAPI (Swagger) documentation generator. No PHPDoc annotations required. ",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "generator",
+      "laravel",
+      "openapi",
+      "swagger"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T13:32:09Z"
+  },
+  {
+    "id": 43743138,
+    "full_name": "spatie/laravel-fractal",
+    "html_url": "https://github.com/spatie/laravel-fractal",
+    "description": "An easy to use Fractal wrapper built for Laravel and Lumen applications",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "fractal",
+      "laravel",
+      "lumen",
+      "php",
+      "transform-data"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-26T09:48:12Z"
+  },
+  {
+    "id": 779243646,
+    "full_name": "Lakshan-Madushanka/laravel-comments",
+    "html_url": "https://github.com/Lakshan-Madushanka/laravel-comments",
+    "description": "Integrate seamless commenting functionality into your Laravel project",
+    "language": "PHP",
+    "topics": [
+      "comment-system",
+      "laravel",
+      "livewire3"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-02T17:38:48Z"
+  },
+  {
+    "id": 70239358,
+    "full_name": "cytopia/devilbox",
+    "html_url": "https://github.com/cytopia/devilbox",
+    "description": "A modern Docker LAMP stack and MEAN stack for local development",
+    "language": "PHP",
+    "topics": [
+      "apache",
+      "devilbox",
+      "docker",
+      "docker-compose",
+      "docker-lamp",
+      "lamp",
+      "lamp-stack",
+      "lemp",
+      "lemp-stack",
+      "mariadb",
+      "mean-stack",
+      "mysql",
+      "nginx",
+      "php",
+      "php-docker-stack",
+      "php7",
+      "php71",
+      "php72",
+      "postgresql",
+      "redis"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-04-19T13:46:30Z"
+  },
+  {
+    "id": 148434477,
+    "full_name": "nadar/quill-delta-parser",
+    "html_url": "https://github.com/nadar/quill-delta-parser",
+    "description": "A PHP library to parse and render Quill WYSIWYG Deltas into HTML - Flexibel and extendible for custom elements.",
+    "language": "PHP",
+    "topics": [
+      "delta",
+      "hacktoberfest",
+      "html",
+      "parser",
+      "php",
+      "quill",
+      "quill-delta",
+      "quill-editor"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-30T06:04:31Z"
+  },
+  {
+    "id": 779797165,
+    "full_name": "ijpatricio/mingle",
+    "html_url": "https://github.com/ijpatricio/mingle",
+    "description": "Use JS components with Vue or React in a Laravel Livewire and/or Filament application",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-28T13:25:12Z"
+  },
+  {
+    "id": 805549842,
+    "full_name": "tomloprod/colority",
+    "html_url": "https://github.com/tomloprod/colority",
+    "description": "Colority it's a PHP library that allows you to: transform and validate colors, obtain the best contrast color (using contrast ratio from WCAG 2.0 standard), extract colors from images and more.",
+    "language": "PHP",
+    "topics": [
+      "accessibility",
+      "avatar-generator",
+      "color-conversion",
+      "color-library",
+      "color-manipulation",
+      "colors",
+      "contrast-ratio",
+      "fluent-api",
+      "gradient",
+      "image-processing",
+      "palette",
+      "php",
+      "php8",
+      "wcag"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-09T14:49:30Z"
+  },
+  {
+    "id": 571804870,
+    "full_name": "TomasVotruba/type-coverage",
+    "html_url": "https://github.com/TomasVotruba/type-coverage",
+    "description": "PHPStan extension to require minimal type-coverage",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T12:01:48Z"
+  },
+  {
+    "id": 401547596,
+    "full_name": "DirectoryTree/Authorization",
+    "html_url": "https://github.com/DirectoryTree/Authorization",
+    "description": "Easy, native Laravel user authorization.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-26T20:33:20Z"
+  },
+  {
+    "id": 416893898,
+    "full_name": "revoltphp/event-loop",
+    "html_url": "https://github.com/revoltphp/event-loop",
+    "description": "Revolt is a rock-solid event loop for concurrent PHP applications.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T09:10:38Z"
+  },
+  {
+    "id": 770946179,
+    "full_name": "CodeWithKyrian/transformers-php",
+    "html_url": "https://github.com/CodeWithKyrian/transformers-php",
+    "description": "Transformers PHP is a toolkit for PHP developers to add machine learning magic to their projects easily. ",
+    "language": "PHP",
+    "topics": [
+      "huggingface",
+      "ml",
+      "php",
+      "transformers"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "archived": false,
+    "pushed_at": "2025-09-15T15:46:12Z"
+  },
+  {
+    "id": 683318271,
+    "full_name": "rupadana/filament-api-service",
+    "html_url": "https://github.com/rupadana/filament-api-service",
+    "description": "Filament API Service is a powerful yet simple package that enables automatic API generation for FilamentPHP resources. It eliminates the need for manual route registration and provides built-in support for authentication, authorization, filtering, sorting, and more.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T11:22:45Z"
+  },
+  {
+    "id": 97311017,
+    "full_name": "rectorphp/rector",
+    "html_url": "https://github.com/rectorphp/rector",
+    "description": "Instant Upgrades and Automated Refactoring of any PHP 5.3+ code",
+    "language": "PHP",
+    "topics": [
+      "ast",
+      "automated-upgrades",
+      "instant-upgrades",
+      "php",
+      "rector",
+      "upgrade"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:57:34Z"
+  },
+  {
+    "id": 714464495,
+    "full_name": "hirethunk/verbs",
+    "html_url": "https://github.com/hirethunk/verbs",
+    "description": "Verbs is an event sourcing package for PHP artisans",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-20T18:37:54Z"
+  },
+  {
+    "id": 747622251,
+    "full_name": "LingMyat/Filament-Starter-Kit",
+    "html_url": "https://github.com/LingMyat/Filament-Starter-Kit",
+    "description": "Starter Kit with Multi-Tenant, Role, Permission, Exception  ",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-03-07T07:44:53Z"
+  },
+  {
+    "id": 482085436,
+    "full_name": "awcodes/filament-tiptap-editor",
+    "html_url": "https://github.com/awcodes/filament-tiptap-editor",
+    "description": "A Rich Text Editor plugin for Filament Forms.",
+    "language": "PHP",
+    "topics": [
+      "filament",
+      "filament-plugin"
+    ],
+    "default_branch": "3.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-21T20:07:54Z"
+  },
+  {
+    "id": 633349575,
+    "full_name": "yiisoft/hydrator",
+    "html_url": "https://github.com/yiisoft/hydrator",
+    "description": "Create and populate objects with type casting, mapping and dependencies resolving support.",
+    "language": "PHP",
+    "topics": [
+      "hydrator",
+      "yii3"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-03T10:40:59Z"
+  },
+  {
+    "id": 764917970,
+    "full_name": "typhoon-php/typhoon",
+    "html_url": "https://github.com/typhoon-php/typhoon",
+    "description": "Ultimate type system and reflection for PHP",
+    "language": "PHP",
+    "topics": [
+      "php",
+      "reflection",
+      "types"
+    ],
+    "default_branch": "0.4.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-09-07T17:28:10Z"
+  },
+  {
+    "id": 748726027,
+    "full_name": "php-static-analysis/attributes",
+    "html_url": "https://github.com/php-static-analysis/attributes",
+    "description": "Attributes used for static analysis",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-06-06T10:38:40Z"
+  },
+  {
+    "id": 720005397,
+    "full_name": "mokhosh/filament-kanban",
+    "html_url": "https://github.com/mokhosh/filament-kanban",
+    "description": "Add kanban boards to your Filament pages",
+    "language": "PHP",
+    "topics": [
+      "filament-plugin",
+      "filamentphp",
+      "kanban",
+      "kanban-board",
+      "laravel"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T15:32:51Z"
+  },
+  {
+    "id": 501115392,
+    "full_name": "invaders-xx/filament-kanban-board",
+    "html_url": "https://github.com/invaders-xx/filament-kanban-board",
+    "description": null,
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-07-08T20:11:21Z"
+  },
+  {
+    "id": 743068704,
+    "full_name": "Safemood/discountify",
+    "html_url": "https://github.com/Safemood/discountify",
+    "description": "Laravel package for dynamic discounts with custom conditions.",
+    "language": "PHP",
+    "topics": [
+      "ecommerce",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-24T15:44:36Z"
+  },
+  {
+    "id": 461584280,
+    "full_name": "archtechx/enums",
+    "html_url": "https://github.com/archtechx/enums",
+    "description": "Helper traits for making PHP enums more lovable.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-06-06T23:16:35Z"
+  },
+  {
+    "id": 737607664,
+    "full_name": "square1-io/laravel-idempotency",
+    "html_url": "https://github.com/square1-io/laravel-idempotency",
+    "description": "Create more robust Laravel APIs by adding Idempotency support.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T15:19:18Z"
+  },
+  {
+    "id": 725853101,
+    "full_name": "HPWebdeveloper/laravel-pay-pocket",
+    "html_url": "https://github.com/HPWebdeveloper/laravel-pay-pocket",
+    "description": "Modern multi-wallet machine | Detailed logging | payments capabilities - 19k installation - Laravel 10,11,12 ",
+    "language": "PHP",
+    "topics": [
+      "balance",
+      "deposit",
+      "laravel",
+      "laravel-wallet",
+      "multi-wallet",
+      "pay",
+      "payment",
+      "php",
+      "pocket",
+      "purchase",
+      "wallet",
+      "withdraw"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-27T00:42:52Z"
+  },
+  {
+    "id": 30719010,
+    "full_name": "gherkins/regexpbuilderphp",
+    "html_url": "https://github.com/gherkins/regexpbuilderphp",
+    "description": "🦉 human-readable regular expressions",
+    "language": "PHP",
+    "topics": [
+      "human-readable",
+      "php",
+      "regex",
+      "regular-expression",
+      "regular-expressions"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-12-19T10:22:13Z"
+  },
+  {
+    "id": 345794709,
+    "full_name": "serversideup/docker-php",
+    "html_url": "https://github.com/serversideup/docker-php",
+    "description": "🐳 Production-ready Docker images for PHP. Optimized for Laravel, WordPress, and more!",
+    "language": "Shell",
+    "topics": [
+      "docker",
+      "docker-image",
+      "laravel",
+      "nginx",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T15:36:23Z"
+  },
+  {
+    "id": 41589337,
+    "full_name": "BookStackApp/BookStack",
+    "html_url": "https://github.com/BookStackApp/BookStack",
+    "description": "NOW MANAGED ON CODEBERG",
+    "language": "PHP",
+    "topics": [
+      "bookstack",
+      "documentation",
+      "laravel",
+      "php",
+      "selfhosted",
+      "wiki"
+    ],
+    "default_branch": "development",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T10:23:27Z"
+  },
+  {
+    "id": 674405347,
+    "full_name": "capsulescodes/articles",
+    "html_url": "https://github.com/capsulescodes/articles",
+    "description": "Capsules articles example projects",
+    "language": null,
+    "topics": [
+      "articles",
+      "inertiajs",
+      "laravel",
+      "tailwindcss",
+      "tutorials",
+      "vuejs"
+    ],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-10-02T13:05:10Z"
+  },
+  {
+    "id": 544207061,
+    "full_name": "waterholeforum/core",
+    "html_url": "https://github.com/waterholeforum/core",
+    "description": "The core Waterhole package.",
+    "language": "PHP",
+    "topics": [
+      "community",
+      "forum",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "0.7",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-09-14T06:03:36Z"
+  },
+  {
+    "id": 473949053,
+    "full_name": "php/frankenphp",
+    "html_url": "https://github.com/php/frankenphp",
+    "description": "🧟 The modern PHP app server",
+    "language": "Go",
+    "topics": [
+      "caddy",
+      "frankenphp",
+      "go",
+      "php",
+      "sapi",
+      "worker"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T07:49:20Z"
+  },
+  {
+    "id": 159606650,
+    "full_name": "hyperf/hyperf",
+    "html_url": "https://github.com/hyperf/hyperf",
+    "description": "🚀 A coroutine framework that focuses on hyperspeed and flexibility. Building microservice or middleware with ease.",
+    "language": "PHP",
+    "topics": [
+      "amqp",
+      "annotation",
+      "aop",
+      "attributes",
+      "coroutine",
+      "dependency-injection",
+      "framework",
+      "grpc",
+      "hyperf",
+      "json-rpc",
+      "microservice",
+      "microservices",
+      "opentracing",
+      "php",
+      "psr-14",
+      "psr-15",
+      "psr-7",
+      "swoole",
+      "swow",
+      "websocket"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-15T08:33:36Z"
+  },
+  {
+    "id": 183126028,
+    "full_name": "staudenmeir/laravel-adjacency-list",
+    "html_url": "https://github.com/staudenmeir/laravel-adjacency-list",
+    "description": "Recursive Laravel Eloquent relationships with CTEs",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T19:31:26Z"
+  },
+  {
+    "id": 139709518,
+    "full_name": "imanghafoori1/laravel-heyman",
+    "html_url": "https://github.com/imanghafoori1/laravel-heyman",
+    "description": "Declarative style of authorization and validation in laravel.",
+    "language": "PHP",
+    "topics": [
+      "access-control-list",
+      "authorization",
+      "eloquent-validation",
+      "laravel",
+      "laravel-acl",
+      "laravel-authorization",
+      "laravel-eloquent-validation",
+      "laravel-gate",
+      "laravel-package",
+      "laravel-roles",
+      "laravel-roles-permissions",
+      "laravel-validation",
+      "php",
+      "tell-dont-ask"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-30T13:14:31Z"
+  },
+  {
+    "id": 192333549,
+    "full_name": "Astrotomic/laravel-translatable",
+    "html_url": "https://github.com/Astrotomic/laravel-translatable",
+    "description": "A Laravel package for multilingual models",
+    "language": "PHP",
+    "topics": [
+      "database",
+      "eloquent",
+      "hacktoberfest",
+      "language",
+      "laravel",
+      "laravel-translatable",
+      "multilanguage",
+      "multilingual",
+      "multilingual-models",
+      "package",
+      "php",
+      "translated-attributes",
+      "translation",
+      "treeware"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-14T20:50:11Z"
+  },
+  {
+    "id": 37666866,
+    "full_name": "lukepolo/laracart",
+    "html_url": "https://github.com/lukepolo/laracart",
+    "description": "Laravel Shopping Cart Package ",
+    "language": "PHP",
+    "topics": [
+      "coupons",
+      "discounts",
+      "laravel",
+      "laravel-shopping-cart",
+      "modifiers",
+      "taxation"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-25T18:07:24Z"
+  },
+  {
+    "id": 631685829,
+    "full_name": "Lomkit/laravel-rest-api",
+    "html_url": "https://github.com/Lomkit/laravel-rest-api",
+    "description": "Generate Api in seconds",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "graphql",
+      "laravel",
+      "rest"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-17T09:01:49Z"
+  },
+  {
+    "id": 462440522,
+    "full_name": "hybridly/hybridly",
+    "html_url": "https://github.com/hybridly/hybridly",
+    "description": "Solution to develop server-driven, client-rendered applications",
+    "language": "PHP",
+    "topics": [
+      "hybrid",
+      "hybridly",
+      "laravel",
+      "spa",
+      "vite",
+      "vue"
+    ],
+    "default_branch": "0.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-27T22:11:48Z"
+  },
+  {
+    "id": 672458305,
+    "full_name": "robsontenorio/mary",
+    "html_url": "https://github.com/robsontenorio/mary",
+    "description": "Gorgeous UI components for Livewire powered by daisyUI and Tailwind",
+    "language": "PHP",
+    "topics": [
+      "alpinejs",
+      "blade",
+      "blade-components",
+      "daisyui",
+      "laravel",
+      "livewire",
+      "livewire-components",
+      "livewire-packages",
+      "tailwindcss",
+      "tallstack",
+      "ui"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-09-04T20:28:11Z"
+  },
+  {
+    "id": 680801064,
+    "full_name": "emreyarligan/enum-concern",
+    "html_url": "https://github.com/emreyarligan/enum-concern",
+    "description": "A PHP package for effortless Enumeration handling with Laravel Collections 📦 ✨",
+    "language": "PHP",
+    "topics": [
+      "concerns",
+      "enum",
+      "enumeration",
+      "laravel",
+      "package"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-17T14:24:25Z"
+  },
+  {
+    "id": 677667910,
+    "full_name": "eneadm/ladder",
+    "html_url": "https://github.com/eneadm/ladder",
+    "description": "Lightweight Permissions for Laravel",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-15T11:41:51Z"
+  },
+  {
+    "id": 671939002,
+    "full_name": "thedevdojo/genesis",
+    "html_url": "https://github.com/thedevdojo/genesis",
+    "description": "An Application Starter Kit - Built with Laravel Folio and Volt",
+    "language": "Blade",
+    "topics": [],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-05-22T11:12:07Z"
+  },
+  {
+    "id": 93988730,
+    "full_name": "JackieDo/Laravel-Cart",
+    "html_url": "https://github.com/JackieDo/Laravel-Cart",
+    "description": "A package used to create and manage carts (such as shopping, recently viewed, compared items...) in Laravel application.",
+    "language": "PHP",
+    "topics": [
+      "cart",
+      "laravel",
+      "laravel-cart",
+      "laravel-shopping-cart",
+      "shopping-cart"
+    ],
+    "default_branch": "v3.0",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-08-01T18:42:40Z"
+  },
+  {
+    "id": 537209307,
+    "full_name": "cerbero90/json-parser",
+    "html_url": "https://github.com/cerbero90/json-parser",
+    "description": "🧩 Zero-dependencies lazy parser to read JSON of any dimension and from any source in a memory-efficient way.",
+    "language": "PHP",
+    "topics": [
+      "json",
+      "parser",
+      "php"
+    ],
+    "default_branch": "develop",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-01-17T18:41:09Z"
+  },
+  {
+    "id": 515561584,
+    "full_name": "mailcarrierapp/mailcarrier",
+    "html_url": "https://github.com/mailcarrierapp/mailcarrier",
+    "description": "Mailing platform with templates and logs included.",
+    "language": "PHP",
+    "topics": [
+      "email-sender",
+      "mail",
+      "mailing",
+      "mailing-system"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-16T13:22:05Z"
+  },
+  {
+    "id": 456136458,
+    "full_name": "coderflexx/laravisit",
+    "html_url": "https://github.com/coderflexx/laravisit",
+    "description": "Track page views, visitors, and audience analytics with an elegant Laravel package",
+    "language": "PHP",
+    "topics": [
+      "analytics",
+      "eloquent",
+      "laravel",
+      "laravel-package",
+      "page-views",
+      "php",
+      "statistics",
+      "visitor-tracking"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-19T11:50:19Z"
+  },
+  {
+    "id": 105638882,
+    "full_name": "nasirkhan/laravel-starter",
+    "html_url": "https://github.com/nasirkhan/laravel-starter",
+    "description": "A CMS like modular starter application project built with Laravel 13.x. and Livewire",
+    "language": "PHP",
+    "topics": [
+      "admin-dashboard",
+      "coreui-laravel",
+      "dashboard",
+      "hacktoberfest",
+      "laravel",
+      "laravel-admin-panel",
+      "laravel-boilerplate",
+      "laravel-livewire",
+      "laravel-starter",
+      "livewire-crud",
+      "php-starter",
+      "starter-kit",
+      "starter-project",
+      "starter-template"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T20:15:41Z"
+  },
+  {
+    "id": 613912084,
+    "full_name": "John-Weeks-Dev/tiktok-clone",
+    "html_url": "https://github.com/John-Weeks-Dev/tiktok-clone",
+    "description": "This is a Tiktok Clone made with Nuxt 3, Vue JS, Laravel (API), Tailwind CSS, and Pinia",
+    "language": "Vue",
+    "topics": [
+      "axios",
+      "image-upload",
+      "javascript",
+      "nuxt",
+      "nuxt3",
+      "nuxtjs",
+      "php",
+      "pinia",
+      "pinia-plugin-persist",
+      "tailwind",
+      "tailwindcss",
+      "tiktok",
+      "tiktok-clone",
+      "video-upload",
+      "vue",
+      "vue3",
+      "vuejs"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2023-09-06T07:20:03Z"
+  },
+  {
+    "id": 613974984,
+    "full_name": "John-Weeks-Dev/tiktok-clone-api",
+    "html_url": "https://github.com/John-Weeks-Dev/tiktok-clone-api",
+    "description": "This is a Tiktok Clone (API) made with Nuxt 3, Vue JS, Laravel (API), Tailwind CSS, and Pinia",
+    "language": "PHP",
+    "topics": [
+      "axios",
+      "image-upload",
+      "javascript",
+      "nuxt",
+      "nuxt3",
+      "nuxtjs",
+      "php",
+      "pinia",
+      "pinia-plugin-persist",
+      "tailwind",
+      "tailwindcss",
+      "tiktok",
+      "tiktok-clone",
+      "video-upload",
+      "vue",
+      "vue3",
+      "vuejs"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2023-11-19T02:48:23Z"
+  },
+  {
+    "id": 576431865,
+    "full_name": "PHP-CMSIG/search",
+    "html_url": "https://github.com/PHP-CMSIG/search",
+    "description": "Search abstraction over different search engines written in PHP. Currently implemented Elasticsearch, Opensearch, Algolia, Meilisearch, Loupe, RediSearch, Solr, Typesense. Documentation: https://php-cmsig.github.io/search/",
+    "language": "PHP",
+    "topics": [
+      "algolia",
+      "apache-solr",
+      "cmsig",
+      "elasticsearch",
+      "hacktoberfest",
+      "help-wanted",
+      "meilisearch",
+      "opensearch",
+      "php",
+      "phpseal",
+      "redisearch",
+      "seal-search",
+      "search",
+      "search-abstraction",
+      "search-client",
+      "typesense"
+    ],
+    "default_branch": "0.12",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T10:51:23Z"
+  },
+  {
+    "id": 516858970,
+    "full_name": "devNoiseConsulting/laravel-scout-postgres-tsvector",
+    "html_url": "https://github.com/devNoiseConsulting/laravel-scout-postgres-tsvector",
+    "description": "PostgreSQL Full Text Search Engine for Laravel Scout",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-04-21T02:49:56Z"
+  },
+  {
+    "id": 327675238,
+    "full_name": "mhmiton/laravel-modules-livewire",
+    "html_url": "https://github.com/mhmiton/laravel-modules-livewire",
+    "description": "Using Laravel Livewire in Laravel Modules package with automatically registered livewire components for every modules.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-19T21:03:54Z"
+  },
+  {
+    "id": 166299071,
+    "full_name": "archtechx/tenancy",
+    "html_url": "https://github.com/archtechx/tenancy",
+    "description": "Automatic multi-tenancy for Laravel. No code changes needed.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "multi-tenancy",
+      "multitenancy",
+      "saas",
+      "software-as-a-service",
+      "tenancy",
+      "tenant"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T08:58:02Z"
+  },
+  {
+    "id": 28139801,
+    "full_name": "Team-Tea-Time/laravel-forum",
+    "html_url": "https://github.com/Team-Tea-Time/laravel-forum",
+    "description": "A slim, lean forum package designed for quick and easy integration in Laravel projects",
+    "language": "PHP",
+    "topics": [
+      "forum",
+      "laravel",
+      "laravel-package",
+      "livewire",
+      "php",
+      "php7",
+      "php8"
+    ],
+    "default_branch": "8.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-20T17:31:47Z"
+  },
+  {
+    "id": 230895883,
+    "full_name": "munafio/chatify",
+    "html_url": "https://github.com/munafio/chatify",
+    "description": "Laravel’s #1 real-time chat package. Direct messages, groups, voice notes, and much more, with a full messenger UI — plus a headless API. Install in one command.",
+    "language": "PHP",
+    "topics": [
+      "chat",
+      "chatify",
+      "conversion",
+      "laravel",
+      "laravel-chat",
+      "laravel-package",
+      "library",
+      "php",
+      "pusher",
+      "real-time",
+      "realtime-messaging"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T06:23:02Z"
+  },
+  {
+    "id": 443850534,
+    "full_name": "Label84/laravel-hours-helper",
+    "html_url": "https://github.com/Label84/laravel-hours-helper",
+    "description": "Create a Collection of dates/times with a specific interval for a specific period.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-package"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-16T11:00:23Z"
+  },
+  {
+    "id": 510674158,
+    "full_name": "Xammie/mailbook",
+    "html_url": "https://github.com/Xammie/mailbook",
+    "description": "✉️ Laravel Mail Explorer",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "mail",
+      "php",
+      "storybook",
+      "tailwindcss"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-23T20:08:38Z"
+  },
+  {
+    "id": 539503175,
+    "full_name": "creagia/laravel-sign-pad",
+    "html_url": "https://github.com/creagia/laravel-sign-pad",
+    "description": "A Laravel package to sign documents and optionally generate certified PDFs associated with Eloquent models.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "pdf",
+      "signature",
+      "signature-pad"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-30T07:44:06Z"
+  },
+  {
+    "id": 576281997,
+    "full_name": "WendellAdriel/laravel-validated-dto",
+    "html_url": "https://github.com/WendellAdriel/laravel-validated-dto",
+    "description": "Data Transfer Objects with validation for Laravel applications",
+    "language": "PHP",
+    "topics": [
+      "data-transfer-object",
+      "dto",
+      "laravel",
+      "validation"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-07T09:20:49Z"
+  },
+  {
+    "id": 440284112,
+    "full_name": "tpetry/laravel-query-expressions",
+    "html_url": "https://github.com/tpetry/laravel-query-expressions",
+    "description": "Replace any query raw call with expressions",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-13T08:48:28Z"
+  },
+  {
+    "id": 617923305,
+    "full_name": "SRWieZ/thumbhash",
+    "html_url": "https://github.com/SRWieZ/thumbhash",
+    "description": "Thumbhash implementation in PHP",
+    "language": "PHP",
+    "topics": [
+      "image",
+      "lazy-loading",
+      "php",
+      "thumbhash"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-01T07:45:48Z"
+  },
+  {
+    "id": 275791748,
+    "full_name": "spatie/laravel-typescript-transformer",
+    "html_url": "https://github.com/spatie/laravel-typescript-transformer",
+    "description": "Transform PHP types to Typescript",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-18T07:33:42Z"
+  },
+  {
+    "id": 608352940,
+    "full_name": "bhaidar/laravel-kanban",
+    "html_url": "https://github.com/bhaidar/laravel-kanban",
+    "description": "A Kanban board developed with Laravel, InertiaJS, and Tailwind CSS.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2023-07-14T07:26:35Z"
+  },
+  {
+    "id": 367870710,
+    "full_name": "dcblogdev/laravel-admintw",
+    "html_url": "https://github.com/dcblogdev/laravel-admintw",
+    "description": "Laravel Livewire Starter Kit | TALL admin theme",
+    "language": "PHP",
+    "topics": [
+      "admin",
+      "admin-dashboard",
+      "admin-panel",
+      "alpinejs",
+      "laravel",
+      "laravel-livewire",
+      "tailwindcss",
+      "tall",
+      "theme"
+    ],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2025-05-17T17:22:10Z"
+  },
+  {
+    "id": 606058356,
+    "full_name": "ikechukwukalu/requirepin",
+    "html_url": "https://github.com/ikechukwukalu/requirepin",
+    "description": "A laravel package for pin confirmation and validation before processing requests to a specified route",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-12T08:17:39Z"
+  },
+  {
+    "id": 589509464,
+    "full_name": "lacodix/laravel-model-filter",
+    "html_url": "https://github.com/lacodix/laravel-model-filter",
+    "description": "Offers an simple way to filter and search eloquent models by array parameters and query strings",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "filter",
+      "laravel",
+      "laravel-package",
+      "model"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-30T19:29:04Z"
+  },
+  {
+    "id": 266812072,
+    "full_name": "parsica-php/parsica",
+    "html_url": "https://github.com/parsica-php/parsica",
+    "description": "Parsica - PHP Parser Combinators - The easiest way to build robust parsers.",
+    "language": "PHP",
+    "topics": [
+      "parser",
+      "parser-combinators",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-07-09T10:24:00Z"
+  },
+  {
+    "id": 381586025,
+    "full_name": "markrogoyski/itertools-php",
+    "html_url": "https://github.com/markrogoyski/itertools-php",
+    "description": "PHP Iteration Tools Library",
+    "language": "PHP",
+    "topics": [
+      "fluentinterface",
+      "generator",
+      "infinite-iteration",
+      "iterable",
+      "iterator",
+      "looping",
+      "loops",
+      "php",
+      "php-library",
+      "random-iteration",
+      "stream",
+      "streams",
+      "traversable",
+      "zip"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T04:34:53Z"
+  },
+  {
+    "id": 506391523,
+    "full_name": "lepikhinb/momentum-modal",
+    "html_url": "https://github.com/lepikhinb/momentum-modal",
+    "description": null,
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-03-16T19:47:52Z"
+  },
+  {
+    "id": 565656101,
+    "full_name": "lepikhinb/momentum-lock",
+    "html_url": "https://github.com/lepikhinb/momentum-lock",
+    "description": null,
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-03-21T07:02:46Z"
+  },
+  {
+    "id": 551826392,
+    "full_name": "lepikhinb/momentum-preflight",
+    "html_url": "https://github.com/lepikhinb/momentum-preflight",
+    "description": null,
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-12-20T22:47:46Z"
+  },
+  {
+    "id": 585146387,
+    "full_name": "shadcn-ui/ui",
+    "html_url": "https://github.com/shadcn-ui/ui",
+    "description": "Composable, accessible components with thoughtful defaults. Build your own component library with code you can customize, extend, and make your own.",
+    "language": "TypeScript",
+    "topics": [
+      "ai",
+      "base-ui",
+      "components",
+      "gen-ui",
+      "generative-ai",
+      "generative-ui",
+      "laravel",
+      "nextjs",
+      "radix-ui",
+      "react",
+      "react-aria",
+      "react-aria-components",
+      "shadcn",
+      "tailwindcss",
+      "tanstack",
+      "ui",
+      "vite"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T09:29:29Z"
+  },
+  {
+    "id": 2717549,
+    "full_name": "Sylius/Sylius",
+    "html_url": "https://github.com/Sylius/Sylius",
+    "description": "Headless open-source eCommerce platform on top of PHP/Symfony/API Platform",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "api-ecommerce",
+      "ecommerce",
+      "ecommerce-platform",
+      "framework",
+      "hacktoberfest",
+      "headless",
+      "headless-ecommerce",
+      "php",
+      "rest-api",
+      "restful-api",
+      "shop",
+      "shopping-cart",
+      "sylius",
+      "symfony",
+      "symfony-bundle"
+    ],
+    "default_branch": "2.3",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T06:28:53Z"
+  },
+  {
+    "id": 28628034,
+    "full_name": "flarum/flarum",
+    "html_url": "https://github.com/flarum/flarum",
+    "description": "Simple forum software for building great communities.",
+    "language": "PHP",
+    "topics": [
+      "flarum",
+      "forum",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "2.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-27T20:34:24Z"
+  },
+  {
+    "id": 539168222,
+    "full_name": "OpnForm/OpnForm",
+    "html_url": "https://github.com/OpnForm/OpnForm",
+    "description": "Beautiful Open-Source Form Builder",
+    "language": "PHP",
+    "topics": [
+      "form",
+      "form-builder",
+      "laravel",
+      "marketing-tools",
+      "nuxt",
+      "open-source",
+      "saas"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T12:48:17Z"
+  },
+  {
+    "id": 284544293,
+    "full_name": "octopyid/laravel-impersonate",
+    "html_url": "https://github.com/octopyid/laravel-impersonate",
+    "description": "Login as a different user quickly for Laravel",
+    "language": "PHP",
+    "topics": [
+      "administration",
+      "eloquent",
+      "impersonate",
+      "laravel",
+      "laravel-package",
+      "php",
+      "sudo-su"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-02T23:03:51Z"
+  },
+  {
+    "id": 554284806,
+    "full_name": "kolossal-io/laravel-multiplex",
+    "html_url": "https://github.com/kolossal-io/laravel-multiplex",
+    "description": "A Laravel package to attach time-sliced meta data to Eloquent models.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "laravel",
+      "meta",
+      "metadata",
+      "timetravel"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-22T12:12:31Z"
+  },
+  {
+    "id": 458192339,
+    "full_name": "michael-rubel/laravel-couponables",
+    "html_url": "https://github.com/michael-rubel/laravel-couponables",
+    "description": "Promocode functionality leveraging Eloquent polymorphic relationships.",
+    "language": "PHP",
+    "topics": [
+      "coupon",
+      "coupon-code-generator",
+      "coupon-service",
+      "coupons",
+      "laravel",
+      "looking-for-contributors",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-05-06T07:51:37Z"
+  },
+  {
+    "id": 541322916,
+    "full_name": "openai-php/client",
+    "html_url": "https://github.com/openai-php/client",
+    "description": "⚡️ OpenAI PHP is a supercharged community-maintained PHP API client that allows you to interact with OpenAI API.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "client",
+      "codex",
+      "gpt-3",
+      "gpt-4",
+      "gpt-5",
+      "language",
+      "natural",
+      "openai",
+      "php",
+      "processing",
+      "sdk"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T10:27:07Z"
+  },
+  {
+    "id": 238884094,
+    "full_name": "BinarCode/laravel-mailator",
+    "html_url": "https://github.com/BinarCode/laravel-mailator",
+    "description": "Email scheduler for Laravel",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-30T13:18:27Z"
+  },
+  {
+    "id": 112909298,
+    "full_name": "Henridv/laravel-booking",
+    "html_url": "https://github.com/Henridv/laravel-booking",
+    "description": "Laravel booking system",
+    "language": "PHP",
+    "topics": [
+      "booking-system",
+      "laravel",
+      "laravel-6"
+    ],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2023-05-17T09:08:02Z"
+  },
+  {
+    "id": 263643110,
+    "full_name": "spatie/laravel-navigation",
+    "html_url": "https://github.com/spatie/laravel-navigation",
+    "description": "Manage menus, breadcrumbs, and other navigational elements in Laravel apps",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-01-31T10:26:26Z"
+  },
+  {
+    "id": 500120723,
+    "full_name": "LaravelDaily/Best-Laravel-Packages",
+    "html_url": "https://github.com/LaravelDaily/Best-Laravel-Packages",
+    "description": null,
+    "language": null,
+    "topics": [],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2023-12-11T04:02:23Z"
+  },
+  {
+    "id": 299397500,
+    "full_name": "ash-jc-allen/laravel-config-validator",
+    "html_url": "https://github.com/ash-jc-allen/laravel-config-validator",
+    "description": "A library for validating your Laravel app's config.",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T19:46:29Z"
+  },
+  {
+    "id": 328411144,
+    "full_name": "MatanYadaev/laravel-eloquent-spatial",
+    "html_url": "https://github.com/MatanYadaev/laravel-eloquent-spatial",
+    "description": "Laravel Eloquent spatial package.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "laravel",
+      "php",
+      "spatial"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-08T21:16:05Z"
+  },
+  {
+    "id": 83766141,
+    "full_name": "grimzy/laravel-mysql-spatial",
+    "html_url": "https://github.com/grimzy/laravel-mysql-spatial",
+    "description": "MySQL Spatial Data Extension integration with Laravel.",
+    "language": "PHP",
+    "topics": [
+      "geometry",
+      "laravel",
+      "laravel-5-package",
+      "laravel-6-package",
+      "laravel-7-package",
+      "laravel-8-package",
+      "mysql",
+      "mysql-extension",
+      "spatial",
+      "spatial-functions"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2024-05-21T11:31:35Z"
+  },
+  {
+    "id": 480545552,
+    "full_name": "square/laravel-hyrule",
+    "html_url": "https://github.com/square/laravel-hyrule",
+    "description": "Object-oriented, composable, fluent API for writing validations in Laravel",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php",
+      "validation"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "archived": false,
+    "pushed_at": "2024-08-12T08:44:27Z"
+  },
+  {
+    "id": 475648299,
+    "full_name": "AnourValar/office",
+    "html_url": "https://github.com/AnourValar/office",
+    "description": "Generate Excel, Word, PDF",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-04T08:47:12Z"
+  },
+  {
+    "id": 373663277,
+    "full_name": "russsiq/laravel-docs-ru",
+    "html_url": "https://github.com/russsiq/laravel-docs-ru",
+    "description": "Актуализированная редакция документации Laravel версий 8.x и 9.x на русском языке.",
+    "language": null,
+    "topics": [
+      "docs",
+      "laravel",
+      "russian",
+      "translation"
+    ],
+    "default_branch": "9.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2023-11-24T11:45:22Z"
+  },
+  {
+    "id": 111074519,
+    "full_name": "spatie/freek.dev",
+    "html_url": "https://github.com/spatie/freek.dev",
+    "description": "The sourcecode of freek.dev",
+    "language": "PHP",
+    "topics": [
+      "application",
+      "blog",
+      "hacktoberfest",
+      "laravel",
+      "php",
+      "tailwindcss"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T10:11:25Z"
+  },
+  {
+    "id": 478068135,
+    "full_name": "maize-tech/laravel-markable",
+    "html_url": "https://github.com/maize-tech/laravel-markable",
+    "description": "Integrate likes, bookmarks, favorites, reactions and custom made marks into your application",
+    "language": "PHP",
+    "topics": [
+      "bookmarks",
+      "favorites",
+      "laravel",
+      "likes",
+      "markable",
+      "marks",
+      "reactions"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-15T05:21:25Z"
+  },
+  {
+    "id": 187452214,
+    "full_name": "sebastianbergmann/type",
+    "html_url": "https://github.com/sebastianbergmann/type",
+    "description": "Collection of value objects that represent the types of the PHP type system",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T08:48:35Z"
+  },
+  {
+    "id": 260334304,
+    "full_name": "PHLAK/Splat",
+    "html_url": "https://github.com/PHLAK/Splat",
+    "description": "Glob-like file and pattern matching utility for PHP.",
+    "language": "PHP",
+    "topics": [
+      "file-matching",
+      "glob",
+      "pattern-matching",
+      "php",
+      "regex",
+      "regular-expression"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-03T23:06:38Z"
+  },
+  {
+    "id": 274940489,
+    "full_name": "Blair2004/NexoPOS",
+    "html_url": "https://github.com/Blair2004/NexoPOS",
+    "description": "Laravel-based web POS system with Vue.js, Tailwind CSS, inventory management, sales processing, customer records, reports, and modular extension support.",
+    "language": "PHP",
+    "topics": [
+      "barber-booking",
+      "laravel",
+      "php",
+      "point-of-sale",
+      "pos",
+      "pos-system",
+      "possystem",
+      "restaurant-pos",
+      "rxjs6",
+      "spa-booking",
+      "tailwindcss",
+      "vuejs"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:58:03Z"
+  },
+  {
+    "id": 246674913,
+    "full_name": "pestphp/pest",
+    "html_url": "https://github.com/pestphp/pest",
+    "description": "The elegant testing framework for PHP developers and AI agents.",
+    "language": "PHP",
+    "topics": [
+      "framework",
+      "pest",
+      "php",
+      "testing"
+    ],
+    "default_branch": "5.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T20:14:30Z"
+  },
+  {
+    "id": 450457021,
+    "full_name": "hmones/laravel-digest",
+    "html_url": "https://github.com/hmones/laravel-digest",
+    "description": "Simple way to convert your emails into configurable digests",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-10-07T13:54:25Z"
+  },
+  {
+    "id": 154310978,
+    "full_name": "cebe/php-openapi",
+    "html_url": "https://github.com/cebe/php-openapi",
+    "description": "Read and write OpenAPI yaml/json files and make the content accessible in PHP objects.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "api-spec",
+      "hacktoberfest",
+      "openapi",
+      "openapi3",
+      "php",
+      "schema"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-11-17T16:56:07Z"
+  },
+  {
+    "id": 65490735,
+    "full_name": "laravel-notification-channels/telegram",
+    "html_url": "https://github.com/laravel-notification-channels/telegram",
+    "description": "✈️ Telegram Notifications Channel for Laravel",
+    "language": "PHP",
+    "topics": [
+      "bot-api",
+      "hacktoberfest",
+      "laravel",
+      "laravel-13",
+      "laravel-notification-channels",
+      "laravel-notifications",
+      "laravel-package",
+      "laravel-telegram",
+      "php",
+      "php-package",
+      "php-packages",
+      "telegram",
+      "telegram-bot",
+      "telegram-bot-api",
+      "telegram-notification"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-04T18:08:34Z"
+  },
+  {
+    "id": 48796179,
+    "full_name": "z-song/laravel-admin",
+    "html_url": "https://github.com/z-song/laravel-admin",
+    "description": "Build a full-featured administrative interface in ten minutes",
+    "language": "PHP",
+    "topics": [
+      "laravel-admin",
+      "model-form",
+      "model-grid",
+      "model-show",
+      "model-tree"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-02T00:31:50Z"
+  },
+  {
+    "id": 440577490,
+    "full_name": "lunarphp/lunar",
+    "html_url": "https://github.com/lunarphp/lunar",
+    "description": "An open-source package that brings the power of modern headless e-commerce functionality to Laravel.",
+    "language": "PHP",
+    "topics": [
+      "e-commerce",
+      "ecommerce",
+      "filamentphp",
+      "headless",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "1.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T10:30:52Z"
+  },
+  {
+    "id": 397822899,
+    "full_name": "roach-php/laravel",
+    "html_url": "https://github.com/roach-php/laravel",
+    "description": "Laravel adapter for Roach, the complete web scraping toolkit for PHP.",
+    "language": "PHP",
+    "topics": [
+      "crawling",
+      "laravel",
+      "php",
+      "web-scraping"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-03-21T07:10:49Z"
+  },
+  {
+    "id": 314646531,
+    "full_name": "karam-mustafa/laravel-geographical-calculator",
+    "html_url": "https://github.com/karam-mustafa/laravel-geographical-calculator",
+    "description": "laravel package helps you to implement geographical calculation, with several algorithms that help you deal with coordinates and distances.",
+    "language": "PHP",
+    "topics": [
+      "geocoder",
+      "geocoder-library",
+      "geocoding",
+      "geogra",
+      "geographical-calculator",
+      "geolocation",
+      "geometry",
+      "laravel",
+      "laravel-geolocation",
+      "laravel-package",
+      "package",
+      "php-geocoder"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2023-06-03T12:13:40Z"
+  },
+  {
+    "id": 83971055,
+    "full_name": "cybercog/laravel-ban",
+    "html_url": "https://github.com/cybercog/laravel-ban",
+    "description": "Laravel Ban simplify blocking and banning Eloquent models.",
+    "language": "PHP",
+    "topics": [
+      "access",
+      "arrest",
+      "ban",
+      "block",
+      "cog",
+      "eloquent",
+      "forbid",
+      "jail",
+      "justice",
+      "laravel",
+      "package",
+      "php",
+      "prison",
+      "restrict",
+      "sanction",
+      "security",
+      "trait",
+      "user"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-01T14:25:58Z"
+  },
+  {
+    "id": 432767611,
+    "full_name": "CuyZ/Valinor",
+    "html_url": "https://github.com/CuyZ/Valinor",
+    "description": "Dependency free PHP library that helps to map any input into a strongly-typed structure.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-21T15:43:19Z"
+  },
+  {
+    "id": 337532146,
+    "full_name": "nutgram/nutgram",
+    "html_url": "https://github.com/nutgram/nutgram",
+    "description": "The Telegram bot framework that doesn't drive you nuts.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "bot-framework",
+      "framework",
+      "hacktoberfest",
+      "laravel",
+      "library",
+      "php",
+      "php8",
+      "telegram",
+      "telegram-bot",
+      "telegram-bot-api",
+      "telegram-bots",
+      "wrapper"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T13:08:55Z"
+  },
+  {
+    "id": 101036876,
+    "full_name": "vanilophp/framework",
+    "html_url": "https://github.com/vanilophp/framework",
+    "description": "The truly Laravel E-commerce Framework",
+    "language": "PHP",
+    "topics": [
+      "e-commerce",
+      "e-commerceplatform",
+      "hacktoberfest",
+      "laravel",
+      "laravel-package",
+      "php",
+      "php8"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-25T09:40:55Z"
+  },
+  {
+    "id": 233224799,
+    "full_name": "conedevelopment/bazar",
+    "html_url": "https://github.com/conedevelopment/bazar",
+    "description": "Bazar is an e-commerce package for Laravel applications.",
+    "language": "PHP",
+    "topics": [
+      "ecommerce",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-12T09:05:21Z"
+  },
+  {
+    "id": 263421436,
+    "full_name": "Arbify/Arbify",
+    "html_url": "https://github.com/Arbify/Arbify",
+    "description": "ARB files localization tool. Dedicated to Flutter and its intl package.",
+    "language": "PHP",
+    "topics": [
+      "arb",
+      "flutter",
+      "internationalization",
+      "intl",
+      "localization"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "archived": false,
+    "pushed_at": "2023-01-06T05:43:35Z"
+  },
+  {
+    "id": 56430871,
+    "full_name": "apiato/apiato",
+    "html_url": "https://github.com/apiato/apiato",
+    "description": "PHP Framework for building scalable API's on top of Laravel.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "api-centric",
+      "api-starter",
+      "api-starter-template",
+      "apiato",
+      "laravel-starter",
+      "php-api",
+      "php-framework",
+      "porto",
+      "starter-app",
+      "starter-kit",
+      "starter-project"
+    ],
+    "default_branch": "13.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-29T05:24:08Z"
+  },
+  {
+    "id": 108232594,
+    "full_name": "alexeymezenin/laravel-best-practices",
+    "html_url": "https://github.com/alexeymezenin/laravel-best-practices",
+    "description": "Laravel best practices",
+    "language": null,
+    "topics": [
+      "best-practices",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2025-05-10T02:27:31Z"
+  },
+  {
+    "id": 367364180,
+    "full_name": "spatie/laravel-data",
+    "html_url": "https://github.com/spatie/laravel-data",
+    "description": "Powerful data objects for Laravel",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-01T10:23:39Z"
+  },
+  {
+    "id": 411823343,
+    "full_name": "rappasoft/laravel-authentication-log",
+    "html_url": "https://github.com/rappasoft/laravel-authentication-log",
+    "description": "Log user authentication details and send new device notifications.",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-04T17:12:34Z"
+  },
+  {
+    "id": 386079424,
+    "full_name": "pricecurrent/laravel-eloquent-filters",
+    "html_url": "https://github.com/pricecurrent/laravel-eloquent-filters",
+    "description": "Advanced Laravel models filtering capabilities ",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "filter",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-03-27T04:23:55Z"
+  },
+  {
+    "id": 160661570,
+    "full_name": "spatie/laravel-searchable",
+    "html_url": "https://github.com/spatie/laravel-searchable",
+    "description": "Pragmatically search through models and other sources",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "php",
+      "search"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-02-21T21:53:30Z"
+  },
+  {
+    "id": 411909105,
+    "full_name": "asantibanez/laravel-subscribable-notifications",
+    "html_url": "https://github.com/asantibanez/laravel-subscribable-notifications",
+    "description": "Laravel Subscribable Notifications",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-11T14:31:59Z"
+  },
+  {
+    "id": 374132359,
+    "full_name": "krayin/laravel-crm",
+    "html_url": "https://github.com/krayin/laravel-crm",
+    "description": "Krayin CRM is Free & Open Source CRM Built with Laravel for Customer, Lead, and Sales Management.",
+    "language": "PHP",
+    "topics": [
+      "cloud",
+      "cloudhosting",
+      "crm",
+      "crm-multi-tenant-saas",
+      "crm-platform",
+      "hacktoberfest",
+      "laravel",
+      "laravel-application",
+      "laravel-crm",
+      "laravel-framework",
+      "laravel-package",
+      "opensource",
+      "opensource-crm",
+      "opensource-crm-framework",
+      "php",
+      "vue",
+      "vuejs"
+    ],
+    "default_branch": "2.2",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T05:55:14Z"
+  },
+  {
+    "id": 237206573,
+    "full_name": "adelf/acwa_book_ru",
+    "html_url": "https://github.com/adelf/acwa_book_ru",
+    "description": "Книга \"Архитектура сложных веб-приложений. С примерами на Laravel\"",
+    "language": null,
+    "topics": [
+      "architecture",
+      "cqrs",
+      "cqrs-es",
+      "grasp",
+      "laravel",
+      "php",
+      "solid"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-07-03T12:25:45Z"
+  },
+  {
+    "id": 362581371,
+    "full_name": "fp4php/functional",
+    "html_url": "https://github.com/fp4php/functional",
+    "description": "PHP Functional Programming library. Monads, common use functions and generic collections. ",
+    "language": "PHP",
+    "topics": [
+      "collections",
+      "collections-framework",
+      "function",
+      "functional",
+      "functional-programming",
+      "functions",
+      "immutable",
+      "monads",
+      "php",
+      "psalm",
+      "psalm-plugin",
+      "static-analysis",
+      "streams"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-03-09T10:46:19Z"
+  },
+  {
+    "id": 275778855,
+    "full_name": "protonemedia/laravel-cross-eloquent-search",
+    "html_url": "https://github.com/protonemedia/laravel-cross-eloquent-search",
+    "description": "Laravel package to search through multiple Eloquent models. Supports sorting, pagination, scoped queries, eager load relationships and searching through single or multiple columns.",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-package",
+      "mysql",
+      "php",
+      "search",
+      "searching"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-02-28T09:56:31Z"
+  },
+  {
+    "id": 51210102,
+    "full_name": "gecche/laravel-multidomain",
+    "html_url": "https://github.com/gecche/laravel-multidomain",
+    "description": "A Laravel extension for using a laravel application on a multi domain setting",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-multidomain",
+      "multi-domains",
+      "multi-env",
+      "multi-tenancy",
+      "php",
+      "tenancy"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-28T07:57:25Z"
+  },
+  {
+    "id": 111099392,
+    "full_name": "chrome-php/chrome",
+    "html_url": "https://github.com/chrome-php/chrome",
+    "description": "Instrument headless chrome/chromium instances from PHP",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest"
+    ],
+    "default_branch": "1.16",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-06T19:08:32Z"
+  },
+  {
+    "id": 144369188,
+    "full_name": "mohammad-fouladgar/eloquent-builder",
+    "html_url": "https://github.com/mohammad-fouladgar/eloquent-builder",
+    "description": "Advanced, request-driven filtering for Laravel Eloquent models.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "eloquent-builder",
+      "eloquent-filters",
+      "larave-filters",
+      "laravel",
+      "laravel-query-filter",
+      "laravel-search",
+      "query-builder"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-29T09:34:02Z"
+  },
+  {
+    "id": 386876190,
+    "full_name": "LaravelDaily/Laravel-Roadmap-Learning-Path",
+    "html_url": "https://github.com/LaravelDaily/Laravel-Roadmap-Learning-Path",
+    "description": null,
+    "language": null,
+    "topics": [],
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2024-03-31T09:25:52Z"
+  },
+  {
+    "id": 108104505,
+    "full_name": "nuwber/rabbitevents",
+    "html_url": "https://github.com/nuwber/rabbitevents",
+    "description": "Laravel Microservices Event Bus using RabbitMQ. Seamlessly publish events and handle them across distributed systems.",
+    "language": "PHP",
+    "topics": [
+      "async",
+      "distributed-systems",
+      "laravel",
+      "microservices",
+      "rabbitmq"
+    ],
+    "default_branch": "9.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-21T08:18:21Z"
+  },
+  {
+    "id": 199891288,
+    "full_name": "ecotoneframework/ecotone",
+    "html_url": "https://github.com/ecotoneframework/ecotone",
+    "description": "Ecotone shifts the focus to the business code. In order to make it happen, enables Message-Driven Architecture with DDD, CQRS, Event Sourcing in PHP.",
+    "language": "PHP",
+    "topics": [
+      "cqrs",
+      "ddd",
+      "ecotone",
+      "event-sourcing",
+      "laravel",
+      "php",
+      "symfony"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-01T19:33:55Z"
+  },
+  {
+    "id": 332485520,
+    "full_name": "m1guelpf/laravel-fastlogin",
+    "html_url": "https://github.com/m1guelpf/laravel-fastlogin",
+    "description": "Allow your users to login with FaceID/TouchID",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2023-05-06T05:37:30Z"
+  },
+  {
+    "id": 255703597,
+    "full_name": "exposedev/expose",
+    "html_url": "https://github.com/exposedev/expose",
+    "description": "A beautiful, fully open-source, tunneling service - written in pure PHP",
+    "language": "PHP",
+    "topics": [
+      "expose",
+      "tunnel-server",
+      "tunneling"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T08:30:37Z"
+  },
+  {
+    "id": 159219217,
+    "full_name": "prwnr/laravel-streamer",
+    "html_url": "https://github.com/prwnr/laravel-streamer",
+    "description": "Events streaming package for Laravel based on Redis Streams",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-03-24T18:36:39Z"
+  },
+  {
+    "id": 81362469,
+    "full_name": "guillaumebriday/laravel-blog",
+    "html_url": "https://github.com/guillaumebriday/laravel-blog",
+    "description": "Laravel 11.0 blog application with Hotwire, Horizon, Telescope, Sanctum, Breeze and Pusher",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "best-practices",
+      "blog",
+      "hotwire",
+      "hotwire-turbo",
+      "laravel",
+      "laravel-11",
+      "laravel-breeze",
+      "laravel-horizon",
+      "laravel-sanctum",
+      "laravel-telescope",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-10-20T10:51:08Z"
+  },
+  {
+    "id": 225090365,
+    "full_name": "AdamKyle/flare",
+    "html_url": "https://github.com/AdamKyle/flare",
+    "description": "A Simple Browser Based Game.",
+    "language": "PHP",
+    "topics": [
+      "browser-game",
+      "fight-monsters",
+      "games",
+      "kingdoms",
+      "pbbg",
+      "rpg",
+      "rpg-game",
+      "tribalwars"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T09:29:04Z"
+  },
+  {
+    "id": 89003511,
+    "full_name": "tighten/tlint",
+    "html_url": "https://github.com/tighten/tlint",
+    "description": "Tighten linter for Laravel conventions.",
+    "language": "PHP",
+    "topics": [
+      "code-style",
+      "conventions",
+      "laravel",
+      "linter",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-01T17:37:13Z"
+  },
+  {
+    "id": 65915598,
+    "full_name": "spatie/regex",
+    "html_url": "https://github.com/spatie/regex",
+    "description": "A sane interface for php's built in preg_* functions",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest",
+      "php",
+      "regex",
+      "regular-expression"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-01-31T10:29:44Z"
+  },
+  {
+    "id": 242123288,
+    "full_name": "optipic-io/optipic-bitrix",
+    "html_url": "https://github.com/optipic-io/optipic-bitrix",
+    "description": "Битрикс: Оптимизация изображений и конвертация в WebP (модуль OptiPic)",
+    "language": "PHP",
+    "topics": [
+      "bitrix",
+      "compress-images",
+      "compression",
+      "convert-webp",
+      "google-pagespeed-insights",
+      "image-compression",
+      "image-compressor",
+      "images-optimized",
+      "minify",
+      "optimization",
+      "optimize-images",
+      "pagespeed",
+      "pagespeed-insights",
+      "pagespeed-optimization",
+      "speed-up",
+      "speedup",
+      "webp"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-06-08T23:40:35Z"
+  },
+  {
+    "id": 42622303,
+    "full_name": "JosephSilber/bouncer",
+    "html_url": "https://github.com/JosephSilber/bouncer",
+    "description": "Laravel Eloquent roles and abilities.",
+    "language": "PHP",
+    "topics": [
+      "acl",
+      "auth",
+      "authorization",
+      "eloquent",
+      "laravel",
+      "multitenancy",
+      "permissions",
+      "php",
+      "roles",
+      "security"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-18T18:10:57Z"
+  },
+  {
+    "id": 102995863,
+    "full_name": "vinkius-labs/laravel-page-speed",
+    "html_url": "https://github.com/vinkius-labs/laravel-page-speed",
+    "description": "Package to optimize your site automatically which results in a 35%+ optimization. Laravel Page Speed delivers an end-to-end optimization pipeline for Blade-rendered pages and REST APIs with measurable gains in latency, bandwidth, and resiliency.",
+    "language": "PHP",
+    "topics": [
+      "api-rest",
+      "blade-template",
+      "high-performance",
+      "laravel",
+      "laravel-5-package",
+      "laravel-api",
+      "laravel-blade",
+      "laravel-blade-minify",
+      "laravel-package",
+      "minify-html",
+      "optimization",
+      "page-speed",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-04T22:02:36Z"
+  },
+  {
+    "id": 87339908,
+    "full_name": "clarkeash/doorman",
+    "html_url": "https://github.com/clarkeash/doorman",
+    "description": "Limit access to your Laravel applications by using invite codes",
+    "language": "PHP",
+    "topics": [
+      "doorman",
+      "invite",
+      "laravel",
+      "laravel-package",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-10-03T20:59:18Z"
+  },
+  {
+    "id": 22319880,
+    "full_name": "snowfire/Beautymail",
+    "html_url": "https://github.com/snowfire/Beautymail",
+    "description": "Send beautiful HTML emails with Laravel",
+    "language": "Blade",
+    "topics": [
+      "beautiful-html-emails",
+      "email",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2025-03-06T13:25:04Z"
+  },
+  {
+    "id": 73469600,
+    "full_name": "overtrue/laravel-follow",
+    "html_url": "https://github.com/overtrue/laravel-follow",
+    "description": ":heart: This package helps you to add user based follow system to your model.",
+    "language": "PHP",
+    "topics": [
+      "favorite",
+      "follow",
+      "followers",
+      "laravel",
+      "like",
+      "subscribe"
+    ],
+    "default_branch": "5.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T01:25:31Z"
+  },
+  {
+    "id": 95011974,
+    "full_name": "akaunting/akaunting",
+    "html_url": "https://github.com/akaunting/akaunting",
+    "description": "Online Accounting Software",
+    "language": "PHP",
+    "topics": [
+      "accounting",
+      "akaunting",
+      "balance",
+      "billing",
+      "bookkeeping",
+      "budget",
+      "crm",
+      "erp",
+      "expenses",
+      "finance",
+      "fintech",
+      "invoices",
+      "invoicing",
+      "laravel",
+      "laravel-application",
+      "money",
+      "payments",
+      "payroll",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T21:33:45Z"
+  },
+  {
+    "id": 141669026,
+    "full_name": "robsontenorio/laravel-keycloak-guard",
+    "html_url": "https://github.com/robsontenorio/laravel-keycloak-guard",
+    "description": "🔑 Simple Keycloak Guard for Laravel",
+    "language": "PHP",
+    "topics": [
+      "keycloak",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-17T19:58:56Z"
+  },
+  {
+    "id": 44714043,
+    "full_name": "jeremykenedy/laravel-auth",
+    "html_url": "https://github.com/jeremykenedy/laravel-auth",
+    "description": "Laravel Auth is a Complete Build of Laravel 13 with Email Registration Verification, Social Authentication, User Roles and Permissions, User Profiles, and Admin restricted user management system. Built on Bootstrap 4.",
+    "language": "JavaScript",
+    "topics": [
+      "authentication",
+      "dropzonejs",
+      "google-maps",
+      "gravatar-api",
+      "laravel",
+      "laravel-framework",
+      "localization",
+      "php",
+      "registration",
+      "roles",
+      "social-authentication",
+      "socialite",
+      "socialite-logins",
+      "two-step-authentication",
+      "user-management",
+      "user-profile",
+      "users"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T18:15:32Z"
+  },
+  {
+    "id": 113799854,
+    "full_name": "jeremykenedy/laravel2step",
+    "html_url": "https://github.com/jeremykenedy/laravel2step",
+    "description": "Laravel 2-Step verification is a package to add 2-Step user authentication to any Laravel project easily. It is configurable and customizable. It uses notifications to send the user an email with a 4-digit verification code.  Laravel 2-Step Authentication Verification for Laravel. Can be used in out the box with Laravel's authentication scaffolding or integrated into other projects.",
+    "language": "PHP",
+    "topics": [
+      "2-step",
+      "2-step-verification",
+      "laravel-verification",
+      "verification"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-11T08:46:12Z"
+  },
+  {
+    "id": 175168121,
+    "full_name": "changeweb/Unifiedtransform",
+    "html_url": "https://github.com/changeweb/Unifiedtransform",
+    "description": "A school management Software",
+    "language": "PHP",
+    "topics": [
+      "attendance-system",
+      "bootstrap",
+      "laravel",
+      "oop",
+      "php7",
+      "school-grading-system",
+      "school-management",
+      "school-management-software",
+      "teacher-student"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T20:14:36Z"
+  },
+  {
+    "id": 163381474,
+    "full_name": "glorand/laravel-model-settings",
+    "html_url": "https://github.com/glorand/laravel-model-settings",
+    "description": "Model Settings for your Laravel app",
+    "language": "PHP",
+    "topics": [
+      "eloquent-models",
+      "laravel",
+      "laravel-settings",
+      "settings",
+      "trait"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-02T23:17:14Z"
+  },
+  {
+    "id": 51595232,
+    "full_name": "kyranb/Footprints",
+    "html_url": "https://github.com/kyranb/Footprints",
+    "description": ":feet: A simple registration attribution tracking solution for Laravel (UTM Parameters and Referrers)",
+    "language": "PHP",
+    "topics": [
+      "analytics",
+      "analytics-tracking",
+      "footprints",
+      "landing-page",
+      "laravel",
+      "marketing",
+      "referrer",
+      "referrer-tracking",
+      "roi",
+      "utm"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-19T08:02:39Z"
+  },
+  {
+    "id": 76627423,
+    "full_name": "slimkit/plus",
+    "html_url": "https://github.com/slimkit/plus",
+    "description": "💝The Plus (ThinkSNS+) is a powerful, easy-to-develop social system built with Laravel.",
+    "language": "PHP",
+    "topics": [
+      "app",
+      "component",
+      "composer",
+      "docker",
+      "laravel",
+      "php",
+      "powerful",
+      "psr",
+      "sns",
+      "social",
+      "think",
+      "thinksns",
+      "user",
+      "web"
+    ],
+    "default_branch": "2.4",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2022-03-14T22:27:12Z"
+  },
+  {
+    "id": 193104152,
+    "full_name": "anonaddy/anonaddy",
+    "html_url": "https://github.com/anonaddy/anonaddy",
+    "description": "Anonymous email forwarding",
+    "language": "PHP",
+    "topics": [
+      "email",
+      "pgp",
+      "privacy"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T15:18:30Z"
+  },
+  {
+    "id": 206981157,
+    "full_name": "obiefy/api-response",
+    "html_url": "https://github.com/obiefy/api-response",
+    "description": "Simple and ready to use API response wrapper for Laravel.",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "json",
+      "json-response",
+      "laravel"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-02-23T16:46:47Z"
+  },
+  {
+    "id": 173246329,
+    "full_name": "thomasjohnkane/snooze",
+    "html_url": "https://github.com/thomasjohnkane/snooze",
+    "description": "A package to simplify automating future notifications and reminders in Laravel",
+    "language": "PHP",
+    "topics": [
+      "boarding-email-drips",
+      "delayed-notifications",
+      "delayed-queue",
+      "drip-campaigns",
+      "email-marketing",
+      "laravel",
+      "laravel-framework",
+      "laravel-package",
+      "notifications",
+      "onboarding-emails",
+      "reminder",
+      "reminder-emails",
+      "reminders",
+      "scheduled-notifications",
+      "snooze"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-26T08:34:41Z"
+  },
+  {
+    "id": 222873550,
+    "full_name": "crater-invoice-inc/crater",
+    "html_url": "https://github.com/crater-invoice-inc/crater",
+    "description": "Open Source Invoicing Solution for Individuals & Businesses",
+    "language": "PHP",
+    "topics": [
+      "invoices",
+      "javascript",
+      "laravel",
+      "laravel-framework",
+      "payment",
+      "php",
+      "vue"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": false,
+    "pushed_at": "2024-08-10T09:32:07Z"
+  },
+  {
+    "id": 54214978,
+    "full_name": "musonza/chat",
+    "html_url": "https://github.com/musonza/chat",
+    "description": "A Laravel chat package. You can use this package to create a chat/messaging Laravel application.",
+    "language": "PHP",
+    "topics": [
+      "chat",
+      "chatapp",
+      "conversation",
+      "laravel",
+      "laravel-chat",
+      "laravel-messaging",
+      "laravel-messaging-package",
+      "laravel-package",
+      "participant-conversations",
+      "php",
+      "php-chat"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-04T21:59:25Z"
+  },
+  {
+    "id": 73737370,
+    "full_name": "laravelista/comments",
+    "html_url": "https://github.com/laravelista/comments",
+    "description": "Native comments for your Laravel application.",
+    "language": "PHP",
+    "topics": [
+      "blade",
+      "comments",
+      "hacktoberfest",
+      "laravel",
+      "package",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-03-16T14:32:41Z"
+  },
+  {
+    "id": 224811522,
+    "full_name": "protonemedia/laravel-paddle",
+    "html_url": "https://github.com/protonemedia/laravel-paddle",
+    "description": "Paddle.com API integration for Laravel with support for webhooks/events",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "laravel-package",
+      "laravel-paddle",
+      "paddle",
+      "payment",
+      "payment-gateway",
+      "payment-integration",
+      "payments"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-02-28T09:56:18Z"
+  },
+  {
+    "id": 30237105,
+    "full_name": "vinkla/laravel-hashids",
+    "html_url": "https://github.com/vinkla/laravel-hashids",
+    "description": "A Hashids bridge for Laravel",
+    "language": "PHP",
+    "topics": [
+      "composer",
+      "hashids",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-22T07:24:43Z"
+  },
+  {
+    "id": 175907190,
+    "full_name": "mateusjunges/laravel-acl",
+    "html_url": "https://github.com/mateusjunges/laravel-acl",
+    "description": "This package helps you to associate users with permissions and permission groups with laravel framework",
+    "language": "PHP",
+    "topics": [
+      "access-control",
+      "access-management",
+      "acl",
+      "authentication",
+      "authorization",
+      "hacktoberfest",
+      "laravel",
+      "package",
+      "php7",
+      "security"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": true,
+    "pushed_at": "2024-01-29T05:23:04Z"
+  },
+  {
+    "id": 243858945,
+    "full_name": "edalzell/laravel-passwordless-login",
+    "html_url": "https://github.com/edalzell/laravel-passwordless-login",
+    "description": "A simple, safe magic login link generator for Laravel",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-24T21:58:02Z"
+  },
+  {
+    "id": 248479627,
+    "full_name": "SiavashBamshadnia/Laravel-Source-Encrypter",
+    "html_url": "https://github.com/SiavashBamshadnia/Laravel-Source-Encrypter",
+    "description": "Laravel and Lumen Source Code Encrypter",
+    "language": "PHP",
+    "topics": [
+      "encrypt",
+      "encryption",
+      "ioncube",
+      "laravel",
+      "laravel-package",
+      "lumen",
+      "lumen-package",
+      "php",
+      "phpbolt"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-10-08T11:26:51Z"
+  },
+  {
+    "id": 74829244,
+    "full_name": "antonioribeiro/health",
+    "html_url": "https://github.com/antonioribeiro/health",
+    "description": "Laravel Health Panel",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest",
+      "health",
+      "health-panel",
+      "laravel",
+      "monitor",
+      "notifications",
+      "panel",
+      "php",
+      "server"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2024-10-15T12:52:30Z"
+  },
+  {
+    "id": 258632661,
+    "full_name": "Crudly/Encrypted",
+    "html_url": "https://github.com/Crudly/Encrypted",
+    "description": "Encryption cast for Eloquent",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "hacktoberfest",
+      "laravel",
+      "laravel-package"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2024-07-12T07:09:13Z"
+  },
+  {
+    "id": 282196287,
+    "full_name": "renoki-co/hej",
+    "html_url": "https://github.com/renoki-co/hej",
+    "description": "Hej! is a simple authentication boilerplate for Socialite.",
+    "language": "PHP",
+    "topics": [
+      "authentication",
+      "authentication-flow",
+      "facebook",
+      "github",
+      "gitlab",
+      "google",
+      "hej",
+      "laravel",
+      "package",
+      "packages",
+      "passport",
+      "php",
+      "register",
+      "social",
+      "social-accounts",
+      "socialite",
+      "socialite-provider",
+      "twitter"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "archived": false,
+    "pushed_at": "2026-02-02T05:49:19Z"
+  },
+  {
+    "id": 49680187,
+    "full_name": "Bottelet/DaybydayCRM",
+    "html_url": "https://github.com/Bottelet/DaybydayCRM",
+    "description": "DaybydayCRM an open-source CRM, to help you keep track of your daily workflow.",
+    "language": "JavaScript",
+    "topics": [
+      "crm",
+      "crm-platform",
+      "crm-system",
+      "daybyday",
+      "daybydaycrm",
+      "hacktoberfest",
+      "hacktoberfest2020",
+      "laravel",
+      "managaement",
+      "task-manager",
+      "tracking"
+    ],
+    "default_branch": "develop",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-08-31T22:06:01Z"
+  },
+  {
+    "id": 228425178,
+    "full_name": "jpkleemans/attribute-events",
+    "html_url": "https://github.com/jpkleemans/attribute-events",
+    "description": "🔥 Fire events on attribute changes of your Eloquent model",
+    "language": "PHP",
+    "topics": [
+      "accessors",
+      "attributes",
+      "ddd",
+      "domain-driven-design",
+      "domain-events",
+      "domain-model",
+      "eloquent",
+      "event-driven-architecture",
+      "event-storming",
+      "events",
+      "laravel",
+      "model-events"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-02-05T14:39:48Z"
+  },
+  {
+    "id": 166309617,
+    "full_name": "officelifehq/officelife",
+    "html_url": "https://github.com/officelifehq/officelife",
+    "description": "OfficeLife is the first EmpOps platform.  It manages everything employees do in a company. From projects to holidays to 1:1s to teams.",
+    "language": "PHP",
+    "topics": [
+      "crm",
+      "hr",
+      "laravel",
+      "management",
+      "office",
+      "php",
+      "project-management"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": true,
+    "pushed_at": "2024-07-04T21:06:09Z"
+  },
+  {
+    "id": 86167013,
+    "full_name": "404labfr/laravel-auth-checker",
+    "html_url": "https://github.com/404labfr/laravel-auth-checker",
+    "description": "Laravel Auth Checker allows you to log users authentication, devices authenticated from and lock intrusions.",
+    "language": "PHP",
+    "topics": [
+      "auth",
+      "control",
+      "laravel",
+      "laravel-package"
+    ],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2024-05-19T22:15:56Z"
+  },
+  {
+    "id": 247844867,
+    "full_name": "kirschbaum-development/eloquent-power-joins",
+    "html_url": "https://github.com/kirschbaum-development/eloquent-power-joins",
+    "description": "The Laravel magic you know, now applied to joins.",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-25T11:10:50Z"
+  },
+  {
+    "id": 351298555,
+    "full_name": "thedevdojo/wave",
+    "html_url": "https://github.com/thedevdojo/wave",
+    "description": "Wave - The Software as a Service Starter Kit, designed to help you build the SAAS of your dreams 🚀 💰 ",
+    "language": "CSS",
+    "topics": [
+      "devdojo",
+      "hacktoberfest",
+      "laravel",
+      "php",
+      "saas",
+      "saas-boilerplate",
+      "subscription",
+      "tailwindcss",
+      "voyager",
+      "wave"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-31T07:48:53Z"
+  },
+  {
+    "id": 42480275,
+    "full_name": "spatie/laravel-permission",
+    "html_url": "https://github.com/spatie/laravel-permission",
+    "description": "Associate users with roles and permissions",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "permission",
+      "php",
+      "secure"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-04T21:09:23Z"
+  },
+  {
+    "id": 53718022,
+    "full_name": "spatie/laravel-mail-preview",
+    "html_url": "https://github.com/spatie/laravel-mail-preview",
+    "description": "A mail driver to quickly preview mail",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "mail",
+      "testing"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-21T10:31:53Z"
+  },
+  {
+    "id": 178703607,
+    "full_name": "nunomaduro/phpinsights",
+    "html_url": "https://github.com/nunomaduro/phpinsights",
+    "description": "🔰 Instant PHP quality checks from your console",
+    "language": "PHP",
+    "topics": [
+      "analytics",
+      "architecture",
+      "cli",
+      "code",
+      "complexity",
+      "console",
+      "cs",
+      "hacktoberfest",
+      "php",
+      "quality",
+      "static",
+      "style",
+      "tool"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-15T23:46:48Z"
+  },
+  {
+    "id": 41092552,
+    "full_name": "owen-it/laravel-auditing",
+    "html_url": "https://github.com/owen-it/laravel-auditing",
+    "description": "Record the change log from models in Laravel",
+    "language": "PHP",
+    "topics": [
+      "audit",
+      "auditing",
+      "eloquent",
+      "history",
+      "laravel",
+      "logging",
+      "lumen",
+      "observer",
+      "record",
+      "revision",
+      "tracking"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-18T14:43:43Z"
+  },
+  {
+    "id": 248372441,
+    "full_name": "filamentphp/filament",
+    "html_url": "https://github.com/filamentphp/filament",
+    "description": "A powerful open-source UI framework for Laravel • Build and ship apps & admin panels fast with Livewire",
+    "language": "PHP",
+    "topics": [
+      "admin",
+      "alpine-js",
+      "builder",
+      "cms",
+      "filament",
+      "forms",
+      "laravel",
+      "laravel-admin-panel",
+      "livewire",
+      "tables",
+      "tailwind-css",
+      "tall-stack"
+    ],
+    "default_branch": "4.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:16:56Z"
+  },
+  {
+    "id": 330274698,
+    "full_name": "marcocesarato/php-conventional-changelog",
+    "html_url": "https://github.com/marcocesarato/php-conventional-changelog",
+    "description": "A PHP tool built to generate a changelog from a project's commit messages and metadata following the conventionalcommits.org and automate versioning with semver.org.",
+    "language": "PHP",
+    "topics": [
+      "autoversion",
+      "autoversioning",
+      "changelog",
+      "commit",
+      "commits",
+      "composer",
+      "convention",
+      "conventional",
+      "conventional-changelog",
+      "conventional-changelog-preset",
+      "conventional-commit",
+      "conventional-commits",
+      "generation",
+      "git",
+      "history",
+      "php",
+      "php-conventional-changelog",
+      "php-convetional-commit",
+      "semver",
+      "tool"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-04T15:07:51Z"
+  },
+  {
+    "id": 333972140,
+    "full_name": "kutia-software-company/larafirebase",
+    "html_url": "https://github.com/kutia-software-company/larafirebase",
+    "description": "😍 Laravel Firebase Cloud Messaging. ✍️ Developed by Gentrit Abazi.",
+    "language": "PHP",
+    "topics": [
+      "firebase",
+      "firebase-cloud-messaging",
+      "larafirebase",
+      "laravel",
+      "laravel-fcm",
+      "laravel-firebase",
+      "laravel-firebase-push-notification",
+      "laravel-push-notifications",
+      "laravel-real-time",
+      "notifications",
+      "php",
+      "php-fcm",
+      "php-firebase"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-28T10:08:37Z"
+  },
+  {
+    "id": 260869160,
+    "full_name": "LaravelDaily/laravel-tips",
+    "html_url": "https://github.com/LaravelDaily/laravel-tips",
+    "description": "Awesome tips for Laravel",
+    "language": null,
+    "topics": [],
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2025-07-03T17:09:18Z"
+  },
+  {
+    "id": 321657684,
+    "full_name": "multiavatar/multiavatar-php",
+    "html_url": "https://github.com/multiavatar/multiavatar-php",
+    "description": "Multicultural Avatar Generator in PHP",
+    "language": "PHP",
+    "topics": [
+      "avatar",
+      "avatar-generator",
+      "avatar-maker"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2021-03-02T07:37:44Z"
+  },
+  {
+    "id": 10883164,
+    "full_name": "barryvdh/laravel-dompdf",
+    "html_url": "https://github.com/barryvdh/laravel-dompdf",
+    "description": "A DOMPDF Wrapper for Laravel",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest",
+      "laravel",
+      "pdf"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-09T07:15:08Z"
+  },
+  {
+    "id": 77398063,
+    "full_name": "kilylabs/odata-1c",
+    "html_url": "https://github.com/kilylabs/odata-1c",
+    "description": "PHP oDATA protocol client adopted to use with 1C (1С Enterprise 8.3)",
+    "language": "PHP",
+    "topics": [
+      "1c",
+      "1c-enterprise",
+      "odata",
+      "odata-1c",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2022-01-20T11:25:58Z"
+  },
+  {
+    "id": 291804966,
+    "full_name": "laravel/fortify",
+    "html_url": "https://github.com/laravel/fortify",
+    "description": "Backend controllers and scaffolding for Laravel authentication.",
+    "language": "PHP",
+    "topics": [
+      "auth",
+      "laravel"
+    ],
+    "default_branch": "1.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T14:15:46Z"
+  },
+  {
+    "id": 62087941,
+    "full_name": "nWidart/laravel-modules",
+    "html_url": "https://github.com/nWidart/laravel-modules",
+    "description": "Module Management In Laravel",
+    "language": "PHP",
+    "topics": [
+      "architecture",
+      "hacktoberfest",
+      "laravel",
+      "laravel-modules",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-04-13T09:11:55Z"
+  },
+  {
+    "id": 92672777,
+    "full_name": "appwilio/yakassa",
+    "html_url": "https://github.com/appwilio/yakassa",
+    "description": "Платежи через Яндекс.Кассу с поддержкой 54-ФЗ",
+    "language": "PHP",
+    "topics": [
+      "laravel-5-package",
+      "payment-gateway",
+      "payment-service",
+      "payments",
+      "yandex-kassa"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2022-05-18T13:14:38Z"
+  },
+  {
+    "id": 194941542,
+    "full_name": "kornrunner/php-blurhash",
+    "html_url": "https://github.com/kornrunner/php-blurhash",
+    "description": "Pure PHP implementation of Blurhash (https://github.com/woltapp/blurhash)",
+    "language": "PHP",
+    "topics": [
+      "blurhash",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-11T10:10:15Z"
+  },
+  {
+    "id": 60425993,
+    "full_name": "andreyryabin/sprint.migration",
+    "html_url": "https://github.com/andreyryabin/sprint.migration",
+    "description": "Миграции для разработчиков (1С-Битрикс)",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-17T14:47:16Z"
+  },
+  {
+    "id": 52815899,
+    "full_name": "austintoddj/canvas",
+    "html_url": "https://github.com/austintoddj/canvas",
+    "description": "Publishing on your own terms",
+    "language": "PHP",
+    "topics": [
+      "blog",
+      "laravel",
+      "publishing"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T17:22:14Z"
+  },
+  {
+    "id": 121482350,
+    "full_name": "RubixML/ML",
+    "html_url": "https://github.com/RubixML/ML",
+    "description": "A high-level machine learning and deep learning library for the PHP language.",
+    "language": "PHP",
+    "topics": [
+      "analytics",
+      "anomaly-detection",
+      "classification",
+      "clustering",
+      "deep-learning",
+      "machine-learning",
+      "natural-language-processing",
+      "php",
+      "regression"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T02:57:34Z"
+  },
+  {
+    "id": 169948762,
+    "full_name": "shetabit/payment",
+    "html_url": "https://github.com/shetabit/payment",
+    "description": "simple laravel payment package , supports multiple drivers",
+    "language": "PHP",
+    "topics": [
+      "laravel-payment",
+      "laravel-payment-gate",
+      "payment",
+      "payment-gateway"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-28T15:20:54Z"
+  },
+  {
+    "id": 191398424,
+    "full_name": "spatie/laravel-webhook-client",
+    "html_url": "https://github.com/spatie/laravel-webhook-client",
+    "description": "Receive webhooks in Laravel apps",
+    "language": "PHP",
+    "topics": [
+      "laravel",
+      "webhooks"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-28T13:30:58Z"
+  },
+  {
+    "id": 191252974,
+    "full_name": "spatie/laravel-webhook-server",
+    "html_url": "https://github.com/spatie/laravel-webhook-server",
+    "description": "Send webhooks from Laravel apps",
+    "language": "PHP",
+    "topics": [
+      "http",
+      "laravel",
+      "webhooks"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-23T23:35:43Z"
+  },
+  {
+    "id": 26730195,
+    "full_name": "cachethq/cachet",
+    "html_url": "https://github.com/cachethq/cachet",
+    "description": "🚦 Cachet, the open source, self-hosted status page system.",
+    "language": "PHP",
+    "topics": [
+      "cachet",
+      "laravel",
+      "php",
+      "self-hosted",
+      "selfhosted",
+      "status-page",
+      "statuspages"
+    ],
+    "default_branch": "3.x",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T13:48:52Z"
+  },
+  {
+    "id": 5660085,
+    "full_name": "thephpleague/omnipay",
+    "html_url": "https://github.com/thephpleague/omnipay",
+    "description": "A framework agnostic, multi-gateway payment processing library for PHP 5.6+",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-10T22:16:37Z"
+  },
+  {
+    "id": 31541210,
+    "full_name": "aimeos/aimeos-laravel",
+    "html_url": "https://github.com/aimeos/aimeos-laravel",
+    "description": "Laravel ecommerce package for ultra fast online shops, scalable marketplaces, complex B2B applications and #gigacommerce",
+    "language": "PHP",
+    "topics": [
+      "aimeos",
+      "b2b",
+      "e-commerce",
+      "ecommerce",
+      "ecommerce-framework",
+      "ecommerce-platform",
+      "graphql",
+      "json-api",
+      "laravel",
+      "laravel-application",
+      "laravel-ecommerce",
+      "laravel-package",
+      "marketplace",
+      "multi-tenant",
+      "multivendor-ecommerce",
+      "opensource",
+      "php",
+      "shop",
+      "shop-application",
+      "vuejs"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T10:00:54Z"
+  },
+  {
+    "id": 173516460,
+    "full_name": "Qoraiche/laravel-mail-editor",
+    "html_url": "https://github.com/Qoraiche/laravel-mail-editor",
+    "description": "MailEclipse :zap: Laravel Mail Editor",
+    "language": "Blade",
+    "topics": [
+      "hacktoberfest",
+      "laravel",
+      "laravel-mail",
+      "laravel-mailable",
+      "laravel-package",
+      "mail"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2025-07-06T04:01:30Z"
+  },
+  {
+    "id": 116257621,
+    "full_name": "tenancy/tenancy",
+    "html_url": "https://github.com/tenancy/tenancy",
+    "description": "Run multiple websites using the same Laravel installation while keeping tenant specific data separated for fully independent multi-domain setups.",
+    "language": "PHP",
+    "topics": [
+      "hacktoberfest",
+      "laravel",
+      "multi-tenant",
+      "php",
+      "saas",
+      "tenancy"
+    ],
+    "default_branch": "2.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-01T02:12:37Z"
+  },
+  {
+    "id": 148129143,
+    "full_name": "bagisto/bagisto",
+    "html_url": "https://github.com/bagisto/bagisto",
+    "description": "Open Source eCommerce & Multi-Vendor Marketplace Platform Built with Laravel for Enterprise-Scale Commerce, Supporting 10M+ SKUs",
+    "language": "PHP",
+    "topics": [
+      "b2b-ecommerce",
+      "blockchain-ecommerce",
+      "ecommerce",
+      "ecommerce-framework",
+      "ecommerce-platform",
+      "hacktoberfest",
+      "headless-commerce",
+      "laravel",
+      "laravel-application",
+      "laravel-ecommerce",
+      "laravel-package",
+      "multi-tenancy-plugin",
+      "multi-tenant",
+      "multi-vendor-ecommerce",
+      "multivendor-ecommerce",
+      "nft-marketplace",
+      "open-source",
+      "opensource-ecommerce",
+      "php",
+      "php-ecommerce"
+    ],
+    "default_branch": "2.5",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:56:21Z"
+  },
+  {
+    "id": 28257573,
+    "full_name": "flarum/framework",
+    "html_url": "https://github.com/flarum/framework",
+    "description": "Simple forum software for building great communities.",
+    "language": "PHP",
+    "topics": [
+      "community",
+      "flarum",
+      "forum",
+      "hacktoberfest",
+      "javascript",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "2.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T11:37:53Z"
+  },
+  {
+    "id": 114383946,
+    "full_name": "ankitpokhrel/tus-php",
+    "html_url": "https://github.com/ankitpokhrel/tus-php",
+    "description": "🚀 A pure PHP server and client for the tus resumable upload protocol v1.0.0",
+    "language": "PHP",
+    "topics": [
+      "file-upload",
+      "hacktoberfest",
+      "large-files",
+      "made-in-nepal",
+      "php",
+      "php-library",
+      "php81",
+      "php82",
+      "resumable",
+      "resumable-upload",
+      "tus",
+      "tus-protocol",
+      "uploader"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-07-20T17:33:22Z"
+  },
+  {
+    "id": 11340559,
+    "full_name": "deployphp/deployer",
+    "html_url": "https://github.com/deployphp/deployer",
+    "description": "The PHP deployment tool with support for popular frameworks out of the box",
+    "language": "PHP",
+    "topics": [
+      "deploy",
+      "deployment",
+      "php",
+      "provision",
+      "tool"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-26T14:50:06Z"
+  },
+  {
+    "id": 61838413,
+    "full_name": "danog/MadelineProto",
+    "html_url": "https://github.com/danog/MadelineProto",
+    "description": "Async PHP client API for the telegram MTProto protocol",
+    "language": "PHP",
+    "topics": [
+      "amphp",
+      "async",
+      "bot",
+      "calls",
+      "easy",
+      "hacktoberfest",
+      "inline-bots",
+      "madelineproto",
+      "mtproto",
+      "mtproto-api",
+      "php",
+      "proxy",
+      "secret-chats",
+      "stickers",
+      "tdlib",
+      "tdlib-php",
+      "telegram",
+      "telegram-api",
+      "voip"
+    ],
+    "default_branch": "v8",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-07T17:27:33Z"
+  },
+  {
+    "id": 105950839,
+    "full_name": "jordanbrauer/unit-converter",
+    "html_url": "https://github.com/jordanbrauer/unit-converter",
+    "description": "Convert standard units from one to another with this easy to use, lightweight package ",
+    "language": "PHP",
+    "topics": [
+      "component",
+      "composer",
+      "library",
+      "measurements",
+      "oop",
+      "package",
+      "php",
+      "php7",
+      "registry",
+      "unit-conversion",
+      "unit-converter"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2023-09-20T00:06:46Z"
+  },
+  {
+    "id": 159155863,
+    "full_name": "spatie/period",
+    "html_url": "https://github.com/spatie/period",
+    "description": "Complex period comparisons",
+    "language": "PHP",
+    "topics": [
+      "calculations",
+      "calendar",
+      "date",
+      "period",
+      "schedule",
+      "time"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-08-07T11:21:20Z"
+  },
+  {
+    "id": 115436884,
+    "full_name": "roadrunner-server/roadrunner",
+    "html_url": "https://github.com/roadrunner-server/roadrunner",
+    "description": "🤯 High-performance PHP application server, process manager written in Go and powered with plugins",
+    "language": "Go",
+    "topics": [
+      "application-server",
+      "golang",
+      "hacktoberfest",
+      "http",
+      "php",
+      "psr-7",
+      "roadrunner",
+      "rpc",
+      "supervisor",
+      "workers"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T12:38:06Z"
+  },
+  {
+    "id": 61802818,
+    "full_name": "spatie/laravel-activitylog",
+    "html_url": "https://github.com/spatie/laravel-activitylog",
+    "description": "Log activity inside your Laravel app",
+    "language": "PHP",
+    "topics": [
+      "audit",
+      "laravel",
+      "log",
+      "monitoring",
+      "php"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-08T12:17:04Z"
+  },
+  {
+    "id": 32067087,
+    "full_name": "spatie/laravel-analytics",
+    "html_url": "https://github.com/spatie/laravel-analytics",
+    "description": "A Laravel package to retrieve pageviews and other data from Google Analytics",
+    "language": "PHP",
+    "topics": [
+      "analytics",
+      "google",
+      "laravel",
+      "php",
+      "statistics"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-29T11:26:19Z"
+  },
+  {
+    "id": 82238168,
+    "full_name": "monicahq/monica",
+    "html_url": "https://github.com/monicahq/monica",
+    "description": "Personal CRM. Remember everything about your friends, family and business relationships.",
+    "language": "PHP",
+    "topics": [
+      "crm",
+      "family",
+      "friends",
+      "hacktoberfest",
+      "laravel",
+      "php",
+      "prm",
+      "social"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "agpl-3.0",
+      "name": "GNU Affero General Public License v3.0",
+      "spdx_id": "AGPL-3.0",
+      "url": "https://api.github.com/licenses/agpl-3.0",
+      "node_id": "MDc6TGljZW5zZTE="
+    },
+    "archived": false,
+    "pushed_at": "2026-09-24T15:21:07Z"
+  },
+  {
+    "id": 55360541,
+    "full_name": "markrogoyski/math-php",
+    "html_url": "https://github.com/markrogoyski/math-php",
+    "description": "Powerful modern math library for PHP: Features descriptive statistics and regressions; Continuous and discrete probability distributions; Linear algebra with matrices and vectors, Numerical analysis; special mathematical functions; Algebra",
+    "language": "PHP",
+    "topics": [
+      "algebra",
+      "combinatorics",
+      "distributions",
+      "finance",
+      "information-theory",
+      "linear-algebra",
+      "math",
+      "mathematics",
+      "matrix",
+      "number-theory",
+      "numerical-analysis",
+      "php",
+      "php-library",
+      "probability",
+      "regression",
+      "statistics",
+      "vector"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-03-09T00:06:41Z"
+  },
+  {
+    "id": 156552715,
+    "full_name": "bavix/laravel-wallet",
+    "html_url": "https://github.com/bavix/laravel-wallet",
+    "description": "It's easy to work with a virtual wallet",
+    "language": "PHP",
+    "topics": [
+      "balance",
+      "composer",
+      "eloquent",
+      "laravel",
+      "laravel-wallet",
+      "multi-wallet",
+      "php",
+      "purchase",
+      "virtual",
+      "wallet"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T05:59:00Z"
+  },
+  {
+    "id": 59965104,
+    "full_name": "nuwave/lighthouse",
+    "html_url": "https://github.com/nuwave/lighthouse",
+    "description": "A framework for serving GraphQL from Laravel",
+    "language": "PHP",
+    "topics": [
+      "graphql",
+      "laravel",
+      "laravel-graphql",
+      "lighthouse-php",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T08:41:04Z"
+  },
+  {
+    "id": 57339073,
+    "full_name": "voronkovich/sberbank-acquiring-client",
+    "html_url": "https://github.com/voronkovich/sberbank-acquiring-client",
+    "description": "PHP client for Sberbank and Alphabank acquiring REST APIs",
+    "language": "PHP",
+    "topics": [
+      "acquiring",
+      "alphabank",
+      "php",
+      "sberbank"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2025-03-04T13:56:38Z"
+  },
+  {
+    "id": 17838324,
+    "full_name": "nette/utils",
+    "html_url": "https://github.com/nette/utils",
+    "description": "🛠 Lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
+    "language": "PHP",
+    "topics": [
+      "array-manipulations",
+      "component",
+      "json",
+      "nette",
+      "nette-framework",
+      "pagination",
+      "php",
+      "tools",
+      "trait",
+      "utilities"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2026-08-18T09:55:53Z"
+  },
+  {
+    "id": 139423904,
+    "full_name": "chekalsky/php-banks-db",
+    "html_url": "https://github.com/chekalsky/php-banks-db",
+    "description": "PHP library for getting bank info (name, brand color etc) by first digits of card's number",
+    "language": "PHP",
+    "topics": [
+      "bank",
+      "bank-card",
+      "banks-db",
+      "bin",
+      "credit-card",
+      "iin"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-06-22T11:22:16Z"
+  },
+  {
+    "id": 30713379,
+    "full_name": "andersao/l5-repository",
+    "html_url": "https://github.com/andersao/l5-repository",
+    "description": "Laravel 5 - Repositories to abstract the database layer",
+    "language": "PHP",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-05-27T14:33:20Z"
+  },
+  {
+    "id": 458058,
+    "full_name": "symfony/symfony",
+    "html_url": "https://github.com/symfony/symfony",
+    "description": "The Symfony PHP framework",
+    "language": "PHP",
+    "topics": [
+      "bundle",
+      "framework",
+      "hacktoberfest",
+      "php",
+      "php-framework",
+      "symfony",
+      "symfony-bundle"
+    ],
+    "default_branch": "8.2",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T07:42:59Z"
+  },
+  {
+    "id": 115975835,
+    "full_name": "paragonie/paseto",
+    "html_url": "https://github.com/paragonie/paseto",
+    "description": "Platform-Agnostic Security Tokens",
+    "language": "PHP",
+    "topics": [
+      "paseto",
+      "paseto-tokens",
+      "php"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "archived": false,
+    "pushed_at": "2025-07-19T04:41:23Z"
+  },
+  {
+    "id": 39149031,
+    "full_name": "webonyx/graphql-php",
+    "html_url": "https://github.com/webonyx/graphql-php",
+    "description": "PHP implementation of the GraphQL specification based on the reference implementation in JavaScript",
+    "language": "PHP",
+    "topics": [
+      "api",
+      "api-management",
+      "graphql",
+      "graphql-php",
+      "php",
+      "rest-replacement"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-06T19:05:52Z"
+  },
+  {
+    "id": 17154573,
+    "full_name": "php-pm/php-pm",
+    "html_url": "https://github.com/php-pm/php-pm",
+    "description": "PPM is a process manager, supercharger and load balancer for modern PHP applications.",
+    "language": "PHP",
+    "topics": [
+      "application-server",
+      "php7",
+      "psr7",
+      "symfony"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2023-12-08T21:41:22Z"
+  },
+  {
+    "id": 33916850,
+    "full_name": "spatie/laravel-medialibrary",
+    "html_url": "https://github.com/spatie/laravel-medialibrary",
+    "description": "Associate files with Eloquent models",
+    "language": "PHP",
+    "topics": [
+      "eloquent",
+      "hacktoberfest",
+      "images",
+      "laravel",
+      "media",
+      "php",
+      "upload"
+    ],
+    "default_branch": "main",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-05T08:49:33Z"
+  },
+  {
+    "id": 26511568,
+    "full_name": "wapmorgan/Morphos",
+    "html_url": "https://github.com/wapmorgan/Morphos",
+    "description": "A morphological solution for Russian and English language written completely in PHP. Provides classes to inflect personal names, geographical names, decline and pluralize nouns, generate cardinal and ordinal numerals, spell out money amounts and time intervals. / Морфологическая библиотека для английского и русского языков. Склоняет имена собственные, названия географических объектов, склонение и плюрализация имен собственных и другое.",
+    "language": "PHP",
+    "topics": [
+      "cardinal",
+      "declination",
+      "english-specific",
+      "humanizer",
+      "morphology",
+      "names",
+      "numeral",
+      "ordinal",
+      "pluralization",
+      "react",
+      "russian",
+      "russian-specific"
+    ],
+    "default_branch": "master",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-09-07T09:41:23Z"
+  },
+  {
+    "id": 7548986,
+    "full_name": "laravel/framework",
+    "html_url": "https://github.com/laravel/framework",
+    "description": "Laravel is a web application framework with expressive, elegant syntax.",
+    "language": "PHP",
+    "topics": [
+      "framework",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "13.x",
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T11:06:42Z"
+  },
+  {
+    "id": 1863329,
+    "full_name": "laravel/laravel",
+    "html_url": "https://github.com/laravel/laravel",
+    "description": "Laravel is a web application framework with expressive, elegant syntax. We’ve already laid the foundation for your next big idea — freeing you to create without sweating the small things.",
+    "language": "Blade",
+    "topics": [
+      "framework",
+      "laravel",
+      "php"
+    ],
+    "default_branch": "13.x",
+    "license": null,
+    "archived": false,
+    "pushed_at": "2026-10-06T14:27:55Z"
+  },
+  {
+    "id": 1903522,
+    "full_name": "php/php-src",
+    "html_url": "https://github.com/php/php-src",
+    "description": "The PHP Interpreter",
+    "language": "C",
+    "topics": [],
+    "default_branch": "master",
+    "license": {
+      "key": "bsd-3-clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+      "spdx_id": "BSD-3-Clause",
+      "url": "https://api.github.com/licenses/bsd-3-clause",
+      "node_id": "MDc6TGljZW5zZTU="
+    },
+    "archived": false,
+    "pushed_at": "2026-10-08T10:03:15Z"
+  }
+]

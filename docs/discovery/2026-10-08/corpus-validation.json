@@ -1,0 +1,20 @@
+{
+  "checked_at_utc": "2026-10-08T14:29:35.561306+00:00",
+  "json_files_parsed": 30,
+  "local_link_targets_checked": 279,
+  "line_references_checked": 66,
+  "original_audit_hashes_checked": 4,
+  "original_audit_sources_unchanged": true,
+  "external_source_hashes_checked": 8,
+  "perplexity_snapshot_sizes_checked": 30,
+  "stars_count": 715,
+  "unique_starred_repository_ids": 715,
+  "indexed_files": 114,
+  "problems": [],
+  "limitations": [
+    "HTML and Markdown anchor IDs not checked.",
+    "Line-numbered source excerpts preserve original provenance; this check does not re-audit all source code.",
+    "Existing semantic checks rerun is documented separately; no commerce implementation/concurrency/load tests were run.",
+    "artifact-index.json excludes itself and this validation report to avoid recursive checksums."
+  ]
+}

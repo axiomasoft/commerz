@@ -1,0 +1,173 @@
+{
+  "reviewed_at_utc": "2026-10-08T14:28:23.049657+00:00",
+  "scope": "Independent bounded artifact review, selective supporting source verification; no application or concurrency execution",
+  "reviewed_files": [
+    {
+      "path": "design-hypotheses.md",
+      "sha256": "06f220b94e4d9a5d28ca3ec62f1253e9b6e61506fa6f33421f947c211348c14e",
+      "bytes": 33519,
+      "lines": 221
+    },
+    {
+      "path": "attribute-storage-options.md",
+      "sha256": "d41e9c2206b8c29ad40cf40db66dc7f09b1326acb530feaffc625a80709d11db",
+      "bytes": 23385,
+      "lines": 163
+    },
+    {
+      "path": "logical-schema-candidate.md",
+      "sha256": "7762a853451fa4031ed1a5a9250847ce18fa6950c630738eef72cc3e74c2ddb0",
+      "bytes": 38497,
+      "lines": 261
+    },
+    {
+      "path": "research-roadmap.md",
+      "sha256": "6bb21895f84452e87a990962a6a592725b92dce8bf22420762d4ed98e9f25272",
+      "bytes": 16288,
+      "lines": 131
+    },
+    {
+      "path": "README.md",
+      "sha256": "25fd00a08dac2ba0d137e96c8cfb524baed9e85489a8e943d2affa96040f23a6",
+      "bytes": 8629,
+      "lines": 52
+    },
+    {
+      "path": "CONTEXT.md",
+      "sha256": "7487434a106e7d11025303ed4ed2afc65067e319fc1f64e2db8db996e160cf37",
+      "bytes": 8748,
+      "lines": 89
+    },
+    {
+      "path": "external-platforms.md",
+      "sha256": "836c9a5636549b086ef8096e011dc47f0cbc7f8289ee346f8d25ad4c1ca93a54",
+      "bytes": 21411,
+      "lines": 101
+    },
+    {
+      "path": "ecosystem-conventions.md",
+      "sha256": "acabb0f9c1f8b78bd75bb3fd6e5d26d53ac5733f1fdd6486af9a642b831dccdb",
+      "bytes": 38828,
+      "lines": 197
+    },
+    {
+      "path": "github-references.md",
+      "sha256": "69a671fae482e41deb8a70db98056d8e4fd6576f1877fdc6b4e2256e695fc789",
+      "bytes": 21832,
+      "lines": 135
+    },
+    {
+      "path": "analysis-unbox.md",
+      "sha256": "11a76adf95228adb92fd207bf62d9aaf11c97bed143710eb9d3f093c5f2b3e0f",
+      "bytes": 52843,
+      "lines": 325
+    },
+    {
+      "path": "perplexity-research.md",
+      "sha256": "5bfa31106da315ee8a20a089a2e26739ac216bb62ca34bd4383865667f23ad98",
+      "bytes": 11627,
+      "lines": 67
+    },
+    {
+      "path": "perplexity/verified-findings.md",
+      "sha256": "2c9dd52967729af57d59ef0324e0e8e4999e0c6123ceaff1cf73a38dac16a37d",
+      "bytes": 32570,
+      "lines": 189
+    },
+    {
+      "path": "github/collection-manifest.json",
+      "sha256": "38e7949c90b2c8410a64365a4db90d01bb204fd0e20ee3414f18f22fcb150b8c",
+      "bytes": 868,
+      "lines": 20
+    },
+    {
+      "path": "github/source-manifest.json",
+      "sha256": "e62890556f753aa0d5e5687fa0e8bad689f208b939ced489d566ae16b4254112",
+      "bytes": 11166,
+      "lines": 297
+    },
+    {
+      "path": "github/source-file-index.json",
+      "sha256": "a568ad9a6bab66f03ff6a810106d86a15cabb873c23d24b3ed54d5d0621a30c6",
+      "bytes": 25557,
+      "lines": 470
+    },
+    {
+      "path": "external/source-manifest.json",
+      "sha256": "2f7b66019ff730133e4ddd6490ad827710d7001d503677345113b73ad79ed149",
+      "bytes": 8802,
+      "lines": 164
+    },
+    {
+      "path": "ecosystem/evidence-manifest.json",
+      "sha256": "7f865918b2c0dfd62ea5c330617c7c5e24760117f03c45d4cdef67f497dd6d5f",
+      "bytes": 23040,
+      "lines": 901
+    },
+    {
+      "path": "unbox/alternative-design-review.md",
+      "sha256": "17e43cd6a8ed149db9ed709170bbaf936abd8794b902fb184ac5bf12c2c4a17c",
+      "bytes": 7918,
+      "lines": 36
+    }
+  ],
+  "checks": {
+    "github_count": 715,
+    "github_unique_ids": 715,
+    "github_snapshot_hash_matches": true,
+    "github_last_page_count": 15,
+    "github_last_page_matches_tail": true,
+    "github_after_last_page_count": 0,
+    "github_source_index_count": 78,
+    "github_source_index_unique_count": 78,
+    "github_source_index_commit_matches": true,
+    "external_source_hashes": [
+      {
+        "path": "external/sources/magento/magento2/app/code/Magento/Catalog/etc/db_schema.xml",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/magento/magento2/app/code/Magento/SalesRule/etc/db_schema.xml",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/magento/inventory/Inventory/etc/db_schema.xml",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/magento/inventory/InventoryReservations/etc/db_schema.xml",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/magento/inventory/InventorySales/etc/db_schema.xml",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/shopware/shopware/src/Core/Content/Product/ProductDefinition.php",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/shopware/shopware/src/Core/Content/Property/PropertyGroupDefinition.php",
+        "exists": true,
+        "sha256_matches": true
+      },
+      {
+        "path": "external/sources/shopware/shopware/src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php",
+        "exists": true,
+        "sha256_matches": true
+      }
+    ],
+    "original_chatgpt_artifacts_unchanged": true,
+    "local_markdown_links": {
+      "files_checked": 16,
+      "missing_files_or_lines": [],
+      "html_anchors_checked": false
+    }
+  }
+}

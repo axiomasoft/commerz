@@ -1,0 +1,42 @@
+{
+  "started_at_utc": "2026-10-08T14:02:19.494654+00:00",
+  "finished_at_utc": "2026-10-08T14:02:20.326151+00:00",
+  "purpose": "Reproduce supplied illustrative script; not implementation or production database validation",
+  "safety_review": "Source read in full first. Standard-library imports only; in-memory or newly allocated temporary SQLite databases; no network or external subprocess; temporary cwd and TMPDIR; -B prevents pycache. No application databases accessed.",
+  "command": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/vostrikov/projects/packages/commerz/audits/chatgpt/semantic_checks.py"
+  ],
+  "exit_code": 0,
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "sqlite": "3.45.1",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "source_artifacts": {
+    "architecture-appendix.md": {
+      "path": "/home/vostrikov/projects/packages/commerz/audits/chatgpt/architecture-appendix.md",
+      "sha256": "d7f3cefd4c160dd2727a1de294a8b10ed8e6697420b2097f4278fa97d4f24af9",
+      "bytes": 57788
+    },
+    "verification-matrix.md": {
+      "path": "/home/vostrikov/projects/packages/commerz/audits/chatgpt/verification-matrix.md",
+      "sha256": "4932cdad58ab997d2b0112c4060e174ef283db7497f7219983760383ae87c437",
+      "bytes": 15011
+    },
+    "semantic_checks.py": {
+      "path": "/home/vostrikov/projects/packages/commerz/audits/chatgpt/semantic_checks.py",
+      "sha256": "f8365b95372b7de4b8f43222cc52af69ee94f4b58c18278a2d1cbfad3b07c6dd",
+      "bytes": 13257
+    },
+    "semantic_checks_results.txt": {
+      "path": "/home/vostrikov/projects/packages/commerz/audits/chatgpt/semantic_checks_results.txt",
+      "sha256": "9d4f2271ffa8a19dec69bc2d5fe6921ec0ca287a3ffce54010fd8508c5437359",
+      "bytes": 2559
+    }
+  },
+  "source_hashes_unchanged": true,
+  "output_files": [
+    "semantic-checks-reproduced.stdout.txt",
+    "semantic-checks-reproduced.stderr.txt"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "recorded_date": "2026-10-08",
+  "provider": "Perplexity.ai via local perplexity-web-mcp",
+  "transport": "Shell -> imported installed daemon client -> existing configured pool",
+  "client_package": "perplexity-web-mcp",
+  "client_version": "1.4.0",
+  "client_commit": "fc098503e44a8d4c11862264f1b60fa9841849f9",
+  "method": "searchDeep",
+  "session_policy": "Used pre-existing local session; no login/config/account modification; no .env/cookies/credentials printed or copied",
+  "queries_contain": "Generic architecture questions; no private source or audit text",
+  "scope": "Research leads; primary verification is selective, not full platform audit",
+  "known_extraction_limits": [
+    "Some tables and math did not survive DOM text extraction.",
+    "Returned source lists have 10 entries each; completeness unknown.",
+    "Inline links may be missing or moving latest/master URLs.",
+    "Some headings between bullet groups were not preserved."
+  ],
+  "responses": [
+    {
+      "id": "01-typed-catalog",
+      "status": "completed",
+      "method": "searchDeep",
+      "started_at": "2026-10-08T14:02:03.932Z",
+      "finished_at": "2026-10-08T14:06:02.747Z",
+      "answer_characters": 23970,
+      "returned_source_count": 10,
+      "json_sha256": "4ac87a2de619ed74ba409647514a84113bdaf0965b57e8744189a9d4b9639d62"
+    },
+    {
+      "id": "02-inventory-reservations",
+      "status": "completed",
+      "method": "searchDeep",
+      "started_at": "2026-10-08T14:02:03.933Z",
+      "finished_at": "2026-10-08T14:04:18.188Z",
+      "answer_characters": 22108,
+      "returned_source_count": 10,
+      "json_sha256": "80cd8c68a68679794d72ca34c8c0db0713c170e906233f3ae4083a3abe352094"
+    },
+    {
+      "id": "03-promotions-pricing-plugins",
+      "status": "completed",
+      "method": "searchDeep",
+      "started_at": "2026-10-08T14:02:03.933Z",
+      "finished_at": "2026-10-08T14:05:29.532Z",
+      "answer_characters": 26813,
+      "returned_source_count": 10,
+      "json_sha256": "8c0f7c44241465cb1d613502afc4e040f274c112e19364d33d8afbd0b8dd36bf"
+    },
+    {
+      "id": "04-counterexamples-boundaries",
+      "status": "completed",
+      "method": "searchDeep",
+      "started_at": "2026-10-08T14:04:43.825Z",
+      "finished_at": "2026-10-08T14:07:32.176Z",
+      "answer_characters": 20845,
+      "returned_source_count": 10,
+      "json_sha256": "21986bf982dba3b68017e7d5ced44d152e590969057ea055ebae487880063560"
+    }
+  ],
+  "total_answer_characters": 93736,
+  "unique_lead_urls": 67,
+  "local_source_files": 30
+}

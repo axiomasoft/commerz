@@ -1,0 +1,18 @@
+{
+  "checked_on": "2026-10-08",
+  "stars": 715,
+  "unique_ids": 715,
+  "php_laravel_candidates": 284,
+  "metadata_curated": 47,
+  "source_reviews": 6,
+  "pinned_source_files": 78,
+  "relative_links_broken": [],
+  "snapshot_sha256_matches": true,
+  "last_page_tail_matches": true,
+  "last_page_count": 15,
+  "after_last_page_count": 0,
+  "last_page_link_header": [
+    "Link: <https://api.github.com/user/starred?per_page=100&page=7>; rel=\"prev\", <https://api.github.com/user/starred?per_page=100&page=1>; rel=\"first\""
+  ],
+  "source_repositories_tests_run": false
+}

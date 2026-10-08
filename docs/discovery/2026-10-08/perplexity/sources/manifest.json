@@ -1,0 +1,272 @@
+[
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "LICENSE",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/LICENSE",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/LICENSE",
+    "bytes": 1069
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Doctrine/ORM/Inventory/Operator/OrderInventoryOperator.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/Doctrine/ORM/Inventory/Operator/OrderInventoryOperator.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Doctrine/ORM/Inventory/Operator/OrderInventoryOperator.php",
+    "bytes": 1999
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/EventListener/Workflow/Order/HoldInventoryListener.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/Order/HoldInventoryListener.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/Order/HoldInventoryListener.php",
+    "bytes": 932
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/EventListener/Workflow/OrderPayment/SellOrderInventoryListener.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/OrderPayment/SellOrderInventoryListener.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/OrderPayment/SellOrderInventoryListener.php",
+    "bytes": 902
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ProductVariant.orm.xml",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ProductVariant.orm.xml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ProductVariant.orm.xml",
+    "bytes": 2636
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Attribute/Model/AttributeValue.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Component/Attribute/Model/AttributeValue.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Attribute/Model/AttributeValue.php",
+    "bytes": 4196
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php",
+    "bytes": 3264
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Inventory/Checker/AvailabilityChecker.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Component/Inventory/Checker/AvailabilityChecker.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Inventory/Checker/AvailabilityChecker.php",
+    "bytes": 778
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "branch": "2.3",
+    "commit": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/Sylius-Sylius/src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "bytes": 1849
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "LICENSE.md",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/LICENSE.md",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/LICENSE.md",
+    "bytes": 1075
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/config/cart.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/config/cart.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/config/cart.php",
+    "bytes": 5807
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100020_create_products_table.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/database/migrations/2021_07_29_100020_create_products_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100020_create_products_table.php",
+    "bytes": 729
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php",
+    "bytes": 1332
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Actions/Carts/CreateOrder.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Actions/Carts/CreateOrder.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Actions/Carts/CreateOrder.php",
+    "bytes": 2620
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/Casts/AsAttributeData.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Base/Casts/AsAttributeData.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/Casts/AsAttributeData.php",
+    "bytes": 1823
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/FieldType.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Base/FieldType.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/FieldType.php",
+    "bytes": 420
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/FieldTypeManifest.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Base/FieldTypeManifest.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/FieldTypeManifest.php",
+    "bytes": 1544
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/ModelManifest.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Base/ModelManifest.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/ModelManifest.php",
+    "bytes": 5638
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/Purchasable.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Base/Purchasable.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/Purchasable.php",
+    "bytes": 2397
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Managers/DiscountManager.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Managers/DiscountManager.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Managers/DiscountManager.php",
+    "bytes": 8348
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "branch": "1.x",
+    "commit": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Pipelines/Order/Creation/CreateOrderLines.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/lunarphp-lunar/packages/core/src/Pipelines/Order/Creation/CreateOrderLines.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Pipelines/Order/Creation/CreateOrderLines.php",
+    "bytes": 2320
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "LICENSE",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/LICENSE",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/LICENSE",
+    "bytes": 1078
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024326_create_cart_rule_coupons_table.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024326_create_cart_rule_coupons_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024326_create_cart_rule_coupons_table.php",
+    "bytes": 1191
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/CartRule/src/Listeners/Order.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Listeners/Order.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/CartRule/src/Listeners/Order.php",
+    "bytes": 5896
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/CartRule/src/Providers/EventServiceProvider.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Providers/EventServiceProvider.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/CartRule/src/Providers/EventServiceProvider.php",
+    "bytes": 594
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/CartRule/src/Repositories/CartRuleCouponUsageRepository.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Repositories/CartRuleCouponUsageRepository.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/CartRule/src/Repositories/CartRuleCouponUsageRepository.php",
+    "bytes": 340
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php",
+    "bytes": 1522
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php",
+    "bytes": 821
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "bytes": 2294
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "branch": "2.5",
+    "commit": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Sales/src/Repositories/OrderRepository.php",
+    "local": "docs/discovery/2026-10-08/perplexity/sources/bagisto-bagisto/packages/Webkul/Sales/src/Repositories/OrderRepository.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Sales/src/Repositories/OrderRepository.php",
+    "bytes": 13776
+  }
+]

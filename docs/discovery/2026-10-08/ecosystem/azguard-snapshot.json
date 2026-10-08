@@ -1,0 +1,123 @@
+{
+  "repository": "azguard",
+  "head": "ba02a9a422aa76d20333129b430861ca052258d4",
+  "dirty": true,
+  "status_entries": 81,
+  "read_surface": "working tree",
+  "packages": [
+    {
+      "path": "composer.json",
+      "name": "axiomasoft/azguard-monorepo",
+      "require": {
+        "php": "^8.3",
+        "axiomasoft/azguard": "^1.0",
+        "axiomasoft/azguard-filament": "^1.0"
+      },
+      "autoload": {},
+      "suggest": {},
+      "scripts": {
+        "test": "php -d memory_limit=1G vendor/bin/pest --exclude-group=engines,redis,replica",
+        "test:parallel": "vendor/bin/pest --exclude-group=engines,redis,replica --parallel --passthru-php='-d memory_limit=1G'",
+        "test:coverage": "vendor/bin/pest --exclude-group=engines,redis,replica --coverage --min=85",
+        "test:unit": "vendor/bin/pest tests/Unit",
+        "test:feature": "vendor/bin/pest tests/Feature --exclude-group=redis",
+        "test:pgsql": [
+          "@putenv DB_CONNECTION=pgsql",
+          "php -d memory_limit=1G vendor/bin/pest --exclude-group=redis,replica"
+        ],
+        "test:mysql": [
+          "@putenv DB_CONNECTION=mysql",
+          "php -d memory_limit=1G vendor/bin/pest --exclude-group=redis,replica"
+        ],
+        "test:redis": "php -d memory_limit=1G vendor/bin/pest --ci --fail-on-skipped --group=redis",
+        "lint": "vendor/bin/pint",
+        "lint:check": "vendor/bin/pint --test",
+        "refactor": "vendor/bin/rector process",
+        "refactor:check": "vendor/bin/rector process --dry-run",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=1G",
+        "test:types": "php -d memory_limit=1G vendor/bin/pest --type-coverage --min=98",
+        "check:coverage": "bash bin/coverage-gate.sh",
+        "mutate": "bash bin/mutation-gate.sh",
+        "mutate:core": "bash bin/mutation-gate.sh core",
+        "mutate:filament": "bash bin/mutation-gate.sh filament",
+        "mutate:all": "bash bin/mutation-gate.sh",
+        "mutate:diff": "bash bin/mutation-gate.sh",
+        "api:manifest": "php bin/api-manifest.php --write",
+        "api:check": "php bin/api-manifest.php --check",
+        "docs:parity": "bash bin/docs-parity-gate.sh",
+        "docs:php": "bash bin/docs-php-version-gate.sh",
+        "check": [
+          "@lint:check",
+          "@analyse",
+          "@refactor:check",
+          "@test:types",
+          "@test",
+          "@check:coverage",
+          "@mutate:all"
+        ],
+        "fix": [
+          "@lint",
+          "@refactor"
+        ],
+        "test:engines:pgsql": [
+          "@putenv DB_CONNECTION=pgsql",
+          "php -d memory_limit=1G vendor/bin/pest --group=engines --fail-on-skipped"
+        ],
+        "test:engines:mysql": [
+          "@putenv DB_CONNECTION=mysql",
+          "php -d memory_limit=1G vendor/bin/pest --group=engines --fail-on-skipped"
+        ],
+        "test:mariadb": [
+          "@putenv DB_CONNECTION=mariadb",
+          "php -d memory_limit=1G vendor/bin/pest --exclude-group=engines,redis,replica"
+        ],
+        "test:engines:mariadb": [
+          "@putenv DB_CONNECTION=mariadb",
+          "php -d memory_limit=1G vendor/bin/pest --group=engines --fail-on-skipped"
+        ]
+      }
+    },
+    {
+      "path": "packages/core/composer.json",
+      "name": "axiomasoft/azguard",
+      "require": {
+        "php": "^8.3",
+        "illuminate/auth": "^11.0|^12.0|^13.0",
+        "illuminate/console": "^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^11.0|^12.0|^13.0",
+        "illuminate/database": "^11.0|^12.0|^13.0",
+        "illuminate/filesystem": "^11.0|^12.0|^13.0",
+        "illuminate/http": "^11.0|^12.0|^13.0",
+        "illuminate/log": "^11.0|^12.0|^13.0",
+        "illuminate/queue": "^11.0|^12.0|^13.0",
+        "illuminate/routing": "^11.0|^12.0|^13.0",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "AzGuard\\": "src/"
+        }
+      },
+      "suggest": {
+        "dragonmantank/cron-expression": "Required to validate cron expressions and run Laravel scheduled maintenance without laravel/framework."
+      },
+      "scripts": {}
+    },
+    {
+      "path": "packages/filament/composer.json",
+      "name": "axiomasoft/azguard-filament",
+      "require": {
+        "php": "^8.3",
+        "axiomasoft/azguard": "self.version",
+        "filament/filament": "^5.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "AzGuard\\Filament\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    }
+  ]
+}

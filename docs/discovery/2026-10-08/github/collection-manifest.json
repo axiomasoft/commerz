@@ -1,0 +1,20 @@
+{
+  "requested_on": "2026-10-08",
+  "account": "academici",
+  "command": "gh api --paginate 'user/starred?per_page=100'",
+  "gh_version": "2.45.0",
+  "count": 715,
+  "unique_repository_ids": 715,
+  "pagination": {
+    "page_size": 100,
+    "expected_pages": 8,
+    "last_page": 8,
+    "last_page_count": 15,
+    "page_9_count": 0,
+    "last_page_matches_tail": true,
+    "gh_output_note": "This invocation was observed as one merged array before normalization. The full metadata snapshot is preserved as normalized JSON in starred-repositories.json (not byte-for-byte CLI output); the original duplicate raw file was not retained. HTTP page 8 and empty page 9 were collected separately."
+  },
+  "snapshot_file": "starred-repositories.json",
+  "snapshot_sha256": "61531329d43201c9dba4da2b7b2d17a11ad807ee7f26295a2b98310344927993",
+  "curated_metadata_candidates": 47
+}

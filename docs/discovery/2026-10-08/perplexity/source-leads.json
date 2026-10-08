@@ -1,0 +1,475 @@
+[
+  {
+    "url": "https://api-docs.bagisto.com/api/graphql-api/admin/marketing/promotions/cart-rules/",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://api-docs.bagisto.com/api/rest-api/shop/attributes/get-attributes.html",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://bagisto.com/en/bagisto-eav-database/",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://devdocs.bagisto.com/package-development/models.html",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://devdocs.bagisto.com/product-type-development/getting-started.html",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://developer.adobe.com/commerce/php/development/components/attributes",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://developer.adobe.com/commerce/php/development/components/events-and-observers/",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://developer.adobe.com/commerce/php/development/components/plugins",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://developer.adobe.com/commerce/webapi/rest/inventory/",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.bagisto.com/attribute/product-attribute.html",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.bagisto.com/marketing/cart-rules",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.bagisto.com/product-types/products.html",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/extending/carts",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/extending/discounts",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/getting-started/overview/introduction",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/reference/attributes",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/reference/carts",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/reference/orders",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.lunarphp.com/1.x/reference/products",
+    "queries": [
+      "01-typed-catalog",
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/how-to-add-a-custom-cart-promotion-action",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/how-to-add-a-custom-cart-promotion-rule",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/public/getting-started/first-product",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/the-book/carts-and-orders/cart-promotions",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/the-book/products/attributes",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://docs.sylius.com/the-book/products/inventory",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/b2b/quotes/quotes",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/catalog/navigation/navigation-layered",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/product-attributes/create/attribute-product-create",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/products/types/product-create-configurable",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/inventory/basics/selection-reservations",
+    "queries": [
+      "02-inventory-reservations",
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/inventory/basics/sources-stocks",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/inventory/cli",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/marketing/promotions/cart-rules/price-rules-cart-coupon",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://experienceleague.adobe.com/en/docs/commerce-admin/marketing/promotions/cart-rules/price-rules-cart-create",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/Sylius/Attribute/blob/master/Model/AttributeValue.php",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/Sylius/Order/blob/master/Model/OrderItem.php",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/Sylius/Sylius/blob/1.13/docs/components_and_bundles/components/Attribute/models.rst",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/bagisto/bagisto/blob/d5cb5317dcf2f24f0c8e145944ec0f81f45a0392/packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/bagisto/bagisto/blob/master/packages/Webkul/Sales/src/Models/OrderItem.php",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/lunarphp/lunar",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/lunarphp/lunar/blob/1.x/packages/core/src/Pipelines/Cart/ApplyDiscounts.php",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/Catalog/etc/db_schema.xml",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/Sales/etc/db_schema.xml",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/SalesRule/Model/RulesApplier.php",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/SalesRule/Model/Validator.php",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://github.com/magento/magento2/tree/2.4-develop/app/code/Magento/SalesRule",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://help.shopify.com/en/manual/custom-data/metafields",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://help.shopify.com/en/manual/custom-data/metaobjects",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://help.shopify.com/en/manual/discounts/discount-combinations",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/admin-graphql/2026-10/objects/DiscountAllocation",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/admin-graphql/latest/objects/FulfillmentOrder",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem",
+    "queries": [
+      "01-typed-catalog",
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel",
+    "queries": [
+      "02-inventory-reservations",
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/admin-graphql/latest/objects/ProductVariant",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/functions/2026-10/discount",
+    "queries": [
+      "03-promotions-pricing-plugins"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/api/storefront/latest/objects/metafield",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/metafields/list-of-data-types",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/metafields/list-of-validation-options",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/metaobjects/data-modeling-with-metafields-and-metaobjects",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/orders-fulfillment/inventory-management-apps/manage-quantities-states",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://shopify.dev/docs/apps/build/purchase-options/subscriptions/fulfillments/sync-orders-subscriptions",
+    "queries": [
+      "04-counterexamples-boundaries"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://www.postgresql.org/docs/current/datatype-json.html",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://www.postgresql.org/docs/current/gin.html",
+    "queries": [
+      "01-typed-catalog"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  },
+  {
+    "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+    "queries": [
+      "02-inventory-reservations"
+    ],
+    "verification": "unverified lead; see verified-findings.md for explicitly checked claims"
+  }
+]

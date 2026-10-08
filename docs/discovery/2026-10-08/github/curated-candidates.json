@@ -1,0 +1,284 @@
+[
+  {
+    "repository": "aimeos/aimeos-laravel",
+    "research_question": "Laravel-интеграция Aimeos; следующий шаг — перейти в owning core и проверить manager/decorator, product/list/property, multi-site scope. MIT wrapper нельзя считать лицензией всего стека.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "unopim/unopim",
+    "research_question": "PIM: семейства атрибутов, locale/channel, import/export, варианты, массовое редактирование и качество каталога.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "aureuserp/aureuserp",
+    "research_question": "ERP: purchase/sales/inventory, единицы измерения, связь склада с заказом; сравнить с commerce-only подходом.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "Blair2004/NexoPOS",
+    "research_question": "POS и склад: движения, точки продаж, модульные расширения, офлайн/кассовые сценарии; API показывает GPL-3.0.",
+    "review_level": "metadata_only",
+    "license_api": "GPL-3.0"
+  },
+  {
+    "repository": "HiEventsDev/Hi.Events",
+    "research_question": "Билеты: ограниченная вместимость, временные резервы, типы tickets; язык репозитория сам по себе не описывает весь backend.",
+    "review_level": "metadata_only",
+    "license_api": "NOASSERTION"
+  },
+  {
+    "repository": "openclassify/openclassify",
+    "research_question": "Классифайды: модульные типы объявлений, поля, плагины; полезный контрпример товарам с физическим остатком.",
+    "review_level": "metadata_only",
+    "license_api": "—"
+  },
+  {
+    "repository": "akaunting/akaunting",
+    "research_question": "Учёт: документы, валюты, граница бухгалтерии и commerce. Проверить лицензию отдельного модуля перед копированием.",
+    "review_level": "metadata_only",
+    "license_api": "NOASSERTION"
+  },
+  {
+    "repository": "crater-invoice-inc/crater",
+    "research_question": "Invoices: неизменяемые снимки строк/адресов/налогов, округление и документные статусы.",
+    "review_level": "metadata_only",
+    "license_api": "AGPL-3.0"
+  },
+  {
+    "repository": "Safemood/discountify",
+    "research_question": "Пользовательские условия скидок, схема регистрации conditions/actions и пересчёт.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "michael-rubel/laravel-couponables",
+    "research_question": "Полиморфные промокоды: scope применимости, usage ledger, лимиты и конкурентное применение.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "mathiasonea/laravel-rulebook",
+    "research_question": "Версионируемые во времени правила и объяснение выбранного решения: кандидат для eligibility/price decision trace.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "lukepolo/laracart",
+    "research_question": "Небольшой cart API: строка, options, subtotal, discount/tax порядок.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "JackieDo/Laravel-Cart",
+    "research_question": "Универсальная корзина: identity строк, слияние guest/customer cart, сериализация.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "revoltify/subscriptionify",
+    "research_question": "Feature entitlements и подписки: граница recurring product и access rights.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "Foysal50x/tashil",
+    "research_question": "Usage/billing/feature limits: считать отдельным контекстом, проверить модель периодов и rollover.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "masterix21/laravel-entitlements",
+    "research_question": "Права и лимиты после продажи цифрового доступа.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "zaber-dev/laravel-quota",
+    "research_question": "Календарные периоды и счётчики квот: полезны для лимитированных benefits.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "bavix/laravel-wallet",
+    "research_question": "Кошелёк: ledger, баланс, atomicity и rollback; не приравнивать wallet к системе эквайринга.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "HPWebdeveloper/laravel-pay-pocket",
+    "research_question": "Альтернативная модель кошельков; сравнить точность и изоляцию конкурентных операций.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "thephpleague/omnipay",
+    "research_question": "Framework-agnostic gateway API; проверить актуальные драйверы и асинхронную семантику платежей.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "shetabit/payment",
+    "research_question": "Laravel drivers, purchase/verify: сравнить контракт с capture/refund/webhooks.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "ken-de-nigerian/payzephyr",
+    "research_question": "Современный единый payments API: кандидат для driver ergonomics.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "square1-io/laravel-mpp",
+    "research_question": "Machine payments: смежная идея, низкий приоритет для базового commerce.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "protonemedia/laravel-paddle",
+    "research_question": "Subscriptions/payment webhooks и связь внешнего billing provider с локальными сущностями.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "voronkovich/sberbank-acquiring-client",
+    "research_question": "Пример конкретного российского acquiring adapter, не core domain.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "appwilio/yakassa",
+    "research_question": "Локальная интеграция оплаты; актуальность API/чеков отдельно проверять в первичных документах.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "jordanbrauer/unit-converter",
+    "research_question": "Единицы измерения для массы/размеров/дробного количества; точность и dimension safety требуют проверки.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "InterNACHI/modular",
+    "research_question": "Границы Laravel modules и загрузка package resources.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "nWidart/laravel-modules",
+    "research_question": "Жизненный цикл модулей, service providers, миграции; сравнить с обычными Composer plugins.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "MiranSalehi/mksine",
+    "research_question": "Устанавливаемые plugins/themes/hooks: исследовать регистрацию, зависимости и порядок загрузки.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "fresns/fresns",
+    "research_question": "Расширяемая Laravel-платформа другого домена: lifecycle плагинов и контракты интеграции.",
+    "review_level": "metadata_only",
+    "license_api": "Apache-2.0"
+  },
+  {
+    "repository": "flarum/framework",
+    "research_question": "Хороший смежный кандидат для extension API, стабильных hooks и совместимости версий.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "WendellAdriel/laravel-expressive",
+    "research_question": "Типизированные объекты поверх Eloquent: подход к сериализации и API value types.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "YorCreative/Laravel-Argonaut-DTO",
+    "research_question": "DTO validation/casting для команд импорта и внешних контрактов.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "Astrotomic/laravel-translatable",
+    "research_question": "Локализуемые значения и fallback-политика.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "justbetter/laravel-unique-values",
+    "research_question": "Генерация уникальных номеров под конкуренцией: order number/SKU/coupon code.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "PHP-CMSIG/search",
+    "research_question": "Search abstraction: кандидат для адаптеров поиска, не замена authoritative storage.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "hirethunk/verbs",
+    "research_question": "Event sourcing: сравнить для stock/ledger, не назначать на весь commerce автоматически.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "ecotoneframework/ecotone",
+    "research_question": "Messages/CQRS/DDD и интеграционные гарантии; сложность нужно сопоставить масштабу пакета.",
+    "review_level": "metadata_only",
+    "license_api": "NOASSERTION"
+  },
+  {
+    "repository": "nuwber/rabbitevents",
+    "research_question": "Интеграционные сообщения и брокер, проверить delivery semantics.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "prwnr/laravel-streamer",
+    "research_question": "Redis Streams: альтернативный транспорт интеграционных событий.",
+    "review_level": "metadata_only",
+    "license_api": "—"
+  },
+  {
+    "repository": "spatie/laravel-webhook-client",
+    "research_question": "Приём webhook; dedupe и state transition остаются доменными задачами.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "spatie/laravel-webhook-server",
+    "research_question": "Исходящие webhook и retries; исследовать вместе с transactional outbox.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "owen-it/laravel-auditing",
+    "research_question": "Аудит изменения моделей; отличать от бухгалтерского или складского ledger.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "spatie/laravel-activitylog",
+    "research_question": "Операционный audit trail для административных действий.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "spatie/laravel-medialibrary",
+    "research_question": "Медиа товаров: существующая инфраструктура вместо ещё одной реализации.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  },
+  {
+    "repository": "tenancy/tenancy",
+    "research_question": "Разделение данных арендаторов; tenant/store/channel/location не считать синонимами.",
+    "review_level": "metadata_only",
+    "license_api": "MIT"
+  }
+]

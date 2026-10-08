@@ -1,0 +1,901 @@
+{
+  "captured_at": "2026-10-08T14:04:22.820169+00:00",
+  "method": "Read working-tree files; no code execution or tests; excerpts are local first-party evidence, not endorsement of correctness.",
+  "repositories": [
+    {
+      "repository": "chatom",
+      "head": "8d6b2ac050955ed91696c92b2d364c3a53629eb3",
+      "dirty": false,
+      "status_entries": 0,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "8063238275a820830d84aa488fee7b60d3bcc559e58e8ef1f7fecc4515b6c180",
+          "lines": 26,
+          "excerpts": [
+            [
+              1,
+              27
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/composer.json",
+          "sha256": "936a15debf67131e56f028ca057e54c5c2a3e96363b6bb08cf8ec66674c468ab",
+          "lines": 190,
+          "excerpts": [
+            [
+              1,
+              100
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/config/chatom.php",
+          "sha256": "3330724ae8e492bfc10631aeb69d23fadecd6ee16f073b13083f29358f5a326c",
+          "lines": 253,
+          "excerpts": [
+            [
+              25,
+              77
+            ],
+            [
+              100,
+              131
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Spaces/Space.php",
+          "sha256": "78f5fe20d01a8a56c3bdf1e5f065413171adcf9164a5acb301977ff42974252d",
+          "lines": 615,
+          "excerpts": [
+            [
+              305,
+              356
+            ],
+            [
+              505,
+              528
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Data/SchemaSpace.php",
+          "sha256": "294d0beef817079158003f05f83aaefdb7e976228c5ff27ed1e42de42bdd0cc0",
+          "lines": 79,
+          "excerpts": [
+            [
+              10,
+              78
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Enums/IdStrategy.php",
+          "sha256": "0639a5904ae6a657958dbe55de5f8c7892e2860207a9502017686bed2cbf0df8",
+          "lines": 30,
+          "excerpts": [
+            [
+              9,
+              29
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Internal/Services/SchemaNames.php",
+          "sha256": "ec36aa0fc9fedde101954e127d1ffbb33329ba0ebd481a9c2c5bf1bd120e50eb",
+          "lines": 64,
+          "excerpts": [
+            [
+              9,
+              39
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Contracts/SchemaComponent.php",
+          "sha256": "34f3f1d550342ce6bda14791f6db976344369b10143c9d206972ff5de701a8b5",
+          "lines": 41,
+          "excerpts": [
+            [
+              10,
+              41
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Contracts/SchemaStep.php",
+          "sha256": "2f25cba11c67af94f7d481515d662cade44edc8248e06031a5d5a6b546bf6e5b",
+          "lines": 25,
+          "excerpts": [
+            [
+              10,
+              25
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Plugins/Contracts/Plugin.php",
+          "sha256": "68b0e6e578b223fd62dcce4501a288626628a2081d3649eef3a6450cc256538d",
+          "lines": 21,
+          "excerpts": [
+            [
+              11,
+              21
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Plugins/PluginManifest.php",
+          "sha256": "a2a06153b359b27eace4949095f9db6c75037a5434b54bf5744680d8a16af066",
+          "lines": 73,
+          "excerpts": [
+            [
+              10,
+              38
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Plugins/PluginRegistrar.php",
+          "sha256": "430cbccc11586a07d7580390fe69ffc55d09783f886b69e9793168ef3b56acc6",
+          "lines": 253,
+          "excerpts": [
+            [
+              30,
+              82
+            ],
+            [
+              138,
+              175
+            ],
+            [
+              186,
+              225
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Plugins/Internal/PluginGraphCompiler.php",
+          "sha256": "e1406f02f16da9f29500fcd49fc3075d16387c8ede099683e13fe449ede01d98",
+          "lines": 849,
+          "excerpts": [
+            [
+              42,
+              79
+            ],
+            [
+              101,
+              128
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Actors/Data/ActorRef.php",
+          "sha256": "736c776f10e7974a925cc72ecfe6be74d04e5a9e8545d21f2f8f67b598cdb502",
+          "lines": 53,
+          "excerpts": [
+            [
+              11,
+              31
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Messages/Data/SendMessage.php",
+          "sha256": "0503089a1291b4944bc9af93cf91279e9a2ed75e65ccd9c92e57720da72981e7",
+          "lines": 66,
+          "excerpts": [
+            [
+              15,
+              38
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Operations/Pipeline/OperationContext.php",
+          "sha256": "f835d0812de380e518c0712992c2dd6f142768feb06645dbfee6a4d481b7a032",
+          "lines": 82,
+          "excerpts": [
+            [
+              13,
+              81
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Operations/Internal/Pipeline/OperationRunner.php",
+          "sha256": "2f0daba48f0d36c3176de318266f5fcab7b7fa2646f3d0854430894efb729b99",
+          "lines": 169,
+          "excerpts": [
+            [
+              17,
+              97
+            ],
+            [
+              130,
+              149
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Spaces/Internal/Services/ConnectionSpaceTransactions.php",
+          "sha256": "5687f3c147e9bdd74f375818f4e21a17e4744d8e88a5d65285b393b17d7b44f7",
+          "lines": 125,
+          "excerpts": [
+            [
+              21,
+              45
+            ],
+            [
+              75,
+              90
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Outbox/OutboxWriter.php",
+          "sha256": "d69cb0d779997a6a5105861cf4b0bcf347e01139a45b3d78148a506f72163d16",
+          "lines": 104,
+          "excerpts": [
+            [
+              21,
+              44
+            ],
+            [
+              60,
+              103
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Errors/Exceptions/ChatomException.php",
+          "sha256": "5a2f0a5c006d6e28fd96ab4765e7c5c9f8452dcdb6a66126ab6fa53aab764d93",
+          "lines": 72,
+          "excerpts": [
+            [
+              14,
+              45
+            ]
+          ]
+        },
+        {
+          "path": "docs/architecture/layering-rules.md",
+          "sha256": "5aa5970e9475943d77fd9dcf9b94e4abf905300973f7ddb343f170ea71e7389e",
+          "lines": 77,
+          "excerpts": [
+            [
+              11,
+              61
+            ]
+          ]
+        },
+        {
+          "path": "tests/Arch/ArchitectureGatesTest.php",
+          "sha256": "3c188b2f71c9834161ed02a7b585f89662b3a076b50752a4b5ebfae443087d5c",
+          "lines": 163,
+          "excerpts": [
+            [
+              22,
+              49
+            ],
+            [
+              70,
+              109
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "repository": "vaulter",
+      "head": "f1af3d883030407bb954e98156ff7a8baaf59660",
+      "dirty": false,
+      "status_entries": 0,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "dc197e076b7ea44eb8ecfb298e9a94ca9ef69557f466ba4d4127615ddbb55e39",
+          "lines": 18,
+          "excerpts": [
+            [
+              1,
+              19
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/composer.json",
+          "sha256": "232f579fffff6eedeb3152ce4b1e0a8b8139bfd096c568c0e0868fb638d27dfd",
+          "lines": 99,
+          "excerpts": [
+            [
+              1,
+              95
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/config/vaulter.php",
+          "sha256": "61321bcbf5fd25ae8d876981dbf87658d605af1278943b8392c3ab08a71912ff",
+          "lines": 179,
+          "excerpts": [
+            [
+              33,
+              69
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Configuration/DatabaseConfig.php",
+          "sha256": "e02ec4d75f7c667e95dfb7eb2ae65de26c30e578cfb0a32ba4fbd14739bac43e",
+          "lines": 43,
+          "excerpts": [
+            [
+              9,
+              43
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/IdStrategyResolver.php",
+          "sha256": "b299c5821b07699fe4e43f719ee97f9723447f78b4ca5f3f3e5ca31f3d7855b6",
+          "lines": 48,
+          "excerpts": [
+            [
+              11,
+              47
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/HostKeyColumns.php",
+          "sha256": "392c79977e3b0ef4b9488c5207ef18e9367d27f895979432b4c3c60662a7e82b",
+          "lines": 42,
+          "excerpts": [
+            [
+              11,
+              40
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/VaulterSchema.php",
+          "sha256": "6150179958eed5c7065447879e9ddf0030afa60dbc4e2224d273d84864f6e8be",
+          "lines": 108,
+          "excerpts": [
+            [
+              11,
+              16
+            ],
+            [
+              62,
+              94
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Tenancy/TenancyBoundary.php",
+          "sha256": "d01c860c35da161a5ca22e5913b1307e080f21a7321e718af1d0215ffe17ecd5",
+          "lines": 198,
+          "excerpts": [
+            [
+              19,
+              44
+            ],
+            [
+              124,
+              174
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Contracts/Tenancy/TenantResolver.php",
+          "sha256": "df3b71d845218ed72004abeb8bea43527c6a4fd9d833c07e09a6018257869c57",
+          "lines": 10,
+          "excerpts": [
+            [
+              5,
+              10
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Jobs/Middleware/RestoreTenantContext.php",
+          "sha256": "f85971b1bca9c8578b7c31e1f76ba952d5b6740e7d3c078b38504873954e1377",
+          "lines": 71,
+          "excerpts": [
+            [
+              18,
+              69
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Profiles/ProfileRegistry.php",
+          "sha256": "b2858fbac2cbdf2f74ac77f29e58ae78b2f0a1a22e90fe9c59fc43c123861584",
+          "lines": 87,
+          "excerpts": [
+            [
+              13,
+              69
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Profiles/ProfileProvider.php",
+          "sha256": "51c4efb9cc3e5ce627bd616c634a22eef637486bb02abb8200035a77d36890db",
+          "lines": 16,
+          "excerpts": [
+            [
+              7,
+              16
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Handlers/FileHandlerRegistry.php",
+          "sha256": "c436d0b2bee6725eb07745705910a6a14cda5b8913e7c330e7a1700461d7ea95",
+          "lines": 324,
+          "excerpts": [
+            [
+              15,
+              38
+            ],
+            [
+              70,
+              101
+            ]
+          ]
+        },
+        {
+          "path": "packages/documents/src/Registries/DocumentTypeRegistry.php",
+          "sha256": "5b1da6cc60ef14de9069bf87dc8c3c70eedd2451bcc8dd30f66cd8a975ee3438",
+          "lines": 23,
+          "excerpts": [
+            [
+              7,
+              23
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Operations/OperationContext.php",
+          "sha256": "b430c7010d9772d29be36b92c0964ff3cc9d6951d2591c1f4db647a62b61d148",
+          "lines": 42,
+          "excerpts": [
+            [
+              12,
+              41
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/VaulterServiceProvider.php",
+          "sha256": "63d4327f7b59437ab46ae123a6cc19ea50ff39808f3ebab5c4e28e3bf8123cf0",
+          "lines": 60,
+          "excerpts": [
+            [
+              19,
+              59
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Operations/AccessOperations.php",
+          "sha256": "e756c639d7e418879619f7ba336ef8a5947b398f43d8d1cd0d0b3d6d64cb37c3",
+          "lines": 109,
+          "excerpts": [
+            [
+              24,
+              60
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/tests/Arch/OperationsBoundaryTest.php",
+          "sha256": "2f1a8068413e9dc7bbac2aedf5d03f573635be19009e648e76cac203b8b4dc42",
+          "lines": 23,
+          "excerpts": [
+            [
+              11,
+              23
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Exceptions/VaulterException.php",
+          "sha256": "4d14300c9d0d8c82ca021ddb0a70bb7a0eda364c6cc33584a8f40df3ee006357",
+          "lines": 46,
+          "excerpts": [
+            [
+              13,
+              31
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Webhooks/OutboxRecorder.php",
+          "sha256": "daf626337a26a95e89214fb7b46f69041d50eca149cdb4cc3f0fd7b433f1123f",
+          "lines": 192,
+          "excerpts": [
+            [
+              17,
+              37
+            ],
+            [
+              129,
+              180
+            ]
+          ]
+        },
+        {
+          "path": "packages/azgard/composer.json",
+          "sha256": "b56602ef88523afd6b64664ecd9a8d80ca493ca347f729247f15b0e916c542be",
+          "lines": 89,
+          "excerpts": [
+            [
+              1,
+              7
+            ],
+            [
+              18,
+              31
+            ]
+          ]
+        },
+        {
+          "path": "packages/azgard/src/VaulterAzgardServiceProvider.php",
+          "sha256": "d462def5ff16ee3ec1e4255e66f8dfca76a935f0a213cf1f75c4b1b705aab29b",
+          "lines": 68,
+          "excerpts": [
+            [
+              15,
+              30
+            ],
+            [
+              34,
+              57
+            ]
+          ]
+        },
+        {
+          "path": "docs/guide/database-compatibility.md",
+          "sha256": "d94ccf3a6be7b0692daad90476707470110c76c745d9184d86aad9688e938604",
+          "lines": 194,
+          "excerpts": [
+            [
+              9,
+              12
+            ],
+            [
+              30,
+              47
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "repository": "azguard",
+      "head": "ba02a9a422aa76d20333129b430861ca052258d4",
+      "dirty": true,
+      "status_entries": 81,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "fea958df80fb34956cedb44623e0fc5ba62e945c83625235c5a276e4239278fd",
+          "lines": 93,
+          "excerpts": [
+            [
+              77,
+              90
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/composer.json",
+          "sha256": "e75629a48fa8d942592985809c85d6d881b264121a5cf39d78d1a2ad76042b2d",
+          "lines": 57,
+          "excerpts": [
+            [
+              1,
+              82
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/config/azguard.php",
+          "sha256": "a77e056c8799d941e4268c1ec78985e6657db43b1c0fac24a1a7daa80a515465",
+          "lines": 193,
+          "excerpts": [
+            [
+              32,
+              74
+            ],
+            [
+              141,
+              149
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Storage/Schema/StorageSchema.php",
+          "sha256": "f9b36c16c5c7d85a2452469f67edacdd71a937dd4abfa9ff6f0e7c1af656f697",
+          "lines": 153,
+          "excerpts": [
+            [
+              11,
+              61
+            ],
+            [
+              83,
+              119
+            ],
+            [
+              122,
+              151
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Storage/StorageRegistry.php",
+          "sha256": "1152afac8a3eba50437384d61f6ab7183d919f6aafcc11942b4d51780608913e",
+          "lines": 61,
+          "excerpts": [
+            [
+              18,
+              59
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Storage/Storage.php",
+          "sha256": "f57ecbf07fe9c6154690e0ff4327f076549407b83b3fdce696e5fe8564842918",
+          "lines": 440,
+          "excerpts": [
+            [
+              55,
+              65
+            ],
+            [
+              175,
+              205
+            ],
+            [
+              244,
+              274
+            ],
+            [
+              378,
+              431
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Kernel/Identity/TenantRef.php",
+          "sha256": "4231fc7b5d93420ac636167bbd96cd68f0cf4cdefbb780faec2ee334e947975d",
+          "lines": 62,
+          "excerpts": [
+            [
+              9,
+              45
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Kernel/Identity/SubjectRef.php",
+          "sha256": "3b12b87c4929cb038fce9a96b599e971a8be29af2aaf6a70221c9f2306cb0978",
+          "lines": 48,
+          "excerpts": [
+            [
+              9,
+              27
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Kernel/Identity/AccessScope.php",
+          "sha256": "ff3bbce6d4f46992d81f0805a49af3f453a7a3fc515142ce896f553221f48503",
+          "lines": 28,
+          "excerpts": [
+            [
+              7,
+              27
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Panels/PanelRegistry.php",
+          "sha256": "7fef202ff51f7ba5143e53854ecda66659aef96480fac60e82e7b034bbec67a8",
+          "lines": 564,
+          "excerpts": [
+            [
+              30,
+              35
+            ],
+            [
+              126,
+              162
+            ],
+            [
+              165,
+              178
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Contracts/Plugins/Plugin.php",
+          "sha256": "8871d81c65f7df7bdeac7dfc553e768ecaa17ced3712d297334cae27e2ebaf6b",
+          "lines": 36,
+          "excerpts": [
+            [
+              11,
+              36
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Plugins/PluginContext.php",
+          "sha256": "3569135892ad5c7cf63e7960fd311edf4ab0a574b1c94d3f6ae9e3ebf25f068c",
+          "lines": 54,
+          "excerpts": [
+            [
+              7,
+              27
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Panels/PanelCompiler.php",
+          "sha256": "21915e6a1439e61f8a4d2b275437f4b9fa6c3648a7709787ec1e571e442b2528",
+          "lines": 941,
+          "excerpts": [
+            [
+              73,
+              148
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/Field.php",
+          "sha256": "8b2b33a31d9c6c3094324b7931200ab167d1ba9b467395a18bea7219c971e99b",
+          "lines": 173,
+          "excerpts": [
+            [
+              11,
+              74
+            ],
+            [
+              85,
+              124
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Schema/FieldSchema.php",
+          "sha256": "e5a3a6b46881601b510e0016f3ad4c7ff5d6049478730c9c45fedb3c2d70a11d",
+          "lines": 108,
+          "excerpts": [
+            [
+              13,
+              32
+            ],
+            [
+              63,
+              70
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Contracts/Sources/Source.php",
+          "sha256": "51bad20aaeb69ea20a271ccef3ef773437f3c4b12db5c09793599639bd6b042e",
+          "lines": 19,
+          "excerpts": [
+            [
+              7,
+              19
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Contracts/Sources/StoresGrants.php",
+          "sha256": "4705dc07289d6ec239488088bc4d980c328f0c45a703d980611bb7d1cf30683e",
+          "lines": 33,
+          "excerpts": [
+            [
+              11,
+              33
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Changes/ChangePipeline.php",
+          "sha256": "9145f8ba57bd2cd75b84d5ec3f9126918d44e86d11badeee35e353878e1ed85a",
+          "lines": 501,
+          "excerpts": [
+            [
+              38,
+              66
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Storage/AuthorityTransaction.php",
+          "sha256": "b05de21d2dbcbfdfd2a973006779343226055bdc2e7ff5ba6a28cc34fef018ce",
+          "lines": 54,
+          "excerpts": [
+            [
+              13,
+              53
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Changes/ChangeEventPublisher.php",
+          "sha256": "865765223a18288a8e2cc65ff81b26835a7abf7143e1e74940cd1feba0936904",
+          "lines": 148,
+          "excerpts": [
+            [
+              30,
+              35
+            ],
+            [
+              56,
+              68
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Exceptions/AzGuardException.php",
+          "sha256": "f24462f82a356e73c19a6b0559d18cd1a622b55df19ddf28449be06abad24268",
+          "lines": 15,
+          "excerpts": [
+            [
+              9,
+              15
+            ]
+          ]
+        },
+        {
+          "path": "tests/Arch/ZonesArchTest.php",
+          "sha256": "551bb10ad9edbfd162d2553f0eb8ddbd483fa6730a45ae9d9545e779c9c19be6",
+          "lines": 489,
+          "excerpts": [
+            [
+              47,
+              74
+            ]
+          ]
+        },
+        {
+          "path": "packages/core/src/Testing/Contracts/PluginContractTests.php",
+          "sha256": "49ca1aaf928166bc0e37a5785f66456b095933b2538b65df5a311d83b0606665",
+          "lines": 122,
+          "excerpts": [
+            [
+              14,
+              39
+            ],
+            [
+              68,
+              103
+            ]
+          ]
+        },
+        {
+          "path": "bin/api-manifest.php",
+          "sha256": "08c3b30c3317a6f508a1f493330738250010a139f77817c1d71a6a81ab8333c3",
+          "lines": 272,
+          "excerpts": [
+            [
+              5,
+              14
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

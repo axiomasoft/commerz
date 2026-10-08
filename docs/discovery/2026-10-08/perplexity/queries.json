@@ -1,0 +1,22 @@
+[
+  {
+    "id": "01-typed-catalog",
+    "method": "searchDeep",
+    "query": "Research database design alternatives for a reusable PHP/Laravel commerce library, using primary official documentation and public source code. Compare Magento/Adobe Commerce EAV typed attributes, Sylius product options and attributes, Lunar Laravel field types and attributes, Bagisto attribute values, and Shopify metafields/metaobjects. Distinguish documented public API/domain concepts from unknown proprietary physical database schema. Focus on product vs variant vs sellable SKU vs inventory item, global/locale/channel scope, typed scalar/enum/multiselect/measurement/reference values, schema versioning and validation, variant combinations and uniqueness, faceted search/indexing, JSON/JSONB vs typed EAV vs relational core. Give a trade-off matrix, concrete failure scenarios, unresolved questions, and exact official/source URLs supporting each factual claim. Do not invent table names for SaaS. Suggest 2-3 alternative architectures rather than declaring a universal ideal."
+  },
+  {
+    "id": "02-inventory-reservations",
+    "method": "searchDeep",
+    "query": "Research inventory and reservation correctness for a modular PHP/Laravel commerce library. Use primary official sources from Adobe Commerce Inventory Management reservations/source selection, Shopify InventoryItem/InventoryLevel and quantities, Sylius inventory, and PostgreSQL locking/isolation documentation. Explain warehouse vs location vs sales channel vs stock/sales pool, physical quantity vs reserved vs available vs committed, reservation expiration and compensation, checkout/payment timing, concurrent checkout oversell prevention, idempotency, transfers in transit, returns/quarantine, lot/serial/bundle extension boundaries. Compare append-only movement ledger plus projection versus mutable balance with audit ledger, showing one transaction-level concurrency protocol and failure/recovery scenarios. Distinguish source facts from proposed design and do not infer proprietary SaaS physical schemas. Include exact primary URLs and note any contradictory terminology across systems."
+  },
+  {
+    "id": "03-promotions-pricing-plugins",
+    "method": "searchDeep",
+    "query": "Research deterministic pricing, promotions, coupons, and extension architecture for a reusable PHP/Laravel commerce package. Compare primary documentation/source for Sylius promotion rules/actions/processors and plugins, Lunar discounts/cart pipelines/pricing, Bagisto cart rules and Concord model proxies, Adobe Commerce sales rules and extension points, Shopify discount combinations/functions/allocations. Analyze price context (currency/channel/customer/quantity/time), integer or decimal money and rounding allocation, priority/stacking/exclusivity, free shipping vs item/order discounts, usage-limit races, coupon reservations and redemption lifecycle, immutable order snapshots and refunds. Compare typed contracts/registries/pipelines/domain events versus arbitrary Eloquent model replacement and synchronous callbacks. Give explicit invariants, reentrancy/ordering hazards, transaction boundaries, plugin compatibility/versioning, and pragmatic module boundaries. Supply exact official URLs/public source links for factual claims and clearly label design proposals."
+  },
+  {
+    "id": "04-counterexamples-boundaries",
+    "method": "searchDeep",
+    "query": "Act as a critical architecture reviewer researching a maximally flexible reusable PHP/Laravel commerce package. Ground comparisons in primary official sources and public code of Sylius, Lunar, Bagisto, Magento/Adobe Commerce, Shopify, and optionally Vendure/Saleor/Medusa. Challenge the idea of one ideal universal schema. Analyze B2B quotes, subscriptions, digital goods, services, configurable/bundle products, multi-warehouse transfers, multivendor marketplace, taxes, refunds and partial fulfillment as stress cases. Which concepts should be stable relational core, optional modules, external integrations or plugins? Explain bounded-context ownership, avoiding duplicated source of truth, order-line historical snapshots, tenant vs shop vs channel and account/user ownership. Present 3 plausible architecture profiles with explicit exclusions, migration paths, worst failure modes and smallest vertical slices that can falsify design assumptions. Include exact primary/source URLs, separate facts/inferences, and do not assert private SaaS database structure."
+  }
+]

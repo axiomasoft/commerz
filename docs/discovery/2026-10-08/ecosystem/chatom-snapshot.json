@@ -1,0 +1,370 @@
+{
+  "repository": "chatom",
+  "head": "cc927a6adc2050384a37117bf99637fac6321c22",
+  "dirty": true,
+  "status_entries": 111,
+  "read_surface": "working tree",
+  "packages": [
+    {
+      "path": "composer.json",
+      "name": "axiomasoft/chatom-monorepo",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "1.0.0-rc.1",
+        "axiomasoft/chatom-full": "1.0.0-rc.1",
+        "axiomasoft/chatom-attachments": "1.0.0-rc.1",
+        "axiomasoft/chatom-presence": "1.0.0-rc.1",
+        "axiomasoft/chatom-search": "1.0.0-rc.1",
+        "axiomasoft/chatom-poll": "1.0.0-rc.1",
+        "axiomasoft/chatom-forum": "1.0.0-rc.1",
+        "axiomasoft/chatom-voice-message": "1.0.0-rc.1",
+        "axiomasoft/chatom-webhooks": "1.0.0-rc.1",
+        "axiomasoft/chatom-broadcasting": "1.0.0-rc.1"
+      },
+      "autoload": {},
+      "suggest": {},
+      "scripts": {
+        "post-install-cmd": "bash scripts/patch-analysis.sh",
+        "post-update-cmd": "bash scripts/patch-analysis.sh",
+        "test": [
+          "Composer\\Config::disableProcessTimeout",
+          "@php -d memory_limit=1G vendor/bin/pest"
+        ],
+        "test:unit": "CHATOM_TEST_SUITE=Unit bash scripts/test-packages.sh",
+        "test:feature": "CHATOM_TEST_SUITE=Feature bash scripts/test-packages.sh",
+        "test:arch": "vendor/bin/pest --testsuite=Arch",
+        "test:docs-claims": "php scripts/docs-claim-gate.php",
+        "test:security": "vendor/bin/pest tests/Integration/Security",
+        "generate:api-reference": "php scripts/generate-api-reference.php",
+        "test:laravel-consumer": "bash scripts/test-laravel-reference-consumer.sh",
+        "test:typescript-consumer": "bash scripts/test-typescript-reference-consumer.sh",
+        "test:performance": "@php -d memory_limit=1G vendor/bin/pest --testsuite=Performance",
+        "test:contract-fixtures": "vendor/bin/pest tests/Integration/ContractFixtureParityTest.php",
+        "test:regression-baseline": "bash scripts/test-regression-baseline.sh",
+        "test:types": "bash scripts/test-type-coverage.sh",
+        "lint": "vendor/bin/pint",
+        "lint:check": "vendor/bin/pint --test",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=1G",
+        "refactor": "vendor/bin/rector process",
+        "refactor:check": "vendor/bin/rector process --dry-run",
+        "check": [
+          "@lint:check",
+          "@analyse",
+          "@refactor:check",
+          "@test:contracts",
+          "@test:error-codes",
+          "@php scripts/generate-api-reference.php --check",
+          "@php scripts/generate-schema-migrations.php --check",
+          "@php scripts/generate-node-manifest.php --check",
+          "@test:config-schema",
+          "@test:pipelines-doc",
+          "@test:data-model-doc",
+          "@test:perf-envelope",
+          "@test"
+        ],
+        "fix": [
+          "@lint",
+          "@refactor"
+        ],
+        "analyse:baseline-guard": "@php scripts/phpstan-baseline-guard.php",
+        "test:packages": "bash scripts/test-packages.sh",
+        "test:ownership": "vendor/bin/pest tests/Arch/OwnershipGateTest.php",
+        "test:support-matrix": "@php scripts/support-matrix-gate.php",
+        "test:golden": "@php -d memory_limit=1G vendor/bin/pest --testsuite=Golden",
+        "golden:update": "CHATOM_GOLDEN_UPDATE=1 php -d memory_limit=1G vendor/bin/pest --testsuite=Golden",
+        "check:affected": "bash scripts/check-affected.sh",
+        "test:api-manifest": "AUTH_MODEL='Illuminate\\Foundation\\Auth\\User' php scripts/with-clean-testbench.php vendor/bin/pest tests/Arch/ApiManifestTest.php",
+        "generate:api-manifest": "php scripts/generate-api-manifest.php",
+        "test:api-classification": "vendor/bin/pest tests/Arch/ApiClassificationTest.php",
+        "test:config-schema": "@php scripts/generate-config-schema.php --check",
+        "test:pipelines-doc": "@php scripts/generate-pipelines-doc.php --check",
+        "test:data-model-doc": "@php scripts/generate-data-model-doc.php --check",
+        "generate:node-manifest": "php scripts/generate-node-manifest.php",
+        "contracts:build": "@php scripts/build-contracts.php",
+        "test:contracts": [
+          "@php scripts/build-contracts.php --check",
+          "node scripts/validate-asyncapi.mjs docs/reference/contracts/asyncapi.json"
+        ],
+        "generate:error-codes": "@php scripts/generate-error-codes.php",
+        "test:error-codes": "@php scripts/generate-error-codes.php --check",
+        "test:perf-envelope": "@php bench/bin/render-envelope.php --check",
+        "test:mutation": "@php scripts/mutation.php",
+        "test:bc": "@php scripts/bc-check.php",
+        "quality:strict": "@php scripts/quality-policy.php --mode=strict --final",
+        "quality:public-types": "@php scripts/quality-policy.php --mode=public-types",
+        "quality:hygiene": [
+          "@php scripts/quality-policy.php --mode=hygiene",
+          "node scripts/js-quality.mjs hygiene"
+        ],
+        "quality:php": [
+          "@lint:check",
+          "@analyse",
+          "@refactor:check",
+          "@test:types",
+          "@php scripts/quality-policy.php --mode=all --final"
+        ]
+      }
+    },
+    {
+      "path": "packages/attachments/composer.json",
+      "name": "axiomasoft/chatom-attachments",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/filesystem": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "ext-ctype": "*",
+        "ext-fileinfo": "*",
+        "ext-filter": "*",
+        "nesbot/carbon": "^3.0",
+        "symfony/http-foundation": "^7.0|^8.1"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Attachments\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/broadcasting/composer.json",
+      "name": "axiomasoft/chatom-broadcasting",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Broadcasting\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/core/composer.json",
+      "name": "axiomasoft/chatom",
+      "require": {
+        "php": "^8.4",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/bus": "^12.0|^13.0",
+        "illuminate/filesystem": "^12.0|^13.0",
+        "illuminate/pagination": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/collections": "^12.0|^13.0",
+        "illuminate/validation": "^12.0|^13.0",
+        "laravel/framework": "^12.0|^13.0",
+        "ext-mbstring": "*",
+        "nesbot/carbon": "^3.0",
+        "ramsey/uuid": "^4.9",
+        "symfony/http-foundation": "^7.0|^8.1",
+        "illuminate/container": "^12.0|^13.0",
+        "ext-filter": "*",
+        "symfony/console": "^7.0|^8.0",
+        "illuminate/auth": "^12.0|^13.0",
+        "symfony/http-kernel": "^7.0|^8.1"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\": "src/"
+        }
+      },
+      "suggest": {
+        "axiomasoft/chatom-search": "Database message search. Without axiomasoft/chatom-search the search driver stays null.",
+        "ext-zend-opcache": "Caches compiled PHP definitions; supported without this extension."
+      },
+      "scripts": {}
+    },
+    {
+      "path": "packages/forum/composer.json",
+      "name": "axiomasoft/chatom-forum",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "laravel/framework": "^12.0|^13.0",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/pagination": "^12.0|^13.0",
+        "illuminate/collections": "^12.0|^13.0",
+        "illuminate/validation": "^12.0|^13.0",
+        "ext-mbstring": "*",
+        "symfony/http-foundation": "^7.0|^8.1",
+        "symfony/http-kernel": "^7.0|^8.1",
+        "axiomasoft/chatom-attachments": "self.version"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Forum\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/full/composer.json",
+      "name": "axiomasoft/chatom-full",
+      "require": {
+        "axiomasoft/chatom": "self.version",
+        "axiomasoft/chatom-attachments": "self.version",
+        "axiomasoft/chatom-presence": "self.version",
+        "php": "^8.4",
+        "axiomasoft/chatom-webhooks": "self.version",
+        "axiomasoft/chatom-broadcasting": "self.version"
+      },
+      "autoload": {},
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/poll/composer.json",
+      "name": "axiomasoft/chatom-poll",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/validation": "^12.0|^13.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Poll\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/presence/composer.json",
+      "name": "axiomasoft/chatom-presence",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/redis": "^12.0|^13.0",
+        "nesbot/carbon": "^3.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Presence\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/search/composer.json",
+      "name": "axiomasoft/chatom-search",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/collections": "^12.0|^13.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Search\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/testkit/composer.json",
+      "name": "axiomasoft/chatom-testkit",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "orchestra/testbench": "^10.12|^11.3",
+        "pestphp/pest": "^5.0",
+        "symfony/process": "^7.0|^8.0",
+        "opis/json-schema": "2.3.0",
+        "orchestra/testbench-core": "^10.12|^11.3",
+        "ext-pdo": "*",
+        "ext-pcntl": "*",
+        "phpunit/phpunit": "^13.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Testkit\\": "src/"
+        },
+        "files": [
+          "src/functions.php",
+          "src/global.php"
+        ]
+      },
+      "suggest": {
+        "axiomasoft/chatom-attachments": "Required when using StagedAttachment fixtures.",
+        "axiomasoft/chatom-poll": "Required when using the poll viewer projection fixtures."
+      },
+      "scripts": {}
+    },
+    {
+      "path": "packages/voice-message/composer.json",
+      "name": "axiomasoft/chatom-voice-message",
+      "require": {
+        "php": "^8.4",
+        "ext-fileinfo": "*",
+        "axiomasoft/chatom": "self.version",
+        "axiomasoft/chatom-attachments": "self.version",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "symfony/process": "^7.0|^8.1"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\VoiceMessage\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    },
+    {
+      "path": "packages/webhooks/composer.json",
+      "name": "axiomasoft/chatom-webhooks",
+      "require": {
+        "php": "^8.4",
+        "axiomasoft/chatom": "self.version",
+        "illuminate/auth": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/bus": "^12.0|^13.0",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/queue": "^12.0|^13.0",
+        "ext-curl": "*",
+        "ext-filter": "*",
+        "ext-mbstring": "*",
+        "nesbot/carbon": "^3.0"
+      },
+      "autoload": {
+        "psr-4": {
+          "Chatom\\Webhooks\\": "src/"
+        }
+      },
+      "suggest": {},
+      "scripts": {}
+    }
+  ]
+}

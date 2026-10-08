@@ -1,0 +1,275 @@
+# 01-typed-catalog
+
+- Status: completed
+- Method: searchDeep
+- Started (UTC): 2026-10-08T14:02:03.932Z
+- Finished (UTC): 2026-10-08T14:06:02.747Z
+- Transport: local perplexity-web-mcp daemon client via shell
+
+## Question
+
+Research database design alternatives for a reusable PHP/Laravel commerce library, using primary official documentation and public source code. Compare Magento/Adobe Commerce EAV typed attributes, Sylius product options and attributes, Lunar Laravel field types and attributes, Bagisto attribute values, and Shopify metafields/metaobjects. Distinguish documented public API/domain concepts from unknown proprietary physical database schema. Focus on product vs variant vs sellable SKU vs inventory item, global/locale/channel scope, typed scalar/enum/multiselect/measurement/reference values, schema versioning and validation, variant combinations and uniqueness, faceted search/indexing, JSON/JSONB vs typed EAV vs relational core. Give a trade-off matrix, concrete failure scenarios, unresolved questions, and exact official/source URLs supporting each factual claim. Do not invent table names for SaaS. Suggest 2-3 alternative architectures rather than declaring a universal ideal.
+
+## Unverified Perplexity answer
+
+> Это сырой текст DOM-извлечения Perplexity. Таблицы, формулы и некоторые заголовки могли потеряться; отсутствие строки не означает отсутствие раздела в исходном ответе. Формулировки «verified/fact» внутри ответа принадлежат Perplexity. Собственная проверка — в [verified-findings.md](verified-findings.md). Список sources, возвращённый клиентом, содержит по 10 элементов и не считается полным списком всех использованных страниц.
+
+The useful conclusion is to separate the domain decision from the attribute-storage decision. Product/variant/inventory identity, valid variant combinations, pricing, and reservations deserve explicit contracts regardless of whether descriptive attributes use JSON, typed EAV, or ordinary relational tables.
+For your reusable Laravel library, three architectures are defensible:
+- Relational commerce core + typed, versioned JSON attributes.
+- Relational commerce core + typed EAV values.
+- Relational commerce core + first-class reusable structured objects/references, with JSON for incidental metadata.
+Magento, Sylius, Lunar, Bagisto, and Shopify provide different precedents—not interchangeable schemas. In particular, Shopify documentation exposes a typed public resource model, not its proprietary physical database design.
+
+## 1. Evidence boundaries
+
+This comparison distinguishes:
+- Documented behavior: official domain/API documentation.
+- Public implementation evidence: public source locations and the code excerpts retrievable during this research.
+- Proposed design: recommendations for your library, not claims about an existing platform.
+- Unverified details: especially database-enforced combination uniqueness, validation coverage of every write path, and proprietary storage.
+There are two important limitations:
+- Some public source files could not be retrieved in full. I therefore do not claim a complete migration/constraint audit. Source locations below are inspection targets where explicitly identified as such.
+- The Sylius implementation evidence includes its historical 1.13 documentation and a historical maintainer discussion. Those establish the typed-storage design, but do not prove every detail of current mappings.
+Shopify’s API pages retrieved during this research identify latest as API version 2026-10. Their URLs remain moving aliases, so pin a numbered API version before implementing an adapter.
+
+## 2. Product, variant, sellable SKU, and inventory identity
+
+
+## Comparative domain model
+
+Exact official URLs:
+- Magento configurable products: https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/products/types/product-create-configurable
+- Adobe inventory model: https://developer.adobe.com/commerce/webapi/rest/inventory/
+- Sylius product introduction: https://docs.sylius.com/public/getting-started/first-product
+- Lunar products/variants: https://docs.lunarphp.com/1.x/reference/products
+- Bagisto architecture: https://bagisto.com/en/bagisto-eav-database/
+- Shopify variant: https://shopify.dev/docs/api/admin-graphql/latest/objects/ProductVariant
+- Shopify inventory item: https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem
+
+## A consequential Shopify detail
+
+Do not assume a permanently one-to-one variant/inventory-item relationship from older diagrams. The retrieved 2026-10 InventoryItem API exposes a paginated variants connection, described as variants referencing the item; its singular variant field is deprecated. This is public API evidence, not evidence of Shopify’s underlying join tables.
+
+## Proposed contract for your library
+
+Define these independently:
+- Product: merchandising/catalog grouping.
+- Variant: a valid configuration of that product.
+- Sellable: what an order line purchases, potentially a variant, bundle, service, or subscription.
+- SKU: a business identifier attached to an explicitly chosen owner—not the primary key.
+- Inventory item: the thing whose physical availability you track.
+- Inventory position: quantity/state at a location.
+- Offer/price: commercial terms for a sellable in a context.
+A minimal library can collapse variant and sellable initially. It should still avoid assuming that every sellable consumes exactly one independently stocked item: packs, bundles, and alternative listings can require different mappings.
+
+## 3. Attribute models and storage
+
+
+## Magento / Adobe Commerce: EAV with scope and merchandising metadata
+
+Adobe documents EAV attributes for Catalog and Customer, and distinguishes them from extension attributes. Catalog-related attributes support global, website, and store-view scopes; customer custom attributes are global only.
+- Official developer documentation: https://developer.adobe.com/commerce/php/development/components/attributes
+For product options, Magento separates stable option identity from store-view display labels: dropdown and multiple-select attributes can have an Admin label and translations per store view. Configurable-product variation attributes must be global and use the documented eligible input types—Dropdown, Visual Swatch, or Text Swatch—with required values.
+- Attribute creation: https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/product-attributes/create/attribute-product-create
+- Configurable products: https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/products/types/product-create-configurable
+Physical-source inspection target:
+https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/Catalog/etc/db_schema.xml
+The architectural pattern under consideration is Magento-style type-partitioned EAV value storage. However, this research did not retrieve that schema file successfully, so I am not presenting its exact columns, unique constraints, decimal precision, or edition-specific entity keys as audited facts. A public Magento issue explicitly warns that affected EE/B2B queries need row_id rather than entity_id, reinforcing why an Open Source schema should not be presented as the universal Adobe Commerce schema.
+- Edition-sensitive source discussion:
+Design lesson: attribute input type, storage type, scope, option identity, and search behavior are separate concerns. “Dropdown” is not itself a SQL type.
+
+## Sylius: options are configuration axes; attributes are descriptive properties
+
+Sylius documents descriptive attributes such as page count or material separately from product options used for variants. Its attribute types include text, checkbox, integer, percent, textarea, date, datetime, and select; select supports multiple selection.
+- Attributes: https://docs.sylius.com/the-book/products/attributes
+- Products/options/variants: https://docs.sylius.com/public/getting-started/first-product
+Sylius’s historical component documentation says value is a proxy that stores data in the field corresponding to the attribute’s storage type. A maintainer discussion explains the use of properly typed database storage and support for custom storage types such as JSON. This is a different EAV layout from one table per physical type: the public discussion explicitly refers to choosing the appropriate value column.
+- Historical component documentation: https://github.com/Sylius/Sylius/blob/1.13/docs/components_and_bundles/components/Attribute/models.rst
+- Maintainer design discussion:
+- Public model location: https://github.com/Sylius/Attribute/blob/master/Model/AttributeValue.php
+Locale is an explicit attribute concern. Sylius documents that disabling translatability erases attribute values in all locales for that attribute. That operation is therefore a data migration, not merely a UI setting. The examined attribute documentation does not establish arbitrary per-channel attribute-value overrides.
+Design lesson: separating options from attributes simplifies configuration invariants, but creates a deliberate bridge when the same concept—such as color—is both a selector and a facet.
+
+## Lunar: typed application values in JSON, relational variants/options
+
+Lunar documents an attribute_data JSON column on attributable models. Values are accessed through field-type instances, with AsAttributeData casting and HasAttributes support. Both products and variants support attributes; product types can map attributes to either owner.
+- Attributes and casting: https://docs.lunarphp.com/1.x/reference/attributes
+- Product-type mappings and variants: https://docs.lunarphp.com/1.x/reference/products
+Built-in field types include Text, TranslatedText, Number, Toggle, Dropdown, ListField, and File. Attribute definitions include configuration, requiredness, Laravel validation rules, and searchable/filterable flags. A ListField is documented as a reorderable text list—not a promise of relational multiselect membership or reference integrity.
+Lunar’s measurements are also important: variant length, width, height, weight, and volume have documented value/unit columns. Consequently, “Lunar uses JSON attributes” does not mean “all product data is JSON.” Core operational measurements remain relational.
+Lunar documents translatable option definitions and values at system level, while channel relationships control availability and scheduling. The examined documentation does not establish channel-specific overrides for arbitrary attribute_data values.
+There is a documentation inconsistency worth preserving rather than hiding: the products overview says all custom attributes are defined against the product, but the same page later explicitly supports product and variant mappings, and the attribute reference lists ProductVariant. The detailed sections support variant attributes.
+Design lesson: typed PHP field objects can provide a good developer experience without requiring EAV rows. They do not, by themselves, prove database-level validation or that every import/direct model save validates identically.
+
+## Bagisto: attribute-value rows with typed columns and locale/channel metadata
+
+Bagisto’s official documentation exposes text, textarea, price, boolean, select, multiselect, datetime, date, image, file, and checkbox attribute types, together with uniqueness, per-locale, and per-channel flags.
+- Public attribute contract: https://api-docs.bagisto.com/api/rest-api/shop/attributes/get-attributes.html
+- User configuration: https://docs.bagisto.com/attribute/product-attribute.html
+Its official architecture article describes product_attribute_values records keyed by product/attribute context, containing channel and locale, with values placed in the appropriate column. The article is internally imprecise: it first says “dedicated tables,” then describes an appropriate column in product_attribute_values. The source excerpts retrieved during research confirm mappings such as text/textarea to text_value and price to float_value; they do not support describing Bagisto as Magento-style separate value tables per scalar type.
+Exact source location for those retrieved excerpts:
+https://github.com/bagisto/bagisto/blob/d5cb5317dcf2f24f0c8e145944ec0f81f45a0392/packages/Webkul/Product/src/Models/ProductAttributeValue.php
+A concrete official-repository issue demonstrates why scope changes need migration: making url_key locale-based required changing attribute metadata and rewriting existing value rows, including their locale and unique_id. Existing databases were not automatically equivalent to fresh installations.
+- Scope-migration example:
+Design lesson: scope is part of value identity. Changing scope flags without transforming stored values can make existing data unreachable or inconsistent.
+
+## Shopify: typed resource extensions and reusable structured objects
+
+Shopify metafields extend existing resources; definitions specify the type and validation constraints. Metaobjects instead define reusable objects with multiple fields and entries, which can be referenced by metafields.
+- Metafields: https://help.shopify.com/en/manual/custom-data/metafields
+- Metaobjects: https://help.shopify.com/en/manual/custom-data/metaobjects
+- Official modeling guide: https://shopify.dev/docs/apps/build/metaobjects/data-modeling-with-metafields-and-metaobjects
+The public type system includes scalar, list, measurement, JSON, and resource-reference types. Metaobjects use the same types. Validation options depend on type and include min/max, regular expressions, and restrictions on referenced metaobject definitions.
+- Types and formats: https://shopify.dev/docs/apps/build/metafields/list-of-data-types
+- Validation options: https://shopify.dev/docs/apps/build/metafields/list-of-validation-options
+Shopify documents metafield values as strings in its API model regardless of logical type, with reference fields for resolving resource links. This must not be reverse-engineered into a claim that Shopify physically stores every metafield in one SQL text column. Its database layout, indexes, partitioning, and foreign-key strategy are unknown from these documents.
+- Storefront metafield representation: https://shopify.dev/docs/api/storefront/latest/objects/metafield
+Translation and market localization are type-specific capabilities. They are not equivalent to arbitrary per-channel value scope. Nor should an adapter assume automatic product-to-variant metafield inheritance: these are distinct owners in the public model, and the cited material does not establish such inheritance.
+
+## 4. Types: what should be independent in your design?
+
+The following is a proposed library contract, not a claim that each platform implements it.
+For example, “material” may be an enum or a reference to a reusable material object. “Weight” may be an operational shipping property rather than merely descriptive content. “Color” may be both a variant axis and a reference to an object containing labels, swatches, and color codes.
+
+## 5. Variant combinations and uniqueness
+
+Magento explicitly requires global configurable attributes and globally assigned child products. Lunar documents attaching option values to variants, including a Cartesian generation example. Sylius describes variants as combinations of option values. None of these cited pages alone proves a database unique constraint over the complete option tuple.
+For your library, treat these as separate invariants:
+- Every selected option belongs to an axis allowed for the product.
+- A variant selects at most one value per axis.
+- Required axes are complete before publication.
+- No two active variants under one product have the same complete combination.
+- SKU uniqueness follows a separately declared policy.
+- Not every mathematically possible combination must exist.
+Proposed relational representation:
+```
+VariantSelection: variant_id option_id option_value_id Unique selection: (variant_id, option_id) Variant: product_id canonical_combination_key Unique combination: (product_id, canonical_combination_key)
+```
+Canonicalize by sorted stable axis/value identities, never by translated labels or display order. Validate that each value belongs to its axis. If you use a hash, retain the canonical representation for diagnosis and explicit collision handling.
+Combination keys must be updated transactionally when selections change. Application validation followed by an unconstrained insert is insufficient to prevent concurrent duplicate imports.
+
+## 6. Schema evolution and validation
+
+
+## What the sources actually establish
+
+- Magento exposes requiredness, input validation, scope, and option configuration. These are attribute-definition controls, not evidence of a universal immutable definition-version system.
+- Sylius documents a destructive consequence of changing translatability.
+- Lunar definitions include validation_rules, requiredness, and field-specific configuration. The documentation examined does not establish validation on every possible persistence path.
+- Bagisto exposes scope and uniqueness metadata; the cited issue demonstrates that metadata changes can require rewriting existing data.
+- Shopify supports type changes, but incompatible migrations can leave existing values invalid. That is not equivalent to atomically upgrading every value to a new application schema.
+
+## Proposed versioning model
+
+Use immutable definition revisions:
+```
+AttributeDefinition: stable identity owner kinds current revision AttributeRevision: logical type scope policy cardinality validation configuration reference restrictions normalization rules StoredValue: definition identity revision used owner scope value
+```
+Support a migration lifecycle:
+- Create the new revision.
+- Assess incompatible values.
+- Choose reject, convert, quarantine, or grandfather policies.
+- Backfill incrementally.
+- Rebuild affected search projections.
+- Activate the new write contract.
+- Retire old readers only after completion.
+Separate value validity from publication completeness. Draft products may be incomplete; an invalid reference or impossible measurement should not become acceptable merely because the product is a draft.
+For PHP extensibility, prefer stable logical type identifiers and codecs in the persisted contract. Avoid making a PHP class namespace the only durable meaning of stored data: package refactoring should not require silently reinterpreting a catalog.
+
+## 7. Faceted search and indexing
+
+
+## Platform evidence
+
+Magento’s layered navigation is explicitly driven by attribute metadata. Eligible inputs include Yes/No, Dropdown, Multiple Select, and Price; filterability and search-results filterability are separate settings.
+- https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/catalog/navigation/navigation-layered
+Lunar exposes searchable and filterable flags, but those flags are metadata—not proof that an arbitrary custom field is efficiently indexed or correctly faceted by every backend.
+Bagisto’s official architecture article describes indexers and denormalized product data as ways to avoid rebuilding EAV attributes on every read. Its precise engine/integration claims should be checked against the deployment version rather than used as a portable storage guarantee.
+Shopify’s modeling guide documents enabling administrative metafield filtering. Administrative filtering is not the same contract as storefront facet aggregation, and neither reveals the underlying physical index.
+- https://shopify.dev/docs/apps/build/metaobjects/data-modeling-with-metafields-and-metaobjects
+
+## JSONB is useful, but not a complete faceting solution
+
+PostgreSQL distinguishes json from jsonb; JSONB supports indexing. Its default GIN operator class supports containment, key existence, and JSONPath operators, while jsonb_path_ops supports fewer operators with different performance characteristics. These capabilities are not a blanket guarantee of efficient arbitrary numeric ranges, sorting, or facet counts.
+- JSON types/indexing: https://www.postgresql.org/docs/current/datatype-json.html
+- GIN capabilities: https://www.postgresql.org/docs/current/gin.html
+For your library, define a typed search projection independently of canonical storage:
+```
+owner identity product and variant identities channel / locale context normalized scalar and measurement values stable enum/reference IDs visibility availability policy source revision projection generation
+```
+The crucial semantic question is whether filters must match the same variant.
+A product with a red/small variant and a blue/large variant must not match “red AND large” if the filter promises one purchasable matching variant. Flattening all colors and sizes into independent product-level arrays creates that false positive.
+Facet counts also need a declared unit: products, variants, or sellables. Those counts are not interchangeable.
+
+## 8. Trade-off matrix
+
+These are architectural assessments, not measured performance rankings.
+Typed EAV is not automatically validated; JSON is not automatically untyped; relational references are not automatically version-compatible. Those guarantees come from the write contract and constraints you actually implement.
+
+## 9. Concrete failure scenarios
+
+
+## 10. Three alternative architectures
+
+
+## A. Relational core + versioned JSON attributes
+
+Use relational products, variants, selections, prices, inventory items, locations, reservations, and order lines. Store descriptive values in a JSON envelope with stable attribute IDs, revision information, and explicit scope.
+Add typed facet/search projections only for fields that need filtering, ranges, sorting, or aggregation. Store critical references in relations if you need reliable database referential integrity.
+Choose this when:
+- Embeddability and straightforward Laravel integration dominate.
+- Most reads retrieve a complete product.
+- Merchant-defined fields change frequently.
+- You accept an application-level validation contract.
+Main cost: you must design document concurrency, stable codecs, and query projections rather than assuming JSONB solves them.
+
+## B. Relational core + typed EAV
+
+Store scoped attribute values in typed rows. Choose either separate physical value tables by type or one value table with typed columns; these have different query and constraint trade-offs.
+Represent enum/multiselect membership and important references relationally. Maintain a denormalized read/search projection when complete entity hydration or faceting becomes expensive.
+- Independent attribute edits/imports are common.
+- Locale/channel values are numerous.
+- SQL reporting and attribute-level queries matter.
+- You want strong physical typing for scalar values.
+Main cost: hydration complexity, row multiplication, and definition-aware queries. Typed columns still need checks preventing contradictory payloads.
+
+## C. Relational core + reusable structured objects
+
+Make concepts such as materials, certifications, manufacturers, compatibility profiles, and size charts first-class typed objects. Products and variants reference them; simple incidental fields can remain JSON.
+This borrows the public-domain idea of Shopify metaobjects without making any claim about Shopify’s storage.
+- Many products share structured data.
+- References have business meaning beyond display.
+- Shared-object editing should update many products.
+- You need explicit ownership, permissions, and lifecycle rules.
+Main cost: references introduce deletion, cycle, localization, version compatibility, and projection-invalidation problems. Not every one-off text field deserves an object.
+
+## 11. Unresolved questions before choosing
+
+The following decisions materially affect the schema:
+- Database portability: PostgreSQL-only, or PostgreSQL and MySQL? Do not make PostgreSQL JSONB-specific query features an accidental requirement.
+- SKU policy: unique per tenant, catalog, merchant, inventory item, or active sellable? Shopify’s duplicate-SKU API demonstrates that uniqueness is not universal.
+- Inventory mapping: can multiple variants consume the same inventory item? Are packs and bundles required?
+- Scope resolution: what is the fallback order between global, channel, locale, and channel+locale? Is explicit null an override?
+- Variant lifecycle: may drafts be incomplete? Can a retired combination be reused?
+- Filter semantics: same-variant matching or product-level discovery? Count products or sellables?
+- Validation boundary: will host applications write through a service, or is unrestricted Eloquent persistence part of the public API?
+- Definition ownership: who can change a field type—merchant, module, or host application?
+- Migration policy: reject incompatible changes, grandfather values, or quarantine them?
+- Historical records: do orders snapshot names, measurements, prices, and relevant attribute values, or dereference the live catalog?
+- Search consistency: what lag is acceptable, and what must checkout revalidate?
+- Current implementation verification: exact combination constraints, reference deletion behavior, and validation coverage still require a commit-pinned audit of the platforms you plan to emulate.
+For this library, I would prototype A and B against the same domain interfaces and workload, while implementing selected parts of C only where reusable objects are genuinely needed. Benchmark complete-product hydration, scoped bulk updates, same-variant filtering, numeric facets, and schema migrations—not merely “load one product” or “find one JSON key.” The choice should follow those invariants and workloads, rather than copying one platform’s most recognizable storage pattern.
+
+## Sources returned by Perplexity (not automatically verified)
+
+1. [sylius](https://docs.sylius.com/public/getting-started/first-product)
+2. [lunarphp](https://docs.lunarphp.com/1.x/reference/products)
+3. [bagisto](https://bagisto.com/en/bagisto-eav-database/)
+4. [https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/products/types/product-create-configurable](https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/products/types/product-create-configurable)
+5. [https://developer.adobe.com/commerce/webapi/rest/inventory/](https://developer.adobe.com/commerce/webapi/rest/inventory/)
+6. [https://shopify.dev/docs/api/admin-graphql/latest/objects/ProductVariant](https://shopify.dev/docs/api/admin-graphql/latest/objects/ProductVariant)
+7. [https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
+8. [developer.adobe](https://developer.adobe.com/commerce/php/development/components/attributes)
+9. [https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/product-attributes/create/attribute-product-create](https://experienceleague.adobe.com/en/docs/commerce-admin/catalog/product-attributes/create/attribute-product-create)
+10. [https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/Catalog/etc/db_schema.xml](https://github.com/magento/magento2/blob/2.4-develop/app/code/Magento/Catalog/etc/db_schema.xml)

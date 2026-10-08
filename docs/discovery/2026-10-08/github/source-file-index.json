@@ -1,0 +1,470 @@
+[
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "LICENSE.md",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/LICENSE.md"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "composer.json",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/composer.json"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/config/database.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/config/database.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100005_create_attributes_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100005_create_attributes_table.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100020_create_products_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100020_create_products_table.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2021_07_29_100050_create_prices_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2021_07_29_100050_create_prices_table.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2025_08_14_164000_switch_to_jsonb.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2025_08_14_164000_switch_to_jsonb.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/Casts/AsAttributeData.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/Casts/AsAttributeData.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/FieldTypeManifest.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/FieldTypeManifest.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/ModelManifest.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/ModelManifest.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/src/Base/Purchasable.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/src/Base/Purchasable.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/config/cart.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/config/cart.php"
+  },
+  {
+    "repository": "lunarphp/lunar",
+    "sha": "82f6e4a64585ac5f11ca1fce4b6897be870e691a",
+    "path": "packages/core/database/migrations/2022_11_18_100000_create_discounts_table.php",
+    "url": "https://github.com/lunarphp/lunar/blob/82f6e4a64585ac5f11ca1fce4b6897be870e691a/packages/core/database/migrations/2022_11_18_100000_create_discounts_table.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "LICENSE",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/LICENSE"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "composer.json",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/composer.json"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/BazarServiceProvider.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/BazarServiceProvider.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Cart/Manager.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Cart/Manager.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Gateway/Manager.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Gateway/Manager.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Models/Variant.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Models/Variant.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "database/migrations/2023_03_01_202959_create_bazar_property_values_table.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/database/migrations/2023_03_01_202959_create_bazar_property_values_table.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Traits/InteractsWithInventory.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Traits/InteractsWithInventory.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Listeners/RefreshInventory.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Listeners/RefreshInventory.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "database/migrations/2025_12_14_211655_create_bazar_coupons_table.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/database/migrations/2025_12_14_211655_create_bazar_coupons_table.php"
+  },
+  {
+    "repository": "conedevelopment/bazar",
+    "sha": "32bc97a593915ca40e1323239b6ffd9582aa2f5f",
+    "path": "src/Models/Coupon.php",
+    "url": "https://github.com/conedevelopment/bazar/blob/32bc97a593915ca40e1323239b6ffd9582aa2f5f/src/Models/Coupon.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "LICENSE.md",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/LICENSE.md"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "composer.json",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/composer.json"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Properties/Contracts/PropertyType.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Properties/Contracts/PropertyType.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Properties/PropertyTypes.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Properties/PropertyTypes.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Properties/resources/database/migrations/2018_12_08_112321_create_property_values_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Properties/resources/database/migrations/2018_12_08_112321_create_property_values_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Properties/Providers/ModuleServiceProvider.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Properties/Providers/ModuleServiceProvider.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Foundation/Providers/ModuleServiceProvider.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Foundation/Providers/ModuleServiceProvider.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Product/resources/database/migrations/2017_10_07_133259_create_products_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Product/resources/database/migrations/2017_10_07_133259_create_products_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Product/resources/database/migrations/2019_04_08_000000_add_stock_field_to_products_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Product/resources/database/migrations/2019_04_08_000000_add_stock_field_to_products_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Contracts/Stockable.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Contracts/Stockable.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/PromotionRuleTypes.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/PromotionRuleTypes.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/PromotionActionTypes.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/PromotionActionTypes.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Adjustments/resources/database/migrations/2021_05_27_113135_create_adjustments_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Adjustments/resources/database/migrations/2021_05_27_113135_create_adjustments_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/resources/database/migrations/2024_06_08_131453_create_promotions_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/resources/database/migrations/2024_06_08_131453_create_promotions_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/resources/database/migrations/2024_06_08_164653_create_coupons_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/resources/database/migrations/2024_06_08_164653_create_coupons_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/resources/database/migrations/2024_06_09_095853_create_promotion_rules_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/resources/database/migrations/2024_06_09_095853_create_promotion_rules_table.php"
+  },
+  {
+    "repository": "vanilophp/framework",
+    "sha": "008296b7b1adea7c42d22ba331ad2117b46f5169",
+    "path": "src/Promotion/resources/database/migrations/2024_06_10_175853_create_promotion_actions_table.php",
+    "url": "https://github.com/vanilophp/framework/blob/008296b7b1adea7c42d22ba331ad2117b46f5169/src/Promotion/resources/database/migrations/2024_06_10_175853_create_promotion_actions_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "LICENSE",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/LICENSE"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "composer.json",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/composer.json"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Repositories/ProductAttributeValueRepository.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Repositories/ProductAttributeValueRepository.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Models/ProductAttributeValue.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2018_07_27_113956_create_product_inventories_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2018_07_27_113956_create_product_inventories_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Database/Migrations/2018_12_26_165327_create_product_ordered_inventories_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Database/Migrations/2018_12_26_165327_create_product_ordered_inventories_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Inventory/src/Database/Migrations/2018_07_23_110040_create_inventory_sources_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Inventory/src/Database/Migrations/2018_07_23_110040_create_inventory_sources_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Core/src/Database/Migrations/2018_12_24_123812_create_channel_inventory_sources_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Core/src/Database/Migrations/2018_12_24_123812_create_channel_inventory_sources_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024321_create_cart_rules_table.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024321_create_cart_rules_table.php"
+  },
+  {
+    "repository": "bagisto/bagisto",
+    "sha": "e32b99a97c51c803fa2a1561e3542c8043919256",
+    "path": "packages/Webkul/Product/src/Providers/ModuleServiceProvider.php",
+    "url": "https://github.com/bagisto/bagisto/blob/e32b99a97c51c803fa2a1561e3542c8043919256/packages/Webkul/Product/src/Providers/ModuleServiceProvider.php"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "LICENSE",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/LICENSE"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "composer.json",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/composer.json"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Attribute/Model/AttributeValue.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Attribute/Model/AttributeValue.php"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/ProductBundle/Resources/config/doctrine/model/ProductAttributeValue.orm.xml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/ProductBundle/Resources/config/doctrine/model/ProductAttributeValue.orm.xml"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ChannelPricing.orm.xml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ChannelPricing.orm.xml"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Component/Promotion/Processor/PromotionProcessor.php"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order.yaml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order.yaml"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order_payment.yaml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order_payment.yaml"
+  },
+  {
+    "repository": "Sylius/Sylius",
+    "sha": "39313695548c709756ee9073bf309fa4ae89365a",
+    "path": "src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order_shipping.yaml",
+    "url": "https://github.com/Sylius/Sylius/blob/39313695548c709756ee9073bf309fa4ae89365a/src/Sylius/Bundle/CoreBundle/Resources/config/app/workflow/sylius_order_shipping.yaml"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "LICENSE.md",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/LICENSE.md"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "composer.json",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/composer.json"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/config/core.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/config/core.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/CoreServiceProvider.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/CoreServiceProvider.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Contracts/InventoryResolver.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Contracts/InventoryResolver.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Contracts/StockAllocator.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Contracts/StockAllocator.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Contracts/StockReserver.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Contracts/StockReserver.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Stock/PriorityStockAllocator.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Stock/PriorityStockAllocator.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Stock/LockingStockReserver.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Stock/LockingStockReserver.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/src/Models/Traits/HasStock.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/src/Models/Traits/HasStock.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/database/migrations/2020_00_02_000002_create_inventories_table.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/database/migrations/2020_00_02_000002_create_inventories_table.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/database/migrations/2020_00_02_000007_create_attributes_table.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/database/migrations/2020_00_02_000007_create_attributes_table.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "packages/core/database/migrations/2024_12_09_012530_create_prices_table.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/packages/core/database/migrations/2024_12_09_012530_create_prices_table.php"
+  },
+  {
+    "repository": "shopperlabs/shopper",
+    "sha": "86da81306a7f3b0f981ccd196182fb15481dea6c",
+    "path": "tests/Core/Workflows/Stock/StockReservationTest.php",
+    "url": "https://github.com/shopperlabs/shopper/blob/86da81306a7f3b0f981ccd196182fb15481dea6c/tests/Core/Workflows/Stock/StockReservationTest.php"
+  }
+]

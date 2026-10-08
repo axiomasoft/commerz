@@ -1,0 +1,192 @@
+[
+  {
+    "table_name_from_migration_filename": "buyer_order_customers",
+    "migration": "Modules/Buyer/database/migrations/2025_10_21_132001_create_buyer_order_customers_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "buyer_orders",
+    "migration": "Modules/Buyer/database/migrations/2025_10_21_132002_create_buyer_orders_table.php",
+    "source_line": 21
+  },
+  {
+    "table_name_from_migration_filename": "buyer_order_items",
+    "migration": "Modules/Buyer/database/migrations/2025_10_21_132419_create_buyer_order_items_table.php",
+    "source_line": 20
+  },
+  {
+    "table_name_from_migration_filename": "buyer_order_updates",
+    "migration": "Modules/Buyer/database/migrations/2025_10_21_132614_create_buyer_order_updates_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "buyer_order_refund_requests",
+    "migration": "Modules/Buyer/database/migrations/2025_10_21_134028_create_buyer_order_refund_requests_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_categories",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_180840_create_cat_categories_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_brands",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_180850_create_cat_brands_table.php",
+    "source_line": 14
+  },
+  {
+    "table_name_from_migration_filename": "cat_collections",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185324_create_cat_collections_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_properties",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185330_create_cat_properties_table.php",
+    "source_line": 16
+  },
+  {
+    "table_name_from_migration_filename": "cat_products",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185331_create_cat_products_table.php",
+    "source_line": 21
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_properties",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185332_create_cat_product_properties_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_property_values",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185334_create_cat_property_values_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_categories",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185343_create_cat_product_categories_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_collections",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185348_create_cat_product_collections_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_offers",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185426_create_cat_product_offers_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_offer_property_values",
+    "migration": "Modules/Catalog/database/migrations/2025_10_19_185427_create_cat_product_offer_property_values_table.php",
+    "source_line": 16
+  },
+  {
+    "table_name_from_migration_filename": "cat_specification_groups",
+    "migration": "Modules/Catalog/database/migrations/2025_10_21_171356_create_cat_specification_groups_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_specification_groups",
+    "migration": "Modules/Catalog/database/migrations/2025_10_21_172114_create_cat_product_specification_groups_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_specification_options",
+    "migration": "Modules/Catalog/database/migrations/2025_12_05_205034_create_cat_product_specification_options_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_blocks",
+    "migration": "Modules/Catalog/database/migrations/2025_12_05_212217_create_cat_product_blocks_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_tags",
+    "migration": "Modules/Catalog/database/migrations/2025_12_05_213417_create_cat_tags_table.php",
+    "source_line": 17
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_tags",
+    "migration": "Modules/Catalog/database/migrations/2025_12_05_213449_create_cat_product_tags_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "cat_product_colors",
+    "migration": "Modules/Catalog/database/migrations/2025_12_09_102351_create_cat_product_colors_table.php",
+    "source_line": 15
+  },
+  {
+    "table_name_from_migration_filename": "cat_collection_blocks",
+    "migration": "Modules/Catalog/database/migrations/2025_12_09_103243_create_cat_collection_blocks_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "cat_collection_tags",
+    "migration": "Modules/Catalog/database/migrations/2025_12_11_200906_create_cat_collection_tags_table.php",
+    "source_line": 15
+  },
+  {
+    "table_name_from_migration_filename": "cat_collection_has_tags",
+    "migration": "Modules/Catalog/database/migrations/2025_12_11_200913_create_cat_collection_has_tags_table.php",
+    "source_line": 17
+  },
+  {
+    "table_name_from_migration_filename": "sales_sellers",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_172009_create_sales_sellers_table.php",
+    "source_line": 17
+  },
+  {
+    "table_name_from_migration_filename": "sales_companies",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_174526_create_sales_companies_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "sales_company_business_types",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_180520_create_sales_company_business_types_table.php",
+    "source_line": 17
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_business_types",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_180531_create_sales_seller_business_types_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_teams",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_180535_create_sales_seller_teams_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_team_permissions",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_180537_create_sales_seller_team_permissions_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "sales_shops",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_181141_create_sales_shops_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "sales_shop_info",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_183237_create_sales_shop_info_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_warehouses",
+    "migration": "Modules/Sales/database/migrations/2025_10_19_183239_create_sales_seller_warehouses_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_settings",
+    "migration": "Modules/Sales/database/migrations/2025_10_20_191620_create_sales_seller_settings_table.php",
+    "source_line": 18
+  },
+  {
+    "table_name_from_migration_filename": "sales_seller_contacts",
+    "migration": "Modules/Sales/database/migrations/2025_10_21_071621_create_sales_seller_contacts_table.php",
+    "source_line": 19
+  },
+  {
+    "table_name_from_migration_filename": "sales_moderations",
+    "migration": "Modules/Sales/database/migrations/2025_11_27_111513_create_sales_moderations_table.php",
+    "source_line": 19
+  }
+]

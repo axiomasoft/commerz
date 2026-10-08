@@ -1,0 +1,164 @@
+{
+  "retrieved_on": "2026-10-08",
+  "repositories": [
+    {
+      "repo": "magento/magento2",
+      "branch": "2.4-develop",
+      "sha": "f51057831fe197c1feb2fe493bc2005d99f5e5cf",
+      "commit_date": "2026-10-07T13:34:31Z",
+      "license": {
+        "key": "osl-3.0",
+        "name": "Open Software License 3.0",
+        "spdx_id": "OSL-3.0",
+        "url": "https://api.github.com/licenses/osl-3.0",
+        "node_id": "MDc6TGljZW5zZTE2"
+      },
+      "tree_truncated": true,
+      "candidates": [
+        "app/code/Magento/Catalog/etc/db_schema.xml",
+        "app/code/Magento/Catalog/etc/db_schema_whitelist.json",
+        "app/code/Magento/CatalogInventory/etc/db_schema.xml",
+        "app/code/Magento/CatalogInventory/etc/db_schema_whitelist.json",
+        "app/code/Magento/SalesRule/etc/db_schema.xml",
+        "app/code/Magento/SalesRule/etc/db_schema_whitelist.json"
+      ]
+    },
+    {
+      "repo": "magento/inventory",
+      "branch": "develop",
+      "sha": "dea64c026e225763579512c49a34d6ce3cc3199d",
+      "commit_date": "2026-09-24T10:31:16Z",
+      "license": {
+        "key": "osl-3.0",
+        "name": "Open Software License 3.0",
+        "spdx_id": "OSL-3.0",
+        "url": "https://api.github.com/licenses/osl-3.0",
+        "node_id": "MDc6TGljZW5zZTE2"
+      },
+      "tree_truncated": false,
+      "candidates": [
+        "Inventory/etc/db_schema.xml",
+        "Inventory/etc/db_schema_whitelist.json",
+        "InventoryApi/Api/Data/StockExtension.php",
+        "InventoryApi/Api/Data/StockExtensionInterface.php",
+        "InventoryApi/Api/Data/StockInterface.php",
+        "InventoryApi/Api/Data/StockSearchResultsInterface.php",
+        "InventoryApi/Api/Data/StockSourceLinkInterface.php",
+        "InventoryApi/Api/Data/StockSourceLinkSearchResultsInterface.php",
+        "InventoryReservations/etc/db_schema.xml",
+        "InventoryReservations/etc/db_schema_whitelist.json",
+        "InventorySales/etc/db_schema.xml",
+        "InventorySales/etc/db_schema_whitelist.json"
+      ]
+    },
+    {
+      "repo": "shopware/shopware",
+      "branch": "trunk",
+      "sha": "db7c8e5d7df5a3928625751c17a0db829096b161",
+      "commit_date": "2026-10-08T12:25:59Z",
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "tree_truncated": false,
+      "candidates": [
+        "src/Core/Checkout/Customer/Aggregate/CustomerWishlistProduct/CustomerWishlistProductDefinition.php",
+        "src/Core/Content/Product/Aggregate/ProductCustomFieldSet/ProductCustomFieldSetDefinition.php",
+        "src/Core/Content/Product/ProductDefinition.php",
+        "src/Core/Content/Product/SalesChannel/SalesChannelProductDefinition.php",
+        "src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php",
+        "src/Core/Content/Property/PropertyGroupDefinition.php",
+        "src/Core/Framework/Test/DataAbstractionLayer/Field/TestDefinition/ExtendedProductDefinition.php",
+        "src/Core/Framework/Test/DataAbstractionLayer/Field/TestDefinition/ManyToOneProductDefinition.php",
+        "src/Core/Framework/Test/DataAbstractionLayer/Field/TestDefinition/OneToOneInheritedProductDefinition.php",
+        "src/Elasticsearch/Product/ElasticsearchProductDefinition.php"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "repo": "magento/magento2",
+      "sha": "f51057831fe197c1feb2fe493bc2005d99f5e5cf",
+      "path": "app/code/Magento/Catalog/etc/db_schema.xml",
+      "permalink": "https://github.com/magento/magento2/blob/f51057831fe197c1feb2fe493bc2005d99f5e5cf/app/code/Magento/Catalog/etc/db_schema.xml",
+      "sha256": "77bb1f61f3db33378bf174446e9a1574af5fca68c300c5a104e15007213a6c91",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/magento-magento2--app--code--Magento--Catalog--etc--db_schema.xml",
+      "bytes": 121216,
+      "local_snapshot": "sources/magento/magento2/app/code/Magento/Catalog/etc/db_schema.xml"
+    },
+    {
+      "repo": "magento/magento2",
+      "sha": "f51057831fe197c1feb2fe493bc2005d99f5e5cf",
+      "path": "app/code/Magento/SalesRule/etc/db_schema.xml",
+      "permalink": "https://github.com/magento/magento2/blob/f51057831fe197c1feb2fe493bc2005d99f5e5cf/app/code/Magento/SalesRule/etc/db_schema.xml",
+      "sha256": "cbfcaa52a4f5e097a4184e9ae4de0781da721de8a873fb70ecccfc942e5d420f",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/magento-magento2--app--code--Magento--SalesRule--etc--db_schema.xml",
+      "bytes": 24259,
+      "local_snapshot": "sources/magento/magento2/app/code/Magento/SalesRule/etc/db_schema.xml"
+    },
+    {
+      "repo": "magento/inventory",
+      "sha": "dea64c026e225763579512c49a34d6ce3cc3199d",
+      "path": "Inventory/etc/db_schema.xml",
+      "permalink": "https://github.com/magento/inventory/blob/dea64c026e225763579512c49a34d6ce3cc3199d/Inventory/etc/db_schema.xml",
+      "sha256": "337e07776e0e30238dd7000612def835775a6d2fb33d8666097d9b30d630fa4f",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/magento-inventory--Inventory--etc--db_schema.xml",
+      "bytes": 6329,
+      "local_snapshot": "sources/magento/inventory/Inventory/etc/db_schema.xml"
+    },
+    {
+      "repo": "magento/inventory",
+      "sha": "dea64c026e225763579512c49a34d6ce3cc3199d",
+      "path": "InventoryReservations/etc/db_schema.xml",
+      "permalink": "https://github.com/magento/inventory/blob/dea64c026e225763579512c49a34d6ce3cc3199d/InventoryReservations/etc/db_schema.xml",
+      "sha256": "329cc8049d72a85398b9bb199f6b359a7707bc173563543e1a70fcd6dfb574be",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/magento-inventory--InventoryReservations--etc--db_schema.xml",
+      "bytes": 1199,
+      "local_snapshot": "sources/magento/inventory/InventoryReservations/etc/db_schema.xml"
+    },
+    {
+      "repo": "magento/inventory",
+      "sha": "dea64c026e225763579512c49a34d6ce3cc3199d",
+      "path": "InventorySales/etc/db_schema.xml",
+      "permalink": "https://github.com/magento/inventory/blob/dea64c026e225763579512c49a34d6ce3cc3199d/InventorySales/etc/db_schema.xml",
+      "sha256": "1cb96dcf381164acf850e89b48bcbd247f6a07f165c18e4f5168157c709249ee",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/magento-inventory--InventorySales--etc--db_schema.xml",
+      "bytes": 1064,
+      "local_snapshot": "sources/magento/inventory/InventorySales/etc/db_schema.xml"
+    },
+    {
+      "repo": "shopware/shopware",
+      "sha": "db7c8e5d7df5a3928625751c17a0db829096b161",
+      "path": "src/Core/Content/Product/ProductDefinition.php",
+      "permalink": "https://github.com/shopware/shopware/blob/db7c8e5d7df5a3928625751c17a0db829096b161/src/Core/Content/Product/ProductDefinition.php",
+      "sha256": "98691e745fe56d0e4ffb8a6fd33377d65b3d93887a084d9a715318bd7ab104f8",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/shopware-shopware--src--Core--Content--Product--ProductDefinition.php",
+      "bytes": 27210,
+      "local_snapshot": "sources/shopware/shopware/src/Core/Content/Product/ProductDefinition.php"
+    },
+    {
+      "repo": "shopware/shopware",
+      "sha": "db7c8e5d7df5a3928625751c17a0db829096b161",
+      "path": "src/Core/Content/Property/PropertyGroupDefinition.php",
+      "permalink": "https://github.com/shopware/shopware/blob/db7c8e5d7df5a3928625751c17a0db829096b161/src/Core/Content/Property/PropertyGroupDefinition.php",
+      "sha256": "184d3d418534b319d35590230916967b9572236f814d0c35986b9086edadb3af",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/shopware-shopware--src--Core--Content--Property--PropertyGroupDefinition.php",
+      "bytes": 4464,
+      "local_snapshot": "sources/shopware/shopware/src/Core/Content/Property/PropertyGroupDefinition.php"
+    },
+    {
+      "repo": "shopware/shopware",
+      "sha": "db7c8e5d7df5a3928625751c17a0db829096b161",
+      "path": "src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php",
+      "permalink": "https://github.com/shopware/shopware/blob/db7c8e5d7df5a3928625751c17a0db829096b161/src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php",
+      "sha256": "8dd08bd1ffa044fe64e14c2fc470d5c6899d9837f4a20d06e9cbbc6e50355a5c",
+      "local_temp_file": "/tmp/commerz-primary-dj0n0hsi/shopware-shopware--src--Core--Content--Property--Aggregate--PropertyGroupOption--PropertyGroupOptionDefinition.php",
+      "bytes": 5099,
+      "local_snapshot": "sources/shopware/shopware/src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php"
+    }
+  ],
+  "note": "Selected actual source files inspected; no application executed. Magento2 recursive tree is truncated, so this is not a complete repository census."
+}

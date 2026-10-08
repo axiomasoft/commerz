@@ -1,0 +1,572 @@
+[
+  {
+    "path": "CONTEXT.md",
+    "bytes": 8748,
+    "sha256": "7487434a106e7d11025303ed4ed2afc65067e319fc1f64e2db8db996e160cf37"
+  },
+  {
+    "path": "README.md",
+    "bytes": 8887,
+    "sha256": "1ddb8202295287828e470e6204e4031a9762c1730d942a240384f04c965b393b"
+  },
+  {
+    "path": "analysis-unbox.md",
+    "bytes": 52843,
+    "sha256": "11a76adf95228adb92fd207bf62d9aaf11c97bed143710eb9d3f093c5f2b3e0f"
+  },
+  {
+    "path": "attribute-storage-options.md",
+    "bytes": 23385,
+    "sha256": "d41e9c2206b8c29ad40cf40db66dc7f09b1326acb530feaffc625a80709d11db"
+  },
+  {
+    "path": "audit/reproduction-manifest.json",
+    "bytes": 1928,
+    "sha256": "7fb0965213b7304d16a972e2cf7433b1f7f39506a5aece913fb5dd228ff49e0e"
+  },
+  {
+    "path": "audit/scenario-lab.md",
+    "bytes": 28450,
+    "sha256": "2506cc12f2943472c04152968b06485ca2ce2379989fc3ff5647ad08bc1a9ec5"
+  },
+  {
+    "path": "audit/semantic-checks-reproduced.stderr.txt",
+    "bytes": 2559,
+    "sha256": "33b6cd2cd0e6532bb757c5ca71c476c369acb51daa2f5fa7d07f733c489f81c4"
+  },
+  {
+    "path": "audit/semantic-checks-reproduced.stdout.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "audit/synthesis-review-manifest.json",
+    "bytes": 5416,
+    "sha256": "b96d8edc4c87724155d5590bf48720edc49c93484e6797ffb3077518cc8e137a"
+  },
+  {
+    "path": "audit/synthesis-review.md",
+    "bytes": 19010,
+    "sha256": "48595c7260e0fdcdbf4e14116776ff85f1269c855fab9f865444a91e85a28702"
+  },
+  {
+    "path": "brief.md",
+    "bytes": 7595,
+    "sha256": "c8564aede07e94fc5f8bdddd8df0ce71589a6e88aa29e92e1dd603710e847317"
+  },
+  {
+    "path": "chatgpt-audit-review.md",
+    "bytes": 39163,
+    "sha256": "2fcbda7d831833631fbcde594f97a77b4e8db0e583788b26dbbe6b52c0a4b5c3"
+  },
+  {
+    "path": "design-hypotheses.md",
+    "bytes": 33519,
+    "sha256": "06f220b94e4d9a5d28ca3ec62f1253e9b6e61506fa6f33421f947c211348c14e"
+  },
+  {
+    "path": "ecosystem/azguard-evidence.md",
+    "bytes": 54994,
+    "sha256": "4898f8f02ae942535fef9ce1f5f26d608eb94aab53bc51cd54b5784078b9d3ac"
+  },
+  {
+    "path": "ecosystem/azguard-file-index.txt",
+    "bytes": 22132,
+    "sha256": "ab518360e2b2c43966671cd4983250df1e7f4fd7eae5c4bdd65c8ed000729c79"
+  },
+  {
+    "path": "ecosystem/azguard-snapshot.json",
+    "bytes": 4514,
+    "sha256": "341a71faf457e8bc71fb18385ec8495f40214d7a0808a3e86e8840a24abd2b0e"
+  },
+  {
+    "path": "ecosystem/chatom-evidence.md",
+    "bytes": 63106,
+    "sha256": "2418a1ef118a68769eb818817f3141818f5ba112b67b3f750aa0bddebbba92f1"
+  },
+  {
+    "path": "ecosystem/chatom-file-index.txt",
+    "bytes": 67225,
+    "sha256": "db296e4c3e68bdf0b4fda21825e17e79ff62f09e110da377511f51824877f56b"
+  },
+  {
+    "path": "ecosystem/chatom-snapshot.json",
+    "bytes": 13165,
+    "sha256": "bc0d9af06c7fbd05814d239cfad51e2edde61d668f9bc49701b95f21c109670a"
+  },
+  {
+    "path": "ecosystem/evidence-manifest.json",
+    "bytes": 23040,
+    "sha256": "7f865918b2c0dfd62ea5c330617c7c5e24760117f03c45d4cdef67f497dd6d5f"
+  },
+  {
+    "path": "ecosystem/vaulter-evidence.md",
+    "bytes": 48551,
+    "sha256": "c382659273920fb28a9ba882a17da796f9e2c68ab4b425cb3a8b56c8b33d9682"
+  },
+  {
+    "path": "ecosystem/vaulter-file-index.txt",
+    "bytes": 38832,
+    "sha256": "f0447ccbddd1bc3fbb0ce6b84024cffbc834372fd09a8ff9195001b1dd231f9f"
+  },
+  {
+    "path": "ecosystem/vaulter-snapshot.json",
+    "bytes": 5095,
+    "sha256": "9126a8cc4f48cc8546c4c9874a04f8480eaf7b395c1f75fee5faff5cc23c6bdf"
+  },
+  {
+    "path": "ecosystem-conventions.md",
+    "bytes": 38828,
+    "sha256": "acabb0f9c1f8b78bd75bb3fd6e5d26d53ac5733f1fdd6486af9a642b831dccdb"
+  },
+  {
+    "path": "external/source-manifest.json",
+    "bytes": 8802,
+    "sha256": "2f7b66019ff730133e4ddd6490ad827710d7001d503677345113b73ad79ed149"
+  },
+  {
+    "path": "external/sources/magento/inventory/Inventory/etc/db_schema.xml",
+    "bytes": 6329,
+    "sha256": "337e07776e0e30238dd7000612def835775a6d2fb33d8666097d9b30d630fa4f"
+  },
+  {
+    "path": "external/sources/magento/inventory/InventoryReservations/etc/db_schema.xml",
+    "bytes": 1199,
+    "sha256": "329cc8049d72a85398b9bb199f6b359a7707bc173563543e1a70fcd6dfb574be"
+  },
+  {
+    "path": "external/sources/magento/inventory/InventorySales/etc/db_schema.xml",
+    "bytes": 1064,
+    "sha256": "1cb96dcf381164acf850e89b48bcbd247f6a07f165c18e4f5168157c709249ee"
+  },
+  {
+    "path": "external/sources/magento/magento2/app/code/Magento/Catalog/etc/db_schema.xml",
+    "bytes": 121216,
+    "sha256": "77bb1f61f3db33378bf174446e9a1574af5fca68c300c5a104e15007213a6c91"
+  },
+  {
+    "path": "external/sources/magento/magento2/app/code/Magento/SalesRule/etc/db_schema.xml",
+    "bytes": 24259,
+    "sha256": "cbfcaa52a4f5e097a4184e9ae4de0781da721de8a873fb70ecccfc942e5d420f"
+  },
+  {
+    "path": "external/sources/shopware/shopware/src/Core/Content/Product/ProductDefinition.php",
+    "bytes": 27210,
+    "sha256": "98691e745fe56d0e4ffb8a6fd33377d65b3d93887a084d9a715318bd7ab104f8"
+  },
+  {
+    "path": "external/sources/shopware/shopware/src/Core/Content/Property/Aggregate/PropertyGroupOption/PropertyGroupOptionDefinition.php",
+    "bytes": 5099,
+    "sha256": "8dd08bd1ffa044fe64e14c2fc470d5c6899d9837f4a20d06e9cbbc6e50355a5c"
+  },
+  {
+    "path": "external/sources/shopware/shopware/src/Core/Content/Property/PropertyGroupDefinition.php",
+    "bytes": 4464,
+    "sha256": "184d3d418534b319d35590230916967b9572236f814d0c35986b9086edadb3af"
+  },
+  {
+    "path": "external-platforms.md",
+    "bytes": 21411,
+    "sha256": "836c9a5636549b086ef8096e011dc47f0cbc7f8289ee346f8d25ad4c1ca93a54"
+  },
+  {
+    "path": "github/all-starred-catalog.md",
+    "bytes": 146701,
+    "sha256": "015d3da431f0a840c9525b526a7ee70187203c06095d40701e8bc578d9cb2c91"
+  },
+  {
+    "path": "github/bagisto-source-review.md",
+    "bytes": 9026,
+    "sha256": "9f59a213534c3cfaf1e2dbf421df013c27b97a87ea207679c0e445b9ffa5f732"
+  },
+  {
+    "path": "github/bazar-source-review.md",
+    "bytes": 7567,
+    "sha256": "b5886cabfdcd237b68488ea8fe277f89f7a55e33d1ebaed614b81e27d1d46987"
+  },
+  {
+    "path": "github/collection-manifest.json",
+    "bytes": 868,
+    "sha256": "38e7949c90b2c8410a64365a4db90d01bb204fd0e20ee3414f18f22fcb150b8c"
+  },
+  {
+    "path": "github/curated-candidates.json",
+    "bytes": 13196,
+    "sha256": "f9ce9ce6d5cb808a9f3c7f8f0886c2dfa81fcf1ac2be6bcff032325c3f726c78"
+  },
+  {
+    "path": "github/lunar-source-review.md",
+    "bytes": 9706,
+    "sha256": "3ae949b7428ab67fbd77092e7f6e96b4be22c7baf16fe47df054f828977f418a"
+  },
+  {
+    "path": "github/pagination-after-last-page.json",
+    "bytes": 2,
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "path": "github/pagination-last-page-http.txt",
+    "bytes": 80216,
+    "sha256": "ea0733c0ee1e3b321cb492aa59b9d60f41479ca846f04846c0efc5982c71e017"
+  },
+  {
+    "path": "github/php-laravel-candidates.json",
+    "bytes": 188439,
+    "sha256": "312932f1d70df172332d2cfa7b68f34f1d2fb903040fa46bd9e7b1b87a35217c"
+  },
+  {
+    "path": "github/php-laravel-catalog.md",
+    "bytes": 46581,
+    "sha256": "bbcaa982d8a789490ce64108225894bde2e36dfcbd716ac163dbc815cdc0f922"
+  },
+  {
+    "path": "github/shopper-source-review.md",
+    "bytes": 9052,
+    "sha256": "0c7593c3ca807e2f919f4088540f71e7a1972652ed6cd5c53703393c825957b8"
+  },
+  {
+    "path": "github/source-file-index.json",
+    "bytes": 25557,
+    "sha256": "a568ad9a6bab66f03ff6a810106d86a15cabb873c23d24b3ed54d5d0621a30c6"
+  },
+  {
+    "path": "github/source-manifest.json",
+    "bytes": 11166,
+    "sha256": "e62890556f753aa0d5e5687fa0e8bad689f208b939ced489d566ae16b4254112"
+  },
+  {
+    "path": "github/starred-repositories.json",
+    "bytes": 4549738,
+    "sha256": "61531329d43201c9dba4da2b7b2d17a11ad807ee7f26295a2b98310344927993"
+  },
+  {
+    "path": "github/sylius-source-review.md",
+    "bytes": 7630,
+    "sha256": "01366d0a27c55f4c86fce3d3b4944f3960cf31371993df3da74f8a54287b8d01"
+  },
+  {
+    "path": "github/validation.json",
+    "bytes": 570,
+    "sha256": "8bf08472747a5516065f82b8428407b6747c1641448fdae8f1837c2a05082ed7"
+  },
+  {
+    "path": "github/vanilo-source-review.md",
+    "bytes": 9460,
+    "sha256": "11cdbbfc94bf02f21a185ec9872883426484cb2c1d22ff507a97a7f5ade47df6"
+  },
+  {
+    "path": "github-references.md",
+    "bytes": 21832,
+    "sha256": "69a671fae482e41deb8a70db98056d8e4fd6576f1877fdc6b4e2256e695fc789"
+  },
+  {
+    "path": "logical-schema-candidate.md",
+    "bytes": 38497,
+    "sha256": "7762a853451fa4031ed1a5a9250847ce18fa6950c630738eef72cc3e74c2ddb0"
+  },
+  {
+    "path": "perplexity/01-typed-catalog.json",
+    "bytes": 27457,
+    "sha256": "4ac87a2de619ed74ba409647514a84113bdaf0965b57e8744189a9d4b9639d62"
+  },
+  {
+    "path": "perplexity/01-typed-catalog.md",
+    "bytes": 27461,
+    "sha256": "1db1a77ceae848f27232d606602498c54df1afcca71e02f4f74e544097d44e5b"
+  },
+  {
+    "path": "perplexity/02-inventory-reservations.json",
+    "bytes": 25556,
+    "sha256": "80cd8c68a68679794d72ca34c8c0db0713c170e906233f3ae4083a3abe352094"
+  },
+  {
+    "path": "perplexity/02-inventory-reservations.md",
+    "bytes": 25515,
+    "sha256": "9d9f7fd2b68c886f1858a20eeb652a1f4c95d50f95b5b07765060e463232ecb3"
+  },
+  {
+    "path": "perplexity/03-promotions-pricing-plugins.json",
+    "bytes": 30408,
+    "sha256": "8c0f7c44241465cb1d613502afc4e040f274c112e19364d33d8afbd0b8dd36bf"
+  },
+  {
+    "path": "perplexity/03-promotions-pricing-plugins.md",
+    "bytes": 30275,
+    "sha256": "a05cd1db9490329f410831806fd1ed3b64bb0685ee75a3494bc64d9564d0496f"
+  },
+  {
+    "path": "perplexity/04-counterexamples-boundaries.json",
+    "bytes": 24504,
+    "sha256": "21986bf982dba3b68017e7d5ced44d152e590969057ea055ebae487880063560"
+  },
+  {
+    "path": "perplexity/04-counterexamples-boundaries.md",
+    "bytes": 24452,
+    "sha256": "3d6ec3f71719da41ae10774d859e5e50e641c06dc5c88e6710626fd541b137e3"
+  },
+  {
+    "path": "perplexity/Sylius-Sylius-Docs-tree.json",
+    "bytes": 481,
+    "sha256": "c1c54fd42030e06e3b9f84868bfa0043ed2a6ecd9911defec54fdc1c4dd6fc34"
+  },
+  {
+    "path": "perplexity/Sylius-Sylius-tree.json",
+    "bytes": 5009367,
+    "sha256": "481352c96046eae2a69756e73c921ab80457a17f0e368a532d8d573ba261fff6"
+  },
+  {
+    "path": "perplexity/bagisto-bagisto-tree.json",
+    "bytes": 1871668,
+    "sha256": "6eb10f873d85e005769279534275e240d6abc10841e6a7abb60abc62ed5a87ee"
+  },
+  {
+    "path": "perplexity/lunarphp-lunar-tree.json",
+    "bytes": 799688,
+    "sha256": "8190f36a606f3f2ef195f6e5d60cddcf5f83a1cf8a2182fe49dcc14c3da2eb2a"
+  },
+  {
+    "path": "perplexity/provenance.json",
+    "bytes": 2540,
+    "sha256": "a8a921cd499ce4efec5a2927e08082146f54dd5c718d63695a9130833cbe6a33"
+  },
+  {
+    "path": "perplexity/queries.json",
+    "bytes": 4486,
+    "sha256": "4f2d23abcfc2e6d3f4c3060548b63cbeb98749b18c716c33a2bb111a29a3e6d9"
+  },
+  {
+    "path": "perplexity/run-research.mjs",
+    "bytes": 3026,
+    "sha256": "932a91a7ce1e3e1b4b75858274a11e3b0938fe9904663a11eaf320f15879469e"
+  },
+  {
+    "path": "perplexity/source-leads.json",
+    "bytes": 16833,
+    "sha256": "504eb9a09efb3526fe6943c9b0de0cdade9cc6f4697ade1e6e470d70a0453be0"
+  },
+  {
+    "path": "perplexity/source-tree-manifest.json",
+    "bytes": 668,
+    "sha256": "cedca0a1b405899217d9265967d358e434ad14610df5a9a9b69a71639a95e13e"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/LICENSE",
+    "bytes": 1069,
+    "sha256": "46923e16ba0cb2e76d9de1b9abfa164eb3d16b47e1bf8938bbd9257f076c79f2"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/Doctrine/ORM/Inventory/Operator/OrderInventoryOperator.php",
+    "bytes": 1999,
+    "sha256": "5ad6d9b7cfe0c0996727b7027ba9be92b69d6fa498588b32a51f5f0f800a0f4a"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/Order/HoldInventoryListener.php",
+    "bytes": 932,
+    "sha256": "03e2a245e39edaba0605d5e275808c4e9fc80fb01f5b614fb7c273f93b2a23ff"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/EventListener/Workflow/OrderPayment/SellOrderInventoryListener.php",
+    "bytes": 902,
+    "sha256": "220d9676984c0d06e938f77a76a287076ee5805856b2abf58c57361d42d00982"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Bundle/CoreBundle/Resources/config/doctrine/model/ProductVariant.orm.xml",
+    "bytes": 2636,
+    "sha256": "5d2a9a621d762a6c959b5c64666038def9aaf766c6bfaa73d1fd3b82ef2632ae"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Component/Attribute/Model/AttributeValue.php",
+    "bytes": 4196,
+    "sha256": "7f579df99a6bbd76a598c0a66540d23c54d9d3731d7073fd2ee0614e5ec7192c"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Component/Core/Inventory/Operator/OrderInventoryOperator.php",
+    "bytes": 3264,
+    "sha256": "babd50bf11301f0de5cd30adffe337a4b13c7d6f3b28e8e0f375af1c20e48c03"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Component/Inventory/Checker/AvailabilityChecker.php",
+    "bytes": 778,
+    "sha256": "6c9859937f8904a386c859c5a2066c3a90a7b2647e05022cc1a782efd402b12b"
+  },
+  {
+    "path": "perplexity/sources/Sylius-Sylius/src/Sylius/Component/Promotion/Processor/PromotionProcessor.php",
+    "bytes": 1849,
+    "sha256": "0500af5d064056b3a440422ea84f513a136f65f6bfcd5192fed5ed2b010c7cba"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/LICENSE",
+    "bytes": 1078,
+    "sha256": "a76aa4a4405c85ff25e705a6b715996623b86a6b053211726338c5dcc0357352"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Database/Migrations/2019_05_13_024326_create_cart_rule_coupons_table.php",
+    "bytes": 1191,
+    "sha256": "675dc7621bd5f2d74ef646f830123ab927eb7595e8ea2f7ae32534bdbfb1b560"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Listeners/Order.php",
+    "bytes": 5896,
+    "sha256": "834af2c997f37286d431b191ff41d6c28825d8afde879033e0d330a04b08b7e8"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Providers/EventServiceProvider.php",
+    "bytes": 594,
+    "sha256": "01eb67a4ca0ab4e78ea599ad5491ba72eb2bd3a54a05dd116dcb7a036ced5d21"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/CartRule/src/Repositories/CartRuleCouponUsageRepository.php",
+    "bytes": 340,
+    "sha256": "f831784df6f9879fb21254d4270481cf8a011ee2e10e59eab35eebd6d1f1bb82"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Database/Migrations/2018_07_27_070011_create_product_attribute_values_table.php",
+    "bytes": 1522,
+    "sha256": "ef5395bf8c43d952e9c40718bade87db762a7724ae4749e00ed9801c8ad5d605"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Database/Migrations/2024_01_19_170350_add_unique_id_column_in_product_attribute_values_table.php",
+    "bytes": 821,
+    "sha256": "939f1196c03a02b93999e685e7d0070f7e4cdfa1e0b0b6231451637e3a149758"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/Product/src/Models/ProductAttributeValue.php",
+    "bytes": 2294,
+    "sha256": "bbd742a02b19611035aed799bc20170c22680d9da858748dc396a056d91039ea"
+  },
+  {
+    "path": "perplexity/sources/bagisto-bagisto/packages/Webkul/Sales/src/Repositories/OrderRepository.php",
+    "bytes": 13776,
+    "sha256": "90a16370b2fc6a91cf31fe6c9c5e60fe5abdc5f7733cbac02016b60a5eb28abe"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/LICENSE.md",
+    "bytes": 1075,
+    "sha256": "ac4f24e7322dcc4129d8a0493c7608d6c78b20637a2ae33cc4738a3d891eee65"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/config/cart.php",
+    "bytes": 5807,
+    "sha256": "292d0300ed4a6a5fc8928c8c00d91de6fad7632a8d1e64f3c0c705ea5e02d21f"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/database/migrations/2021_07_29_100020_create_products_table.php",
+    "bytes": 729,
+    "sha256": "903ea240a87735c8b8656563ff0c0ae18a0880273a3a8cc182334203ccf8c2e1"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/database/migrations/2021_07_29_100030_create_product_variants_table.php",
+    "bytes": 1332,
+    "sha256": "bdc10571be8cd196436cf2658b56983cfa0441fabb1237f08451a345c605d0bd"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Actions/Carts/CreateOrder.php",
+    "bytes": 2620,
+    "sha256": "66654daa68fdd013323006d37968fa324754ae6e9e2695a35e26e2bf0915524b"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Base/Casts/AsAttributeData.php",
+    "bytes": 1823,
+    "sha256": "4f278ace8ad58d97cbcaedd32b92bc815f2afe01dfb79cbe1d8deb9dc09e78a0"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Base/FieldType.php",
+    "bytes": 420,
+    "sha256": "b1345d4d8199beaf42e31f0e239d651c329ae92d54a3a81bfc96e90d640214dc"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Base/FieldTypeManifest.php",
+    "bytes": 1544,
+    "sha256": "b687bca4d5fdc3894263f3295444abbaa406418607622b27cd7f23f17501a63d"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Base/ModelManifest.php",
+    "bytes": 5638,
+    "sha256": "20dd12f463d62fbcf4c9f093fe4842c76a961ae43ff56c122ca3eae180f767a7"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Base/Purchasable.php",
+    "bytes": 2397,
+    "sha256": "bc1b65a0f05a2e25df3b6208e2c41367099f6b8611b623a86b17942ac4043131"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Managers/DiscountManager.php",
+    "bytes": 8348,
+    "sha256": "22d54dc74c0d16e00fb11dd8be6819ad53276daa5b6fc09899a7c647753f85f0"
+  },
+  {
+    "path": "perplexity/sources/lunarphp-lunar/packages/core/src/Pipelines/Order/Creation/CreateOrderLines.php",
+    "bytes": 2320,
+    "sha256": "2bbb3833ae68fae7de6741d7e3c3f2238f80e457078111a2b586a0801d9160a9"
+  },
+  {
+    "path": "perplexity/sources/manifest.json",
+    "bytes": 15332,
+    "sha256": "de972a53cb0695a1da3c261343ad5f9d8f23e7d6e93d502ad4e3fb658cf2bdf3"
+  },
+  {
+    "path": "perplexity/verified-findings.md",
+    "bytes": 32570,
+    "sha256": "2c9dd52967729af57d59ef0324e0e8e4999e0c6123ceaff1cf73a38dac16a37d"
+  },
+  {
+    "path": "perplexity-research.md",
+    "bytes": 11627,
+    "sha256": "5bfa31106da315ee8a20a089a2e26739ac216bb62ca34bd4383865667f23ad98"
+  },
+  {
+    "path": "research-roadmap.md",
+    "bytes": 16288,
+    "sha256": "6bb21895f84452e87a990962a6a592725b92dce8bf22420762d4ed98e9f25272"
+  },
+  {
+    "path": "unbox/alternative-design-review.md",
+    "bytes": 7918,
+    "sha256": "17e43cd6a8ed149db9ed709170bbaf936abd8794b902fb184ac5bf12c2c4a17c"
+  },
+  {
+    "path": "unbox/database-config-evidence.md",
+    "bytes": 4865,
+    "sha256": "a6f87223826e4addad356396153cce622e661200340fb7a2d484cfd61061fd96"
+  },
+  {
+    "path": "unbox/file-index.txt",
+    "bytes": 20201,
+    "sha256": "15cd8bd99da00de5a8ddd216efd87e1d4e1843f92f16ebaea5ab2baf75731c8f"
+  },
+  {
+    "path": "unbox/models-sources.md",
+    "bytes": 143981,
+    "sha256": "de336147dd3310f5b41dd2fb6a658b40d0fdf19ee5eb72febe37babec5372b9c"
+  },
+  {
+    "path": "unbox/schema-dictionary.md",
+    "bytes": 34710,
+    "sha256": "ba6936e1e616d6a329acbacfa141e27bb69bfd162a1bb34fd4d47b57c3294447"
+  },
+  {
+    "path": "unbox/schema-sources.md",
+    "bytes": 56083,
+    "sha256": "1ee25476de962877645b2e16d3b43e6f15169d09139cdb42ef8e4f21dfda2ef2"
+  },
+  {
+    "path": "unbox/source-manifest.json",
+    "bytes": 37062,
+    "sha256": "5343cdfd2f47f873d76651370918de7f4b94c84420886b34200aa3016fb58993"
+  },
+  {
+    "path": "unbox/table-index.json",
+    "bytes": 7887,
+    "sha256": "e89152a8e7e669b55896bc2c06155f76e58348b2ce5bdf3b608cf3061fd4ec1e"
+  },
+  {
+    "path": "unbox/tests-sources.md",
+    "bytes": 11113,
+    "sha256": "ed8cc149cb20b1c921e98ea40b6c3a49aa7e15257eac5520037b78ffcb8cc256"
+  },
+  {
+    "path": "unbox/workflows-sources.md",
+    "bytes": 234073,
+    "sha256": "c0e8a2eece296c3d69696a63a2c83655221db47da7f7998df60ad2b00ca660a9"
+  }
+]
