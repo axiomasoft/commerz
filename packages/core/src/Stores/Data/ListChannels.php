@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Stores\Data;
+
+use Commerz\Attributes\Api;
+use Commerz\Errors\InvalidCommand;
+use Commerz\Pagination\Cursor;
+
+/** Channels ordered by code, optionally of one store. */
+#[Api(since: '0.1')]
+final readonly class ListChannels
+{
+    public function __construct(
+        public ?StoreId $store = null,
+        public bool $includeArchived = false,
+        public int $first = 50,
+        public ?Cursor $after = null,
+    ) {
+        if ($first < 1 || $first > 200) {
+            throw new InvalidCommand('first', 'must be from 1 to 200', 'common.invalid_page_size');
+        }
+    }
+}

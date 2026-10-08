@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Commerz;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Console\DoctorCommand;
+use Commerz\Console\InstallCommand;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Internal\Console\PruneOperationsCommand;
@@ -24,6 +26,10 @@ use Commerz\Plugins\Internal\PluginGraphCompiler;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Commerz\Schema\Internal\SchemaOwnershipRegistry;
 use Commerz\Schema\TableNames;
+use Commerz\Stores\Contracts\Channels;
+use Commerz\Stores\Contracts\Stores;
+use Commerz\Stores\Internal\DatabaseChannels;
+use Commerz\Stores\Internal\DatabaseStores;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +62,10 @@ final class CommerzServiceProvider extends ServiceProvider
         ));
         $this->app->alias(Contributions::class, PluginInspector::class);
 
+        $this->app->singleton(Stores::class, DatabaseStores::class);
+        $this->app->singleton(Channels::class, DatabaseChannels::class);
+        $this->app->singleton(Commerz::class);
+
         CommerzPlugins::builtIn(CorePlugin::class);
 
         $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
@@ -76,6 +86,8 @@ final class CommerzServiceProvider extends ServiceProvider
                 RelayOutboxCommand::class,
                 PruneOperationsCommand::class,
                 PluginsCommand::class,
+                InstallCommand::class,
+                DoctorCommand::class,
             ]);
         }
     }

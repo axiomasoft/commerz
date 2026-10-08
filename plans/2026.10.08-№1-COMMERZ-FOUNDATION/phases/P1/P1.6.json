@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P1.6",
   "title": "Stores & channels module, Commerz root API, install/doctor",
-  "status": "todo",
+  "status": "done_with_deviations",
   "summary": "Модуль Stores ядра (cmz_stores, cmz_channels; контракты Stores/Channels с create/update/archive/find/list), корневой API-класс Commerz\\Commerz и фасад, команды commerz:install (publish config + migrate) и commerz:doctor (конфиг, fingerprint, плагины, неподдержанные вклады).",
   "why": "Канал — обязательная часть CommerceContext всех продаж; корневой API задаёт стиль, который повторят все пакеты (D12).",
   "scope": {
@@ -107,6 +107,36 @@
     "need": "none",
     "status": "not_needed"
   },
-  "result": null,
-  "updated_at": "2026-10-08T17:15:25Z"
+  "result": {
+    "started_at": "2026-10-08T18:25:46Z",
+    "finished_at": "2026-10-08T18:31:22Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "f97fec96-f7e5-4c39-be49-813ffd394d21"
+    },
+    "notes": "Stores module (cmz_stores/cmz_channels, Stores/Channels contracts, DB impl with savepoint-guarded unique violations, keyset Page/Cursor), Commerz root + facade, commerz:install, commerz:doctor; 165 tests green on PG; lint, phpstan, rector clean.",
+    "deviations": [
+      "Extra Data/Exceptions types, channels.default_currency column, ChannelArchived, store archive cascades to channels, after-commit Laravel events; V3 without docker step (PG already up)."
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T18:31:22Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T18:31:22Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T18:31:22Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T18:31:22Z"
 }
