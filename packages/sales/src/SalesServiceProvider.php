@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Sales;
 
+use Commerz\Attributes\Api;
 use Illuminate\Support\ServiceProvider;
 
+#[Api(since: '0.1')]
 final class SalesServiceProvider extends ServiceProvider
 {
     public function register(): void

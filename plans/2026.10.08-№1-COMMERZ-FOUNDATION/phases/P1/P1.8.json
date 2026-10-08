@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P1.8",
   "title": "Architecture gates",
-  "status": "todo",
+  "status": "done_with_deviations",
   "summary": "Source-scan arch-тесты в tests/Arch с негативными фикстурами: направление зависимостей пакетов, запрет межпакетного импорта Internal, маркеры #[Api]/#[Spi] на публичных типах, Eloquent только в Internal, миграции создают только таблицы своих существительных, нет float в сигнатурах Contracts/Data.",
   "why": "Границы D3/D12 — главное условие параллельной разработки P2–P7 и встраиваемости; без автоматического гейта они размываются за первую же фазу. CoreX отверг pest-plugin-arch: для path-репозиториев под vendor он проходит вакуумно — нужен собственный сканер.",
   "scope": {
@@ -88,6 +88,36 @@
     "need": "none",
     "status": "not_needed"
   },
-  "result": null,
-  "updated_at": "2026-10-08T17:14:54Z"
+  "result": {
+    "started_at": "2026-10-08T19:03:51Z",
+    "finished_at": "2026-10-08T19:10:09Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "b7b19c62-9dca-4364-86cb-f87da3af862f"
+    },
+    "notes": "6 gates in tests/Arch (SourceScanner on nikic/php-parser, ownership.php, per-gate negative fixtures, zero-subject gate fails); test:arch 13 green; full suite 227 green; lint, phpstan, rector clean.",
+    "deviations": [
+      "Fixed violations in existing code: #[Api] markers, moved console commands + CorePlugin to Commerz\\Internal, added public PluginGraph, phpstan fix in TotalsStage"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-08T19:10:09Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-08T19:10:09Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-08T19:10:09Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-08T19:10:09Z"
 }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
+use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 
 /** Field checks shared by the store and channel commands. */
+#[Api(since: '0.1')]
 final class Codes
 {
     public static function code(string $code): string

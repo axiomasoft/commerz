@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
+use Commerz\Attributes\Api;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Ports\Delivery\Data\BookedShipment;
@@ -12,6 +13,7 @@ use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 
 /** Offers fixed options (in the request's currency) and books with a sequential tracking number. */
+#[Api(since: '0.1')]
 final class FakeDelivery implements DeliveryOptions, ShipmentBooking
 {
     /** @var list<DeliveryOption> */

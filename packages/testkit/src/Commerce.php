@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
+use Commerz\Attributes\Api;
 use Commerz\Commerz;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Facade;
  * `$commerce->stock->limit(...)`, `$commerce->sellables->add(...)` and assert on what the fakes recorded.
  * Quote stages and the `Commerz` root see the fakes even when they were resolved before.
  */
+#[Api(since: '0.1')]
 final readonly class Commerce
 {
     public function __construct(

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
+use Commerz\Attributes\Api;
 use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase as Orchestra;
 
+#[Api(since: '0.1')]
 abstract class PackageTestCase extends Orchestra
 {
     /** @return list<class-string> */

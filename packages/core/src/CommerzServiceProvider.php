@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz;
 
+use Commerz\Attributes\Api;
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Configuration\StockMode;
-use Commerz\Console\DoctorCommand;
-use Commerz\Console\InstallCommand;
 use Commerz\Errors\InvalidConfiguration;
+use Commerz\Internal\Console\DoctorCommand;
+use Commerz\Internal\Console\InstallCommand;
+use Commerz\Internal\CorePlugin;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Internal\Console\PruneOperationsCommand;
@@ -22,7 +24,6 @@ use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Plugins\Internal\Console\PluginsCommand;
-use Commerz\Plugins\Internal\CorePlugin;
 use Commerz\Plugins\Internal\PluginCatalog;
 use Commerz\Plugins\Internal\PluginGraphCompiler;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
@@ -52,6 +53,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
+#[Api(since: '0.1')]
 final class CommerzServiceProvider extends ServiceProvider
 {
     /** Table nouns owned by the core package. */

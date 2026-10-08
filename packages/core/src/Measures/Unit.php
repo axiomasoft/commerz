@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Measures;
 
+use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 
 /** @internal Shared unit-code validation for Quantity and Measure. */
+#[Api(since: '0.1')]
 final class Unit
 {
     public static function assert(string $unit): void

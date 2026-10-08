@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Commerz\Console;
+namespace Commerz\Internal\Console;
 
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Errors\CommerzException;

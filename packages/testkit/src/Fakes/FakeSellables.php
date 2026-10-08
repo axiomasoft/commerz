@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
+use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
@@ -15,6 +16,7 @@ use Commerz\Ports\Sellables\Enums\SellableKind;
  * In-memory sellables. As a `SellableProvider` (contribute it from a test plugin) it serves refs of type `$key`;
  * behind `Commerce::fake()` it answers every snapshot it holds, of any type.
  */
+#[Api(since: '0.1')]
 final class FakeSellables implements SellableProvider
 {
     /** @var array<string, SellableSnapshot> */

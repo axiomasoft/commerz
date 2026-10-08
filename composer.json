@@ -30,15 +30,16 @@
         "axiomasoft/commerz-full": "^0.1@dev"
     },
     "require-dev": {
+        "axiomasoft/commerz-testkit": "^0.1@dev",
         "driftingly/rector-laravel": "^2",
         "larastan/larastan": "^3",
         "laravel/pint": "^1",
+        "nikic/php-parser": "^5.4",
         "orchestra/testbench": "^11.3",
         "pestphp/pest": "^5.2",
         "phpstan/phpstan": "^2",
         "phpstan/phpstan-strict-rules": "^2",
-        "rector/rector": "^2",
-        "axiomasoft/commerz-testkit": "^0.1@dev"
+        "rector/rector": "^2"
     },
     "autoload-dev": {
         "psr-4": {
@@ -48,7 +49,8 @@
             "Commerz\\Pricing\\Tests\\": "packages/pricing/tests/",
             "Commerz\\Promotions\\Tests\\": "packages/promotions/tests/",
             "Commerz\\Shipping\\Tests\\": "packages/shipping/tests/",
-            "Commerz\\Sales\\Tests\\": "packages/sales/tests/"
+            "Commerz\\Sales\\Tests\\": "packages/sales/tests/",
+            "Commerz\\Arch\\": "tests/Arch/Support/"
         }
     },
     "scripts": {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
+use Commerz\Attributes\Api;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
@@ -11,6 +12,7 @@ use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
 
 /** Counts uses per promotion with optional total limits; consume is all-or-nothing, both sides idempotent per order. */
+#[Api(since: '0.1')]
 final class FakePromotionUsage implements PromotionUsage
 {
     /** @var array<string, int> promotion id => total limit */

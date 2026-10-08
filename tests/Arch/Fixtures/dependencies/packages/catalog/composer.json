@@ -1,0 +1,13 @@
+{
+    "name": "axiomasoft/commerz-catalog",
+    "require": {
+        "php": "^8.4",
+        "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz-inventory": "^0.1@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Commerz\\Catalog\\": "src/"
+        }
+    }
+}

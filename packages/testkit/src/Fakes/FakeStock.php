@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
+use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
@@ -25,6 +26,7 @@ use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
  * In-memory stock with the port's semantics: refs without a limit are unlimited; reserve is all-or-nothing and
  * idempotent per demand; consume takes held units out of stock. Every command is recorded.
  */
+#[Api(since: '0.1')]
 final class FakeStock implements StockAvailability, StockReservations
 {
     public const string LOCATION = 'fake';

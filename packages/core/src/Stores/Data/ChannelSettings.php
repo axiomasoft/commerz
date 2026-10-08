@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
+use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 
 /** List checks shared by the channel commands. */
+#[Api(since: '0.1')]
 final class ChannelSettings
 {
     /** @param  list<Currency>  $currencies */

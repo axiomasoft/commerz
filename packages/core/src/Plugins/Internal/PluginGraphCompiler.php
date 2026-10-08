@@ -27,6 +27,8 @@ use Throwable;
  */
 final readonly class PluginGraphCompiler
 {
+    public const string CORE_ID = 'commerz.core';
+
     private const string KEY_PATTERN = '/\A[a-z][a-z0-9]*([._-][a-z0-9]+)*\z/';
 
     public function __construct(private Container $container) {}
@@ -155,8 +157,8 @@ final readonly class PluginGraphCompiler
                 }
             }
 
-            if ($id !== CorePlugin::ID && isset($nodes[CorePlugin::ID])) {
-                $after[] = CorePlugin::ID;
+            if ($id !== self::CORE_ID && isset($nodes[self::CORE_ID])) {
+                $after[] = self::CORE_ID;
             }
 
             $dependencies[$id] = array_values(array_unique($after));

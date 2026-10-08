@@ -51,7 +51,7 @@ final readonly class TotalsStage implements QuoteStage
 
         $lineAdjustments = [];
         $orderAdjustments = [];
-        $deliveryNet = $state->delivery?->price ?? $zero;
+        $deliveryNet = $state->delivery->price ?? $zero;
         $discount = $zero;
 
         foreach ($state->adjustments as $adjustment) {

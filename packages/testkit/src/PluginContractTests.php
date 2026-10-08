@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
+use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidConfiguration;
 use Commerz\Errors\UnsupportedContribution;
+use Commerz\PluginGraph;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Plugins\Contracts\PluginInspector;
-use Commerz\Plugins\Internal\CorePlugin;
-use Commerz\Plugins\Internal\PluginEntry;
-use Commerz\Plugins\Internal\PluginGraphCompiler;
 use Commerz\Plugins\PluginDescription;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -33,6 +32,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @phpstan-require-extends TestCase
  */
+#[Api(since: '0.1')]
 trait PluginContractTests
 {
     /** @return class-string<CommerzPlugin> */
@@ -78,10 +78,10 @@ trait PluginContractTests
     #[Test]
     public function registeringThePluginTwiceFails(): void
     {
-        $entries = [...$this->entries(true), PluginEntry::config($this->pluginClass(), 99)];
+        $plugins = [...$this->plugins(true), $this->pluginClass()];
 
         try {
-            new PluginGraphCompiler(app())->compile($entries);
+            PluginGraph::compile(app(), $plugins);
         } catch (InvalidConfiguration $e) {
             self::assertStringContainsString('already registered', $e->reason);
 
@@ -132,27 +132,19 @@ trait PluginContractTests
 
     private function compile(bool $withPlugin): Contributions
     {
-        $registry = new PluginGraphCompiler(app())->compile($this->entries($withPlugin));
-        self::assertInstanceOf(PluginInspector::class, $registry);
-
-        return $registry;
+        return PluginGraph::compile(app(), $this->plugins($withPlugin));
     }
 
-    /** @return list<PluginEntry> */
-    private function entries(bool $withPlugin): array
+    /** @return list<class-string> */
+    private function plugins(bool $withPlugin): array
     {
-        $entries = [PluginEntry::builtIn(CorePlugin::class)];
         $classes = $this->pluginDependencies();
 
         if ($withPlugin) {
             $classes[] = $this->pluginClass();
         }
 
-        foreach ($classes as $index => $class) {
-            $entries[] = PluginEntry::config($class, $index);
-        }
-
-        return $entries;
+        return $classes;
     }
 
     /**

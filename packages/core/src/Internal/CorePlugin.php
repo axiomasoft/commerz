@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Commerz\Plugins\Internal;
+namespace Commerz\Internal;
 
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\ContributionKind;
+use Commerz\Plugins\Internal\PluginGraphCompiler;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
@@ -17,7 +18,7 @@ use Commerz\Quotes\Internal\TotalsStage;
 /** The kernel's own plugin. Every other plugin implicitly loads after it, so its kinds are always available. */
 final class CorePlugin implements CommerzPlugin
 {
-    public const string ID = 'commerz.core';
+    public const string ID = PluginGraphCompiler::CORE_ID;
 
     public function manifest(): PluginManifest
     {

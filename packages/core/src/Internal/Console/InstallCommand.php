@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Commerz\Console;
+namespace Commerz\Internal\Console;
 
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;

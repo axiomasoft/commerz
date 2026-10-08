@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
+use Commerz\Attributes\Api;
 use Commerz\Identity\CustomerRef;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 
+#[Api(since: '0.1')]
 final class FakeCustomers implements CustomerDirectory
 {
     /** @var array<string, CustomerProfile> */

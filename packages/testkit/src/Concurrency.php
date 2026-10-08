@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Testkit;
 
 use Closure;
+use Commerz\Attributes\Api;
 use Illuminate\Container\Container;
 use Illuminate\Database\DatabaseManager;
 use RuntimeException;
@@ -19,6 +20,7 @@ use Throwable;
  * $results = Concurrency::run(8, fn (int $worker) => $reservations->reserve(...));
  * ```
  */
+#[Api(since: '0.1')]
 final class Concurrency
 {
     /**
