@@ -1,0 +1,167 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P6.3",
+  "title": "Zones: create/update/members/archive/restore/find/list with overlapping members",
+  "status": "done",
+  "summary": "Модуль Zones: ZoneMember (country/region/postalPrefix), команды create/update/setMembers/archive/restore, find/list с курсором, DatabaseZones под FOR UPDATE, событие ZoneChanged после коммита, исключения ZoneNotFound/ZoneArchived; биндинг Zones в провайдере.",
+  "why": "Зоны — вход сопоставления адреса: неверная нормализация участника или дубль ломает выбор тарифа (SHP-06). Риски: дубли участников; префикс не через PostalCode::normalize; изменение архивной зоны; DuplicateCode без savepoint отравляет транзакцию хоста.",
+  "scope": {
+    "include": [
+      "Zones/Contracts/Zones, Zones/Data/{CreateZone, UpdateZone, SetZoneMembers, ArchiveZone, RestoreZone, ListZones, ZoneMember, ZoneView}, Zones/Enums/{ZoneStatus, MemberKind}, Zones/Events/ZoneChanged, Zones/Exceptions/{ZoneNotFound, ZoneArchived} по knowledge/shipping-design#zones",
+      "Zones/Internal/{DatabaseZones, ZoneRows}",
+      "ShippingServiceProvider: singleton Zones → DatabaseZones",
+      "тесты: tests/Feature/Zones/ZonesTest.php (create с участниками трёх видов; нормализация префикса '1-01 ' → '101'; дубль участника в команде; лимит max_zone_members; дубль кода → DuplicateCode и транзакция хоста жива; setMembers заменяет набор; archive/restore; мутация архивной → ZoneArchived; повторный archive — no-op; find/list с фильтрами status/country и курсором; ZoneChanged после коммита и не при откате), tests/Feature/Zones/Helpers.php, tests/Unit/Zones/ZoneDataTest.php (ZoneMember: регион чужой страны, неверный формат, пустой после нормализации префикс)"
+    ],
+    "exclude": [
+      "сопоставление адреса с зонами — в CandidateRates (P6.5)",
+      "методы и тарифы (P6.4)"
+    ]
+  },
+  "depends_on": [
+    "P6.1"
+  ],
+  "decisions": [
+    "D28"
+  ],
+  "reads": [
+    {
+      "why": "образец модуля зон (запись участников, FOR UPDATE)",
+      "required": true,
+      "path": "packages/pricing/src/Taxes/Internal/DatabaseTaxes.php"
+    },
+    {
+      "why": "образец archive/restore, list с курсором, CommittedEvents",
+      "required": true,
+      "path": "packages/pricing/src/PriceLists/Internal/DatabasePriceLists.php"
+    },
+    {
+      "why": "образец тестов модуля",
+      "required": true,
+      "path": "packages/pricing/tests/Feature/Taxes/TaxesTest.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/shipping/src/Zones/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/ShippingServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/shipping/tests/Feature/Zones/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Unit/Zones/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, вес — int граммы.",
+    "Расхождение с knowledge/shipping-design, D28, D29, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid без FK; shipping пишет только в таблицы shipping_*.",
+    "Правила delivery_rate и стадия delivery не пишут в БД и не ходят в сеть; время — CommerceContext::$at.",
+    "Пересечение зон разрешено: участник может повторяться в разных зонах; уникальность — только внутри зоны."
+  ],
+  "guidance": "Ключевые секции (документ уже в контексте фазы): shipping-design#zones — участники, команды, нормализация — ядро item'а; shipping-design#schema — таблицы зон; shipping-design#api — коды ошибок и события. ZoneView(ZoneId $id, string $code, string $name, ZoneStatus $status, list<ZoneMember> $members, DateTimeImmutable $updatedAt); участники в выводе сортировать country ASC, region NULLS FIRST, postal_prefix NULLS FIRST. setMembers: зона FOR UPDATE → delete members → insert batch. Курсор list — (code, id), как price lists.",
+  "examples": [
+    {
+      "path": "packages/pricing/src/Taxes/Data/DefineTaxZone.php"
+    },
+    {
+      "path": "packages/pricing/src/PriceLists/Data/ListPriceLists.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Shipping",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Zones API",
+    "тесты зон"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T19:06:32Z",
+    "finished_at": "2026-10-09T19:09:36Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "4bd39204-8df1-486b-a6cf-9710e4be9bef"
+    },
+    "notes": "Zones module: contract, data, enums, ZoneChanged, exceptions, DatabaseZones/ZoneRows, provider binding; 187 Shipping tests green",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T19:09:36Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T19:09:36Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T19:09:36Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T19:09:36Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T19:09:36Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T19:09:36Z"
+}
