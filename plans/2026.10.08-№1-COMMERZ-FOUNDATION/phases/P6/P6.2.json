@@ -1,0 +1,172 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P6.2",
+  "title": "Built-in delivery rates flat and weight_table, manual carrier",
+  "status": "done",
+  "summary": "Встроенные правила тарифов FlatRate (flat) и WeightTableRate (weight_table) с нормализацией и выбором ступени (граница включительно, превышение последней конечной ступени → unavailable('weight_out_of_range')), перевозчик ManualCarrier (без сети, tracking из meta или reference, find → null), вклад всех трёх в ShippingPlugin.",
+  "why": "Это то, что видит магазин без адаптеров: ошибка границы ступени или «цена последней ступени» при перевесе — неверная цена доставки у каждого заказа. Риски: строгое < вместо ≤; неотсортированные ступени; открытая ступень не последней; Money чужой валюты в ступени.",
+  "scope": {
+    "include": [
+      "Rates/Internal/{FlatRate, WeightTableRate} по knowledge/shipping-design#builtins",
+      "Carriers/Internal/ManualCarrier по #builtins",
+      "Internal/ShippingPlugin: contribute flat, weight_table, manual",
+      "тесты: tests/Unit/Rates/{FlatRateTest, WeightTableRateTest}.php (normalize: пусто, > 100 ступеней, не возрастает, null не последней, чужая валюта, лишний ключ; price: 999/1000/1001/5000/5001 г, открытая ступень, вес 0), tests/Unit/Carriers/ManualCarrierTest.php, tests/Feature/Rates/BuiltInRatesPluginTest.php (Contributions::get по ключам, RateCodec encode/decode встроенных)"
+    ],
+    "exclude": [
+      "value-таблицы и прочие правила (плагины)",
+      "free_above (движок, P6.5)"
+    ]
+  },
+  "depends_on": [
+    "P6.1"
+  ],
+  "decisions": [
+    "D28"
+  ],
+  "reads": [
+    {
+      "why": "образец встроенного правила (normalize/upgrade/apply)",
+      "required": true,
+      "path": "packages/promotions/src/Rules/Internal/Effects/LineFixedOff.php"
+    },
+    {
+      "why": "образец теста встроенных вкладов",
+      "required": true,
+      "path": "packages/promotions/tests/Feature/Rules/BuiltInRulesPluginTest.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/shipping/src/Rates/Internal/FlatRate.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Rates/Internal/WeightTableRate.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Carriers/Internal/ManualCarrier.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Internal/ShippingPlugin.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/shipping/tests/Unit/Rates/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Unit/Carriers/ManualCarrierTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Feature/Rates/BuiltInRatesPluginTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, вес — int граммы.",
+    "Расхождение с knowledge/shipping-design, D28, D29, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid без FK; shipping пишет только в таблицы shipping_*.",
+    "Правила delivery_rate и стадия delivery не пишут в БД и не ходят в сеть; время — CommerceContext::$at.",
+    "Граница ступени включительна (weight ≤ up_to_grams); превышение последней конечной ступени — RatePrice::unavailable('weight_out_of_range'), не цена последней ступени."
+  ],
+  "guidance": "Ключевые секции (документ уже в контексте фазы): shipping-design#builtins — поведение встроенных — ядро item'а; shipping-design#spi — контракты DeliveryRate/Carrier, RateParams, RatePrice. Канон weight_table хранит steps как список {up_to_grams:int|null, amount:{amount_minor,currency}}; normalize пересобирает его через RateParams::fromInput, чтобы порядок ключей был стабилен. upgrade() для версии 1 — InvalidRateConfig('version', 'no older versions'). ManualCarrier не обращается к БД и сети.",
+  "examples": [
+    {
+      "path": "packages/promotions/src/Rules/Internal/Effects/LinePercentOff.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Shipping",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "delivery_rate flat и weight_table",
+    "carrier manual"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T18:38:36Z",
+    "finished_at": "2026-10-09T18:46:38Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5",
+      "effort": "high",
+      "session": "33aa9f29-955a-419f-ae60-0c3af533a71e"
+    },
+    "notes": "FlatRate, WeightTableRate (inclusive bounds, weight_out_of_range over last finite step), ManualCarrier, plugin contributions; 163 shipping tests green.",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T18:46:38Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T18:46:38Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T18:46:38Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T18:46:38Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T18:46:38Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T18:46:38Z"
+}
