@@ -11,8 +11,10 @@ use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
 use Commerz\Promotions\Definitions\Data\AssignPromotionChannels;
 use Commerz\Promotions\Definitions\Data\CreatePromotion;
+use Commerz\Promotions\Definitions\Data\ExplainPromotions;
 use Commerz\Promotions\Definitions\Data\ListPromotions;
 use Commerz\Promotions\Definitions\Data\PausePromotion;
+use Commerz\Promotions\Definitions\Data\PromotionExplanation;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Data\PromotionView;
 use Commerz\Promotions\Definitions\Data\ResumePromotion;
@@ -81,4 +83,10 @@ interface PromotionDefinitions
 
     /** @return Page<PromotionView> */
     public function list(ListPromotions $query): Page;
+
+    /**
+     * Runs the quote of the input and tells, for every promotion that was switched on, whether it applied and why not.
+     * A failed quote is reported in `failure`, not thrown. Reads only; nothing is spent.
+     */
+    public function explain(ExplainPromotions $query): PromotionExplanation;
 }

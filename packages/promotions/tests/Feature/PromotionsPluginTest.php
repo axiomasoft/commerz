@@ -12,6 +12,8 @@ use Commerz\Promotions\PromotionsServiceProvider;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
+use Commerz\Quotes\Contracts\QuoteStage;
+use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
 use PHPUnit\Framework\Attributes\Test;
@@ -70,5 +72,29 @@ final class PromotionsPluginTest extends PackageTestCase
         sort($contributed);
 
         self::assertSame(['automatic', 'coupon'], $contributed);
+    }
+
+    #[Test]
+    public function adds_the_three_promotion_stages_at_their_anchors(): void
+    {
+        $registry = PluginGraph::compile(app(), [PromotionsPlugin::class]);
+        $stages = [];
+
+        foreach ($registry->describe() as $plugin) {
+            foreach ($plugin->contributions as $contribution) {
+                if ($plugin->class === PromotionsPlugin::class && $contribution->kind === QuoteStage::KIND) {
+                    $stages[] = $contribution->key;
+                }
+            }
+        }
+
+        self::assertSame(['promotions.catalog', 'promotions.cart', 'promotions.delivery'], $stages);
+
+        foreach ($stages as $key) {
+            $stage = $registry->get(QuoteStage::KIND, $key, QuoteStage::class);
+
+            self::assertSame($key, $stage->anchor()->value);
+            self::assertSame(StagePosition::At, $stage->position());
+        }
     }
 }

@@ -9,6 +9,9 @@ use Commerz\Plugins\ContributionKind;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
 use Commerz\Promotions\Coupons\Internal\CouponActivator;
+use Commerz\Promotions\Evaluation\Internal\Stages\CartPromotionsStage;
+use Commerz\Promotions\Evaluation\Internal\Stages\CatalogPromotionsStage;
+use Commerz\Promotions\Evaluation\Internal\Stages\DeliveryPromotionsStage;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
@@ -28,7 +31,7 @@ use Commerz\Promotions\Rules\Internal\Effects\OrderPercentOff;
 /**
  * The promotions' own plugin: declares the `promotion_condition`, `promotion_effect` and `promotion_activator` kinds and
  * contributes the built-in rules and the `automatic` and `coupon` activators through them, as a third-party plugin
- * would. The quote stages are contributed as they are added.
+ * would; adds the `promotions.catalog`, `promotions.cart` and `promotions.delivery` quote stages.
  */
 final class PromotionsPlugin implements CommerzPlugin
 {
@@ -55,5 +58,9 @@ final class PromotionsPlugin implements CommerzPlugin
 
         $registrar->contribute(PromotionActivator::KIND, AutomaticActivator::class);
         $registrar->contribute(PromotionActivator::KIND, CouponActivator::class);
+
+        $registrar->quoteStage(CatalogPromotionsStage::class);
+        $registrar->quoteStage(CartPromotionsStage::class);
+        $registrar->quoteStage(DeliveryPromotionsStage::class);
     }
 }

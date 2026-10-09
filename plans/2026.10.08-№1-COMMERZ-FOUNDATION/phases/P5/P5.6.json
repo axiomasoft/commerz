@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P5.6",
   "title": "Promotion engine: quote session, activation, stage algorithm with stacking and guards, three stages and explain",
-  "status": "in_progress",
+  "status": "done_with_deviations",
   "summary": "Движок акций: сессия квоты (PromotionSessions с WeakMap по QuoteInput, ActivePromotions::load с активацией и отказами по кодам), PromotionEngine с алгоритмом стадии (порядок priority DESC/code ASC, Exclusive/stopFurther, лимиты-подсказки, два прохода условий, эффекты на временном состоянии, DiscountGuard с клампингом, бюджет, атомарность), три стадии promotions.catalog/cart/delivery, explain с вердиктами.",
   "why": "Сердце пакета: превращает данные акций в корректировки квоты детерминированно и объяснимо (PRM-04, PRM-05, D15, D26). Риски: тройная загрузка и рассогласование стадий; устаревшая сессия при повторном run() того же входа; частичное применение акции; доверие плагину (строки вне набора, чужая валюта, activation чужой акции); Rejection для автоматических акций (шум); глотание исключений плагинов; время не из context.at.",
   "scope": {
@@ -202,12 +202,44 @@
   },
   "result": {
     "started_at": "2026-10-09T15:44:29Z",
+    "finished_at": "2026-10-09T16:31:19Z",
     "executor": {
       "provider": "claude-code",
       "model": "claude-opus-5-5",
       "effort": "high",
       "session": "1d98a512-321b-46dd-8830-01d9413bf18c"
-    }
+    },
+    "notes": "Evaluation module: PromotionSessions (WeakMap, start/for/find/forget), ActivePromotions (one load of promotions/rules/customer usage, activators by key ASC, activation trust checks, code rejections), CandidatePromotion, PromotionEngine (priority DESC/code ASC, exclusive/stopFurther, limit hints, two-pass conditions, scratch-state effects, DiscountGuard clamping, budget, whole-or-nothing), three At stages, PromotionExplainer + explain() with PromotionExplanation/PromotionVerdict/VerdictKind. Tests: Golden G1-G21 (G1-G12 in both creation orders), Sessions, RuleTrust, Explain (G22): 60 evaluation tests; Promotions 302 passed. Grok 4.7/high review: pass, no findings.",
+    "deviations": [
+      "Every contributed activator is asked when codes are presented (promotion_not_active instead of unknown_code for codes of non-live coupon promotions); code rejections in presentation order; a code-activated Activation must carry a couponCode; a negative Discount is unrepresentable so that trust test fails with promotions.invalid_discount; PromotionSessions::forget for explain; ActivationRequest doc fix (P5.2)"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T16:31:19Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T16:31:19Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T16:31:19Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T16:31:19Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T16:31:19Z"
+      }
+    ]
   },
-  "updated_at": "2026-10-09T15:44:29Z"
+  "updated_at": "2026-10-09T16:31:19Z"
 }

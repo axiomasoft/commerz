@@ -21,8 +21,10 @@ use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
 use Commerz\Promotions\Definitions\Data\AssignPromotionChannels;
 use Commerz\Promotions\Definitions\Data\CreatePromotion;
+use Commerz\Promotions\Definitions\Data\ExplainPromotions;
 use Commerz\Promotions\Definitions\Data\ListPromotions;
 use Commerz\Promotions\Definitions\Data\PausePromotion;
+use Commerz\Promotions\Definitions\Data\PromotionExplanation;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Data\PromotionView;
 use Commerz\Promotions\Definitions\Data\ResumePromotion;
@@ -33,6 +35,7 @@ use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Definitions\Events\PromotionChanged;
 use Commerz\Promotions\Definitions\Exceptions\PromotionArchived;
 use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
+use Commerz\Promotions\Evaluation\Internal\PromotionExplainer;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
@@ -68,6 +71,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
         private RuleCodec $codec,
         private PromotionRows $rows,
         private UsageCounters $counters,
+        private PromotionExplainer $explainer,
     ) {}
 
     public function create(CreatePromotion $command): PromotionView
@@ -332,6 +336,11 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
         $views = $this->rows->views(array_slice($rows, 0, $query->first));
 
         return new Page($views, $more && $views !== [] ? Cursor::after($views[array_key_last($views)]->code) : null);
+    }
+
+    public function explain(ExplainPromotions $query): PromotionExplanation
+    {
+        return $this->explainer->explain($query);
     }
 
     /** Moves to `$target` from the other live state; already there, or archived and archiving, is no change. */

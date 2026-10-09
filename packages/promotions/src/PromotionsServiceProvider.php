@@ -13,6 +13,7 @@ use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\PromotionRows;
 use Commerz\Promotions\Definitions\Internal\UsageCounters;
+use Commerz\Promotions\Evaluation\Internal\PromotionSessions;
 use Commerz\Promotions\Internal\PromotionsPlugin;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
@@ -39,6 +40,7 @@ final class PromotionsServiceProvider extends ServiceProvider
         $this->app->singleton(PromotionDefinitions::class, DatabasePromotionDefinitions::class);
         $this->app->singleton(Coupons::class, DatabaseCoupons::class);
         $this->app->singleton(Promotions::class);
+        $this->app->singleton(PromotionSessions::class); // holds the quote sessions of the process
 
         CommerzPlugins::builtIn(PromotionsPlugin::class);
 
