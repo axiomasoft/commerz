@@ -152,6 +152,47 @@ final readonly class LevelQueries
         return new Page($views, $more && $views !== [] ? Cursor::after((string) $views[array_key_last($views)]->id) : null);
     }
 
+    /**
+     * One statement, so one snapshot: per link of the sellables, the item's policy and status and, per active source
+     * location of the channel, the free stock of the item there — `on_hand − reserved − safety_stock` plus what
+     * expired, not yet swept reservations still hold (expired stock is not held), never below 0. `free` is null where
+     * the item has no level; a channel without sources gives one row per link with a null location.
+     *
+     * @param  list<string>  $sellables  sellable refs
+     * @return list<object> `sellable_ref, stock_item_id, quantity_per_unit, policy, item_status, location_id,
+     *                      location_code, priority, free`
+     */
+    public function sourceStock(string $channel, array $sellables): array
+    {
+        if ($sellables === []) {
+            return [];
+        }
+
+        $outstanding = 'ln.units - ln.consumed_units - ln.released_units - ln.expired_units';
+
+        $rows = $this->db()->select(
+            'with src as (select s.location_id, s.priority, l.code'
+            ." from {$this->tables->table('stock_sources')} s join {$this->tables->table('stock_locations')} l on l.id = s.location_id"
+            ." where s.channel_id = ? and l.status = 'active')"
+            .' select k.sellable_ref, k.stock_item_id, k.quantity_per_unit, i.policy, i.status as item_status,'
+            .' src.location_id, src.code as location_code, src.priority,'
+            .' greatest(0, lv.on_hand - lv.reserved - lv.safety_stock + coalesce(x.expired, 0))::bigint as free'
+            ." from {$this->tables->table('stock_item_links')} k"
+            ." join {$this->tables->table('stock_items')} i on i.id = k.stock_item_id"
+            .' left join src on true'
+            ." left join {$this->tables->table('stock_levels')} lv on lv.stock_item_id = k.stock_item_id and lv.location_id = src.location_id"
+            ." left join lateral (select sum(({$outstanding})::numeric * ln.quantity_per_unit) as expired"
+            ." from {$this->tables->table('stock_reservation_lines')} ln"
+            ." join {$this->tables->table('stock_reservations')} r on r.id = ln.reservation_id and r.generation = ln.generation"
+            ." where ln.stock_level_id = lv.id and {$outstanding} > 0 and r.state = 'active' and r.expires_at <= now()) x on true"
+            .' where k.sellable_ref in ('.implode(', ', array_fill(0, count($sellables), '?')).')'
+            .' order by k.sellable_ref, k.stock_item_id, src.priority, src.code',
+            [$channel, ...$sellables],
+        );
+
+        return array_values(array_filter($rows, is_object(...)));
+    }
+
     private function nonEmpty(string $column, string $id, string $order): bool
     {
         $rows = $this->db()->table($this->tables->table('stock_levels'))

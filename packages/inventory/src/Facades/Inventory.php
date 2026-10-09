@@ -8,8 +8,10 @@ use Commerz\Attributes\Api;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Movements\Contracts\Movements;
+use Commerz\Inventory\Reservations\Contracts\Reservations;
 use Commerz\Inventory\Sources\Contracts\StockSources;
 use Commerz\Inventory\Stock\Contracts\StockLevels;
+use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -18,6 +20,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static StockSources sources()
  * @method static StockLevels stock()
  * @method static Movements movements()
+ * @method static Reservations reservations()
+ * @method static StockAvailability availability()
  *
  * @see \Commerz\Inventory\Inventory
  */

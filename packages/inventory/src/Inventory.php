@@ -8,8 +8,10 @@ use Commerz\Attributes\Api;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Movements\Contracts\Movements;
+use Commerz\Inventory\Reservations\Contracts\Reservations;
 use Commerz\Inventory\Sources\Contracts\StockSources;
 use Commerz\Inventory\Stock\Contracts\StockLevels;
+use Commerz\Ports\Stock\Contracts\StockAvailability;
 
 /** Root of the inventory API: accessors of the module contracts. */
 #[Api(since: '0.1')]
@@ -21,6 +23,8 @@ final readonly class Inventory
         private StockSources $sources,
         private StockLevels $stock,
         private Movements $movements,
+        private Reservations $reservations,
+        private StockAvailability $availability,
     ) {}
 
     public function locations(): Locations
@@ -46,5 +50,15 @@ final readonly class Inventory
     public function movements(): Movements
     {
         return $this->movements;
+    }
+
+    public function reservations(): Reservations
+    {
+        return $this->reservations;
+    }
+
+    public function availability(): StockAvailability
+    {
+        return $this->availability;
     }
 }
