@@ -8,6 +8,11 @@ use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Pricing\Common\Internal\PricingConfig;
 use Commerz\Pricing\Internal\PricingPlugin;
+use Commerz\Pricing\PriceLists\Contracts\PriceLists;
+use Commerz\Pricing\PriceLists\Internal\DatabasePriceLists;
+use Commerz\Pricing\Prices\Contracts\Prices;
+use Commerz\Pricing\Prices\Internal\DatabasePrices;
+use Commerz\Pricing\Prices\Internal\PriceWrites;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -27,6 +32,11 @@ final class PricingServiceProvider extends ServiceProvider
 
             return PricingConfig::fromArray(is_array($config) ? $config : []);
         });
+
+        $this->app->singleton(PriceWrites::class);
+        $this->app->singleton(PriceLists::class, DatabasePriceLists::class);
+        $this->app->singleton(Prices::class, DatabasePrices::class);
+        $this->app->singleton(Pricing::class);
 
         CommerzPlugins::builtIn(PricingPlugin::class);
 

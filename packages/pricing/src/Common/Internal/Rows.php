@@ -54,6 +54,17 @@ final class Rows
         return is_bool($value) ? $value : throw new RuntimeException("Column '{$column}' is missing or not a boolean.");
     }
 
+    public static function nullableBool(object $row, string $column): ?bool
+    {
+        $value = self::value($row, $column);
+
+        return match (true) {
+            $value === null => null,
+            is_bool($value) => $value,
+            default => throw new RuntimeException("Column '{$column}' is not a boolean."),
+        };
+    }
+
     /** @return array<array-key, mixed> */
     public static function json(object $row, string $column): array
     {
