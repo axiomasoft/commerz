@@ -1,0 +1,30 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:document:v1",
+  "id": "audit-p6-2026-10-09",
+  "title": "P6 Shipping audit and authorized corrections — 2026-10-09",
+  "sections": [
+    {
+      "id": "verdict",
+      "title": "Independent audit verdict and owner authority",
+      "text": "Initial independent audit of baseline 6a0a37d: RED (3 Major). P6.1–P6.7 were implemented by other sessions; this session performed one audit without subagents. Owner explicitly authorized execution, commit and push: «и ты же исполняешь его, потом коммит и пуш». Corrections follow this verdict as execution work, not a second independent review."
+    },
+    {
+      "id": "findings",
+      "title": "Findings and owning items",
+      "text": "A1 — Major — P6.1. packages/shipping/src/Rates/Internal/RateCodec.php:66–92. Stored-rate decode catches only UnsupportedContribution and InvalidRateConfig; a RuntimeException/Error in contribution resolution, version(), upgrade() or normalize() escapes MethodPricer (decode is outside its price try/catch) and MethodRows. One broken plugin therefore aborts all options/explain and admin method reads instead of marking its tariff unsupported (SHP-05). Repair: contain every plugin loading failure on the read path; keep writes strict; regression tests through codec, options and admin reads.\n\nA2 — Major — P6.6. packages/shipping/src/Bookings/Internal/CarrierShipmentBooking.php:62–66,101–111. The mutable current method is checked before the journal. Book a shipment, archive the method or change its carrier, then repeat the identical BookShipment: MethodArchived/CarrierMismatch prevents returning the durable result. For unknown/expired pending, the same change prevents Carrier::find and strands a possibly existing shipment. Repair: the journal is authoritative for existing booked/recovery attempts; method validation applies to a first/new rejected attempt. Preserve fingerprint conflict, lease and fencing protections; unavailable original carrier fails closed.\n\nA3 — Major — P6.6. packages/shipping/src/Bookings/Internal/CarrierShipmentBooking.php:163–176; packages/shipping/src/Bookings/Internal/BookingJournal.php:230–238. isMeta accepts scalar string keys/values containing NUL, and JSON encoding succeeds; PostgreSQL jsonb rejects \\u0000. A carrier-created shipment then raises QueryException during finish and stays pending rather than unknown with shipping.invalid_carrier_result. Evidence: isolated PostgreSQL query select a JSON object with note=\\u0000 cast to jsonb returns unsupported Unicode escape sequence. Repair: validate PostgreSQL-representable UTF-8 metadata before finish, on both book and find paths; regression tests assert unknown state and no event."
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence and validation",
+      "text": "Plan API check: 0 errors, 0 warnings; P6 detailed, closed (7/7, 5 done and 2 done_with_deviations); all recorded acceptance checks exit 0. Inspected Shipping schema, provider, SPI, zones, methods, pricing, booking journal, tests and architecture docs against shipping-design and D28/D29. Existing successful checks were not rerun during read-only audit because inputs have not changed. PHP 8.4.26 verified; PostgreSQL on 127.0.0.1:54329 reachable; current_database()=commerz_test, migration registry present. Audit session: codex/gpt-6.1-sol/high, 01a1226b-d5ee-7bc0-82a0-e83b76577c1a (observed turn_context)."
+    },
+    {
+      "id": "recommendations",
+      "title": "Authorized correction scope",
+      "text": "Repair A1 in P6.1 and A2/A3 in P6.6, add focused behavioral regressions, update shipping-design and architecture documents for journal authority, synchronize plans/ACTIVE.md, and run affected Composer acceptance checks. Preserve historical execution receipts; record new correction evidence separately. P7 remains the next phase outside this request."
+    }
+  ],
+  "applies_to": [
+    "P6"
+  ]
+}
