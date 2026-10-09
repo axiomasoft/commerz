@@ -15,6 +15,10 @@ use Commerz\Pricing\Prices\Contracts\Prices;
 use Commerz\Pricing\Prices\Internal\DatabasePriceResolver;
 use Commerz\Pricing\Prices\Internal\DatabasePrices;
 use Commerz\Pricing\Prices\Internal\PriceWrites;
+use Commerz\Pricing\Taxes\Contracts\Taxes;
+use Commerz\Pricing\Taxes\Internal\DatabaseTaxes;
+use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
+use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -40,6 +44,9 @@ final class PricingServiceProvider extends ServiceProvider
         // Replaces the core's snapshot default whichever provider registered first (the core binds it with `singletonIf`).
         $this->app->singleton(PriceResolver::class, DatabasePriceResolver::class);
         $this->app->singleton(Prices::class, DatabasePrices::class);
+        $this->app->singleton(TaxZoneLookup::class);
+        $this->app->singleton(TaxRateLookup::class);
+        $this->app->singleton(Taxes::class, DatabaseTaxes::class);
         $this->app->singleton(Pricing::class);
 
         CommerzPlugins::builtIn(PricingPlugin::class);

@@ -7,11 +7,13 @@ namespace Commerz\Pricing\Facades;
 use Commerz\Attributes\Api;
 use Commerz\Pricing\PriceLists\Contracts\PriceLists;
 use Commerz\Pricing\Prices\Contracts\Prices;
+use Commerz\Pricing\Taxes\Contracts\Taxes;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static PriceLists priceLists()
  * @method static Prices prices()
+ * @method static Taxes taxes()
  *
  * @see \Commerz\Pricing\Pricing
  */

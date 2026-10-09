@@ -6,6 +6,8 @@ namespace Commerz\Pricing\Common\Internal;
 
 use Commerz\Errors\InvalidCommand;
 use DateTimeImmutable;
+use DateTimeZone;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Throwable;
 
@@ -22,6 +24,18 @@ final class Windows
         if ($from !== null && $until !== null && $from >= $until) {
             throw new InvalidCommand('validUntil', 'must be after validFrom', 'pricing.invalid_window');
         }
+    }
+
+    /** The text of a timestamp as the `timestamptz(6)` columns take it; a missing bound stays open. */
+    public static function format(?DateTimeImmutable $at): ?string
+    {
+        return $at?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP');
+    }
+
+    /** Queues the writers of one key until the current transaction ends (a transaction advisory lock). */
+    public static function lock(ConnectionInterface $db, string $key): void
+    {
+        $db->select('select pg_advisory_xact_lock(hashtextextended(?, 0))', [$key]);
     }
 
     /** A new window overlaps an existing one of the same key (`EXCLUDE USING gist`). */

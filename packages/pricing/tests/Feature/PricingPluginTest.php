@@ -6,8 +6,10 @@ namespace Commerz\Pricing\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
 use Commerz\PluginGraph;
+use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
+use Commerz\Pricing\Calculation\Internal\RatesTaxCalculator;
 use Commerz\Pricing\Internal\PricingPlugin;
 use Commerz\Pricing\PricingServiceProvider;
 use Commerz\Testkit\PackageTestCase;
@@ -46,5 +48,21 @@ final class PricingPluginTest extends PackageTestCase
         }
 
         self::assertSame(['tax_calculator' => TaxCalculator::class], $kinds);
+    }
+
+    #[Test]
+    public function contributes_the_rates_calculator(): void
+    {
+        $registry = PluginGraph::compile(app(), [PricingPlugin::class]);
+        $contributions = [];
+
+        foreach ($registry->describe() as $plugin) {
+            foreach ($plugin->contributions as $contribution) {
+                $contributions[$contribution->kind][] = $contribution->key;
+            }
+        }
+
+        self::assertSame(['rates'], $contributions[TaxCalculator::KIND] ?? []);
+        self::assertInstanceOf(RatesTaxCalculator::class, app(Contributions::class)->get(TaxCalculator::KIND, 'rates', TaxCalculator::class));
     }
 }

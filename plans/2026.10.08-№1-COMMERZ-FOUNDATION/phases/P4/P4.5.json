@@ -1,0 +1,198 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P4.5",
+  "title": "Taxes: classes, zones with members, dated rates (TAX-01) and the built-in rates calculator",
+  "status": "done_with_deviations",
+  "summary": "Модуль Taxes (defineClass, defineZone, setZoneMembers, setRate/reschedule/remove с окнами по алгоритму SetPrice, list*, zoneFor) и RatesTaxCalculator (зона по адресу/default_zone, ставки на context.at, excluded — percentage, included — includedPart + MoneyAllocator по кодам, fail-closed TaxRateNotFound); вклад rates в плагин; Pricing::taxes().",
+  "why": "TAX-01 и корректность ставок по дате (НДС РФ 20→22% с 01.01.2026) — данные, не релиз. Риски: перекрытие окон ставок; член зоны в двух зонах; тихий нулевой налог при отсутствии ставки; разбиение включённого налога по нескольким кодам с потерей копейки.",
+  "scope": {
+    "include": [
+      "Taxes/{Contracts/Taxes, Data/{DefineTaxClass, TaxClassView, DefineTaxZone, SetTaxZoneMembers, TaxZoneMember, TaxZoneView, SetTaxRate, RescheduleTaxRate, RemoveTaxRate, ListTaxRates, TaxRateView}, Events/TaxRatesChanged, Exceptions/{TaxClassNotFound, TaxZoneNotFound, TaxRateNotFound, TaxRateOverlap, TaxZoneMemberTaken}, Internal/{DatabaseTaxes, TaxZoneLookup, TaxRateLookup}} по knowledge/pricing-design#writes и #api",
+      "Calculation/Internal/RatesTaxCalculator (key rates) по knowledge/pricing-design#tax шаги 1–6; PricingPlugin: contribute(tax_calculator, RatesTaxCalculator)",
+      "Pricing::taxes() + binding Taxes в провайдере",
+      "тесты: tests/Feature/Taxes/TaxesTest.php (define дубли → DuplicateCode; setZoneMembers замена и TaxZoneMemberTaken; setRate upsert/overlap/reschedule/remove; listRates(at); zoneFor: регион сильнее страны, вне зон → null), tests/Feature/Taxes/TaxConcurrencyTest.php (6 процессов пересекающиеся окна одной ставки → 1; 4 процесса один член в разные зоны → 1), tests/Feature/Calculation/RatesTaxCalculatorTest.php (G7, G8, G10, G12, G13, G14 из #tax на уровне калькулятора; default_zone; rateBp 0 → нулевые amounts; включённый R=0)"
+    ],
+    "exclude": [
+      "стадия tax и exempt (P4.6)"
+    ]
+  },
+  "depends_on": [
+    "P4.4"
+  ],
+  "decisions": [
+    "D24"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/pricing-design#tax",
+      "why": "калькулятор и golden — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/pricing-design#writes",
+      "why": "алгоритм upsert с окнами (как SetPrice) и пары конфликтов",
+      "required": true
+    },
+    {
+      "ref": "knowledge/pricing-design#api",
+      "why": "сигнатуры и коды ошибок",
+      "required": true
+    },
+    {
+      "ref": "knowledge/pricing-design#schema",
+      "why": "tax_* таблицы",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Prices/Internal/PriceWrites.php",
+      "why": "паттерн upsert с окнами из P4.3 (создан там; имя может отличаться — искать в Prices/Internal или Common/Internal)",
+      "required": false
+    },
+    {
+      "path": "packages/core/src/Ports/Delivery/Data/Address.php",
+      "why": "country/region",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Money/MoneyAllocator.php",
+      "why": "разбиение по весам",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/pricing/src/Taxes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/pricing/src/Calculation/Internal/RatesTaxCalculator.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/pricing/src/Internal/PricingPlugin.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/pricing/src/Pricing.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/pricing/src/PricingServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/pricing/tests/Feature/Taxes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/pricing/tests/Feature/Calculation/RatesTaxCalculatorTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/pricing/tests/Feature/PricingPluginTest.php",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: …, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — Rate, количества — int (bigint в БД).",
+    "Расхождение с knowledge/pricing-design, D23/D24, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка/обновление, которые могут нарушить ограничение, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на cmz_channels и таблицы других пакетов; channel_id — uuid, sellable — $this->ref($table, 'sellable').",
+    "Нет ставки для класса в найденной зоне → TaxRateNotFound (fail-closed); нулевая ставка — только явная.",
+    "Калькулятор не пишет в БД; время — context.at."
+  ],
+  "guidance": "Если в P4.3 upsert с окнами выделен в общий Internal-хелпер (PriceWrites/Windows), переиспользовать его для ставок, а не копировать; иначе вынести в Common/Internal в этом item'е. Ставки одного класса упорядочивать по code ASC — от этого зависит разбиение MoneyAllocator (остаток младшему индексу).",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/pricing/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Taxes API",
+    "RatesTaxCalculator",
+    "TAX-01 конкурентные тесты"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T12:04:34Z",
+    "finished_at": "2026-10-09T12:12:33Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "ee40110f-f6f7-4692-bbf3-b0953a56e05d"
+    },
+    "notes": "Taxes (defineClass/defineZone/setZoneMembers/setRate/reschedule/remove/list*/zoneFor, TAX-01 через EXCLUDE + UNIQUE NULLS NOT DISTINCT), RatesTaxCalculator (G7,G8,G10,G12,G13,G14, default_zone, нулевые ставки), вклад rates в плагин, Pricing::taxes(); 192 теста pricing, 3 конкурентных теста TAX-01 стабильны за 5 прогонов, Arch зелёный",
+    "deviations": [
+      "V4 без docker compose (docker.sock недоступен), pest напрямую на PostgreSQL :54329"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T12:12:33Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T12:12:33Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T12:12:33Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T12:12:33Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T12:12:33Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T12:12:33Z"
+}

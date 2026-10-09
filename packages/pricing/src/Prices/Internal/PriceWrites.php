@@ -18,7 +18,6 @@ use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
-use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\QueryException;
@@ -147,9 +146,7 @@ final readonly class PriceWrites
     public function lockKey(string $priceList, string $sellable, ?string $group, int $minQuantity): void
     {
         // The sellable comes last: the fields before it cannot contain the separator.
-        $this->db()->select('select pg_advisory_xact_lock(hashtextextended(?, 0))', [
-            "commerz.price:{$priceList}|{$group}|{$minQuantity}|{$sellable}",
-        ]);
+        Windows::lock($this->db(), "commerz.price:{$priceList}|{$group}|{$minQuantity}|{$sellable}");
     }
 
     /**
@@ -186,7 +183,7 @@ final readonly class PriceWrites
     /** The text of a timestamp as the `timestamptz(6)` columns take it; a missing bound stays open. */
     public static function format(?DateTimeImmutable $at): ?string
     {
-        return $at?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP');
+        return Windows::format($at);
     }
 
     /** Identifies a price by key and window: two commands of one batch with the same identity are a duplicate. */
