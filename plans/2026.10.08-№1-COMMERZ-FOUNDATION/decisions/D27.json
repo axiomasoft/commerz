@@ -1,0 +1,51 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D27",
+  "title": "Расход лимитов: счётчики только при заданном лимите, KEY SHARE + условные UPDATE, пересчёт при смене лимита, гость без per-customer",
+  "date": "2026-10-09",
+  "status": "accepted",
+  "question": "Как consume/restore держат PRM-01 без горячей строки у безлимитных акций и без потери расхода при смене лимита, и что делать с гостем при лимите на покупателя?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Заголовок редемпции UNIQUE(order_ref) с fingerprint; coupons → promotions → customer usages по id ASC; все строки FOR KEY SHARE, лимитированные — условный UPDATE (used < limit, spent + d ≤ budget), покупатель — INSERT … ON CONFLICT DO UPDATE … WHERE used < limit; счётчики ведутся только при заданном лимите; мутации определений берут FOR UPDATE и пересчитывают счётчики из usages; consume перепроверяет статус, но не окно; гость (customer null) не может использовать акцию с per_customer — отказ в квоте и UsageLimitReached(per_customer) в consume; restore по политике restore_on (cancelled, expired), идемпотентно",
+      "pros": "нет сериализации размещений на безлимитных акциях и купонах (как Saleor Voucher.used); смена лимита точна благодаря конфликту KEY SHARE/FOR UPDATE; без взаимоблокировок (апгрейд KEY SHARE → NO KEY UPDATE совместим)"
+    },
+    {
+      "id": "B",
+      "text": "Всегда обновлять счётчики акции и купона",
+      "cons": "каждое размещение с популярной автоматической акцией сериализуется на одной строке до коммита"
+    },
+    {
+      "id": "C",
+      "text": "Отдельная claim-фаза при вводе кода",
+      "cons": "отвергнуто D13"
+    }
+  ],
+  "context": "knowledge/invariants#placement фиксирует порядок coupons → promotions → customer usages; D13 — расход в транзакции PlaceOrder. Perplexity 2026-10-09: Saleor блокирует ваучер with_lock при завершении checkout и ведёт used только при лимите; once-per-customer для гостей — по email (у нас хост может передать стабильный CustomerRef). Детали — knowledge/promotions-design#usage.",
+  "decision": "A — Заголовок редемпции UNIQUE(order_ref) с fingerprint; coupons → promotions → customer usages по id ASC; все строки FOR KEY SHARE, лимитированные — условный UPDATE (used < limit, spent + d ≤ budget), покупатель — INSERT … ON CONFLICT DO UPDATE … WHERE used < limit; счётчики ведутся только при заданном лимите; мутации определений берут FOR UPDATE и пересчитывают счётчики из usages; consume перепроверяет статус, но не окно; гость (customer null) не может использовать акцию с per_customer — отказ в квоте и UsageLimitReached(per_customer) в consume; restore по политике restore_on (cancelled, expired), идемпотентно",
+  "rationale": "Owner delegated architecture (M3). Counters only where a limit is enforced avoid a hot row per popular promotion; PostgreSQL row-lock modes (KEY SHARE vs FOR UPDATE) make limit changes and pauses exact without serializing consumers; fixed id order prevents deadlocks; guest per-customer is fail-closed.",
+  "applies_to": [
+    "P5",
+    "P5.4",
+    "P5.5",
+    "P5.7",
+    "P7"
+  ],
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "packages/core/src/Ports/Promotions/Contracts/PromotionUsage.php"
+    },
+    {
+      "kind": "repo",
+      "ref": "plans/2026.10.08-№1-COMMERZ-FOUNDATION/knowledge/promotions-design.json#usage"
+    }
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}
