@@ -1,0 +1,168 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P3.6",
+  "title": "Transfers between locations: draft with source reservation, dispatch, partial receipt, cancel (INV-06)",
+  "status": "done",
+  "summary": "Inventory::transfers() (create/dispatch/receive/cancel/find/list) перемещает товар между локациями: create резервирует на источнике (demand transfer:{id}), dispatch списывает transfer_out, receive (частично, с lost, идемпотентно по ключу) приходует transfer_in в назначение и завершает документ.",
+  "why": "Перемещение — вторая (после продажи) причина ухода товара с локации; без резерва на источнике товар в сборке перемещения продаётся повторно. Риски: двойной dispatch/receive, приёмка больше отгруженного, отмена после отгрузки, порядок блокировок transfer → заголовок → уровни.",
+  "scope": {
+    "include": [
+      "Transfers/{Contracts/Transfers, Data/{TransferId, CreateTransfer, TransferLine, DispatchTransfer, ReceiveTransfer, TransferReceipt, CancelTransfer, ListTransfers, TransferView, TransferLineView}, Enums/TransferState, Events/TransferUpdated, Exceptions/{TransferNotFound, InvalidTransferState}, Internal/DatabaseTransfers}",
+      "резерв перемещения — через внутренний API DatabaseReservations (строки с sellable_ref = null, qpu 1, без стратегии: только локация-источник), не через порт",
+      "Inventory::transfers(), биндинг",
+      "tests/Feature/Transfers/TransfersTest.php: create резервирует (доступность канала падает); нехватка → InsufficientStock и документа нет; from = to → InvalidCommand; untracked → UntrackedStockItem; dispatch → transfer_out, reserved и on_hand источника уменьшены; повторный dispatch → InvalidTransferState; receive частичный → in_transit; второй receive с lost → completed; received+lost > остатка → InvalidCommand; повтор receive с тем же ключом → тот же результат, одно движение; cancel из draft освобождает резерв; cancel из in_transit → InvalidTransferState; архивирование локации с активным transfer → LocationNotEmpty; события TransferUpdated"
+    ],
+    "exclude": [
+      "transit-локация, несколько отгрузок, поставки (D21)"
+    ]
+  },
+  "depends_on": [
+    "P3.5"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "reads": [
+    {
+      "why": "модель и команды — ядро item'а",
+      "required": true,
+      "ref": "knowledge/inventory-design#transfers"
+    },
+    {
+      "why": "порядок блокировок и INV-06",
+      "required": true,
+      "ref": "knowledge/inventory-design#concurrency"
+    },
+    {
+      "why": "ship/move для transfer_out/transfer_in",
+      "required": true,
+      "ref": "knowledge/inventory-design#ledger"
+    },
+    {
+      "why": "строка Transfers",
+      "required": true,
+      "ref": "knowledge/inventory-design#api"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/inventory/src/Transfers/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/src/Reservations/Internal/**",
+      "change": "modify"
+    },
+    {
+      "path": "packages/inventory/src/Locations/Internal/DatabaseLocations.php",
+      "change": "any",
+      "note": "created by P3.3"
+    },
+    {
+      "path": "packages/inventory/src/Inventory.php",
+      "change": "any",
+      "note": "created by P3.3"
+    },
+    {
+      "path": "packages/inventory/src/InventoryServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Transfers/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: …, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; количества — int (bigint в БД).",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table('stock_…'); мутации — Transactions::run (D20: вложенный вызов = savepoint); уникальные нарушения — во вложенном $db->transaction() → доменное исключение по имени ограничения (ConstraintNames).",
+    "Расхождение с knowledge/inventory-design, D21/D22 или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Уровни блокировать только через StockLedger::lock — один упорядоченный (stock_item_id, location_id) FOR NO KEY UPDATE; порядок документ → заголовок резерва → уровни → строки резерва; чужие заголовки — только SKIP LOCKED (knowledge/inventory-design#concurrency).",
+    "Доменные события — CommittedEvents::dispatch (после коммита), интеграционные — Outbox::record в той же транзакции; ничего не отправлять до коммита.",
+    "Каждый переход состояния начинается с блокировки строки перемещения FOR NO KEY UPDATE и проверки состояния под ней.",
+    "Товар в пути не пишется в уровни; balance перемещения — только строки transfer_lines."
+  ],
+  "guidance": "InsufficientStock для строки перемещения строить с sellable-строкой `stock_item:{uuid}` (у порта поле string). Для receive использовать OperationReceipts::once('inventory.transfer_receive', key, Fingerprint::of([transfer, lines]), …) только если ключ передан.",
+  "examples": [
+    {
+      "path": "packages/catalog/src/Variants/Internal/DatabaseVariants.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/inventory/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модуль Transfers",
+    "тесты INV-06"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T08:58:51Z",
+    "finished_at": "2026-10-09T09:09:27Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "1e4d0ee3-565f-44f7-8991-1088c6cd7602"
+    },
+    "notes": "Transfers module: create (reserve at source, keyed), dispatch (transfer_out once), receive (partial/lost, keyed idempotent, completes), cancel (draft only), find/list, TransferUpdated; INV-06 covered incl. concurrency; arch gates 13 passed; inventory suite 195 passed",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T09:09:27Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T09:09:27Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T09:09:27Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T09:09:27Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T09:09:27Z"
+}

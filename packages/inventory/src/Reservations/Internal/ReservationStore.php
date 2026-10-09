@@ -40,8 +40,11 @@ final readonly class ReservationStore
         private TableNames $tables,
     ) {}
 
-    /** Inserts the header of a new demand; null when the demand has one (a concurrent insert waits for its commit). */
-    public function insert(string $demand, ChannelId $channel, ?DateTimeImmutable $expiresAt): ?string
+    /**
+     * Inserts the header of a new demand; null when the demand has one (a concurrent insert waits for its commit). A
+     * transfer's header has no channel.
+     */
+    public function insert(string $demand, ?ChannelId $channel, ?DateTimeImmutable $expiresAt): ?string
     {
         $id = Uuid7::generate();
         $now = Clock::now();
@@ -49,14 +52,14 @@ final readonly class ReservationStore
         $row = $this->db()->selectOne(
             "insert into {$this->headerTable()} (id, demand, channel_id, state, generation, expires_at, created_at, updated_at)"
             ." values (?, ?, ?, 'active', 1, ?, ?, ?) on conflict (demand) do nothing returning id",
-            [$id, $demand, $channel->value, self::timestamp($expiresAt), $now, $now],
+            [$id, $demand, $channel?->value, self::timestamp($expiresAt), $now, $now],
             useReadPdo: false,
         );
 
         return is_object($row) ? $id : null;
     }
 
-    /** @return object{id: string, channel_id: string, state: string, generation: int, expired: bool}|null */
+    /** @return object{id: string, channel_id: ?string, state: string, generation: int, expired: bool}|null */
     public function lock(string $demand): ?object
     {
         $row = $this->db()->selectOne(
@@ -66,7 +69,7 @@ final readonly class ReservationStore
             useReadPdo: false,
         );
 
-        /** @var object{id: string, channel_id: string, state: string, generation: int, expired: bool}|null */
+        /** @var object{id: string, channel_id: ?string, state: string, generation: int, expired: bool}|null */
         return is_object($row) ? $row : null;
     }
 
@@ -89,31 +92,31 @@ final readonly class ReservationStore
     }
 
     /**
-     * Lines of the header's current generation, unlocked: under the header lock nobody else changes them.
+     * Sales lines of the header's current generation, unlocked: under the header lock nobody else changes them.
      *
      * @return list<LineRow> in allocation order
      */
     public function lines(string $id, ?SellableRef $sellable = null, bool $outstanding = false): array
     {
         $bindings = [$id];
-        $where = '';
+        $where = ' and ln.sellable_ref is not null';
 
         if ($sellable instanceof SellableRef) {
             $where .= ' and ln.sellable_ref = ?';
             $bindings[] = (string) $sellable;
         }
 
-        if ($outstanding) {
-            $where .= ' and '.self::OUTSTANDING;
-        }
+        return $this->currentLines($where, $bindings, $outstanding);
+    }
 
-        return $this->lineRows(
-            "select ln.*, l.code as location_code from {$this->lineTable()} ln"
-            ." join {$this->headerTable()} r on r.id = ln.reservation_id and r.generation = ln.generation"
-            ." join {$this->tables->table('stock_locations')} l on l.id = ln.location_id"
-            ." where ln.reservation_id = ?{$where} order by ln.position, ln.id",
-            $bindings,
-        );
+    /**
+     * The lines of a transfer's header (no sellable: they hold a stock item directly), unlocked like {@see lines()}.
+     *
+     * @return list<LineRow> in allocation order
+     */
+    public function transferLines(string $id, bool $outstanding = false): array
+    {
+        return $this->currentLines(' and ln.sellable_ref is null', [$id], $outstanding);
     }
 
     /**
@@ -251,7 +254,7 @@ final readonly class ReservationStore
     }
 
     /**
-     * @param  list<array{sellable: string, item: string, location: string, level: string, quantity_per_unit: int, units: int, position: int}>  $lines
+     * @param  list<array{sellable: ?string, item: string, location: string, level: string, quantity_per_unit: int, units: int, position: int}>  $lines
      */
     public function insertLines(string $id, int $generation, array $lines): void
     {
@@ -295,7 +298,7 @@ final readonly class ReservationStore
         );
     }
 
-    /** The header and its current lines, read in one statement. */
+    /** The header of a sales demand and its current lines, read in one statement; a transfer's demand has no view. */
     public function view(string $demand): ?ReservationView
     {
         $rows = $this->db()->select(
@@ -306,7 +309,7 @@ final readonly class ReservationStore
             ." left join {$this->lineTable()} ln on ln.reservation_id = r.id and ln.generation = r.generation"
             ." left join {$this->tables->table('stock_items')} i on i.id = ln.stock_item_id"
             ." left join {$this->tables->table('stock_locations')} l on l.id = ln.location_id"
-            .' where r.demand = ? order by ln.position, i.sku, ln.id',
+            .' where r.demand = ? and r.channel_id is not null order by ln.position, i.sku, ln.id',
             [$demand],
             useReadPdo: $this->db()->transactionLevel() === 0,
         );
@@ -355,6 +358,25 @@ final readonly class ReservationStore
             Rows::int($header, 'generation'),
             $expiresAt === null ? null : new DateTimeImmutable($expiresAt),
             $lines,
+        );
+    }
+
+    /**
+     * @param  list<string>  $bindings  the header id first
+     * @return list<LineRow>
+     */
+    private function currentLines(string $where, array $bindings, bool $outstanding): array
+    {
+        if ($outstanding) {
+            $where .= ' and '.self::OUTSTANDING;
+        }
+
+        return $this->lineRows(
+            "select ln.*, l.code as location_code from {$this->lineTable()} ln"
+            ." join {$this->headerTable()} r on r.id = ln.reservation_id and r.generation = ln.generation"
+            ." join {$this->tables->table('stock_locations')} l on l.id = ln.location_id"
+            ." where ln.reservation_id = ?{$where} order by ln.position, ln.id",
+            $bindings,
         );
     }
 

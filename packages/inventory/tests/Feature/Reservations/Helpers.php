@@ -14,9 +14,11 @@ use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Reservations\Contracts\Reservations;
+use Commerz\Inventory\Reservations\Internal\DatabaseReservations;
 use Commerz\Inventory\Sources\Data\AssignSource;
 use Commerz\Inventory\Stock\Data\ReceiveStock;
 use Commerz\Inventory\Stock\Data\StockLevelView;
+use Commerz\Inventory\Transfers\Contracts\Transfers;
 use Commerz\Money\Currency;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
@@ -100,7 +102,7 @@ function rsvConfigure(array $config): void
 {
     config(collect($config)->mapWithKeys(fn ($value, $key) => ["commerz-inventory.{$key}" => $value])->all());
 
-    foreach ([InventoryConfig::class, Reservations::class, StockReservations::class, StockAvailability::class, Commerz\Inventory\Inventory::class] as $abstract) {
+    foreach ([InventoryConfig::class, DatabaseReservations::class, Reservations::class, StockReservations::class, StockAvailability::class, Transfers::class, Commerz\Inventory\Inventory::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 

@@ -7,7 +7,7 @@ namespace Commerz\Inventory\Reservations\Internal;
 use Commerz\Inventory\Common\Internal\LevelRow;
 use Commerz\Inventory\Common\Internal\Rows;
 
-/** A `stock_reservation_lines` row of the current generation; units are sellable units. */
+/** A `stock_reservation_lines` row of the current generation; units are sellable units, `sellable` is '' on a transfer's line. */
 final readonly class LineRow
 {
     public function __construct(
@@ -28,7 +28,7 @@ final readonly class LineRow
     {
         return new self(
             Rows::string($row, 'id'),
-            Rows::string($row, 'sellable_ref'),
+            Rows::nullableString($row, 'sellable_ref') ?? '',
             Rows::string($row, 'stock_item_id'),
             Rows::string($row, 'location_id'),
             Rows::string($row, 'location_code'),

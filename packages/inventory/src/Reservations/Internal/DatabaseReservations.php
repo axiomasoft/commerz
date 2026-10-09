@@ -39,6 +39,7 @@ use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use LogicException;
 use RuntimeException;
 
 /**
@@ -208,6 +209,99 @@ final readonly class DatabaseReservations implements Reservations
         return $closed;
     }
 
+    /**
+     * Reserves the stock of a transfer at its source: one line per item, held directly (no sellable, one unit per
+     * unit), only from free stock and never as backorder. The caller runs inside {@see StockLedger::within()}, holds
+     * the transfer row and has locked the items and the location `for share`.
+     *
+     * @internal for the transfers module
+     *
+     * @param  array<string, int>  $quantities  units by stock item id
+     *
+     * @throws InsufficientStock the free stock at the source (`stock_item:{id}`) is smaller than the quantity
+     */
+    public function holdTransfer(string $demand, string $from, array $quantities): void
+    {
+        $id = $this->store->insert($demand, null, null)
+            ?? throw new LogicException("Demand '{$demand}' already holds a reservation.");
+        ksort($quantities, SORT_STRING);
+
+        $levels = $this->ledger->lock(array_map(static fn (string $item): array => [$item, $from], array_keys($quantities)));
+        $levels = $this->expiry->run($levels, $id);
+        $rows = [];
+
+        foreach ($quantities as $item => $quantity) {
+            $key = LevelRow::key($item, $from);
+            $level = $levels[$key] ?? null;
+            $free = $level instanceof LevelRow ? max(0, $level->view()->available) : 0;
+
+            if (! $level instanceof LevelRow || $quantity > $free) {
+                throw new InsufficientStock('stock_item:'.$item, $quantity, $free);
+            }
+
+            $levels[$key] = $this->ledger->hold($level, $quantity, false);
+            $rows[] = [
+                'sellable' => null,
+                'item' => $item,
+                'location' => $from,
+                'level' => $level->id,
+                'quantity_per_unit' => 1,
+                'units' => $quantity,
+                'position' => count($rows) + 1,
+            ];
+        }
+
+        $this->store->insertLines($id, 1, $rows);
+    }
+
+    /**
+     * Ships everything a transfer still holds from its source (movement `transfer_out`) and settles the header. Same
+     * caller contract as {@see holdTransfer()}; lock order: header → levels → lines.
+     *
+     * @internal for the transfers module
+     *
+     * @throws InsufficientStock the reserved units are not all on hand (a count lowered the level)
+     */
+    public function shipTransfer(string $demand, string $reference): void
+    {
+        $this->settleTransfer($demand, 'consumed_units', fn (LevelRow $level, LineRow $line, int $units): LevelRow => $this->ledger->ship($level, $units * $line->quantityPerUnit, MovementKind::TransferOut, $reference));
+    }
+
+    /**
+     * Gives the stock a transfer still holds back to its source and settles the header.
+     *
+     * @internal for the transfers module
+     */
+    public function releaseTransfer(string $demand): void
+    {
+        $this->settleTransfer($demand, 'released_units', fn (LevelRow $level, LineRow $line, int $units): LevelRow => $this->ledger->unhold($level, $units * $line->quantityPerUnit));
+    }
+
+    /** @param  callable(LevelRow, LineRow, int): LevelRow  $apply  moves the level for the outstanding units of a line */
+    private function settleTransfer(string $demand, string $counter, callable $apply): void
+    {
+        $header = $this->store->lock($demand) ?? throw new LogicException("The reservation of '{$demand}' does not exist.");
+        $id = Rows::string($header, 'id');
+        $lines = $this->store->transferLines($id, outstanding: true);
+
+        if ($lines === []) {
+            throw new LogicException("Transfer demand '{$demand}' holds nothing.");
+        }
+
+        $levels = $this->ledger->lock(self::pairs($lines));
+
+        foreach ($this->store->lockLines(self::ids($lines)) as $line) {
+            $units = $line->outstanding();
+
+            if ($units > 0) {
+                $this->store->count($line, $counter, $units);
+                $levels[$line->levelKey()] = $apply(self::level($levels, $line), $line, $units);
+            }
+        }
+
+        $this->store->closeIfSettled($id);
+    }
+
     private function expireOne(string $id): int
     {
         $demand = $this->store->lockExpired($id);
@@ -239,10 +333,11 @@ final readonly class DatabaseReservations implements Reservations
             $header = $this->store->lock($command->demand)
                 ?? throw new RuntimeException("The reservation of '{$command->demand}' vanished under its lock.");
             $id = Rows::string($header, 'id');
-            $channel = Rows::string($header, 'channel_id');
+            $channel = Rows::nullableString($header, 'channel_id');
 
             if ($channel !== $command->channel->value) {
-                throw new ReservationConflict($command->demand, $channel);
+                // A transfer's header has no channel: its demand is not a sales demand.
+                throw new ReservationConflict($command->demand, $channel ?? 'none');
             }
 
             $lines = $this->store->lines($id);

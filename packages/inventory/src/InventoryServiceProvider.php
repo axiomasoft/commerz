@@ -25,6 +25,8 @@ use Commerz\Inventory\Stock\Contracts\StockLevels;
 use Commerz\Inventory\Stock\Internal\DatabaseStockLevels;
 use Commerz\Inventory\Stock\Internal\DatabaseStockReturns;
 use Commerz\Inventory\Stock\Internal\StockEntities;
+use Commerz\Inventory\Transfers\Contracts\Transfers;
+use Commerz\Inventory\Transfers\Internal\DatabaseTransfers;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
@@ -57,12 +59,14 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->singleton(StockSources::class, DatabaseStockSources::class);
         $this->app->singleton(StockLevels::class, DatabaseStockLevels::class);
         $this->app->singleton(Movements::class, DatabaseMovements::class);
-        $this->app->singleton(Reservations::class, DatabaseReservations::class);
+        $this->app->singleton(DatabaseReservations::class);
+        $this->app->singleton(Reservations::class, static fn (Application $app): DatabaseReservations => $app->make(DatabaseReservations::class));
         // Plain singletons replace the kernel's `singletonIf` defaults whichever provider registers first; the
         // reservation port and the package contract are one instance.
         $this->app->singleton(StockReservations::class, static fn (Application $app): Reservations => $app->make(Reservations::class));
         $this->app->singleton(StockAvailability::class, DatabaseAvailability::class);
         $this->app->singleton(StockReturns::class, DatabaseStockReturns::class);
+        $this->app->singleton(Transfers::class, DatabaseTransfers::class);
         $this->app->singleton(Inventory::class);
 
         CommerzPlugins::builtIn(InventoryPlugin::class);

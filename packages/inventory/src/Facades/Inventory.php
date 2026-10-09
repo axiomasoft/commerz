@@ -11,6 +11,7 @@ use Commerz\Inventory\Movements\Contracts\Movements;
 use Commerz\Inventory\Reservations\Contracts\Reservations;
 use Commerz\Inventory\Sources\Contracts\StockSources;
 use Commerz\Inventory\Stock\Contracts\StockLevels;
+use Commerz\Inventory\Transfers\Contracts\Transfers;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Illuminate\Support\Facades\Facade;
 
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Movements movements()
  * @method static Reservations reservations()
  * @method static StockAvailability availability()
+ * @method static Transfers transfers()
  *
  * @see \Commerz\Inventory\Inventory
  */
