@@ -1,0 +1,205 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P3.3",
+  "title": "Locations, stock items with sellable links, channel sources and the Inventory root",
+  "status": "done_with_deviations",
+  "summary": "Работают Inventory::locations() (create/update/archive/restore/find/findByCode/list), Inventory::items() (create/update/archive/restore/find/findBySku/list, link/unlink/links — комплекты до 20 компонентов, политика tracked|backorder|untracked) и Inventory::sources() (assign/unassign/list по каналу с приоритетом); корень Inventory и фасад со всеми 8 аксессорами (контракты следующих item'ов подключаются по мере появления).",
+  "why": "Справочники склада и связь sellable→item нужны каждой операции остатков; связи — единственное место, где inventory узнаёт продаваемое (без зависимости от каталога). Риски: архивирование непустой локации/номенклатуры, смена unit после движений, смена политики на untracked при остатке, дубли кодов при гонке (unique + savepoint).",
+  "scope": {
+    "include": [
+      "Locations/{Contracts/Locations, Data/{CreateLocation, UpdateLocation, ArchiveLocation, RestoreLocation, ListLocations, LocationView}, Enums/{LocationKind, LocationStatus}, Exceptions/{LocationNotFound, LocationNotEmpty, LocationArchived}, Internal/DatabaseLocations}",
+      "Items/{Contracts/StockItems, Data/{CreateStockItem, UpdateStockItem, ArchiveStockItem, RestoreStockItem, ListStockItems, StockItemView, LinkSellable, UnlinkSellable, ListLinks, StockLinkView}, Enums/{StockPolicy, StockItemStatus}, Exceptions/{StockItemNotFound, StockItemNotEmpty, StockItemArchived, TooManyComponents, UntrackedStockItem}, Internal/DatabaseStockItems}",
+      "Sources/{Contracts/StockSources, Data/{AssignSource, UnassignSource, StockSourceView}, Internal/DatabaseStockSources} — канал проверяется через Stores\\Contracts\\Channels::find",
+      "archive location/item: блокирует строку сущности FOR NO KEY UPDATE, затем проверяет уровни (on_hand≠0 или reserved≠0 → *NotEmpty) и, для локации, transfers в draft/in_transit; чтение уровней здесь — прямой SELECT по таблице stock_levels допустим только через Common/Internal/LevelQueries (создать минимальный: existsNonEmpty(item|location)) — LedgerBoundaryTest (P3.4) это учитывает",
+      "Inventory.php (final readonly, #[Api]) + Facades/Inventory.php; аксессоры locations/items/sources сейчас; stock/movements/reservations/availability/transfers добавляются в P3.4–P3.6 (конструктор растёт — допустимо до релиза)",
+      "биндинги в InventoryServiceProvider",
+      "tests/Feature/Locations/LocationsTest.php, tests/Feature/Items/StockItemsTest.php (link upsert qpu, unlink, комплект, >20 → TooManyComponents, unit неизменяем, links по sellable и по item), tests/Feature/Sources/StockSourcesTest.php (порядок priority, code; несуществующий канал → not found; upsert приоритета)"
+    ],
+    "exclude": [
+      "остатки и движения (P3.4)",
+      "резервы (P3.5)",
+      "перемещения (P3.6)"
+    ]
+  },
+  "depends_on": [
+    "P3.2"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "reads": [
+    {
+      "why": "таблица контрактов Locations/StockItems/StockSources",
+      "required": true,
+      "ref": "knowledge/inventory-design#api"
+    },
+    {
+      "why": "политики, связи, sources",
+      "required": true,
+      "ref": "knowledge/inventory-design#model"
+    },
+    {
+      "why": "соглашения",
+      "required": true,
+      "ref": "knowledge/inventory-design#layout"
+    },
+    {
+      "why": "строка archive vs reserve в таблице конфликтующих пар",
+      "required": false,
+      "ref": "knowledge/inventory-design#concurrency"
+    },
+    {
+      "why": "образец корня",
+      "required": true,
+      "path": "packages/catalog/src/Catalog.php"
+    },
+    {
+      "why": "find/assertActive канала",
+      "required": true,
+      "path": "packages/core/src/Stores/Contracts/Channels.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/inventory/src/Locations/**",
+      "change": "any",
+      "note": "LocationId создан в P3.2"
+    },
+    {
+      "path": "packages/inventory/src/Items/**",
+      "change": "any",
+      "note": "StockItemId создан в P3.2"
+    },
+    {
+      "path": "packages/inventory/src/Sources/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/src/Common/Internal/LevelQueries.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/src/Inventory.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/src/Facades/Inventory.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/src/InventoryServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Locations/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Items/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Sources/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: …, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; количества — int (bigint в БД).",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table('stock_…'); мутации — Transactions::run (D20: вложенный вызов = savepoint); уникальные нарушения — во вложенном $db->transaction() → доменное исключение по имени ограничения (ConstraintNames).",
+    "Расхождение с knowledge/inventory-design, D21/D22 или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Доменные события — CommittedEvents::dispatch (после коммита), интеграционные — Outbox::record в той же транзакции; ничего не отправлять до коммита.",
+    "Списки — keyset Page<T> с Cursor (полная валидация позиции, A10) и одним SQL-снимком (A11).",
+    "Нет soft delete: archive/restore меняют status; связи удаляются (unlink) — они не история."
+  ],
+  "guidance": "Ошибки not_found — подклассы Commerz\\Errors\\NotFound с кодами inventory.location_not_found / inventory.stock_item_not_found; конфликты — CommerzException category Conflict. LinkSellable с существующей парой обновляет quantity_per_unit (INSERT … ON CONFLICT (sellable_ref, stock_item_id) DO UPDATE). Лимит 20 компонентов проверять под блокировкой строк связей sellable (SELECT … FOR UPDATE по sellable_ref) или advisory-lock по hashtext(sellable_ref), чтобы два параллельных link не превысили лимит.",
+  "examples": [
+    {
+      "path": "packages/core/src/Stores/Internal/DatabaseChannels.php"
+    },
+    {
+      "path": "packages/catalog/src/Categories/Internal"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/inventory/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модули Locations, Items, Sources",
+    "корень Inventory + фасад",
+    "тесты справочников"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T06:37:12Z",
+    "finished_at": "2026-10-09T06:42:03Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "b1027e5d-6d63-4c56-9668-f16854cc0826"
+    },
+    "notes": "Locations, Items (links, kits<=20, policies), Sources modules, Inventory root + facade, LevelQueries, bindings; 21 new tests, inventory suite 103 passed",
+    "deviations": [
+      "V4 docker denied (postgres already up); links() paged; LevelQueries locked readers"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T06:42:03Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T06:42:03Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T06:42:03Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T06:42:03Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T06:42:03Z"
+}

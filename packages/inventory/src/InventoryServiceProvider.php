@@ -6,7 +6,14 @@ namespace Commerz\Inventory;
 
 use Commerz\Attributes\Api;
 use Commerz\Inventory\Common\Internal\InventoryConfig;
+use Commerz\Inventory\Common\Internal\LevelQueries;
 use Commerz\Inventory\Internal\InventoryPlugin;
+use Commerz\Inventory\Items\Contracts\StockItems;
+use Commerz\Inventory\Items\Internal\DatabaseStockItems;
+use Commerz\Inventory\Locations\Contracts\Locations;
+use Commerz\Inventory\Locations\Internal\DatabaseLocations;
+use Commerz\Inventory\Sources\Contracts\StockSources;
+use Commerz\Inventory\Sources\Internal\DatabaseStockSources;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
@@ -27,6 +34,12 @@ final class InventoryServiceProvider extends ServiceProvider
 
             return InventoryConfig::fromArray(is_array($config) ? $config : []);
         });
+
+        $this->app->singleton(LevelQueries::class);
+        $this->app->singleton(Locations::class, DatabaseLocations::class);
+        $this->app->singleton(StockItems::class, DatabaseStockItems::class);
+        $this->app->singleton(StockSources::class, DatabaseStockSources::class);
+        $this->app->singleton(Inventory::class);
 
         CommerzPlugins::builtIn(InventoryPlugin::class);
 
