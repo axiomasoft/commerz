@@ -2,5 +2,7 @@
 
 declare(strict_types=1);
 
-// Skeleton: options are added together with the package features.
-return [];
+return [
+    // Upper bound of variants one generate() call may create for a product (1..10000).
+    'max_generated_variants' => 100,
+];

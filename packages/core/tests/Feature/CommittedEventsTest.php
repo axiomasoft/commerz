@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Event;
 
 // No RefreshDatabase: these tests need to start outside any transaction.
 
-final class CommittedEventsProbe
+final readonly class CommittedEventsProbe
 {
-    public function __construct(public readonly string $name) {}
+    public function __construct(public string $name) {}
 }
 
 it('dispatches only after the surrounding transaction commits', function (): void {
