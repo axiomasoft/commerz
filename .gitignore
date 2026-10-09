@@ -35,9 +35,13 @@ dist/
 # Skills (.claude/skills/, .agents/skills/) — shared artifacts, must be committed
 .agents/plugins/
 
-# Codex / Cursor: артефакты провайдеров (harness render), не коммитим
-.codex/
-.cursor/
+# Codex / Cursor: конфигурации и состояние локальны; lifecycle hooks общие для команды.
+.codex/*
+!.codex/hooks/
+!.codex/hooks/**
+.cursor/*
+!.cursor/hooks/
+!.cursor/hooks/**
 
 .ai/route-evidence-tmp.json
 

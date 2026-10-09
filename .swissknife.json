@@ -14,13 +14,13 @@
         "enabled": true
       },
       "codex": {
-        "enabled": false
+        "enabled": true
       },
       "cursor": {
-        "enabled": false
+        "enabled": true
       },
       "grok": {
-        "enabled": false
+        "enabled": true
       }
     },
     "contract_version": "1.0.0"
