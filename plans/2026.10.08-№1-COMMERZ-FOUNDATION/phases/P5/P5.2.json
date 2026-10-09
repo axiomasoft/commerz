@@ -1,0 +1,291 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.2",
+  "title": "Promotions foundation: config, Common, schema, provider, plugin kinds, Rules SPI and RuleCodec",
+  "status": "done",
+  "summary": "Пакет promotions загружается с типизированным PromotionsConfig, объявляет существительные promotion и coupon, создаёт полную схему (8 таблиц knowledge/promotions-design#schema в 3 миграциях), регистрирует плагин commerz.promotions с тремя kinds (promotion_condition, promotion_effect, promotion_activator), даёт Common (PromotionCodes, DuplicateCode, Clock, Rows), весь публичный SPI модуля Rules (Contracts, Data, Enums, Exceptions) и Internal RuleCodec, ID-классы.",
+  "why": "Основа всех модулей: схема — последняя линия PRM-01/PRM-03 (CHECK счётчиков, UNIQUE канонического кода, UNIQUE order_ref); SPI правил — точка расширения акций, RuleCodec — единственный путь записи/чтения правил с fail-closed unsupported. Риски: FK на таблицы ядра; неканоничный код купона в БД; RuleParams, пропускающий float/объекты; codec, бросающий на устаревших данных вместо unsupported.",
+  "scope": {
+    "include": [
+      "config/commerz-promotions.php и Common/Internal/PromotionsConfig::fromArray по knowledge/promotions-design#layout (InvalidConfiguration('commerz-promotions.<key>'))",
+      "database/migrations: 3 миграции CommerzMigration строго по knowledge/promotions-design#schema (имена файлов из #layout)",
+      "PromotionsServiceProvider: config singleton, NOUNS = ['promotion','coupon'], SchemaOwnership::declare('commerz.promotions', NOUNS) через callAfterResolving, CommerzPlugins::builtIn(PromotionsPlugin::class), loadMigrationsFrom, publish конфига (bindings модулей — в следующих item'ах)",
+      "Common/Data/PromotionCodes: code() [a-z0-9][a-z0-9_.-]{0,63}, couponCode() — trim+strtoupper, канон [A-Z0-9][A-Z0-9_-]{0,63}, group() [a-z0-9_.-]{1,64}; коды promotions.invalid_*; Common/Exceptions/DuplicateCode(entity, code) — promotions.duplicate_code; Common/Internal/{Clock, Rows} (как pricing)",
+      "Rules/Contracts/{PromotionCondition, PromotionEffect, PromotionActivator}, Rules/Data/{RuleSpec, RuleParams, RuleScope, PromotionSummary, ConditionInput, ConditionOutcome, EffectInput, Discount, ActivationRequest, ActivationResult, Activation, CodeRejection}, Rules/Enums/{PromotionStage, ConditionRole}, Rules/Exceptions/{InvalidRuleConfig, InvalidRuleResult} — по knowledge/promotions-design#rules-spi",
+      "Rules/Internal/{RuleCodec, StoredRule, LoadedRule}: encode/decode по #rules-spi (unknown_rule, rule_not_allowed_in_stage, invalid_rule_config, лимиты числа правил; decode → unsupported без исключения)",
+      "Internal/PromotionsPlugin (id commerz.promotions, 0.1.0): три declareKind — встроенные вклады и стадии добавляются в P5.3/P5.5/P5.6",
+      "ID-классы: Definitions/Data/PromotionId, Coupons/Data/{CouponId, CouponBatchId}",
+      "тесты: tests/Feature/SchemaTest.php (таблицы; CHECK: stage/stacking/status, окно, лимиты > 0, budget ⇒ currency, used ≥ 0, канон кода купона — 'autumn' не вставляется, UNIQUE code; UNIQUE order_ref; state/restored_at), tests/Feature/PromotionsPluginTest.php (PluginContractTests; три kind объявлены), tests/Feature/Rules/RuleCodecTest.php (фикстурный плагин с условием и эффектом через defineEnvironment: unknown_rule, стадия, invalid_rule_config с путём поля, decode: нет ключа/версия выше/upgrade бросил → unsupported, upgrade старой версии), tests/Unit/{PromotionsConfigTest, PromotionCodesTest}.php, tests/Unit/Rules/{RuleParamsTest, RuleDataTest}.php"
+    ],
+    "exclude": [
+      "встроенные правила и активаторы (P5.3, P5.5)",
+      "модули Definitions/Coupons/Evaluation/Usage (P5.4–P5.7)"
+    ]
+  },
+  "depends_on": [],
+  "decisions": [
+    "D26",
+    "D27",
+    "D5"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#model",
+      "why": "модель и границы",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#layout",
+      "why": "раскладка, конфиг, провайдер — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#schema",
+      "why": "таблицы и ограничения — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#rules-spi",
+      "why": "SPI, RuleParams, RuleCodec — ядро item'а",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/PricingServiceProvider.php",
+      "why": "образец провайдера",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Internal/PricingPlugin.php",
+      "why": "образец плагина с declareKind",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/database/migrations/2026_10_11_100001_create_commerz_price_tables.php",
+      "why": "образец миграции CommerzMigration (check, money, foreign)",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Schema/CommerzMigration.php",
+      "why": "хелперы миграций",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Common/Internal/PricingConfig.php",
+      "why": "образец типизированного конфига",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Calculation/Contracts/TaxCalculator.php",
+      "why": "образец SPI-контракта с KIND",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/SchemaTest.php",
+      "why": "образец теста схемы",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/PricingPluginTest.php",
+      "why": "образец PluginContractTests",
+      "required": true
+    },
+    {
+      "ref": "knowledge/kernel-contracts#plugins",
+      "why": "declareKind/contribute и заморозка реестра",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/config/commerz-promotions.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/database/migrations/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/PromotionsServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/Common/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Contracts/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Data/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Enums/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Exceptions/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Internal/RuleCodec.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Internal/StoredRule.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Rules/Internal/LoadedRule.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Internal/PromotionsPlugin.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Data/PromotionId.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Coupons/Data/CouponId.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Coupons/Data/CouponBatchId.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/SchemaTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/PromotionsPluginTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Rules/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Fixtures/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Unit/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка/обновление, которые могут нарушить ограничение, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid, клиент/заказ — varchar(191) ref-строки.",
+    "Все деньги и счётчики — bigint/integer с CHECK ≥ 0; enum-колонки — varchar + CHECK.",
+    "RuleCodec::decode никогда не бросает на сохранённых данных: отсутствие плагина, версия выше плагина или InvalidRuleConfig из upgrade → LoadedRule::unsupported(reason)."
+  ],
+  "guidance": "Миграции: money($t, 'budget', nullable: true) создаёт budget_minor и общую nullable currency; spent_minor — обычный bigint default 0. Канон кода купона: $this->check($coupons, 'code_canonical', \"code ~ '^[A-Z0-9][A-Z0-9_-]{0,63}$'\"). promotion_rules.config — jsonb. PromotionStage: cases Catalog='catalog', Cart='cart', Delivery='delivery'; anchor() → QuoteAnchor::CatalogPromotions|CartPromotions|DeliveryPromotions; stageKey() → $this->anchor()->value. RuleParams::fromInput: Money → ['amount_minor' => int, 'currency' => code]; распознавание Money при чтении — money(key, Currency) проверяет форму массива и валюту. ConditionOutcome — private ctor + именованные конструкторы pass()/fail(); reason проверяется тем же regex, что Rejection. Discount — private ctor + line()/order()/delivery(), amount не отрицателен (InvalidCommand promotions.invalid_discount). ActivationResult/Activation/CodeRejection — проверки формы только локальные; сверку с запросом делает движок (P5.6). RuleCodec получает Contributions из контейнера; вход — list<RuleSpec>, role ('condition'|'effect'), RuleScope; путь поля в ошибке — '<role>s.<index>.params.<field>'. Для фикстурного плагина регистрировать его через $app['config']->set('commerz.plugins', [...]) в defineEnvironment до миграций (урок A5).",
+  "examples": [
+    {
+      "path": "packages/pricing/src/Common/Data/PricingCodes.php"
+    },
+    {
+      "path": "packages/pricing/src/Common/Internal/Rows.php"
+    },
+    {
+      "path": "packages/pricing/src/Calculation/Internal/TaxResultValidator.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "схема promotion_*/coupon_* (8 таблиц)",
+    "PromotionsConfig",
+    "SPI правил и активаторов + RuleCodec",
+    "плагин commerz.promotions с тремя kinds"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T14:27:20Z",
+    "finished_at": "2026-10-09T14:37:29Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "44fc8c4f-3eed-4768-85f5-af3b0acde4f7"
+    },
+    "notes": "Config, Common, 3 migrations (8 tables), provider, plugin with 3 kinds, Rules SPI/Data/RuleCodec, IDs; 114 promotions tests green",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T14:37:29Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T14:37:29Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T14:37:29Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T14:37:29Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T14:37:29Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T14:37:29Z"
+}
