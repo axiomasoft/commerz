@@ -126,6 +126,33 @@ it('does not touch a list on an update that changes nothing', function (): void 
     expect($same->updatedAt)->toEqual($list->updatedAt);
 });
 
+it('publishes a price list update once after commit and discards a rolled-back update', function (): void {
+    $list = plsList('retail');
+    Event::fake([PriceListChanged::class]);
+
+    DB::transaction(function () use ($list): void {
+        Pricing::priceLists()->update(new UpdatePriceList($list->id, name: 'Shop', priority: 7, taxInclusion: TaxInclusion::Included));
+        Event::assertNotDispatched(PriceListChanged::class);
+    });
+
+    Event::assertDispatchedTimes(PriceListChanged::class, 1);
+    Event::assertDispatched(PriceListChanged::class, static fn (PriceListChanged $event): bool => $event->priceList->equals($list->id));
+
+    Pricing::priceLists()->update(new UpdatePriceList($list->id, name: 'Shop', priority: 7, taxInclusion: TaxInclusion::Included));
+
+    try {
+        DB::transaction(function () use ($list): void {
+            Pricing::priceLists()->update(new UpdatePriceList($list->id, priority: 99));
+
+            throw new RuntimeException('host rolls back');
+        });
+    } catch (RuntimeException) {
+    }
+
+    expect(Pricing::priceLists()->find($list->id)->priority)->toBe(7);
+    Event::assertDispatchedTimes(PriceListChanged::class, 1);
+});
+
 it('lists by code with a cursor and filters by status, channel and currency', function (): void {
     $web = plsChannel('web');
     plsList('c-list', [$web]);

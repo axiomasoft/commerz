@@ -109,6 +109,7 @@ final readonly class DatabasePriceLists implements PriceLists
 
             if ($changes !== []) {
                 $this->touch($command->priceList, $changes);
+                $this->events->dispatch(new PriceListChanged($command->priceList));
             }
 
             return $this->find($command->priceList);

@@ -43,9 +43,10 @@ use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
- * Lock order: the zone row `for no key update` to replace its members, then the member rows; a rate is written under
- * the transaction advisory lock of its key (class, zone, tax code), then its own row `for no key update`. Members go in
- * sorted, so concurrent writers queue on the same pair instead of deadlocking. Like prices, a rate is an upsert by hand:
+ * Lock order: the membership advisory lock before any zone or member row when defining a zone or replacing members;
+ * a rate is written under the transaction advisory lock of its key (class, zone, tax code), then its own row
+ * `for no key update`. Membership changes are serialized: sorted inserts alone cannot prevent reciprocal claims from
+ * deadlocking on uncommitted member deletions. Like prices, a rate is an upsert by hand:
  * PostgreSQL cannot `ON CONFLICT DO UPDATE` through an exclusion constraint (TAX-01).
  */
 final readonly class DatabaseTaxes implements Taxes
@@ -86,6 +87,7 @@ final readonly class DatabaseTaxes implements Taxes
     public function defineZone(DefineTaxZone $command): TaxZoneView
     {
         return $this->transactions->run(function () use ($command): TaxZoneView {
+            $this->lockMembers();
             $db = $this->db();
             $id = Uuid7::generate();
             $now = Clock::now();
@@ -111,6 +113,7 @@ final readonly class DatabaseTaxes implements Taxes
     public function setZoneMembers(SetTaxZoneMembers $command): TaxZoneView
     {
         return $this->transactions->run(function () use ($command): TaxZoneView {
+            $this->lockMembers();
             $row = $this->zones->byCode($command->zone, 'for no key update') ?? throw new TaxZoneNotFound($command->zone);
             $id = Rows::string($row, 'id');
 
@@ -425,6 +428,11 @@ final readonly class DatabaseTaxes implements Taxes
     private static function lockKey(string $class, string $zone, string $code): string
     {
         return "commerz.tax_rate:{$class}|{$zone}|{$code}";
+    }
+
+    private function lockMembers(): void
+    {
+        Windows::lock($this->db(), 'commerz.tax_zone_members:'.$this->tables->table('tax_zone_members'));
     }
 
     private function db(): ConnectionInterface

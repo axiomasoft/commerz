@@ -1,0 +1,102 @@
+
+  ⨯⨯⨯
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\core\tests\Unit\MoneyTest > it extracts an in…  TypeError   
+  Brick\Math\BigDecimal::dividedBy(): Argument #1 ($that) must be of type Brick\Math\BigNumber|string|int, float given, called in packages/core/src/Money/Money.php on line 105
+
+  at vendor/brick/math/src/BigDecimal.php:416
+    412▕      *                                    exactly at the given scale.
+    413▕      *
+    414▕      * @pure
+    415▕      */
+  ➜ 416▕     public function dividedBy(BigNumber|int|string $that, int $scale, RoundingMode $roundingMode = RoundingMode::Unnecessary): BigDecimal
+    417▕     {
+    418▕         if ($scale < 0) { // @phpstan-ignore smaller.alwaysFalse
+    419▕             throw InvalidArgumentException::negativeScale();
+    420▕         }
+
+      +1 vendor frames 
+  2   packages/core/src/Money/Money.php:105
+  3   packages/core/tests/Unit/MoneyTest.php:153
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\pricing\tests\Feature\PriceLists\PriceListsTest > it pub…   
+  The expected [Commerz\Pricing\PriceLists\Events\PriceListChanged] event was dispatched 0 times instead of 1 time.
+Failed asserting that 0 is identical to 1.
+
+  at vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/EventFake.php:172
+    168▕     public function assertDispatchedTimes($event, $times = 1)
+    169▕     {
+    170▕         $count = $this->dispatched($event)->count();
+    171▕ 
+  ➜ 172▕         PHPUnit::assertSame(
+    173▕             $times, $count,
+    174▕             sprintf(
+    175▕                 "The expected [{$event}] event was dispatched {$count} %s instead of {$times} %s.",
+    176▕                 Str::plural('time', $count),
+
+      +2 vendor frames 
+  3   packages/pricing/tests/Feature/PriceLists/PriceListsTest.php:138
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\pricing\tests\Feature\Taxes\TaxConcurr…  RuntimeException   
+  Concurrency::run() workers failed:
+worker 0: Illuminate\Database\DeadlockException: SQLSTATE[40P01]: Deadlock detected: 7 ERROR:  deadlock detected
+DETAIL:  Process 81703 waits for ShareLock on transaction 19879; blocked by process 81702.
+Process 81702 waits for ShareLock on transaction 19880; blocked by process 81703.
+HINT:  See server log for query details.
+CONTEXT:  while inserting index tuple (0,4) in relation "cmz_tax_zone_members_country_region_uq" (Connection: testing, Host: 127.0.0.1, Port: 54329, Database: commerz_test, SQL: insert into "cmz_tax_zone_members" ("country", "region", "tax_zone_id") values (DE, ?, 01a12104-bbfd-7740-a04e-0964236dc83f), (FR, ?, 01a12104-bbfd-7740-a04e-0964236dc83f))
+#0 vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php(42): Illuminate\Database\Connection->handleTransactionException()
+#1 packages/pricing/src/Taxes/Internal/DatabaseTaxes.php(272): Illuminate\Database\Connection->transaction()
+#2 packages/pricing/src/Taxes/Internal/DatabaseTaxes.php(118): Commerz\Pricing\Taxes\Internal\DatabaseTaxes->insertMembers()
+#3 packages/core/src/Operations/Internal/DatabaseTransactions.php(51): Commerz\Pricing\Taxes\Internal\DatabaseTaxes->{closure:Commerz\Pricing\Taxes\Internal\DatabaseTaxes::setZoneMembers():113}()
+#4 vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php(35): Commerz\Operations\Internal\DatabaseTransactions::{closure:Commerz\Operations\Internal\DatabaseTransactions::run():48}()
+#5 packages/core/src/Operations/Internal/DatabaseTransactions.php(48): Illuminate\Database\Connection->transaction()
+#6 packages/pricing/src/Taxes/Internal/DatabaseTaxes.php(113): Commerz\Operations\Internal\DatabaseTransactions->run()
+#7 packages/pricing/tests/Feature/Taxes/TaxConcurrencyTest.php(105): Commerz\Pricing\Taxes\Internal\DatabaseTaxes->setZoneMembers()
+#8 packages/testkit/src/Concurrency.php(100): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->{closure:{closure:packages/pricing/tests/Feature/Taxes/TaxConcurrencyTest.php:91}:95}()
+#9 packages/testkit/src/Concurrency.php(65): Commerz\Testkit\Concurrency::child()
+#10 packages/pricing/tests/Feature/Taxes/TaxConcurrencyTest.php(95): Commerz\Testkit\Concurrency::run()
+#11 vendor/pestphp/pest/src/Factories/TestCaseMethodFactory.php(135): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->{closure:packages/pricing/tests/Feature/Taxes/TaxConcurrencyTest.php:91}()
+#12 [internal function]: P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->{closure:Pest\Factories\TestCaseMethodFactory::getClosure():125}()
+#13 vendor/pestphp/pest/src/Concerns/Testable.php(508): call_user_func_array()
+#14 vendor/pestphp/pest/src/Support/ExceptionTrace.php(24): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->{closure:Pest\Concerns\Testable::__callClosure():508}()
+#15 vendor/pestphp/pest/src/Concerns/Testable.php(508): Pest\Support\ExceptionTrace::ensure()
+#16 vendor/pestphp/pest/src/Concerns/Testable.php(322): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->__callClosure()
+#17 vendor/pestphp/pest/src/Factories/TestCaseFactory.php(170) : eval()'d code(65): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->__runTest()
+#18 vendor/phpunit/phpunit/src/Framework/TestCase.php(1137): P\Packages\pricing\tests\Feature\Taxes\TaxConcurrencyTest->__pest_evaluable_it_refuses_reciprocal_zone_member_claims_without_deadlocking_or_losing_the_original_members()
+#19 vendor/phpunit/phpunit/src/Framework/TestCase.php(1463): PHPUnit\Framework\TestCase->invokeTestMethod()
+#20 vendor/phpunit/phpunit/src/Framework/TestCase.php(399): PHPUnit\Framework\TestCase->runTest()
+#21 vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(162): PHPUnit\Framework\TestCase->runLifecycle()
+#22 vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(89): PHPUnit\Framework\TestRunner\TestRunner->runInProcess()
+#23 vendor/phpunit/phpunit/src/Framework/TestCase.php(290): PHPUnit\Framework\TestRunner\TestRunner->run()
+#24 vendor/phpunit/phpunit/src/Framework/TestSuite.php(654): PHPUnit\Framework\TestCase->run()
+#25 vendor/phpunit/phpunit/src/Framework/TestSuite.php(431): PHPUnit\Framework\TestSuite->runTests()
+#26 vendor/phpunit/phpunit/src/Framework/TestSuite.php(654): PHPUnit\Framework\TestSuite->run()
+#27 vendor/phpunit/phpunit/src/Framework/TestSuite.php(431): PHPUnit\Framework\TestSuite->runTests()
+#28 vendor/phpunit/phpunit/src/TextUI/TestRunner.php(72): PHPUnit\Framework\TestSuite->run()
+#29 vendor/phpunit/phpunit/src/TextUI/Application.php(284): PHPUnit\TextUI\TestRunner->run()
+#30 vendor/pestphp/pest/src/Kernel.php(104): PHPUnit\TextUI\Application->run()
+#31 vendor/pestphp/pest/bin/pest(207): Pest\Kernel->handle()
+#32 vendor/pestphp/pest/bin/pest(215): {closure:vendor/pestphp/pest/bin/pest:21}()
+#33 vendor/bin/pest(119): include('...')
+#34 {main}
+
+  at packages/testkit/src/Concurrency.php:145
+    141▕             $results[] = $outcome['value'] ?? null;
+    142▕         }
+    143▕ 
+    144▕         if ($failures !== []) {
+  ➜ 145▕             throw new RuntimeException("Concurrency::run() workers failed:\n".implode("\n", $failures));
+    146▕         }
+    147▕ 
+    148▕         return $results;
+    149▕     }
+
+  1   packages/testkit/src/Concurrency.php:145
+  2   packages/testkit/src/Concurrency.php:80
+
+
+  Tests:    3 failed (3 assertions)
+  Duration: 1.76s
+

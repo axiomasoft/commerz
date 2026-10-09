@@ -127,6 +127,31 @@ safe through natural keys (`code`, `handle`, `sku`, signature). The
 `variant` sellable provider only reads: no transaction, at most 6 queries for
 a batch of any size.
 
+## Pricing and tax configuration lock order
+
+Price writes take the price list row `FOR SHARE`, then a transaction advisory
+lock for the price key (list, sellable, group, min quantity), then the price row
+`FOR NO KEY UPDATE`. `setMany` sorts keys before taking their locks;
+`reschedule` follows the same order. List updates and archival take
+`FOR NO KEY UPDATE` on the list.
+
+Zone creation and member replacement take one transaction advisory lock scoped
+to the `tax_zone_members` table before touching a zone or its members.
+Membership is shared configuration: concurrent replacement of two zones can
+otherwise deadlock when unique checks wait on each other's deleted members.
+Serializing these rare mutations also works inside a host transaction and
+keeps a failed claim atomic. Sorting only the inserted pairs does not prevent
+this cycle; locking individual members would require locking both the old and
+new sets and rechecking membership changes. The membership lock avoids that extra
+protocol. It is an advisory key, not a PostgreSQL table lock; readers and rate
+writes remain unlocked by it. This is the P4 audit correction to the membership
+write algorithm in D24.
+
+Rate writes take the transaction advisory lock of (class, zone, tax code),
+then the rate row `FOR NO KEY UPDATE`. Resolution and quoting only read.
+Hosts composing mutations across several lists or rate keys must take those
+resources in a consistent order for the whole transaction.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |

@@ -34,13 +34,24 @@ use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+trait TsEnvironment
+{
+    /** @param Application $app */
+    protected function defineEnvironment($app): void
+    {
+        parent::defineEnvironment($app);
+        $app['config']->set('commerz.plugins', [TsPlugin::class]);
+    }
+}
+
+uses(RefreshDatabase::class, TsEnvironment::class);
 
 require_once __DIR__.'/../Taxes/Helpers.php';
 
-/** Adds what the presented codes say: `order:<amount>` (a discount), `ship:<price>[:included]`. */
+/** Adds the line, order and delivery discounts and delivery charge given by the presented codes. */
 final readonly class TsCodeStage implements QuoteStage
 {
     public function key(): string
@@ -64,6 +75,8 @@ final readonly class TsCodeStage implements QuoteStage
             $parts = explode(':', $code);
             $state = match ($parts[0]) {
                 'order' => $state->withAdjustment(Adjustment::order(Money::of($parts[1], $state->currency())->negate(), $this->key(), $code)),
+                'line' => $state->withAdjustment(Adjustment::line($parts[1], Money::of($parts[2], $state->currency())->negate(), $this->key(), $code)),
+                'delivery_discount' => $state->withAdjustment(Adjustment::delivery(Money::of($parts[1], $state->currency())->negate(), $this->key(), $code)),
                 'ship' => $state->withDelivery(new DeliveryCharge('courier', 'Courier', 'manual', Money::of($parts[1], $state->currency()), ($parts[2] ?? '') === 'included')),
                 default => $state,
             };
@@ -139,7 +152,6 @@ function tsReconfigure(array $tax): void
 }
 
 beforeEach(function (): void {
-    config(['commerz.plugins' => [TsPlugin::class]]);
     $this->commerce = Commerce::fake();
     tsReconfigure(['default_zone' => 'ru']);
     txClass();
@@ -344,4 +356,25 @@ it('fails with negative_total when the order discount exceeds the items', functi
     } catch (QuoteFailed $failed) {
         expect($failed->stage)->toBe('tax')->and($failed->reason)->toBe('negative_total');
     }
+});
+
+it('reports a negative line before attempting to allocate an order discount', function (): void {
+    txRate();
+
+    try {
+        tsRun(tsInput(['10.00', '100.00'], ['line:1:11.00', 'order:1.00']));
+        $this->fail('expected QuoteFailed');
+    } catch (QuoteFailed $failed) {
+        expect([$failed->stage, $failed->reason])->toBe(['tax', 'negative_line']);
+    }
+});
+
+it('taxes the bases after line, order and delivery discounts', function (): void {
+    txRate();
+    $result = tsRun(tsInput(['100.00'], ['line:1:20.00', 'order:30.00', 'ship:100.00', 'delivery_discount:40.00']));
+
+    expect(tsTaxes($result))->toBe(['1|vat|2200|11.00|ex', 'delivery|vat|2200|13.20|ex'])
+        ->and($result->lines[0]->total->toDecimal())->toBe('61.00')
+        ->and($result->totals->deliveryTotal->toDecimal())->toBe('60.00')
+        ->and($result->totals->total->toDecimal())->toBe('134.20');
 });

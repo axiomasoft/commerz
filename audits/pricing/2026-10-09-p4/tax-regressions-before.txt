@@ -1,0 +1,29 @@
+
+  .⨯.
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\pricing\tests\Feature\Calculation\TaxStageTest > it repo…   
+  Failed asserting that two arrays are identical.
+   Array &0 [
+       0 => 'tax',
+  -    1 => 'negative_line',
+  +    1 => 'negative_total',
+   ]
+  
+
+  at packages/pricing/tests/Feature/Calculation/TaxStageTest.php:368
+    364▕     try {
+    365▕         tsRun(tsInput(['10.00', '100.00'], ['line:1:11.00', 'order:1.00']));
+    366▕         $this->fail('expected QuoteFailed');
+    367▕     } catch (QuoteFailed $failed) {
+  ➜ 368▕         expect([$failed->stage, $failed->reason])->toBe(['tax', 'negative_line']);
+    369▕     }
+    370▕ });
+    371▕ 
+    372▕ it('taxes the bases after line, order and delivery discounts', function (): void {
+
+  1   packages/pricing/tests/Feature/Calculation/TaxStageTest.php:368
+
+
+  Tests:    1 failed, 2 passed (8 assertions)
+  Duration: 0.37s
+

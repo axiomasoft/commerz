@@ -146,3 +146,11 @@ it('rounds an included part that lands exactly on .5 by the mode', function (Rou
 it('keeps an included part within the amount even at the int64 edge', function (): void {
     expect(Money::ofMinor(PHP_INT_MAX, 'JPY')->includedPart(Rate::bp(10_000), RoundingMode::Down)->amountMinor)->toBe(intdiv(PHP_INT_MAX, 2));
 });
+
+it('extracts an included part when the rate denominator exceeds int64', function (): void {
+    $rate = Rate::bp(PHP_INT_MAX);
+
+    expect(Money::ofMinor(100, 'JPY')->includedPart($rate, RoundingMode::Down)->amountMinor)->toBe(99)
+        ->and(Money::ofMinor(PHP_INT_MAX, 'JPY')->includedPart($rate, RoundingMode::Down)->amountMinor)->toBe(PHP_INT_MAX - 10_000)
+        ->and(Money::ofMinor(-100, 'JPY')->includedPart($rate, RoundingMode::Down)->amountMinor)->toBe(-99);
+});

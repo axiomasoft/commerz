@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Calculation\Internal;
 
 use Commerz\Errors\InvalidCommand;
-use Commerz\Money\Money;
 use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
@@ -95,34 +94,38 @@ final readonly class TaxStage implements QuoteStage
     /** @return list<TaxableItem> lines in quote order, then the delivery */
     private function items(QuoteState $state, PricingConfig $config): array
     {
+        $bases = [];
+
+        foreach ($state->lines as $line) {
+            $base = $state->lineNet($line->lineId);
+
+            if ($base->isNegative()) {
+                throw new QuoteFailed($this->key(), 'negative_line', "line '{$line->lineId}' is discounted below zero");
+            }
+
+            $bases[$line->lineId] = $base;
+        }
+
         try {
             $shares = $state->allocatedOrderAdjustments();
         } catch (InvalidCommand $e) {
             throw new QuoteFailed($this->key(), 'negative_total', $e->getMessage(), $e);
         }
 
-        $bases = [];
-
         foreach ($shares as $share) {
-            $bases[(string) $share->lineId] = ($bases[(string) $share->lineId] ?? Money::zero($state->currency()))->plus($share->amount);
+            $bases[(string) $share->lineId] = $bases[(string) $share->lineId]->plus($share->amount);
         }
 
         $items = [];
 
         foreach ($state->lines as $line) {
-            $base = $state->lineNet($line->lineId)->plus($bases[$line->lineId] ?? Money::zero($state->currency()));
-
-            if ($base->isNegative()) {
-                throw new QuoteFailed($this->key(), 'negative_line', "line '{$line->lineId}' is discounted below zero");
-            }
-
             $items[] = new TaxableItem(
                 AdjustmentTarget::Line,
                 $line->lineId,
                 $line->sellable->ref,
                 $line->sellable->taxClass ?? $config->defaultTaxClass,
                 $line->quantity,
-                $base,
+                $bases[$line->lineId],
                 $line->taxIncluded,
             );
         }

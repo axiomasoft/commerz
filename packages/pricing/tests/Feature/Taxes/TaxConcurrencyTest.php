@@ -9,6 +9,7 @@ use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateOverlap;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Testkit\Concurrency;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 
 require_once __DIR__.'/Helpers.php';
@@ -85,4 +86,33 @@ it('puts a country in one zone only when processes claim it for different zones 
     expect($counts)->toBe(['set' => 1, 'taken' => 3])
         ->and(DB::table('cmz_tax_zone_members')->count())->toBe(2)
         ->and(DB::table('cmz_tax_zone_members')->distinct()->count('tax_zone_id'))->toBe(1);
+})->group('concurrency');
+
+it('refuses reciprocal zone member claims without deadlocking or losing the original members', function (): void {
+    txZone('left', [new TaxZoneMember('DE')]);
+    txZone('right', [new TaxZoneMember('FR')]);
+
+    $outcomes = Concurrency::run(2, function (int $worker): string {
+        // Hold each deletion open long enough for the other writer to reach its own deletion. Sorted inserts alone
+        // cannot stop their unique checks from waiting on one another's uncommitted deletions.
+        DB::listen(static function (QueryExecuted $query): void {
+            if (str_starts_with($query->sql, 'delete from "cmz_tax_zone_members"')) {
+                usleep(200_000);
+            }
+        });
+
+        try {
+            Pricing::taxes()->setZoneMembers(new SetTaxZoneMembers($worker === 0 ? 'left' : 'right', [
+                new TaxZoneMember('DE'), new TaxZoneMember('FR'),
+            ]));
+
+            return 'set';
+        } catch (TaxZoneMemberTaken) {
+            return 'taken';
+        }
+    });
+
+    expect($outcomes)->toBe(['taken', 'taken'])
+        ->and(Pricing::taxes()->listZones()[0]->members)->toEqual([new TaxZoneMember('DE')])
+        ->and(Pricing::taxes()->listZones()[1]->members)->toEqual([new TaxZoneMember('FR')]);
 })->group('concurrency');

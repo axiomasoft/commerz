@@ -102,7 +102,7 @@ final readonly class Money
         try {
             $minor = BigDecimal::of($this->amountMinor)
                 ->multipliedBy($rate->basisPoints)
-                ->dividedBy(10_000 + $rate->basisPoints, 0, $mode->toBrick())
+                ->dividedBy(BigDecimal::of($rate->basisPoints)->plus(10_000), 0, $mode->toBrick())
                 ->toInt();
         } catch (MathException) {
             throw new InvalidCommand('amount', 'result does not fit int64', 'money.overflow');
