@@ -68,6 +68,9 @@ $ctx = CommerceContext::for($channel->id, Currency::of('RUB'), locale: 'ru')
 Commerz::plugins()->describe();                       // registry diagnostics: keys, source, version
 ```
 
+Domain events leave through `Commerz\Operations\Contracts\CommittedEvents::dispatch()`: after the surrounding
+transaction commits, at once outside one, never on rollback.
+
 ## Catalog: `Catalog`
 
 `products()`, `variants()`, `attributes()`, `productTypes()`, `categories()`,

@@ -1,0 +1,160 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P2.1",
+  "title": "Kernel: public CommittedEvents contract (after-commit domain events)",
+  "status": "done",
+  "summary": "В ядре появляется #[Api] Commerz\\Operations\\Contracts\\CommittedEvents::dispatch(object $event): событие уходит в Laravel dispatcher после коммита транзакции на соединении commerz.connection (вне транзакции — сразу, при откате — не уходит). Stores/Channels переведены на контракт, Internal-копия удалена.",
+  "why": "Каталог и остальные feature-пакеты обязаны публиковать доменные события только после коммита, но реализация лежит в Commerz\\Stores\\Internal (arch-гейт запрещает импорт чужого Internal). Одна публичная политика вместо шести копий (D18). Риск: событие, ушедшее до коммита или после отката, — ложный факт для слушателей.",
+  "scope": {
+    "include": [
+      "packages/core/src/Operations/Contracts/CommittedEvents.php — #[Api] interface, PHPDoc: семантика после коммита/сразу/при откате не отправляется",
+      "packages/core/src/Operations/Internal/ConnectionCommittedEvents.php — перенос логики Stores\\Internal\\CommittedEvents (Connection::afterCommit, иначе dispatch)",
+      "CommerzServiceProvider: singleton(CommittedEvents::class, ConnectionCommittedEvents::class)",
+      "DatabaseStores, DatabaseChannels: зависимость на контракт; удалить packages/core/src/Stores/Internal/CommittedEvents.php",
+      "тест packages/core/tests/Feature/CommittedEventsTest.php: внутри Transactions::run событие не отправлено до выхода и отправлено после; при исключении внутри run — не отправлено; вне транзакции — сразу",
+      "docs/architecture/api.md: одна строка в разделе ядра о CommittedEvents"
+    ],
+    "exclude": [
+      "outbox и интеграционные события",
+      "изменение семантики существующих событий Stores"
+    ]
+  },
+  "depends_on": [],
+  "decisions": [
+    "D18"
+  ],
+  "reads": [
+    {
+      "path": "packages/core/src/Stores/Internal/CommittedEvents.php",
+      "why": "переносимая реализация",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Operations/Contracts/Transactions.php",
+      "why": "соседний контракт модуля Operations — стиль PHPDoc и маркеров",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/CommerzServiceProvider.php",
+      "why": "место биндинга",
+      "required": true
+    },
+    {
+      "path": "packages/core/tests/Feature/TransactionsTest.php",
+      "why": "как тесты ядра работают с транзакциями и RefreshDatabase",
+      "required": false
+    },
+    {
+      "ref": "knowledge/kernel-contracts#operations",
+      "why": "место CommittedEvents среди контрактов Operations (Transactions, OperationReceipts, Outbox)",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/core/src/Operations/Contracts/CommittedEvents.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Operations/Internal/ConnectionCommittedEvents.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/core/src/Stores/Internal/CommittedEvents.php",
+      "change": "delete"
+    },
+    {
+      "path": "packages/core/src/Stores/Internal/DatabaseStores.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/core/src/Stores/Internal/DatabaseChannels.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/core/src/CommerzServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/core/tests/Feature/CommittedEventsTest.php",
+      "change": "create"
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Поведение существующих событий Stores не меняется: все тесты packages/core/tests остаются зелёными.",
+    "Тест отката: Transactions::run бросает исключение после dispatch — слушатель не вызван (Event::fake не подходит для проверки afterCommit — используйте реальный слушатель-замыкание через Event::listen)."
+  ],
+  "guidance": "```php\nnamespace Commerz\\Operations\\Contracts;\n\n/**\n * Dispatches a domain (Laravel) event once the surrounding transaction on the Commerz connection commits — ours or\n * the host's. Outside a transaction the event is dispatched at once; on rollback it is dropped.\n */\n#[Api(since: '0.1')]\ninterface CommittedEvents\n{\n    public function dispatch(object $event): void;\n}\n```\nРеализация — дословный перенос `Stores\\Internal\\CommittedEvents` (`$connection instanceof Connection ? $connection->afterCommit(...) : dispatch`). В тестах с `RefreshDatabase` Laravel исполняет afterCommit-колбэки при коммите прикладной (не тестовой) транзакции — существующие тесты Stores это уже используют.",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/core/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "контракт CommittedEvents + реализация + биндинг",
+    "Stores на контракте",
+    "тест after-commit/rollback"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T02:16:03Z",
+    "finished_at": "2026-10-09T02:17:27Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "5f348644-b6de-4023-86e9-de61b6ece4f6"
+    },
+    "notes": "CommittedEvents contract+ConnectionCommittedEvents+binding; Stores moved to contract; Internal copy deleted; 3 tests; api.md line. V3: compose up not runnable in sandbox, pest ran against the already-running postgres (206 passed).",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T02:17:27Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T02:17:27Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T02:17:27Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T02:17:27Z"
+}

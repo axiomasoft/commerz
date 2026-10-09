@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Commerz\Stores\Internal;
+namespace Commerz\Operations\Internal;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Operations\Contracts\CommittedEvents;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionResolverInterface;
 
-/** Dispatches Laravel events once the surrounding transaction (ours or the host's) has committed. */
-final readonly class CommittedEvents
+final readonly class ConnectionCommittedEvents implements CommittedEvents
 {
     public function __construct(
         private ConnectionResolverInterface $connections,

@@ -11,8 +11,10 @@ use Commerz\Errors\InvalidConfiguration;
 use Commerz\Internal\Console\DoctorCommand;
 use Commerz\Internal\Console\InstallCommand;
 use Commerz\Internal\CorePlugin;
+use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Operations\Internal\ConnectionCommittedEvents;
 use Commerz\Operations\Internal\Console\PruneOperationsCommand;
 use Commerz\Operations\Internal\DatabaseOperationReceipts;
 use Commerz\Operations\Internal\DatabaseTransactions;
@@ -72,6 +74,7 @@ final class CommerzServiceProvider extends ServiceProvider
         $this->app->singleton(SchemaOwnership::class, SchemaOwnershipRegistry::class);
         $this->app->singleton(TableNames::class);
         $this->app->singleton(Transactions::class, DatabaseTransactions::class);
+        $this->app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
         $this->app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);
         $this->app->singleton(Outbox::class, DatabaseOutbox::class);
         $this->app->singleton(OutboxRelay::class);

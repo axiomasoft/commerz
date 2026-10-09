@@ -6,6 +6,7 @@ namespace Commerz\Stores\Internal;
 
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Identity\Uuid7;
+use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
