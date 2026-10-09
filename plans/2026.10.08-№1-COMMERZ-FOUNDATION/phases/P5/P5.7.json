@@ -1,0 +1,184 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.7",
+  "title": "PromotionUsage: consume/restore under the D27 lock protocol, reconcile command, concurrency tests (PRM-01)",
+  "status": "in_progress",
+  "summary": "Реализация порта PromotionUsage (DatabasePromotionUsage): consume с заголовком редемпции и fingerprint, блокировками coupons → promotions → customer usages (KEY SHARE + условные UPDATE только для лимитов), restore по политике restore_on; PromotionUnavailable; команда commerz:promotions:reconcile; конкурентные тесты C1–C7.",
+  "why": "Единственная точка гарантии PRM-01: лимиты акции, купона, покупателя и бюджет не превышаются при параллельных размещениях, смена лимита и пауза не теряют расход, повтор по orderRef идемпотентен. Риски: read-then-write; блокировки не по id ASC (40P01); счётчик у безлимитной акции (горячая строка); NO KEY UPDATE на всех строках; restore без политики; consume гостя при per-customer.",
+  "scope": {
+    "include": [
+      "Usage/Exceptions/PromotionUnavailable (категория conflict, код promotions.promotion_unavailable, поля promotionId, couponCode, reason), Usage/Internal/DatabasePromotionUsage — алгоритмы consume/restore из knowledge/promotions-design#usage",
+      "провайдер: $this->app->singleton(PromotionUsage::class, DatabasePromotionUsage::class); регистрация команды",
+      "Internal/Console/ReconcilePromotionsCommand (commerz:promotions:reconcile) по #api",
+      "tests/Feature/Usage/PromotionUsageTest.php: пустой applied; успешный consume пишет редемпцию/usages и счётчики только лимитированных; повтор того же payload — no-op; другой payload → IdempotencyConflict; пауза/архив акции и disabled купон → PromotionUnavailable; несовпадение валюты; гость при per_customer → UsageLimitReached('per_customer'); каждый вид лимита → UsageLimitReached с нужным limit; restore Cancelled/Expired возвращает счётчики и бюджет, Refunded по умолчанию — no-op, повтор restore — no-op, restore неизвестного orderRef — no-op; consume через QuoteResult::appliedPromotions() реальной квоты",
+      "tests/Feature/Usage/UsageConcurrencyTest.php: C1–C7 из #usage на Concurrency::run (данные коммитятся)",
+      "tests/Feature/Console/ReconcilePromotionsCommandTest.php: без расхождений → exit 0; искусственно испорченный used → exit 1 и строка расхождения; правило с отсутствующим ключом в отчёте"
+    ],
+    "exclude": [
+      "вызов из sales и политика отмены заказа (P7)",
+      "изменения порта ядра"
+    ]
+  },
+  "depends_on": [
+    "P5.6"
+  ],
+  "decisions": [
+    "D27",
+    "D13",
+    "D25"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#usage",
+      "why": "протокол consume/restore, режимы блокировок, тесты C1–C7 — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#schema",
+      "why": "redemptions, usages, счётчики",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#api",
+      "why": "коды ошибок и reconcile",
+      "required": true
+    },
+    {
+      "ref": "knowledge/invariants#placement",
+      "why": "место consume в транзакции PlaceOrder и глобальный порядок блокировок",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Promotions/Contracts/PromotionUsage.php",
+      "why": "реализуемый порт",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Promotions/Exceptions/UsageLimitReached.php",
+      "why": "исключение лимита",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Operations/Fingerprint.php",
+      "why": "fingerprint applied",
+      "required": true
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Reservations/ReservationConcurrencyTest.php",
+      "why": "образец многопроцессных тестов инварианта",
+      "required": true
+    },
+    {
+      "path": "packages/inventory/src/Internal/Console/ReconcileStockCommand.php",
+      "why": "образец команды reconcile",
+      "required": true
+    },
+    {
+      "ref": "knowledge/kernel-contracts#ports",
+      "why": "контракт PromotionUsage и AppliedPromotion",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/src/Usage/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Internal/Console/ReconcilePromotionsCommand.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/PromotionsServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Usage/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Console/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка/обновление, которые могут нарушить ограничение, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid, клиент/заказ — varchar(191) ref-строки.",
+    "Стадии, условия, эффекты и активаторы не пишут в БД, не ходят в сеть и берут время только из context.at.",
+    "Блокировки строго в порядке и режимах knowledge/promotions-design#usage (заголовок → coupons → promotions → customer usages, id ASC).",
+    "consume и restore присоединяются к транзакции вызывающего через Transactions::run и не делают сетевых вызовов; любое исключение откатывает всё размещение.",
+    "Счётчик меняется только у лимитированной сущности (D27); все строки акций и купонов заказа берутся FOR KEY SHARE до условных UPDATE."
+  ],
+  "guidance": "SQL условного UPDATE акции: `update {promotions} set used = used + case when usage_limit is null then 0 else 1 end, spent_minor = spent_minor + case when budget_minor is null then 0 else ? end, updated_at = ? where id = ? and (usage_limit is null or used < usage_limit) and (budget_minor is null or spent_minor + ? <= budget_minor)`; выполнять только для акций с usage_limit или budget_minor; 0 строк → select used, usage_limit → total или budget. Покупатель: `insert into {customer_usages} (promotion_id, customer_ref, used, updated_at) values (?, ?, 1, ?) on conflict (promotion_id, customer_ref) do update set used = {customer_usages}.used + 1, updated_at = excluded.updated_at where {customer_usages}.used < ? returning used` — имя таблицы в ON CONFLICT … WHERE квалифицировать физическим именем из TableNames. Конкурентные тесты: каждый процесс — свой orderRef ('order:w{n}'), applied строится напрямую (AppliedPromotion) или из квоты; после run — сверка счётчиков с count(*) usages и ReconcilePromotionsCommand exit 0. C5: проверить отсутствие 40P01 (все исходы — успех или UsageLimitReached). C7: UpdatePromotion(limits: UsageLimits(total: 100)) в отдельном процессе посередине.",
+  "examples": [
+    {
+      "path": "packages/inventory/src/Reservations/Internal/DatabaseReservations.php"
+    },
+    {
+      "path": "packages/pricing/tests/Feature/Prices/PriceConcurrencyTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "DatabasePromotionUsage (порт PromotionUsage)",
+    "commerz:promotions:reconcile",
+    "PRM-01 конкурентные тесты C1–C7"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T16:37:51Z",
+    "executor": {
+      "provider": "claude-code",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "6670b314-a6fd-472e-aa49-f7cebc5457b2"
+    }
+  },
+  "updated_at": "2026-10-09T16:37:51Z"
+}
