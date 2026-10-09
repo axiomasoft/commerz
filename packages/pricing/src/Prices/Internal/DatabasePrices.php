@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Prices\Internal;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
@@ -17,7 +18,9 @@ use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use Commerz\Pricing\Prices\Contracts\Prices;
+use Commerz\Pricing\Prices\Data\ExplainPrice;
 use Commerz\Pricing\Prices\Data\ListPrices;
+use Commerz\Pricing\Prices\Data\PriceExplanation;
 use Commerz\Pricing\Prices\Data\PriceId;
 use Commerz\Pricing\Prices\Data\PriceView;
 use Commerz\Pricing\Prices\Data\RemovePrice;
@@ -47,6 +50,7 @@ final readonly class DatabasePrices implements Prices
         private Transactions $transactions,
         private CommittedEvents $events,
         private PriceWrites $writes,
+        private DatabasePriceResolver $resolver,
     ) {}
 
     public function set(SetPrice $command): PriceView
@@ -197,6 +201,16 @@ final readonly class DatabasePrices implements Prices
         return new Page($views, $more && $last !== null
             ? Cursor::after(Rows::string($last, 'sellable_ref').'|'.Rows::string($last, 'id'))
             : null);
+    }
+
+    public function resolveMany(array $requests, CommerceContext $context): array
+    {
+        return $this->resolver->resolveMany($requests, $context);
+    }
+
+    public function explain(ExplainPrice $query): PriceExplanation
+    {
+        return $this->resolver->explain($query);
     }
 
     /**

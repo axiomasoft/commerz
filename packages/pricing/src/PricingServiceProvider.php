@@ -6,11 +6,13 @@ namespace Commerz\Pricing;
 
 use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
+use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Pricing\Common\Internal\PricingConfig;
 use Commerz\Pricing\Internal\PricingPlugin;
 use Commerz\Pricing\PriceLists\Contracts\PriceLists;
 use Commerz\Pricing\PriceLists\Internal\DatabasePriceLists;
 use Commerz\Pricing\Prices\Contracts\Prices;
+use Commerz\Pricing\Prices\Internal\DatabasePriceResolver;
 use Commerz\Pricing\Prices\Internal\DatabasePrices;
 use Commerz\Pricing\Prices\Internal\PriceWrites;
 use Commerz\Schema\Contracts\SchemaOwnership;
@@ -35,6 +37,8 @@ final class PricingServiceProvider extends ServiceProvider
 
         $this->app->singleton(PriceWrites::class);
         $this->app->singleton(PriceLists::class, DatabasePriceLists::class);
+        // Replaces the core's snapshot default whichever provider registered first (the core binds it with `singletonIf`).
+        $this->app->singleton(PriceResolver::class, DatabasePriceResolver::class);
         $this->app->singleton(Prices::class, DatabasePrices::class);
         $this->app->singleton(Pricing::class);
 

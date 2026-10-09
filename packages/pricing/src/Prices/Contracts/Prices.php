@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Prices\Contracts;
 
 use Commerz\Attributes\Api;
+use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
+use Commerz\Ports\Prices\Data\ResolvedPrice;
+use Commerz\Ports\Prices\Data\ResolvePrice;
+use Commerz\Ports\Prices\Exceptions\PriceNotFound;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
+use Commerz\Pricing\Prices\Data\ExplainPrice;
 use Commerz\Pricing\Prices\Data\ListPrices;
+use Commerz\Pricing\Prices\Data\PriceExplanation;
 use Commerz\Pricing\Prices\Data\PriceView;
 use Commerz\Pricing\Prices\Data\RemovePrice;
 use Commerz\Pricing\Prices\Data\ReschedulePrice;
@@ -51,4 +57,18 @@ interface Prices
 
     /** @return Page<PriceView> */
     public function list(ListPrices $query): Page;
+
+    /**
+     * The `PriceResolver` port of the core on the price lists: the unit price of every request in the context's
+     * channel, currency, customer groups and moment (PRC-02). Reads only.
+     *
+     * @param  list<ResolvePrice>  $requests
+     * @return list<ResolvedPrice> one per request, in the order of the requests
+     *
+     * @throws PriceNotFound
+     */
+    public function resolveMany(array $requests, CommerceContext $context): array;
+
+    /** Why a sellable costs what it costs: every candidate price with its verdict. Never throws for a missing price. */
+    public function explain(ExplainPrice $query): PriceExplanation;
 }
