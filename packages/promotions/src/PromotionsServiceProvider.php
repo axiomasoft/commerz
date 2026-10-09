@@ -6,6 +6,7 @@ namespace Commerz\Promotions;
 
 use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
+use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Promotions\Common\Internal\PromotionsConfig;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Coupons\Internal\DatabaseCoupons;
@@ -14,7 +15,9 @@ use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\PromotionRows;
 use Commerz\Promotions\Definitions\Internal\UsageCounters;
 use Commerz\Promotions\Evaluation\Internal\PromotionSessions;
+use Commerz\Promotions\Internal\Console\ReconcilePromotionsCommand;
 use Commerz\Promotions\Internal\PromotionsPlugin;
+use Commerz\Promotions\Usage\Internal\DatabasePromotionUsage;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -41,6 +44,7 @@ final class PromotionsServiceProvider extends ServiceProvider
         $this->app->singleton(Coupons::class, DatabaseCoupons::class);
         $this->app->singleton(Promotions::class);
         $this->app->singleton(PromotionSessions::class); // holds the quote sessions of the process
+        $this->app->singleton(PromotionUsage::class, DatabasePromotionUsage::class); // replaces the kernel's singletonIf null default
 
         CommerzPlugins::builtIn(PromotionsPlugin::class);
 
@@ -54,6 +58,8 @@ final class PromotionsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([ReconcilePromotionsCommand::class]);
+
             $this->publishes([
                 __DIR__.'/../config/commerz-promotions.php' => config_path('commerz-promotions.php'),
             ], 'commerz-promotions-config');
