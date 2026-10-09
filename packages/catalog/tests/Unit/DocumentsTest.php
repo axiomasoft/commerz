@@ -8,6 +8,10 @@ it('encodes an empty document as an object', function (): void {
     expect(Documents::encode([]))->toBe('{}');
 });
 
+it('encodes a document keyed like a list as an object', function (): void {
+    expect(Documents::encode(['0' => 'x', '1' => ['a', 'b']]))->toBe('{"0":"x","1":["a","b"]}');
+});
+
 it('encodes unicode unescaped and keeps zero fractions', function (): void {
     expect(Documents::encode(['name' => 'Футболка', 'weight' => 1.0]))->toBe('{"name":"Футболка","weight":1.0}');
 });

@@ -130,7 +130,7 @@ it('walks the status lifecycle and refuses illegal transitions', function (): vo
         ->and(fn () => $set(AttributeStatus::Deprecated))->toThrow(InvalidStatusTransition::class);
 });
 
-it('reindexes only when filterable or status change', function (): void {
+it('reindexes only when filterable changes or the attribute retires', function (): void {
     $calls = [];
     app()->instance(AttributeIndexer::class, new class($calls) implements AttributeIndexer
     {
@@ -152,6 +152,7 @@ it('reindexes only when filterable or status change', function (): void {
     app(Attributes::class)->update(new UpdateAttribute($view->id, filterable: true));
     app(Attributes::class)->update(new UpdateAttribute($view->id, status: AttributeStatus::Deprecated));
     app(Attributes::class)->update(new UpdateAttribute($view->id, filterable: true));
+    app(Attributes::class)->update(new UpdateAttribute($view->id, status: AttributeStatus::Retired));
 
     expect($calls)->toBe([$view->id->value, $view->id->value]);
 });

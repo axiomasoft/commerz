@@ -134,7 +134,8 @@ final readonly class DatabaseAttributes implements Attributes
                     ->update($changes + ['updated_at' => Clock::now()]);
             }
 
-            if (isset($changes['status']) || isset($changes['filterable'])) {
+            // Only filterable and retirement change the projection; deprecation keeps the facts of existing values.
+            if (isset($changes['filterable']) || ($changes['status'] ?? null) === AttributeStatus::Retired->value) {
                 $this->indexer->reindexAttribute($command->attribute);
             }
 

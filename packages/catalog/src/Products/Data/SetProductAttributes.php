@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Catalog\Products\Data;
+
+use Commerz\Attributes\Api;
+use Commerz\Catalog\Common\Data\CatalogCodes;
+use Commerz\Errors\InvalidCommand;
+
+/** Sets and removes product-level attribute values; values not named stay as they are. */
+#[Api(since: '0.1')]
+final readonly class SetProductAttributes
+{
+    /**
+     * @param  array<array-key, mixed>  $values  attribute code => value, validated by the attribute's type
+     * @param  list<string>  $remove  attribute codes whose values are removed
+     */
+    public function __construct(
+        public ProductId $product,
+        public array $values = [],
+        public array $remove = [],
+    ) {
+        foreach (array_keys($values) as $code) {
+            CatalogCodes::code('values', (string) $code);
+        }
+
+        foreach ($remove as $code) {
+            CatalogCodes::code('remove', $code);
+        }
+
+        if ($values === [] && $remove === []) {
+            throw new InvalidCommand('values', 'set or remove at least one attribute', 'catalog.invalid_attributes');
+        }
+    }
+}

@@ -52,3 +52,12 @@ it('dispatches at once outside a transaction', function (): void {
 
     expect($seen)->toBe(['now']);
 });
+
+it('reaches a dispatcher swapped after the service was resolved', function (): void {
+    $events = app(CommittedEvents::class);
+    Event::fake([CommittedEventsProbe::class]);
+
+    $events->dispatch(new CommittedEventsProbe('faked'));
+
+    Event::assertDispatched(CommittedEventsProbe::class, static fn (CommittedEventsProbe $event): bool => $event->name === 'faked');
+});

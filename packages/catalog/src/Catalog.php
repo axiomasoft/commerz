@@ -7,6 +7,7 @@ namespace Commerz\Catalog;
 use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Options\Contracts\Options;
+use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 
 /** Root of the catalog API: accessors of the module contracts. */
@@ -17,7 +18,13 @@ final readonly class Catalog
         private Options $options,
         private Attributes $attributes,
         private ProductTypes $productTypes,
+        private Products $products,
     ) {}
+
+    public function products(): Products
+    {
+        return $this->products;
+    }
 
     public function options(): Options
     {

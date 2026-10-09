@@ -7,12 +7,14 @@ namespace Commerz\Catalog;
 use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Attributes\Internal\AttributeIndexer;
+use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Attributes\Internal\DatabaseAttributes;
-use Commerz\Catalog\Attributes\Internal\NoopAttributeIndexer;
 use Commerz\Catalog\Common\Internal\CatalogConfig;
 use Commerz\Catalog\Internal\CatalogPlugin;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Options\Internal\DatabaseOptions;
+use Commerz\Catalog\Products\Contracts\Products;
+use Commerz\Catalog\Products\Internal\DatabaseProducts;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
 use Commerz\Plugins\CommerzPlugins;
@@ -36,10 +38,12 @@ final class CatalogServiceProvider extends ServiceProvider
             return CatalogConfig::fromArray(is_array($config) ? $config : []);
         });
 
-        $this->app->singleton(AttributeIndexer::class, NoopAttributeIndexer::class);
+        $this->app->singleton(AttributeWriter::class);
+        $this->app->singleton(AttributeIndexer::class, AttributeWriter::class);
         $this->app->singleton(Attributes::class, DatabaseAttributes::class);
         $this->app->singleton(Options::class, DatabaseOptions::class);
         $this->app->singleton(ProductTypes::class, DatabaseProductTypes::class);
+        $this->app->singleton(Products::class, DatabaseProducts::class);
         $this->app->singleton(Catalog::class);
 
         CommerzPlugins::builtIn(CatalogPlugin::class);

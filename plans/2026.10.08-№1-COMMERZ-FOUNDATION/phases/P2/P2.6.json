@@ -1,0 +1,199 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P2.6",
+  "title": "Products and the AttributeWriter with the filter projection (CAT-02)",
+  "status": "done_with_deviations",
+  "summary": "Работает Catalog::products() (create/update/setAttributes/archive/find/findByHandle/list по типу и статусу); AttributeWriter — единственный писатель документов attributes и проекции attribute_index; reindexAttribute подключён к Attributes::update; события ProductCreated/ProductUpdated после коммита.",
+  "why": "CAT-02: значение атрибута проходит тип/область при любом писателе, и проекция фасетов совпадает с документом в той же транзакции. Риски: обход writer'а прямым UPDATE, рассинхрон документа и проекции, взаимоблокировка writer × reindex (поэтому 'for no key update' и порядок блокировок).",
+  "scope": {
+    "include": [
+      "Attributes/Internal/{AttributeWriter, AttributeOwner} по алгоритму knowledge/catalog-design#attribute-writer; Exceptions/{AttributeNotWritable, AttributeNotAllowed, MissingRequiredAttributes}; AttributeIndexer-биндинг переключается на AttributeWriter (reindexAttribute)",
+      "Products/Contracts/Products (#[Api]); Data/{ProductId, CreateProduct, UpdateProduct, SetProductAttributes, ArchiveProduct, ListProducts (на этом шаге: type, status, first, after), ProductView}; Enums/ProductStatus; Events/{ProductCreated, ProductUpdated}; Exceptions/{ProductNotFound, ProductArchived}",
+      "Products/Internal/DatabaseProducts: create — тип существует и active (ProductTypeArchived), handle (CatalogCodes::handle, дубль → DuplicateCode('Product handle')), вставка товара, копия осей типа в product_options, AttributeWriter::write(creating: true); update — блокировка товара, handle/name/description/status (Draft↔Active; archived → ProductArchived); setAttributes — блокировка + writer; archive — status archived (повтор — no-op)",
+      "ProductView::$attributes без retired; $axes — коды опций товара по position",
+      "Catalog::products() + фасад + биндинг",
+      "tests/Feature/Products/ProductsTest.php и AttributeWriterTest.php: required-атрибуты, AttributeNotAllowed для variant-уровня на товаре, deprecated → AttributeNotWritable, невалидный импорт не меняет документ и проекцию, проекция = факты filterable-атрибутов, смена filterable/retired перестраивает проекцию, неподдержанный тип (определение с type, плагина которого нет — вставить сырой строкой) читается как есть и запрещает запись",
+      "тест CAT-02 «единственный писатель»: grep по packages/catalog/src — строки, обновляющие колонку attributes или таблицу attribute_index, есть только в Attributes/Internal/AttributeWriter.php"
+    ],
+    "exclude": [
+      "варианты (P2.7)",
+      "фильтры/канал/категория в ListProducts (P2.9)"
+    ]
+  },
+  "depends_on": [
+    "P2.5"
+  ],
+  "decisions": [
+    "D9",
+    "D17",
+    "D18"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/catalog-design#attribute-writer",
+      "why": "алгоритм writer'а — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#concurrency",
+      "why": "for share / for no key update, порядок блокировок, пара write × update attribute",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#api",
+      "why": "строка Products таблицы API",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#schema",
+      "why": "таблицы products, product_options, attribute_index",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#layout",
+      "why": "Documents, Rows, CommittedEvents",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Plugins/Contracts/Contributions.php",
+      "why": "get/has для типов атрибутов",
+      "required": true
+    },
+    {
+      "ref": "knowledge/invariants#catalog",
+      "why": "строка CAT-02 реестра инвариантов",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/catalog/src/Attributes/Internal/**",
+      "change": "any"
+    },
+    {
+      "path": "packages/catalog/src/Attributes/Exceptions/**",
+      "change": "any"
+    },
+    {
+      "path": "packages/catalog/src/Products/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Catalog.php",
+      "change": "any",
+      "note": "created by P2.4"
+    },
+    {
+      "path": "packages/catalog/src/Facades/Catalog.php",
+      "change": "any",
+      "note": "created by P2.4"
+    },
+    {
+      "path": "packages/catalog/src/CatalogServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/Products/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/Attributes/**",
+      "change": "any"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float.",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table(); мутации — Transactions::run; уникальные нарушения — во вложенном savepoint ($db->transaction) → доменное исключение (как DatabaseStores::create).",
+    "Строки изменяемых сущностей блокировать ->lock('for no key update'), определения у писателя — ->lock('for share'); порядок блокировок — knowledge/catalog-design#concurrency.",
+    "Расхождение с knowledge/catalog-design или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной.",
+    "Только AttributeWriter пишет products.attributes, variants.attributes и attribute_index (CAT-02).",
+    "Writer вызывается внутри транзакции вызывающего после блокировки строки владельца; сам транзакцию не открывает и сеть не вызывает.",
+    "Ошибка writer'а откатывает всю команду: ни документ, ни проекция, ни товар не меняются."
+  ],
+  "guidance": "Порядок внутри create: insert товара → insert product_options → writer (он блокирует определения FOR SHARE) → CommittedEvents::dispatch(ProductCreated). Writer получает текущий документ из уже заблокированной строки. Пишите проекцию пакетной вставкой одного INSERT. Тест reindex: атрибут filterable=false с значениями у 3 товаров → update(filterable: true) → 3 строки фактов; status retired → 0 строк, документы не изменились. Неподдержанный тип в тесте: `DB::table(...attributes)->insert([... 'type' => 'acme.missing' ...])`, слот в типе — сырой вставкой.",
+  "examples": [
+    {
+      "path": "packages/core/src/Stores/Internal/DatabaseStores.php"
+    },
+    {
+      "path": "packages/core/src/Stores/Internal/StoreRows.php"
+    },
+    {
+      "path": "packages/core/tests/Feature/Stores/StoresTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/catalog/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "AttributeWriter + reindex",
+    "модуль Products",
+    "тесты CAT-02"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T02:48:35Z",
+    "finished_at": "2026-10-09T02:59:29Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "0dc424c1-1734-4240-b744-a1df36c5b64e"
+    },
+    "notes": "Products module (create/update/setAttributes/archive/find/findByHandle/list by type+status), Catalog::products(); AttributeWriter is the single writer of attribute documents and attribute_index, bound as AttributeIndexer (reindex by keyset batches of 500); AttributeNotWritable/AttributeNotAllowed/MissingRequiredAttributes; ProductCreated/ProductUpdated after commit; CAT-02 grep test. V3 pest run directly (docker.sock denied): 165 green; core+Arch 220 green.",
+    "deviations": [
+      "Documents::encode encodes the top level as an object (code '0' fix)",
+      "core ConnectionCommittedEvents resolves the dispatcher per event (Event::fake after resolution)",
+      "AttributeWriter prepare()/apply(): all checks before the first write (Transactions::run joins host tx without savepoint)",
+      "reindexAttribute only on filterable change or retirement"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T02:59:29Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T02:59:29Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T02:59:29Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T02:59:29Z"
+}
