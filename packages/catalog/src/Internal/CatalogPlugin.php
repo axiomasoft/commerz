@@ -19,12 +19,13 @@ use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\DigitalKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\PhysicalKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\ServiceKind;
+use Commerz\Catalog\Variants\Internal\VariantSellables;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\ContributionKind;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
 
-/** The catalog's own plugin: declares the `attribute_type` and `product_kind` kinds and contributes the built-ins. */
+/** The catalog's own plugin: declares the `attribute_type` and `product_kind` kinds, contributes the built-ins and the `variant` sellable provider. */
 final class CatalogPlugin implements CommerzPlugin
 {
     public const string ID = 'commerz.catalog';
@@ -50,5 +51,7 @@ final class CatalogPlugin implements CommerzPlugin
         foreach ([PhysicalKind::class, DigitalKind::class, ServiceKind::class] as $kind) {
             $registrar->contribute(ProductKind::KIND, $kind);
         }
+
+        $registrar->sellableProvider(VariantSellables::class);
     }
 }

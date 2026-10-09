@@ -6,6 +6,7 @@ namespace Commerz\Testkit;
 
 use Commerz\Attributes\Api;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 #[Api(since: '0.1')]
@@ -13,6 +14,24 @@ abstract class PackageTestCase extends Orchestra
 {
     /** @return list<class-string> */
     abstract protected function commerzProviders(): array;
+
+    private static ?string $migratedFor = null;
+
+    /**
+     * `RefreshDatabase` migrates once per process, with the schema of the first test it sees. One process that runs
+     * suites of several packages needs a fresh migration whenever the provider set (hence the schema) changes.
+     */
+    protected function setUpTraits()
+    {
+        $providers = implode('|', $this->commerzProviders());
+
+        if (self::$migratedFor !== $providers) {
+            RefreshDatabaseState::$migrated = false;
+            self::$migratedFor = $providers;
+        }
+
+        return parent::setUpTraits();
+    }
 
     /**
      * @param  Application  $app

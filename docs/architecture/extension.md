@@ -57,8 +57,8 @@ packages.
 | `sellable_provider` | core | `variant` (catalog) |
 | `quote_stage` | core | `base`, `totals` (core); `promotions.catalog`, `promotions.cart`, `promotions.delivery` (promotions); `delivery` (shipping); `tax` (pricing) |
 | `outbox_consumer` | core | — |
-| `attribute_type` | catalog | `text`, `localized_text`, `integer`, `decimal`, `boolean`, `date`, `enum`, `multi_enum`, `measure`, `reference` |
-| `product_kind` | catalog | `physical`, `digital`, `service` |
+| `attribute_type` | catalog (`Commerz\Catalog\Attributes\Contracts\AttributeType`) | `text`, `localized_text`, `integer`, `decimal`, `boolean`, `date`, `enum`, `multi_enum`, `measure`, `reference` |
+| `product_kind` | catalog (`Commerz\Catalog\ProductTypes\Contracts\ProductKind`: `key()`, `sellableKind()`, `requiresShipping()`) | `physical`, `digital`, `service` |
 | `allocation_strategy` | inventory | `priority`, `single_location` |
 | `tax_calculator` | pricing | `rates` |
 | `promotion_condition` | promotions | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`, `channel.in` |
@@ -68,6 +68,11 @@ packages.
 | `carrier` | shipping | `manual` |
 | `payment_gateway` | sales | `manual` (offline / invoice) |
 | `order_number_generator` | sales | `sequence` |
+
+An `attribute_type` plugin requires `commerz.catalog` (it declares the kind),
+so a package contributing a type lists the catalog plugin among its
+dependencies. An attribute whose type is not installed stays readable as a
+stored value, unprojected and read-only.
 
 A rule contribution (condition, effect, rate) decodes and upgrades its own
 configuration: `configVersion()`, `decodeConfig(array $raw, int $version)`,

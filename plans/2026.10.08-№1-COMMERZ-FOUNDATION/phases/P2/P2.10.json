@@ -1,0 +1,234 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P2.10",
+  "title": "Variant SellableProvider, end-to-end scenario and catalog docs",
+  "status": "done_with_deviations",
+  "summary": "Каталог вносит SellableProvider 'variant': SellableRef::of('variant', $id) резолвится ядром в SellableSnapshot с покупаемостью по каналу, опциями, атрибутами, категориями с предками, kind из ProductKind — батчем не более 6 запросов; сквозной сценарий blueprint доходит до QuotePipeline; docs/architecture отражают реальный API каталога.",
+  "why": "SellableProvider — единственная связь каталога с продажами и складом (порт ядра); ошибка в покупаемости = продажа неопубликованного или архивного товара (CTX-01). Сквозной тест подтверждает, что пакет встраивается без знания других feature-пакетов.",
+  "scope": {
+    "include": [
+      "Variants/Internal/VariantSellables (SellableProvider, key 'variant') строго по knowledge/catalog-design#sellables; CatalogPlugin: $registrar->sellableProvider(VariantSellables::class)",
+      "tests/Feature/Sellables/VariantSellablesTest.php: все причины непокупаемости по порядку; окно по context.at; options в локали контекста; attributes без retired и без массивов; categories с предками; unsupported product_kind; невалидный UUID и неизвестный id → SellableUnavailable через Commerz\\Ports\\Sellables\\Contracts\\Sellables; батч 20 вариантов ≤ 6 запросов (DB::listen)",
+      "tests/Feature/CatalogScenarioTest.php: пример из knowledge/catalog-design#api (options → attributes → type → product → generate → publish) → Commerz::sellables()->resolveMany → QuotePipeline::run с PriceResolver = Commerz\\Testkit\\Fakes\\FakePrices (цены на 3 варианта) → total; ListProducts(channel, filters) находит товар",
+      "docs/architecture/api.md: раздел Catalog — реальные имена (options(), DefineAttribute(name, choices), коды в нижнем регистре, unit 'gsm', GenerateVariants с dryRun/skipped)",
+      "docs/architecture/invariants.md: CAT-01..03 — точки enforcement по факту, конфликтующие пары каталога, порядок блокировок каталога",
+      "docs/architecture/decisions.md: краткие записи D17–D19",
+      "docs/architecture/extension.md: таблица kinds — attribute_type/product_kind с реальными интерфейсами; правило 'плагин типа атрибута требует commerz.catalog'"
+    ],
+    "exclude": [
+      "изменения ядра",
+      "README пакета и split-публикация (P8)"
+    ]
+  },
+  "depends_on": [
+    "P2.9"
+  ],
+  "decisions": [
+    "D17",
+    "D18",
+    "D19"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/catalog-design#sellables",
+      "why": "сборка snapshot и запросы — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#api",
+      "why": "сквозной пример и таблица API для docs",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#concurrency",
+      "why": "для docs/architecture/invariants.md",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Sellables/Contracts/SellableProvider.php",
+      "why": "контракт провайдера",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Sellables/Data/SellableSnapshot.php",
+      "why": "проверки конструктора snapshot",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Sellables/Internal/SellableRouter.php",
+      "why": "как ядро вызывает провайдер и сообщает unavailable",
+      "required": true
+    },
+    {
+      "path": "packages/core/tests/Feature/Quotes/CrmScenarioTest.php",
+      "why": "образец сквозного теста через QuotePipeline",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "why": "текущий раздел Catalog для правки",
+      "required": true,
+      "section": "Catalog: `Catalog`"
+    },
+    {
+      "ref": "knowledge/invariants#interference",
+      "why": "существующая таблица конфликтующих пар, которую дополняет docs/architecture/invariants.md",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/catalog/src/Variants/Internal/VariantSellables.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Internal/CatalogPlugin.php",
+      "change": "any",
+      "note": "created by P2.3"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/Sellables/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/CatalogScenarioTest.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/CatalogPluginTest.php",
+      "change": "any",
+      "note": "created by P2.3"
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/decisions.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float.",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table(); мутации — Transactions::run; уникальные нарушения — во вложенном savepoint ($db->transaction) → доменное исключение (как DatabaseStores::create).",
+    "Строки изменяемых сущностей блокировать ->lock('for no key update'), определения у писателя — ->lock('for share'); порядок блокировок — knowledge/catalog-design#concurrency.",
+    "Расхождение с knowledge/catalog-design или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной.",
+    "Провайдер только читает: без транзакций, записи и сети; число запросов не зависит от размера батча.",
+    "docs/architecture — английский, как существующие файлы; plans/knowledge не правятся."
+  ],
+  "guidance": "CatalogPluginTest после этого item'а ожидает: attribute_type × 10, product_kind × 3, sellable_provider × 1 ('variant'). В сквозном тесте подменяйте только цены: `$this->app->instance(PriceResolver::class, (new FakePrices)->set(SellableRef::of('variant', $v->id->value), Money::of(...)))` — Sellables остаётся настоящим роутером ядра с провайдером каталога. Проверьте API Money в packages/core/src/Money/Money.php.",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/catalog/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "scripts/php84 composer test:arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V6",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 composer test",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "SellableProvider 'variant'",
+    "сквозной сценарий каталога",
+    "docs/architecture синхронизированы"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T03:42:24Z",
+    "finished_at": "2026-10-09T03:50:35Z",
+    "executor": {
+      "provider": "claude",
+      "model": "sonnet-5-5",
+      "effort": "high",
+      "session": "7b4fafeb-d2ca-45e9-bd90-f7f302e8baee"
+    },
+    "notes": "VariantSellables (5 queries per batch, first-failing reason order, scalar non-retired attributes, categories with ancestors, ProductKind fallback), CatalogPlugin registers it; VariantSellablesTest (7), CatalogScenarioTest (options->quote total 4900.00, ListProducts finds product); docs api/invariants/decisions/extension synced. V3 pest direct (docker.sock denied, postgres up): 220 green; V6: 450 green after testkit fix.",
+    "deviations": [
+      "PackageTestCase setUpTraits extra path (testkit)",
+      "VariantSellables resolves Contributions lazily",
+      "D16 added to decisions.md; CTX-01 and interference rows updated"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      },
+      {
+        "id": "V6",
+        "exit": 0,
+        "at": "2026-10-09T03:50:35Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T03:50:35Z"
+}

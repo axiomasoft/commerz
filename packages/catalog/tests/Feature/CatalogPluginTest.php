@@ -32,6 +32,7 @@ final class CatalogPluginTest extends PackageTestCase
                 'text', 'localized_text', 'integer', 'decimal', 'boolean', 'date', 'enum', 'multi_enum', 'measure', 'reference',
             ],
             'product_kind' => ['physical', 'digital', 'service'],
+            'sellable_provider' => ['variant'],
         ];
     }
 }

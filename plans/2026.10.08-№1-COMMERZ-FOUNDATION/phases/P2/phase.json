@@ -126,5 +126,10 @@
       ],
       "mode": "recommended"
     }
-  ]
+  ],
+  "closed": {
+    "at": "2026-10-09T03:50:35Z",
+    "result": "done_with_deviations",
+    "summary": "10 item(s): 4 done, 6 done_with_deviations"
+  }
 }

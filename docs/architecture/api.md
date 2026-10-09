@@ -73,24 +73,49 @@ transaction commits, at once outside one, never on rollback.
 
 ## Catalog: `Catalog`
 
-`products()`, `variants()`, `attributes()`, `productTypes()`, `categories()`,
-`listings()`. Registers the `SellableProvider` with key `variant`, so
-`SellableRef::of('variant', $variantId)` goes into a cart.
+`products()`, `variants()`, `options()`, `attributes()`, `productTypes()`,
+`categories()`, `listings()`. Every operation is a command or query DTO in,
+a view out; failures are `catalog.*` domain exceptions. Registers the
+`SellableProvider` with key `variant`, so `SellableRef::of('variant', $variantId)`
+goes into a cart and `Commerz::sellables()` resolves it to a snapshot:
+purchasable in the context's channel at `context.at` (first failing reason of
+`product_inactive`, `variant_archived`, `not_listed`, `not_available_yet`,
+`no_longer_available`, `unsupported_kind`), options and name in the context's
+locale, scalar non-retired attributes, categories with all ancestors, `kind`
+from the type's `ProductKind`. The catalog holds no prices: the price comes
+from `PriceResolver`.
+
+Codes (options, option values, attributes, choices, categories) are lowercase
+`[a-z0-9_.-]`; an attribute's `type` and `config` are fixed by `define`.
 
 ```php
-Catalog::attributes()->define(new DefineAttribute(code: 'density', type: 'measure',
-    config: ['dimension' => 'areal_density', 'unit' => 'g/m2'], filterable: true));
+Catalog::options()->define(new DefineOption('color', LocalizedText::of('en', 'Color'),
+    ['red' => LocalizedText::of('en', 'Red'), 'blue' => LocalizedText::of('en', 'Blue')]));
+Catalog::options()->define(new DefineOption('size', LocalizedText::of('en', 'Size'),
+    ['s' => LocalizedText::of('en', 'S'), 'm' => LocalizedText::of('en', 'M')]));
 
-$variants = Catalog::variants()->generate(new GenerateVariants(
+Catalog::attributes()->define(new DefineAttribute('material', 'enum', LocalizedText::of('en', 'Material'),
+    choices: ['cotton' => LocalizedText::of('en', 'Cotton')], filterable: true));
+Catalog::attributes()->define(new DefineAttribute('density', 'measure', LocalizedText::of('en', 'Density'),
+    config: ['unit' => 'gsm'], filterable: true));
+
+$type = Catalog::productTypes()->create(new CreateProductType('apparel', LocalizedText::of('en', 'Apparel'),
+    productAttributes: ['material', 'density'], variantAxes: ['color', 'size']));
+$product = Catalog::products()->create(new CreateProduct($type->id, 'basic-tee', LocalizedText::of('en', 'Tee'),
+    attributes: ['material' => 'cotton', 'density' => Measure::of('180', 'gsm')]));
+
+$generated = Catalog::variants()->generate(new GenerateVariants(
     product: $product->id,
-    axes: ['color' => ['red', 'blue'], 'size' => ['S', 'M']],
+    axes: ['color' => ['red', 'blue'], 'size' => ['s', 'm']],
     skuPattern: 'TEE-{color}-{size}',
-    except: [['color' => 'blue', 'size' => 'S']],     // sparse set, not a full cartesian product
+    except: [['color' => 'blue', 'size' => 's']],     // sparse set, not a full cartesian product
+    dryRun: false,                                      // true plans only; skipped lists existing combinations
 ));
+Catalog::listings()->publish(new PublishProduct($product->id, $channel->id));
 
 $page = Catalog::products()->list(new ListProducts(
     channel: $channel->id,
-    filters: [AttributeFilter::equals('material', 'cotton'), VariantFilter::axes(['color' => 'red', 'size' => 'M'])],
+    filters: [AttributeFilter::equals('material', 'cotton'), VariantFilter::axes(['color' => 'red', 'size' => 'm'])],
     first: 24,
 ));
 ```

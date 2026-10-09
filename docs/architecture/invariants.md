@@ -12,9 +12,9 @@ one enforcement point; adding a write path that skips it is a defect.
 | INV-02 | `0 ≤ reserved ≤ on_hand` per level (unless `allow_negative`) | inventory: conditional `UPDATE … SET reserved = reserved + :q WHERE id = :id AND on_hand - reserved >= :q` + `CHECK (reserved >= 0)` | read-then-write in PHP (forbidden; only conditional `UPDATE` or `FOR UPDATE`) | 8 processes × last unit |
 | INV-03 | Every `on_hand` change is exactly one `cmz_stock_movements` row in the same transaction with a consistent `balance_after` | inventory `StockLedger`, the only writer of levels | writing a level without a movement (arch: only `Internal\StockLedger` writes `cmz_stock_levels`) | reconcile reports 0 differences after load |
 | INV-04 | Reservation: `quantity = consumed + released + outstanding`; consume, release and expire never free a unit twice | inventory reservation state machine, reservation row `FOR UPDATE` | expiry worker racing consume | expire vs consume race |
-| CAT-01 | An axis combination is unique within a product | catalog: `UNIQUE(product_id, option_signature)` over normalized value IDs | generating variants from two requests | concurrent generate |
-| CAT-02 | An attribute value passed its type and domain for every writer | catalog `AttributeWriter`, the only path; imports go through the contract | direct JSONB `UPDATE` | import with an invalid value |
-| CAT-03 | Facet `red AND M` means one variant with both values | projection `cmz_attribute_index` with `variant_id` | filtering by product instead of variant | red/S + blue/M → 0 results |
+| CAT-01 | An axis combination is unique within a product | catalog: `UNIQUE(product_id, option_signature)` over the sorted UUIDs of the option values + composite foreign keys of `cmz_variant_option_values` (value ∈ option ∈ the product's axes) + product row `FOR NO KEY UPDATE` in every variant-structure mutation | generating variants from two requests; inserting a value of a foreign option | concurrent generate (exactly N variants, no exception); raw insert of a foreign value → foreign-key error |
+| CAT-02 | An attribute value passed its type and domain for every writer | catalog `AttributeWriter`, the only writer of attribute documents and `cmz_attribute_index`; definitions read `FOR SHARE` while writing; imports go through the contract | direct JSONB `UPDATE`; a write racing a status or `filterable` change | import with an invalid value leaves document and projection untouched; arch test: only the writer writes `attributes` documents |
+| CAT-03 | Facet `red AND M` means one variant with both values | catalog `ProductQuery`: every filter of a search sits inside one `EXISTS` over an active variant (`cmz_attribute_index.variant_id`, `cmz_variant_option_values`) | filtering by product instead of variant | red/S + blue/M → 0 results |
 | PRC-01 | Validity windows of one price (list, sellable, group, min quantity) never overlap | pricing: `EXCLUDE USING gist` | two parallel `SetPrice` | concurrent insert |
 | PRM-01 | Promotion, coupon and per-customer limits and budgets are never exceeded concurrently | promotions `PromotionUsage::consume`: conditional counter `UPDATE`s in fixed order | consuming when a code is entered into a cart (forbidden) | limit 10 with 40 concurrent orders |
 | PRM-02 | Discounts allocated to lines sum exactly to the total discount | core `MoneyAllocator` | rounding each line separately | 3 lines × 1/3 |
@@ -24,7 +24,7 @@ one enforcement point; adding a write path that skips it is a defect.
 | PAY-01 | A provider event applies at most once | sales: `UNIQUE(gateway, external_event_id)` | repeated webhook | double webhook |
 | PAY-02 | A provider network call never runs inside a database transaction; an unknown outcome is `pending_reconciliation`, not `failed` | sales payment workflow | calling a gateway inside `Transactions::run` | timeout after authorization |
 | REF-01 | Refunding money never returns goods to stock automatically | sales return receipt with explicit `restock` | `available += returned` on refund | refund without receiving |
-| CTX-01 | A cart or order never changes channel or currency; references from another channel are rejected | sales + `Sellables` (`purchasable` in the channel) | changing `channel_id` | adding an unpublished variant |
+| CTX-01 | A cart or order never changes channel or currency; references from another channel are rejected | sales + `Sellables` (`purchasable` in the channel); the catalog's `variant` provider reports `not_listed` / `not_available_yet` / `no_longer_available` per channel and `context.at` | changing `channel_id`; adding an unpublished, archived or out-of-window variant | adding an unpublished variant; every reason in `VariantSellablesTest` |
 | EXT-01 | A plugin failure never leaves half a mutation | quoting is pure stages outside writes; mutations are one transaction | a plugin with side effects in `apply()` | a stage that throws |
 
 ## Order placement transaction
@@ -66,6 +66,21 @@ Cancelling or expiring an unpaid order runs in one `Transactions::run`: order
 `promotions.restore_on` policy (default: expired and cancelled before payment)
 → state change → outbox.
 
+## Catalog lock order
+
+Inside the catalog an operation locks in this order, so concurrent catalog
+operations never deadlock: 1) the advisory lock of the category tree
+(`pg_advisory_xact_lock`); 2) the product row `FOR NO KEY UPDATE`; 3) variant
+rows by `id ASC`; 4) attribute definitions by `id ASC` (`FOR SHARE` for the
+writer, `FOR NO KEY UPDATE` for `update`); 5) rows of `cmz_attribute_index`.
+`FOR NO KEY UPDATE`, not `FOR UPDATE`: inserting a projection row takes
+`FOR KEY SHARE` on the product, variant and attribute, which `FOR UPDATE`
+would block. The catalog calls no network and publishes no outbox events;
+its events are Laravel events dispatched after commit. Repeating a command is
+safe through natural keys (`code`, `handle`, `sku`, signature). The
+`variant` sellable provider only reads: no transaction, at most 6 queries for
+a batch of any size.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
@@ -78,7 +93,14 @@ Cancelling or expiring an unpaid order runs in one `Transactions::run`: order
 | restore usage | consume usage | counter | restore is idempotent by `orderRef` (`cmz_promotion_usages` rows) |
 | place order | cart edit | cart row | `FOR UPDATE` + version |
 | payment event | cancel order | order row | order `FOR UPDATE`; a paid cancelled order becomes a refund task, never a silent loss |
-| change attribute type | write value | attribute definition | type change is forbidden while values exist (v0) |
+| change attribute type or config | write value | attribute definition | not possible: `type` and `config` are immutable after `define` (D17) |
+| generate / create variant | generate / create variant (one product) | product row | `FOR NO KEY UPDATE`; `UNIQUE` and `ON CONFLICT DO NOTHING` as the backstop |
+| create variant / set attributes | archive product | product row | the same lock, then a status check |
+| write attribute value | update attribute (status, `filterable`) | attribute definition | writer `FOR SHARE`, update `FOR NO KEY UPDATE` |
+| write enum value | add choices | attribute definition | `addChoices` holds the attribute `FOR NO KEY UPDATE`; the writer waits and sees the new choices |
+| move category | move category | whole category tree | advisory lock of the tree, then a cycle check by recursive CTE |
+| assign categories | archive category | category row | assign `FOR SHARE`, archive `FOR NO KEY UPDATE`; an archived category → `CategoryArchived` |
+| publish product | archive channel (core) | — (no cross-package lock) | publish checks the channel status; a race leaves a harmless listing, sales refuse an archived channel |
 
 ## Transactions, idempotency, outbox
 
