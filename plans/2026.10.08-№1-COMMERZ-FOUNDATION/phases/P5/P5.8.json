@@ -1,0 +1,220 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.8",
+  "title": "Promotions end-to-end scenario, api-blueprint reconciliation and architecture docs",
+  "status": "done_with_deviations",
+  "summary": "Сквозной сценарий пакета promotions через публичный API и порт ядра, синхронизация docs/architecture (PRM-01..05, API, данные, kinds и стадии, D25–D27, блокировки promotions) и сверка api-blueprint#promotions с кодом с фиксацией отклонений.",
+  "why": "Доказывает, что модули работают вместе так, как их увидит sales (P7): квота → appliedPromotions → consume в транзакции → лимит → restore. Документация — договор для параллельных lanes P6/P7. Риски: docs описывают план, а не код; незафиксированные отклонения от blueprint; устаревший ACTIVE.md.",
+  "scope": {
+    "include": [
+      "packages/promotions/tests/Feature/PromotionsScenarioTest.php: канал RUB, FakeSellables/FakePrices; автоматическая catalog-акция 10% на категорию shoes; coupon-акция cart order.percent_off 1000 с cart.subtotal_at_least, limits total 1 и бюджетом, купон AUTUMN; квота с кодом ' autumn ' → корректировки обеих акций → appliedPromotions → consume('order:1') в Transactions::run → вторая квота того же кода (подсказка usage_limit_reached) и прямой consume('order:2') → UsageLimitReached('total') с откатом внешней транзакции → restore('order:1', Cancelled) → consume('order:2') успешен; explain показывает вердикты; reconcile exit 0",
+      "docs/architecture/invariants.md: PRM-01 (уточнение), PRM-02 (appliedPromotions), PRM-03, PRM-04, PRM-05 из knowledge/promotions-design#invariants; раздел «Promotions lock order» с таблицей режимов из #usage (глобальный порядок не меняется); decisions.md: D25, D26, D27; api.md: раздел Promotions по #api (модуль Definitions, explain, коды ошибок, события); data.md: таблицы promotion_*/coupon_*, канон кода купона, счётчики только при лимитах; extension.md: kinds promotion_condition/effect/activator со встроенными ключами (без channel.in) и стадии promotions.*",
+      "сверить knowledge/api-blueprint#promotions с кодом; расхождения (Definitions вместо Promotions-контракта, обязательный stage, stopFurther/currency/status, нет channel.in, PromotionExplanation, appliedPromotions) оформить plan.py log PLAN1 P5.8 --type deviation",
+      "plans/ACTIVE.md: указатель PLAN1 — P5 закрыта, следующий шаг по plan.py next"
+    ],
+    "exclude": [
+      "сквозные сценарии с sales/catalog/pricing/shipping (P8)",
+      "изменения кода пакета, кроме исправления дефектов, найденных сценарием (с deviation)"
+    ]
+  },
+  "depends_on": [
+    "P5.7"
+  ],
+  "decisions": [
+    "D25",
+    "D26",
+    "D27"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#api",
+      "why": "API для сценария и docs",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#invariants",
+      "why": "строки инвариантов для docs",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#usage",
+      "why": "таблица режимов блокировок для invariants.md",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#schema",
+      "why": "таблицы для data.md",
+      "required": true
+    },
+    {
+      "ref": "knowledge/api-blueprint#promotions",
+      "why": "сверка с blueprint",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "why": "куда вносить; раздел Pricing and tax configuration lock order — образец",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "why": "раздел Promotions",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/data.md",
+      "why": "соглашения имён",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "why": "kinds и стадии",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/decisions.md",
+      "why": "формат записей решений",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/PricingScenarioTest.php",
+      "why": "образец сквозного сценария пакета",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/tests/Feature/PromotionsScenarioTest.php",
+      "change": "create"
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/decisions.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/data.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "change": "modify"
+    },
+    {
+      "path": "plans/ACTIVE.md",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Документация описывает фактический код; расхождение с knowledge фиксируется deviation, а не правкой knowledge задним числом.",
+    "Docs пишутся на английском, как существующие docs/architecture."
+  ],
+  "guidance": "Сценарий: данные коммитятся только там, где нужен откат внешней транзакции — иначе обычный RefreshDatabase. Откат: DB::connection(...)->beginTransaction() не использовать — оборачивать в app(Transactions::class)->run(fn …) и ловить UsageLimitReached снаружи, затем убедиться, что редемпции 'order:2' нет. applied строить только через QuoteResult::appliedPromotions() (D25). В extension.md заменить строку promotion_condition (убрать channel.in) и описать роль LineFilter/Qualifier и стадии правил.",
+  "examples": [
+    {
+      "path": "packages/inventory/tests/Feature/InventoryScenarioTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "PromotionsScenarioTest",
+    "docs/architecture синхронизированы (PRM-01..05, API, D25–D27, kinds, data)",
+    "deviation-записи по blueprint"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T17:21:27Z",
+    "finished_at": "2026-10-09T17:26:23Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "6992fce4-4127-4e5e-93ee-3c77f60f6ceb"
+    },
+    "notes": "PromotionsScenarioTest (quote -> appliedPromotions -> consume -> limit refusal with rollback -> restore -> consume, explain, reconcile); docs/architecture synced: PRM-01..05, Promotions lock order, D25-D27, api/data/extension; ACTIVE.md points to plan.py next.",
+    "deviations": [
+      "api-blueprint#promotions deviations (Definitions contract, explicit stage/stopFurther/currency/status, no channel.in, PromotionExplanation, appliedPromotions) documented in docs and logged; scenario uses evInput snapshots because Commerce::fake() would replace the real PromotionUsage"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T17:26:23Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T17:26:23Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T17:26:23Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T17:26:23Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T17:26:23Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T17:26:23Z"
+}

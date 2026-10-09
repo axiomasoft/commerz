@@ -78,6 +78,7 @@ prices never changes a placed order (ORD-02).
 | Reservation and transfer | held stock; goods moving between locations | `cmz_stock_reservations` (header per demand) + `_reservation_lines`; `cmz_stock_transfers` + `_transfer_lines` |
 | Price list and price | what a sellable costs in a channel; windows never overlap (PRC-01) | `cmz_price_lists` (code, currency, `priority`, `tax_included` null = as channel, status), `cmz_price_list_channels`, `cmz_prices` (`sellable_ref`, `customer_group`, `min_quantity`, `amount_minor`, `compare_at_minor`, `valid_from`/`valid_until`) |
 | Tax class, zone and rate | what tax applies where and when (TAX-01) | `cmz_tax_classes`, `cmz_tax_zones`, `cmz_tax_zone_members` (`country`, `region`; unique nulls not distinct), `cmz_tax_rates` (`rate_bp`, `code`, validity window) |
+| Promotion, rule, coupon and usage | what is discounted and how often it may be spent (PRM-01, PRM-03) | see *Promotions tables* below |
 | Customer | the host's buyer | `CustomerRef` + `CustomerDirectory` port; groups drive prices and promotions |
 | Actor | who executes a command (operator, customer, system) | `ActorRef` |
 
@@ -99,6 +100,42 @@ connection). The host supplies the connection, `CustomerDirectory` (otherwise
 guests only), its own `SellableProvider`s, authorization on its transport
 (the core checks invariants and context, not permissions), a queue for the
 outbox relay and payment/delivery adapters.
+
+## Promotions tables
+
+Owned by `commerz-promotions`, nouns `promotion` and `coupon`, three migrations
+(`create_commerz_promotion_tables`, `…_coupon_tables`, `…_promotion_usage_tables`).
+Inside the package ordinary foreign keys connect its own tables; there is none to
+a core or another package's table: the channel is `channel_id uuid` checked
+through `Channels::assertActive`, the customer and the order are `*_ref
+varchar(191)` strings.
+
+| Table | Holds | Notes |
+|---|---|---|
+| `cmz_promotions` | the promotion: `code` (unique), `stage`, `activator`, `stacking`, `stop_further`, `priority`, `currency`, `budget_minor`, `status`, `starts_at`/`ends_at`, `usage_limit`, `per_customer_limit`, the counters `used` and `spent_minor`, `revision` | enums as `varchar` + `CHECK`; `CHECK` window `starts_at < ends_at`, budget > 0 and only with a currency |
+| `cmz_promotion_channels` | the channels a promotion is assigned to (`PK (promotion_id, channel_id)`, index on `channel_id`) | no foreign key to `cmz_channels` |
+| `cmz_promotion_rules` | conditions and effects: `role`, `position`, `rule_key`, `config_version`, `config jsonb` | JSONB with an owning codec only; a rule is addressed by its stable key, never a class; rules are replaced whole on update |
+| `cmz_promotion_customer_usages` | `(promotion_id, customer_ref) → used` | rows exist only while `per_customer_limit` is set |
+| `cmz_coupon_batches` | one `GenerateCoupons` run: pattern, count, default limit | |
+| `cmz_coupons` | `code` (unique), `status`, `usage_limit`, `used`, `promotion_id`, `batch_id` | `CHECK code ~ '^[A-Z0-9][A-Z0-9_-]{0,63}$'` |
+| `cmz_promotion_redemptions` | one header per placed order: `order_ref` (unique), `customer_ref`, `fingerprint`, `state` (`consumed`, `restored`), `restore_reason` | the idempotency key of `consume` and `restore` |
+| `cmz_promotion_usages` | one row per promotion of an order: `redemption_id`, `promotion_id`, optional `coupon_id`, `discount_minor`, `currency` | append-only log the counters are recounted from; the foreign key to `promotions` is part of the lock protocol |
+
+- **Coupon code canon.** A coupon code is stored upper-case and trimmed; the
+  `CHECK` is the last line of defence, `PromotionCodes::couponCode` the only
+  normalization of writing and searching (PRM-03). A promotion `code` is
+  lower-case `[a-z0-9][a-z0-9_.-]{0,63}`.
+- **Counters only with limits (D27).** `used` is kept only while `usage_limit`
+  is set, `spent_minor` only while `budget_minor` is set, `cmz_coupons.used` only
+  while the coupon has a limit, customer rows only while `per_customer_limit` is
+  set. A promotion without limits is never written to by a placement. Setting a
+  limit recounts the counter from the consumed usages under `FOR UPDATE`;
+  removing it zeroes the counter.
+- **History.** Promotions and coupons are paused, disabled or archived, never
+  deleted; usages and redemptions are never deleted, `restore` only flips the
+  header to `restored`.
+- Percent effects round with `commerz-promotions.rounding` (default `half_up`);
+  amounts are `Money`, rates basis points (`rateBp`).
 
 ## Catalog projection precision and text equality
 

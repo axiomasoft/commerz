@@ -61,9 +61,9 @@ packages.
 | `product_kind` | catalog (`Commerz\Catalog\ProductTypes\Contracts\ProductKind`: `key()`, `sellableKind()`, `requiresShipping()`) | `physical`, `digital`, `service` |
 | `allocation_strategy` | inventory (`Commerz\Inventory\Allocation\Contracts\AllocationStrategy`: `key()`, `allocate()`, `capacity()`; pure, no I/O) | `priority` (sources in priority order, a kit unit from one location), `single_location` (all needs of a request from one location). The plan is validated against the locked levels (`InvalidAllocationPlan`); selected by `commerz-inventory.allocation_strategy` |
 | `tax_calculator` | pricing (`Commerz\Pricing\Calculation\Contracts\TaxCalculator`: `key()`, `calculate(TaxRequest): TaxResult`; no writes, time from the context; the result is validated by `TaxResultValidator`) | `rates` (class × zone × dated rates, several non-compound codes; included tax carved out by `Money::includedPart`, split across codes with `MoneyAllocator`). Selected by `commerz-pricing.tax.calculator` |
-| `promotion_condition` | promotions | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`, `channel.in` |
-| `promotion_effect` | promotions | `line.percent_off`, `line.fixed_off`, `order.percent_off`, `order.fixed_off`, `delivery.percent_off`, `buy_x_get_y` |
-| `promotion_activator` | promotions | `automatic`, `coupon` |
+| `promotion_condition` | promotions (`Commerz\Promotions\Rules\Contracts\PromotionCondition`: `key()`, `version()`, `stages()`, `role()`, `normalize()`, `upgrade()`, pure `evaluate()`) | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`. No `channel.in`: a promotion's channels are its assignment (D26) |
+| `promotion_effect` | promotions (`PromotionEffect`: `key()`, `version()`, `stages()`, `normalize()`, `upgrade()`, pure `apply(EffectInput): list<Discount>`) | `line.percent_off`, `line.fixed_off`, `order.percent_off`, `order.fixed_off`, `delivery.percent_off`, `buy_x_get_y` |
+| `promotion_activator` | promotions (`PromotionActivator`: `key()`, `activate(ActivationRequest): ActivationResult`; may read, never writes) | `automatic`, `coupon` (the coupon module plugs in through this same SPI, D5) |
 | `delivery_rate` | shipping | `flat`, `weight_table`, `free_over` |
 | `carrier` | shipping | `manual` |
 | `payment_gateway` | sales | `manual` (offline / invoice) |
@@ -77,6 +77,46 @@ stored value, unprojected and read-only.
 A rule contribution (condition, effect, rate) decodes and upgrades its own
 configuration: `configVersion()`, `decodeConfig(array $raw, int $version)`,
 and a pure `apply()`.
+
+### Promotion rules and stages
+
+Promotions run in three quote stages, `promotions.catalog`, `promotions.cart`
+and `promotions.delivery`, each `At` its anchor and owned by the promotions
+plugin (`commerz.promotions`). A promotion names its stage explicitly and
+immutably; a condition or effect declares the stages it may be used in
+(`stages()`) and `CreatePromotion` / `UpdatePromotion` refuse a rule outside
+them (`promotions.rule_not_allowed_in_stage`). Host stages go `Before` / `After`
+those anchors like any other (D26).
+
+- **Conditions** run in two passes. A `LineFilter` (`line.sellable_in`,
+  `line.category_in`) narrows the lines the effects act on; a `Qualifier`
+  (`cart.subtotal_at_least`, `cart.quantity_at_least`, `customer.in_group`) says
+  yes or no for the whole quote. Filters run
+  first in declared order, then qualifiers. A condition returns a
+  `ConditionOutcome`: `pass` (a filter with its eligible lines) or `fail` with a
+  reason, and sees a read-only `ConditionInput`.
+- **Effects** return `list<Discount>` (line, order or delivery target, a
+  positive `Money` in the quote currency). The engine does not trust them:
+  `DiscountGuard` checks the line, the currency and the remaining price,
+  clamps at zero, and a promotion applies whole or not at all (PRM-05).
+- **Activators** decide which promotions are switched on for a quote:
+  `automatic` all of them, `coupon` those whose code is presented. They return
+  an `ActivationResult` (activations plus `CodeRejection`s); the engine knows
+  neither word, so a plugin can add `acme.referral` the same way.
+- **Order and stacking** within a stage: `priority DESC, code ASC`; `Stackable`
+  promotions apply one after another to the reduced price, `Exclusive` only as
+  the first of its stage and then stops the rest; `stopFurther` stops the rest
+  after an applied promotion.
+- **Storage and trust.** Rules are stored as key + `config_version` + canonical
+  JSONB parameters; a missing rule, activator or an unreadable version makes the
+  promotion `unsupported` (not applied, verdict `unsupported_rule`, listed by
+  `commerz:promotions:reconcile`). Stages and rules are pure: no database
+  writes, no network, time from `context.at`; the one spending point is
+  `PromotionUsage::consume` at placement. All three stages share one session per
+  `QuoteInput` (one load of active promotions, not three).
+- A plugin that adds a rule or activator lists `commerz.promotions` in
+  `requires` and registers it before the registry compiles (tests: in
+  `defineEnvironment`).
 
 ## Quote pipeline
 

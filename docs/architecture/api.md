@@ -230,21 +230,90 @@ Pricing::taxes()->zoneFor(new Address('RU', 'RU-MOW'));                      // 
 
 ## Promotions: `Promotions`
 
-`promotions()`, `coupons()`. A code entered into a cart is only a presented
-code in `QuoteInput`; limits are consumed when the order is placed (D13).
+`promotions()` (the `PromotionDefinitions` contract, module `Definitions`: create,
+update, pause, resume, archive, assign and unassign channels, find, list, `explain`)
+and `coupons()` (the `Coupons` contract: create, generate, disable, enable,
+`setLimit`, find, list). Implements the `PromotionUsage` port, adds the quote
+stages `promotions.catalog`, `promotions.cart` and `promotions.delivery` and
+declares the `promotion_condition`, `promotion_effect` and `promotion_activator`
+SPIs. A code entered into a cart is only a presented code in `QuoteInput`;
+limits are consumed when the order is placed (D13, D27).
 
 ```php
 $promo = Promotions::promotions()->create(new CreatePromotion(
-    code: 'autumn-10', name: 'Autumn −10%', channels: [$channel->id],
-    activator: 'coupon', stacking: Stacking::Stackable, priority: 100,
+    code: 'autumn-10', name: 'Autumn −10%', stage: PromotionStage::Cart,
+    activator: 'coupon', channels: [$channel->id], stacking: Stacking::Stackable, priority: 100,
     conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('3000.00', 'RUB')])],
     effects:    [new RuleSpec('order.percent_off', ['rateBp' => 1000])],
     limits: new UsageLimits(total: 1000, perCustomer: 1), budget: Money::of('500000.00', 'RUB'),
     startsAt: $from, endsAt: $to,
-));
+));                                                    // currency is derived from the budget and rules: RUB
+Promotions::promotions()->update(new UpdatePromotion($promo->id, limits: new UsageLimits(total: 2000)));
+Promotions::promotions()->pause(new PausePromotion($promo->id));
 Promotions::coupons()->generate(new GenerateCoupons(promotion: $promo->id, count: 500, pattern: 'AUT-####-####'));
-$explain = Promotions::promotions()->explain(new ExplainPromotions($quoteInput));   // why applied or not
+Promotions::coupons()->create(new CreateCoupon(promotion: $promo->id, code: 'AUTUMN', usageLimit: 1000));
+$why = Promotions::promotions()->explain(new ExplainPromotions($quoteInput));   // PromotionExplanation
+
+// the core port, called by sales inside the PlaceOrder transaction (P7):
+app(PromotionUsage::class)->consume(new ConsumePromotionUsage('order:'.$orderId, $ctx->customer, $quote->appliedPromotions()));
+app(PromotionUsage::class)->restore(new RestorePromotionUsage('order:'.$orderId, RestoreReason::Cancelled));
 ```
+
+- A promotion has a `code` (`[a-z0-9][a-z0-9_.-]{0,63}`, unique), a `name` (the
+  explanation text of its adjustments), an immutable `stage` and `activator`
+  (`automatic`, `coupon` or a plugin's key), `stacking`, `stopFurther`,
+  `priority` (higher first), an optional immutable `currency`, a `status`
+  (`active`, `paused`, `archived`; archived is terminal), a window
+  `[startsAt, endsAt)`, at least one channel, 0–20 conditions, 1–10 effects,
+  `UsageLimits(total, perCustomer)`, a `budget` and a `revision` that grows with
+  every change of rules, limits or window. A rule must allow the promotion's
+  stage (`promotions.rule_not_allowed_in_stage`); a rule or activator whose
+  plugin is gone makes the promotion `unsupported` and not applied
+  (fail-closed), reported by `commerz:promotions:reconcile`.
+- Order inside a stage is `priority DESC, code ASC`; stackable promotions apply
+  sequentially to the reduced price (D15, D26). An exclusive promotion applies
+  only if it is first in its stage and stops the rest; `stopFurther` stops the
+  rest after an applied promotion.
+- Coupon codes are upper-case `[A-Z0-9][A-Z0-9_-]{0,63}`; every writer and
+  lookup normalizes through `PromotionCodes::couponCode` (trim + upper case,
+  PRM-03). `generate` fills a pattern (`#` = a character of
+  `commerz-promotions.coupons.alphabet`) with random codes and refuses a pattern
+  with too few `#` or whose code space is smaller than 100 times the count
+  (`promotions.pattern_too_small`).
+- `explain` re-runs the real pipeline and returns a `PromotionExplanation`:
+  the `QuoteResult` (or the `failure` code and no quote), a `PromotionVerdict`
+  per candidate in stage order (`Applied` with the discount, `Rejected` or
+  `Skipped` with a `reason`) and `CodeRejection`s of presented codes. The quote
+  itself carries rejections only for presented codes. Reasons: `no_eligible_lines`
+  and the rule's own, `usage_limit_reached`, `per_customer_limit_reached`,
+  `customer_required`, `no_delivery`, `unsupported_rule`, `not_combinable`,
+  `stopped_by_promotion`; code reasons: `unknown_code`, `coupon_disabled`,
+  `coupon_exhausted`, `promotion_not_active`, `duplicate_code`,
+  `duplicate_promotion`, `too_many_codes`.
+- `QuoteResult::appliedPromotions()` (D25) is the only source of the `applied`
+  list of `ConsumePromotionUsage`; `consume` is idempotent per `orderRef` and
+  payload (`IdempotencyConflict` for another payload), `restore` is idempotent
+  and follows `promotions.restore_on` (default `cancelled`, `expired`).
+- Views: `PromotionView`, `CouponView`, `CouponBatchView`; the promotion view
+  carries a `PromotionUsageSummary` (orders not restored and the discount given
+  per currency), counted from the usage log, not from the limit counters.
+- Events after commit (`CommittedEvents`): `PromotionChanged(PromotionId)`,
+  `CouponsGenerated(PromotionId, CouponBatchId, int count)`. No outbox message in
+  0.1: there is no cross-package consumer.
+- Exceptions (stable codes, subclasses of the core errors): `promotions.promotion_not_found`,
+  `promotions.promotion_archived`, `promotions.coupon_not_found`,
+  `promotions.not_a_coupon_promotion`, `promotions.code_space_exhausted`,
+  `promotions.pattern_too_small`, `promotions.duplicate_code`,
+  `promotions.promotion_unavailable` (reason `promotion_not_found`,
+  `promotion_not_active`, `coupon_not_found`, `coupon_disabled`),
+  `promotions.invalid_rule_config`, `promotions.invalid_rule_result`,
+  `promotions.unknown_rule`, `promotions.unknown_activator`,
+  `promotions.rule_not_allowed_in_stage`, `promotions.currency_mismatch`,
+  `promotions.invalid_*` (command shapes); from the core port
+  `promotions.usage_limit_reached` (`UsageLimitReached`, limit `total`,
+  `per_customer`, `coupon`, `budget`) and `common.idempotency_conflict`.
+- Console: `commerz:promotions:reconcile` (read-only, exit 1 on a discrepancy);
+  see *Promotions lock order* in `invariants.md`.
 
 ## Shipping: `Shipping`
 

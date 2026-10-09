@@ -21,8 +21,11 @@ one enforcement point; adding a write path that skips it is a defect.
 | PRC-02 | The same context and data always select the same price; the ranking is a total order | pricing `PriceSelection` (pure; priority DESC → lowest amount → group → min quantity DESC → list code → price id) shared by `resolveMany` and `explain` | "first row" selection without `ORDER BY`; a separate explain path that drifts from resolve | ranking matrix, input permutation, `explain` equals `resolve` |
 | TAX-01 | Validity windows of one rate (class, zone, tax code) never overlap; a zone member `(country, region)` belongs to one zone | pricing: `cmz_tax_rates_window_ex` `EXCLUDE USING gist`; `UNIQUE NULLS NOT DISTINCT (country, region)` on zone members | parallel `SetTaxRate`; the same member in two zones | 6 processes → 1 rate; member taken → `TaxZoneMemberTaken` |
 | TAX-02 | Tax is computed on the line base after all discounts (the same order-level shares `totals` settles), never exceeds an included base, and rounds per line with the configured mode | pricing `TaxStage` + core `QuoteState::allocatedOrderAdjustments()` / `deliveryNet()` (D23) + `TaxResultValidator` | tax on the pre-discount price; a second allocation algorithm in the stage; a calculator returning junk | golden tests G1–G14, `PricingScenarioTest` |
-| PRM-01 | Promotion, coupon and per-customer limits and budgets are never exceeded concurrently | promotions `PromotionUsage::consume`: conditional counter `UPDATE`s in fixed order | consuming when a code is entered into a cart (forbidden) | limit 10 with 40 concurrent orders |
-| PRM-02 | Discounts allocated to lines sum exactly to the total discount | core `MoneyAllocator` | rounding each line separately | 3 lines × 1/3 |
+| PRM-01 | Promotion, coupon and per-customer limits and budgets are never exceeded concurrently; a limit is spent only when the order is placed, never when a code is entered; changing a limit loses no parallel spend | promotions `DatabasePromotionUsage::consume`: redemption header by `orderRef`, then coupons → promotions → customer usages (id ASC), `FOR KEY SHARE` plus conditional `UPDATE` / `INSERT … ON CONFLICT DO UPDATE … WHERE`; definition mutations take `FOR UPDATE` and call `UsageCounters::recompute` (D27) | spending at quote time; read-then-write of a limit in PHP; a limit change without a lock; a hot counter on every unlimited promotion | limit 10 with 40 concurrent orders; coupon, per-customer and budget limits; opposite lock orders; same-order retry; limit change during consume (`UsageConcurrencyTest`) |
+| PRM-02 | Discounts allocated to lines sum exactly to the total discount; what a promotion took off a quote (`appliedPromotions`) is the sum of its adjustments, order-level shares counted once | core `QuoteState::allocatedOrderAdjustments()` (D23) + `QuoteResult::appliedPromotions()` (D25), the one fold sales and the tests share | rounding each line separately; a second allocation or fold in promotions or sales that double-counts order shares | `AppliedPromotionsTest`, golden tests G7 and G21, `PromotionsScenarioTest` |
+| PRM-03 | A coupon code is unique per installation in its canonical form, and input is matched the way uniqueness is checked | `cmz_coupons.code` `UNIQUE` + `CHECK` on the canonical form; `PromotionCodes::couponCode` (trim + upper case) is the only normalization of writes and lookups | `AUTUMN` and `autumn` as two coupons; a generation collision; a case-sensitive lookup | `SchemaTest`, golden test G17, concurrent generation, `PromotionsScenarioTest` (code `' autumn '`) |
+| PRM-04 | The same input and data give the same adjustments in a total order | `ActivePromotions` loads `order by stage, priority desc, code asc`; rules run by `position`; `buy_x_get_y` sorts units by (value, line index) | "as the database returned them"; float arithmetic; an unstable sort | golden test G2 with permuted creation order |
+| PRM-05 | A promotion applies whole or not at all, and never takes a line, the order or the delivery below zero; a plugin's result is not trusted | `PromotionEngine` works on a temporary state and keeps it only when every effect passes `DiscountGuard` (currency, target, lines, ≥ 0, clamping); `ActivationResult` and `ConditionOutcome` are validated | partial application when a budget or guard refuses; an effect returning junk or a foreign currency; a discount above the price | golden tests G7 and G16, `RuleTrustTest` |
 | ORD-01 | Retrying `PlaceOrder` never creates a second order | sales: `UNIQUE(cart_id)` on orders + `OperationReceipts` | client timeout and retry | concurrent double submit |
 | ORD-02 | An order keeps the accepted amounts and snapshots; repricing live data never changes it | sales: snapshot lines, no FK to catalog | refreshing an order from the catalog | change the price after placement |
 | ORD-03 | Per line `ordered = cancelled + fulfilled + outstanding` | sales `OrderLineLedger` | shipping more than ordered | partial shipment + cancel |
@@ -152,6 +155,43 @@ then the rate row `FOR NO KEY UPDATE`. Resolution and quoting only read.
 Hosts composing mutations across several lists or rate keys must take those
 resources in a consistent order for the whole transaction.
 
+## Promotions lock order
+
+The Promotions step of the global order (D27) takes, per placed order, the
+redemption header `orderRef` first (one row per order, in the cart/order
+class), then **coupons → promotions → customer usages**, each class by `id ASC`
+in one statement. A counter exists only while its limit is set (`used` with
+`usage_limit`, `spent_minor` with `budget_minor`, `coupons.used` with the coupon
+limit, customer rows with `per_customer_limit`), so an unlimited promotion or
+a public coupon is never a hot row that serializes placements. PostgreSQL row
+lock modes carry the protocol:
+
+| Who | Row | Mode | Conflicts with |
+|---|---|---|---|
+| `consume` / `restore`, every promotion and coupon of the order | promotions, coupons | `FOR KEY SHARE` | only `FOR UPDATE` |
+| `consume` / `restore`, limited ones only | promotions, coupons | conditional `UPDATE` (`FOR NO KEY UPDATE`) | other `NO KEY UPDATE`, `FOR UPDATE` |
+| inserting a usage or coupon (foreign key) | promotions, coupons | implicit `FOR KEY SHARE` | only `FOR UPDATE` |
+| any definition mutation (update, pause, resume, archive, rules, channels; coupon: disable, enable, set limit) | promotions / coupons | `FOR UPDATE` | everything |
+| `GenerateCoupons` / `CreateCoupon` | promotions | `FOR KEY SHARE` | only `FOR UPDATE` |
+
+Upgrading `KEY SHARE` to `NO KEY UPDATE` cannot deadlock: `NO KEY UPDATE` is
+compatible with another transaction's `KEY SHARE`, and two upgrades wait for
+each other in turn. A definition mutation waits for every transaction that
+already holds `KEY SHARE` and blocks new ones, so the recount that follows a
+limit change (`UsageCounters::recompute`, from `consume`d usages) is exact.
+The status is re-checked by `consume`; the validity window is not (the quote's
+`context.at` is the authority). Quoting and `explain` read without locks: old
+or new state is acceptable, the limit is enforced at placement. A guest
+(`customer = null`) cannot use a promotion with a per-customer limit: the quote
+rejects it (`customer_required`) and `consume` throws
+`UsageLimitReached(per_customer)`.
+
+`commerz:promotions:reconcile` is read-only on one `REPEATABLE READ` snapshot:
+it recounts `used` / `spent_minor` of limited promotions, `used` of limited
+coupons and the per-customer rows from the consumed usages, and lists rules
+with an unsupported key or version; it exits 1 on any discrepancy and repairs
+nothing.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
@@ -162,8 +202,12 @@ resources in a consistent order for the whole transaction.
 | consume (shipment) | expire (worker) | demand header and lines | header `FOR NO KEY UPDATE`; the sweeper takes it `SKIP LOCKED` and re-checks |
 | count with `expectedOnHand` | reserve / consume | `on_hand` | the compare-and-set runs under the level lock |
 | transfer create / dispatch | reserve at the source | source stock level | the same lock order; the draft holds its stock as a reservation |
-| consume usage (order 1) | consume usage (order 2) | coupon/promotion counter | conditional `UPDATE used < limit` |
-| restore usage | consume usage | counter | restore is idempotent by `orderRef` (`cmz_promotion_usages` rows) |
+| consume usage (order 1) | consume usage (order 2) | promotion / coupon counter | conditional `UPDATE used < limit` (re-read after the wait) |
+| consume usage | consume usage (same customer) | customer usage row | `INSERT … ON CONFLICT DO UPDATE … WHERE used < limit` |
+| consume usage (same `orderRef`) | consume usage | redemption header | `UNIQUE(order_ref)`; the second waits and compares the fingerprint |
+| consume usage | update promotion (limit change) / pause / archive / disable coupon | promotion / coupon row | `KEY SHARE` vs `FOR UPDATE`; the recount sees every committed usage, a paused promotion gives `PromotionUnavailable` |
+| restore usage | consume usage | redemption header | idempotent by `orderRef`; sales serializes the order before calling the port |
+| generate coupons | archive promotion | promotion row | `KEY SHARE` vs `FOR UPDATE` |
 | place order | cart edit | cart row | `FOR UPDATE` + version |
 | payment event | cancel order | order row | order `FOR UPDATE`; a paid cancelled order becomes a refund task, never a silent loss |
 | change attribute type or config | write value | attribute definition | not possible: `type` and `config` are immutable after `define` (D17) |
