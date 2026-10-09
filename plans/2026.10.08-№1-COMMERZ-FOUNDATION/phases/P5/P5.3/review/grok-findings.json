@@ -1,0 +1,5 @@
+{"reviewer":"grok/grok-4.7/high","session":"01a12124-fef9-7fb3-bbbc-340a246ff27f","verdict":"fail","findings":[
+{"id":1,"severity":"medium","file":"packages/promotions/src/Rules/Internal/Effects/LineFixedOff.php","disposition":"fixed"},
+{"id":2,"severity":"medium","file":"packages/promotions/src/Rules/Internal/Conditions/CartSubtotalAtLeast.php","disposition":"fixed"},
+{"id":3,"severity":"low","file":"packages/promotions/src/Rules/Internal/Effects/UnitPool.php","disposition":"fixed"},
+{"id":4,"severity":"low","file":"packages/promotions/src/Rules/Internal/Effects/UnitPool.php","disposition":"fixed"}]}
