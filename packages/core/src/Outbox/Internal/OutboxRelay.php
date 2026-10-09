@@ -14,6 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
+use LogicException;
 use Throwable;
 
 /**
@@ -44,6 +45,11 @@ final readonly class OutboxRelay
         }
 
         $connection = $this->connections->connection($this->tables->connection());
+
+        if ($connection->transactionLevel() > 0) {
+            throw new LogicException('Outbox delivery must run outside a transaction on the Commerz connection. Commit before running the relay.');
+        }
+
         $table = $this->tables->table('outbox_messages');
 
         $rows = $connection->select(<<<SQL

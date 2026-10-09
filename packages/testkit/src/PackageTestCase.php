@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Commerz\Testkit;
 
 use Commerz\Attributes\Api;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Orchestra\Testbench\TestCase as Orchestra;
+use RuntimeException;
 
 #[Api(since: '0.1')]
 abstract class PackageTestCase extends Orchestra
@@ -23,6 +26,27 @@ abstract class PackageTestCase extends Orchestra
      */
     protected function setUpTraits()
     {
+        $app = $this->app;
+
+        if (! $app instanceof Application || ! $app->environment('testing')) {
+            throw new RuntimeException('Commerz tests require APP_ENV=testing. Check phpunit.xml before running migrations.');
+        }
+
+        $connections = $app->make(DatabaseManager::class);
+        $connection = $app->make(Repository::class)->get('commerz.connection');
+
+        if ($connection !== null && ! is_string($connection)) {
+            throw new RuntimeException('Commerz tests require commerz.connection to be null or a test connection name.');
+        }
+
+        foreach ([null, $connection] as $name) {
+            $database = $connections->connection($name)->getDatabaseName();
+
+            if (! str_ends_with($database, '_test')) {
+                throw new RuntimeException("Commerz tests require a database ending in _test; resolved '{$database}'. Check phpunit.xml, DB_DATABASE and commerz.connection before running migrations.");
+            }
+        }
+
         $providers = implode('|', $this->commerzProviders());
 
         if (self::$migratedFor !== $providers) {

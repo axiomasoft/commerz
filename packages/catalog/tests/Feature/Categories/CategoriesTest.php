@@ -142,3 +142,14 @@ it('replaces the categories of a product in the given order', function (): void 
         ->and(Catalog::categories()->assign(new AssignProductCategories($product->id, [])))->toBe([])
         ->and(fn () => Catalog::categories()->ofProduct(ProductId::generate()))->toThrow(ProductNotFound::class);
 });
+
+it('round trips int64 positions accepted by category commands', function (): void {
+    $category = catCreate('large', position: 2_147_483_648);
+    expect($category->position)->toBe(2_147_483_648)
+        ->and(Catalog::categories()->update(new UpdateCategory($category->id, position: PHP_INT_MAX))->position)->toBe(PHP_INT_MAX);
+});
+
+it('uses the catalog page limit for categories', function (): void {
+    expect((new ListCategories(first: 200))->first)->toBe(200)
+        ->and(fn () => new ListCategories(first: 201))->toThrow(InvalidCommand::class);
+});

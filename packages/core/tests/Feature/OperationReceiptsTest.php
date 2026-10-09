@@ -119,3 +119,19 @@ it('prunes receipts and delivered outbox messages older than the retention', fun
     expect(DB::table('cmz_operation_receipts')->pluck('key')->all())->toBe(['new'])
         ->and(DB::table('cmz_outbox_messages')->count())->toBe(2);
 });
+
+it('rolls back a failed receipt and its work when the host catches the exception', function (): void {
+    $receipts = app(OperationReceipts::class);
+    $key = IdempotencyKey::of('caught-failure');
+    $fingerprint = Fingerprint::of('request');
+    $identity = fn (array $value): array => $value;
+
+    expect(fn () => $receipts->once('test.atomic', $key, $fingerprint, function (): array {
+        DB::table('cmz_schema_state')->insert(['key' => 'failed-work', 'value' => '{}']);
+        throw new RuntimeException('work failed');
+    }, $identity, $identity))->toThrow(RuntimeException::class, 'work failed');
+
+    expect(DB::table('cmz_operation_receipts')->where('key', $key->value)->exists())->toBeFalse()
+        ->and(DB::table('cmz_schema_state')->where('key', 'failed-work')->exists())->toBeFalse()
+        ->and($receipts->once('test.atomic', $key, $fingerprint, fn () => ['retry'], $identity, $identity))->toBe(['retry']);
+});

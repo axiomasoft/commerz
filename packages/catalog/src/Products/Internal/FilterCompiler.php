@@ -91,6 +91,10 @@ final readonly class FilterCompiler
             throw new InvalidCommand('filters', "'{$filter->attribute}' does not support the {$filter->operator->value} filter", 'catalog.unsupported_filter');
         }
 
+        if ($definition->type === 'text') {
+            return [$this->text($filter, $type, $definition)];
+        }
+
         return match ($filter->operator) {
             // Every fact of the value must be present: for a multi-choice value equals means "contains".
             FilterOperator::Equals => array_map(
@@ -103,6 +107,33 @@ final readonly class FilterCompiler
             FilterOperator::In => [$this->exists($definition, $this->any($type, $definition, $filter->values))],
             FilterOperator::Range => [$this->exists($definition, $this->range($type, $definition, $filter->values[0], $filter->values[1] ?? null))],
         };
+    }
+
+    /** The indexed term is a 255-character prefix; equality also compares the complete canonical document value. */
+    private function text(AttributeFilter $filter, AttributeType $type, StoredAttribute $definition): Closure
+    {
+        $values = [];
+
+        foreach ($filter->values as $input) {
+            $value = $type->normalize($input, $definition->definition);
+
+            if (! is_string($value)) {
+                throw new InvalidAttributeValue($filter->attribute, 'expected a text value');
+            }
+
+            $values[] = $value;
+        }
+
+        return $this->exists($definition, static function (Builder $i) use ($values, $filter): void {
+            $i->where(static function (Builder $any) use ($values, $filter): void {
+                foreach ($values as $value) {
+                    $any->orWhereRaw(
+                        '(i.term = ?::varchar and (case when i.variant_id is null then p.attributes else v.attributes end) ->> ? = ?::text)',
+                        [mb_substr($value, 0, 255), $filter->attribute, $value],
+                    );
+                }
+            });
+        });
     }
 
     /**

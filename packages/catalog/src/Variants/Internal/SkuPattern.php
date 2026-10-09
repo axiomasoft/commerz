@@ -16,7 +16,7 @@ final readonly class SkuPattern
      * Checks the pattern against the generated axes: every placeholder names one of them, and every axis with more than
      * one value is named (otherwise two combinations would get one SKU).
      *
-     * @param  array<string, list<string>>  $axes  option code => value codes
+     * @param  array<array-key, list<string>>  $axes  option code => value codes
      */
     public function __construct(public string $pattern, array $axes)
     {
@@ -30,7 +30,7 @@ final readonly class SkuPattern
         }
 
         foreach ($axes as $code => $values) {
-            if (count($values) > 1 && ! in_array($code, $named, true)) {
+            if (count($values) > 1 && ! in_array((string) $code, $named, true)) {
                 throw new InvalidCommand('skuPattern', "axis '{$code}' has several values but no '{{$code}}' placeholder", 'catalog.invalid_sku_pattern');
             }
         }

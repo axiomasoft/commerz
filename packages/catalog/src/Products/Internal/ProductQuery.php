@@ -6,7 +6,6 @@ namespace Commerz\Catalog\Products\Internal;
 
 use Commerz\Catalog\Categories\Data\CategoryId;
 use Commerz\Catalog\Common\Internal\Clock;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Listings\Enums\ListingStatus;
 use Commerz\Catalog\Products\Data\ListProducts;
 use Commerz\Catalog\Products\Enums\ProductStatus;
@@ -18,7 +17,6 @@ use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeZone;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 
@@ -61,18 +59,17 @@ final readonly class ProductQuery
             $products->where('p.status', '<>', ProductStatus::Archived->value);
         }
 
+        $subtree = null;
+
         if ($query->category instanceof CategoryId) {
-            $categories = $this->subtree($db, $query->category);
-
-            if ($categories === []) {
-                return [];
-            }
-
+            $categories = $products->getGrammar()->wrapTable($this->tables->table('categories'));
+            $subtree = "with recursive sub as (select id from {$categories} where id = ?"
+                ." union all select c.id from {$categories} c join sub on c.parent_id = sub.id) ";
             $assignments = $this->tables->table('category_products');
             $products->whereExists(static fn (Builder $cp) => $cp->selectRaw('1')
                 ->from($assignments.' as cp')
                 ->whereColumn('cp.product_id', 'p.id')
-                ->whereIn('cp.category_id', $categories));
+                ->whereIn('cp.category_id', static fn (Builder $sub) => $sub->select('id')->from('sub')));
         }
 
         if ($conditions !== []) {
@@ -95,6 +92,14 @@ final readonly class ProductQuery
             $products->where('p.handle', '>', $query->after->position());
         }
 
+        if ($subtree !== null) {
+            // The CTE and the builder query form one statement; identifiers come only from TableNames and the grammar.
+            return array_values(array_filter($db->select(
+                $subtree.$products->toSql(),
+                [$query->category->value, ...$products->getBindings()],
+            ), is_object(...)));
+        }
+
         return array_values($products->get()->all());
     }
 
@@ -110,31 +115,5 @@ final readonly class ProductQuery
             ->where('l.status', ListingStatus::Published->value)
             ->where(static fn (Builder $from) => $from->whereNull('l.available_from')->orWhere('l.available_from', '<=', $moment))
             ->where(static fn (Builder $until) => $until->whereNull('l.available_until')->orWhere('l.available_until', '>', $moment)));
-    }
-
-    /**
-     * Ids of the category and all its descendants; empty for an unknown category.
-     *
-     * @return list<string>
-     */
-    private function subtree(ConnectionInterface $db, CategoryId $category): array
-    {
-        $table = $db->table($this->tables->table('categories'))->getGrammar()->wrapTable($this->tables->table('categories'));
-
-        $rows = $db->select(
-            "with recursive sub as (select id from {$table} where id = ? union all select c.id from {$table} c join sub on c.parent_id = sub.id)"
-            .' select id from sub',
-            [$category->value],
-        );
-
-        $ids = [];
-
-        foreach ($rows as $row) {
-            if (is_object($row)) {
-                $ids[] = Rows::string($row, 'id');
-            }
-        }
-
-        return $ids;
     }
 }

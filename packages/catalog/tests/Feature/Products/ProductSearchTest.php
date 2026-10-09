@@ -11,6 +11,7 @@ use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Categories\Data\AssignProductCategories;
 use Commerz\Catalog\Categories\Data\CategoryId;
 use Commerz\Catalog\Categories\Data\CreateCategory;
+use Commerz\Catalog\Categories\Data\MoveCategory;
 use Commerz\Catalog\Facades\Catalog;
 use Commerz\Catalog\Listings\Data\PublishProduct;
 use Commerz\Catalog\Listings\Data\UnpublishProduct;
@@ -30,6 +31,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
 use Commerz\Measures\Measure;
 use Commerz\Money\Currency;
+use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Page;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
@@ -37,6 +39,7 @@ use Commerz\Stores\Data\ChannelView;
 use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -349,4 +352,43 @@ it('validates the list query', function (): void {
         ->and(srchCode(fn () => AttributeFilter::in('count', ['a' => 1])))->toBe('catalog.invalid_filter')
         ->and(srchCode(fn () => AttributeFilter::in('count', array_fill(0, 101, 1))))->toBe('catalog.invalid_filter')
         ->and(srchCode(fn () => AttributeFilter::equals('Bad Code', 1)))->toBe('catalog.invalid_code');
+});
+
+it('compares complete text values after their shared indexed prefix on both attribute levels', function (): void {
+    Catalog::attributes()->define(new DefineAttribute('long_product', 'text', srchLabel('Product'), ['maxLength' => 1000], filterable: true));
+    Catalog::attributes()->define(new DefineAttribute('long_variant', 'text', srchLabel('Variant'), ['maxLength' => 1000], filterable: true));
+    $type = Catalog::productTypes()->create(new CreateProductType('long_text', srchLabel('Long'), productAttributes: ['long_product'], variantAttributes: ['long_variant']));
+    $prefix = str_repeat('я', 255);
+    srchProduct($type, 'a', ['long_product' => $prefix.'A'], [[[], ['long_variant' => $prefix.'B']]]);
+    srchProduct($type, 'b', ['long_product' => $prefix.'B'], [[[], ['long_variant' => $prefix.'A']]]);
+
+    expect(srchFind([AttributeFilter::equals('long_product', $prefix.'A')]))->toBe(['a'])
+        ->and(srchFind([AttributeFilter::in('long_product', [$prefix.'B', 'absent'])]))->toBe(['b'])
+        ->and(srchFind([AttributeFilter::equals('long_variant', $prefix.'A')]))->toBe(['b'])
+        ->and(srchFind([AttributeFilter::in('long_variant', [$prefix.'B'])]))->toBe(['a']);
+});
+
+it('reads category membership from one SQL snapshot while the tree and assignments change', function (): void {
+    [, $gadget] = srchTypes();
+    $root = Catalog::categories()->create(new CreateCategory('root', srchLabel('Root')));
+    $other = Catalog::categories()->create(new CreateCategory('other', srchLabel('Other')));
+    $child = Catalog::categories()->create(new CreateCategory('child', srchLabel('Child'), $root->id));
+    $product = srchProduct($gadget, 'snapshot', [], [[[]]]);
+    Catalog::categories()->assign(new AssignProductCategories($product->id, [$other->id]));
+    $changed = false;
+
+    DB::listen(function ($query) use (&$changed, $child, $other, $product): void {
+        if ($changed || ! str_contains($query->sql, 'with recursive sub as')) {
+            return;
+        }
+        $changed = true;
+        app(Transactions::class)->run(function () use ($child, $other, $product): void {
+            Catalog::categories()->move(new MoveCategory($child->id, $other->id));
+            Catalog::categories()->assign(new AssignProductCategories($product->id, [$child->id]));
+        });
+    });
+
+    // The product belongs to the other root both before and after the interleaving, never to root.
+    expect(srchHandles(Catalog::products()->list(new ListProducts(category: $root->id))))->toBe([])
+        ->and($changed)->toBeTrue();
 });

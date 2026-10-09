@@ -83,3 +83,12 @@ it('lists by code with a keyset cursor', function (): void {
         ->and(array_map(static fn ($v) => $v->code, $second->items))->toBe(['c'])
         ->and($second->hasMore())->toBeFalse();
 });
+
+it('keeps every label unchanged when the host catches an invalid update', function (): void {
+    $option = Catalog::options()->define(new DefineOption('color', optLabel('Color'), optValues('red', 'blue')));
+    expect(fn () => Catalog::options()->update(new UpdateOption($option->id, valueLabels: [
+        'red' => optLabel('Changed'), 'missing' => optLabel('Invalid'),
+    ])))->toThrow(UnknownOptionValue::class);
+
+    expect(Catalog::options()->find($option->id)->values[0]->label->texts)->toBe(['en' => 'red']);
+});

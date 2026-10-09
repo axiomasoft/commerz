@@ -9,6 +9,7 @@ use Commerz\Operations\Contracts\Transactions;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
+use Throwable;
 
 final readonly class DatabaseTransactions implements Transactions
 {
@@ -26,7 +27,22 @@ final readonly class DatabaseTransactions implements Transactions
         $connection = $this->connection();
 
         if ($connection->transactionLevel() > 0) {
-            return $work();
+            $level = $connection->transactionLevel();
+            $connection->beginTransaction();
+
+            try {
+                $result = $work();
+                $connection->commit();
+
+                return $result;
+            } catch (Throwable $error) {
+                // Laravel's nested deadlock path decrements its level without rolling back the PostgreSQL savepoint.
+                while ($connection->transactionLevel() > $level) {
+                    $connection->rollBack();
+                }
+
+                throw $error;
+            }
         }
 
         return $connection->transaction(static function () use ($connection, $work, $lockTimeoutMs): mixed {

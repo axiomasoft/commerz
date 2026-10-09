@@ -432,3 +432,21 @@ it('fails commerz:plugins with the configuration error', function (): void {
 
     $this->artisan('commerz:plugins')->assertFailed()->expectsOutputToContain('commerz.plugins.0');
 });
+
+final class PlgOptionalExtension extends PlgBase
+{
+    protected function spec(): array
+    {
+        return ['test.optional-extension', [], ['test.owner']];
+    }
+
+    public function register(PluginRegistrar $registrar): void
+    {
+        $registrar->contribute('greeter', HolaGreeter::class);
+    }
+}
+
+it('does not grant contribution ownership through an optional load-order dependency', function (): void {
+    expect(fn () => compilePlugins(PlgOptionalExtension::class, PlgOwner::class))
+        ->toThrow(InvalidConfiguration::class, 'which this plugin does not require');
+});

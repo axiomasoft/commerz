@@ -25,14 +25,14 @@ it('opens a transaction with a local lock_timeout and restores it after commit',
         ->and($transactions->inTransaction())->toBeFalse();
 });
 
-it('joins an open transaction instead of nesting one', function (): void {
+it('uses a savepoint in an open transaction while retaining the host settings', function (): void {
     $transactions = app(Transactions::class);
 
     $inner = $transactions->run(fn (): array => $transactions->run(fn (): array => [lockTimeout(), DB::transactionLevel()], 9000), 400);
-    expect($inner)->toBe(['400ms', 1]);
+    expect($inner)->toBe(['400ms', 2]);
 
     $host = DB::transaction(fn (): array => $transactions->run(fn (): array => [lockTimeout(), DB::transactionLevel()], 400));
-    expect($host[1])->toBe(1)->and($host[0])->not->toBe('400ms');
+    expect($host[1])->toBe(2)->and($host[0])->not->toBe('400ms');
 });
 
 it('rolls back when the work throws and rethrows unchanged', function (): void {
@@ -61,3 +61,20 @@ it('refuses to record an outbox event outside a transaction', function (): void 
     expect(fn () => app(Outbox::class)->record(IntegrationEvent::of('sales.order_placed', 'order:1', [])))
         ->toThrow(LogicException::class, 'needs an open transaction');
 });
+
+it('recovers the host transaction after PostgreSQL concurrency errors in nested work', function (string $state): void {
+    DB::statement('create temporary table tx_deadlock_probe (n int) on commit preserve rows');
+    try {
+        DB::transaction(function () use ($state): void {
+            DB::insert('insert into tx_deadlock_probe values (1)');
+            expect(fn () => app(Transactions::class)->run(function () use ($state): void {
+                DB::insert('insert into tx_deadlock_probe values (2)');
+                DB::unprepared("do $$ begin raise exception 'deadlock detected' using errcode = '{$state}'; end $$");
+            }))->toThrow(PDOException::class);
+            DB::insert('insert into tx_deadlock_probe values (3)');
+        });
+        expect(DB::table('tx_deadlock_probe')->orderBy('n')->pluck('n')->all())->toBe([1, 3]);
+    } finally {
+        DB::statement('drop table tx_deadlock_probe');
+    }
+})->with(['deadlock' => ['40P01'], 'serialization' => ['40001']]);

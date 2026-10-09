@@ -75,7 +75,7 @@ Enforced by architecture tests in `tests/Arch`.
    `quantity_per_unit`) because the stock invariant needs it.
 6. All packages of one installation run on one connection
    (`commerz.connection`); order placement is one local transaction and port
-   mutations join the ambient transaction.
+   mutations join the ambient transaction through a savepoint (D20).
 
 ## Code layout
 

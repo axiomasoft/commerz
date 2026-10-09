@@ -250,3 +250,14 @@ it('has the attribute writer as the only writer of attribute documents and the p
     expect($writers)->toBe(['Attributes/Internal/AttributeWriter.php'])
         ->and($readers)->toBe(['Products/Internal/FilterCompiler.php']);
 });
+
+it('stores and projects the full supported decimal range exactly', function (): void {
+    Catalog::attributes()->define(new DefineAttribute('large', 'decimal', awLabel('Large'), ['scale' => 12], filterable: true));
+    Catalog::attributes()->define(new DefineAttribute('measure', 'measure', awLabel('Measure'), ['unit' => 'g', 'scale' => 12], filterable: true));
+    $type = Catalog::productTypes()->create(new CreateProductType('precise', awLabel('Precise'), productAttributes: ['large', 'measure']));
+    $value = '999999999999999999999999999999.123456789012';
+    $product = awProduct($type, 'precise', ['large' => $value, 'measure' => Measure::of($value, 'g')]);
+
+    expect($product->attributes['large'])->toBe($value)
+        ->and(DB::table('cmz_attribute_index')->where('product_id', $product->id->value)->pluck('num')->all())->toBe([$value, $value]);
+});

@@ -144,6 +144,11 @@ final readonly class DatabaseVariants implements Variants
 
             $variants = $this->tables->table('variants');
             $position = $this->nextPosition($db, $command->product);
+
+            if ($position > PHP_INT_MAX - count($missing) + 1) {
+                throw new InvalidCommand('position', 'generated positions would exceed int64');
+            }
+
             $now = Clock::now();
 
             try {
@@ -417,7 +422,9 @@ final readonly class DatabaseVariants implements Variants
 
             foreach ($combinations as $combination) {
                 foreach ($values as $value) {
-                    $next[] = [...$combination, $code => $value];
+                    $nextCombination = $combination;
+                    $nextCombination[$code] = $value;
+                    $next[] = $nextCombination;
                 }
             }
 
@@ -494,6 +501,10 @@ final readonly class DatabaseVariants implements Variants
     {
         $last = $db->table($this->tables->table('variants'))->where('product_id', $product->value)->max('position');
 
+        if (is_numeric($last) && (int) $last === PHP_INT_MAX) {
+            throw new InvalidCommand('position', 'no larger int64 position is available');
+        }
+
         return is_numeric($last) ? (int) $last + 1 : 0;
     }
 
@@ -565,12 +576,13 @@ final readonly class DatabaseVariants implements Variants
     private static function position(Cursor $cursor): array
     {
         $parts = explode(':', $cursor->position(), 2);
+        $position = filter_var($parts[0], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
 
-        if (count($parts) !== 2 || preg_match('/\A\d+\z/', $parts[0]) !== 1 || preg_match('/\A[0-9a-f-]{36}\z/', $parts[1]) !== 1) {
+        if (count($parts) !== 2 || $position === false || preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/', $parts[1]) !== 1) {
             throw new InvalidCommand('after', 'is not a valid cursor', 'common.invalid_cursor');
         }
 
-        return [(int) $parts[0], $parts[1]];
+        return [$position, $parts[1]];
     }
 
     /**

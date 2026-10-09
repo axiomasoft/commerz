@@ -61,3 +61,22 @@ it('reaches a dispatcher swapped after the service was resolved', function (): v
 
     Event::assertDispatched(CommittedEventsProbe::class, static fn (CommittedEventsProbe $event): bool => $event->name === 'faked');
 });
+
+it('drops only the failed savepoint events when the host continues and commits', function (): void {
+    $seen = [];
+    Event::listen(CommittedEventsProbe::class, function (CommittedEventsProbe $event) use (&$seen): void {
+        $seen[] = $event->name;
+    });
+
+    app(Transactions::class)->run(function () use (&$seen): void {
+        app(CommittedEvents::class)->dispatch(new CommittedEventsProbe('outer'));
+        expect(fn () => app(Transactions::class)->run(function (): void {
+            app(CommittedEvents::class)->dispatch(new CommittedEventsProbe('lost'));
+            throw new RuntimeException('caught');
+        }))->toThrow(RuntimeException::class, 'caught');
+        app(Transactions::class)->run(fn () => app(CommittedEvents::class)->dispatch(new CommittedEventsProbe('inner')));
+        expect($seen)->toBe([]);
+    });
+
+    expect($seen)->toEqualCanonicalizing(['outer', 'inner']);
+});

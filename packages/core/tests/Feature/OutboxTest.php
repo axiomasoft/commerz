@@ -15,11 +15,15 @@ use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+// Relay consumers must run after commit, so these tests use committed data.
+beforeEach(function (): void {
+    $this->artisan('migrate')->assertSuccessful();
+});
+
+afterEach(fn () => DB::table('cmz_outbox_messages')->truncate());
 
 final class RecordingConsumer implements OutboxConsumer
 {
@@ -121,14 +125,17 @@ it('reschedules a failed delivery with backoff and delivers it later', function 
     $consumer->failing = true;
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', []));
 
+    $before = new DateTimeImmutable(DB::scalar('select now()'));
     $failed = app(OutboxRelay::class)->relay(10);
+    $after = new DateTimeImmutable(DB::scalar('select now()'));
     $row = DB::table('cmz_outbox_messages')->first();
 
     expect([$failed->claimed, $failed->delivered, $failed->failed])->toBe([1, 0, 1])
         ->and($row->attempts)->toBe(1)
         ->and($row->delivered_at)->toBeNull()
         ->and($row->last_error)->toBe('RuntimeException: crm is down')
-        ->and(DB::scalar("select available_at - now() = interval '30 seconds' from cmz_outbox_messages"))->toBeTrue()
+        ->and(new DateTimeImmutable($row->available_at))->toBeGreaterThanOrEqual($before->modify('+30 seconds'))
+        ->and(new DateTimeImmutable($row->available_at))->toBeLessThanOrEqual($after->modify('+30 seconds'))
         ->and(app(OutboxRelay::class)->relay(10)->claimed)->toBe(0);
 
     DB::update("update cmz_outbox_messages set available_at = now() - interval '1 second'");
@@ -147,4 +154,17 @@ it('caps the retry backoff at one hour', function (): void {
 
 it('rejects a bad batch size', function (): void {
     $this->artisan('commerz:outbox:relay', ['--once' => true, '--batch' => 0])->assertFailed();
+});
+
+it('refuses delivery in a host transaction without claiming rows or calling consumers', function (): void {
+    $consumer = consumer();
+    recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', []));
+
+    DB::transaction(function () use ($consumer): void {
+        expect(fn () => app(OutboxRelay::class)->relay(10))->toThrow(LogicException::class, 'outside a transaction')
+            ->and($consumer->received)->toBe([])
+            ->and(DB::table('cmz_outbox_messages')->value('attempts'))->toBe(0);
+    });
+
+    expect(app(OutboxRelay::class)->relay(10)->delivered)->toBe(1);
 });

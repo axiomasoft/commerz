@@ -43,7 +43,7 @@ final readonly class PluginGraphCompiler
         $nodes = $this->nodes($entries);
         $dependencies = $this->dependencies($nodes);
         $order = $this->order($nodes, $dependencies);
-        $ancestors = $this->ancestors($order, $dependencies);
+        $ancestors = $this->ancestors($order, $this->dependencies($nodes, includeOptional: false));
 
         $kinds = [];
         $declaredBy = [];
@@ -138,7 +138,7 @@ final readonly class PluginGraphCompiler
      * @param  array<string, PluginNode>  $nodes
      * @return array<string, list<string>> plugin id => ids it loads after
      */
-    private function dependencies(array $nodes): array
+    private function dependencies(array $nodes, bool $includeOptional = true): array
     {
         $dependencies = [];
 
@@ -151,7 +151,7 @@ final readonly class PluginGraphCompiler
 
             $after = $node->manifest->requires;
 
-            foreach ($node->manifest->optional as $optional) {
+            foreach ($includeOptional ? $node->manifest->optional : [] as $optional) {
                 if (isset($nodes[$optional])) {
                     $after[] = $optional;
                 }

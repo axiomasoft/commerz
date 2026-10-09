@@ -273,3 +273,36 @@ it('resolves a batch of 20 variants in at most 6 queries', function (): void {
         ->and(array_values(array_unique(array_map(static fn ($snapshot): string => implode(',', $snapshot->categories), $snapshots))))->toBe(['leaf,root'])
         ->and(array_values(array_unique(array_map(static fn ($snapshot): bool => $snapshot->purchasable, $snapshots))))->toBe([true]);
 });
+
+it('preserves numeric attribute codes in snapshots and removes retired codes', function (): void {
+    $channel = selChannel();
+    $productAttribute = Catalog::attributes()->define(new DefineAttribute('7', 'integer', selText('Product')));
+    Catalog::attributes()->define(new DefineAttribute('9', 'integer', selText('Variant')));
+    $type = Catalog::productTypes()->create(new CreateProductType('numeric', selText('Numeric'), productAttributes: ['7'], variantAttributes: ['9']));
+    $product = Catalog::products()->create(new CreateProduct($type->id, 'numeric', selText('Numeric'), attributes: ['7' => 70]));
+    $variant = Catalog::variants()->create(new CreateVariant($product->id, 'NUMERIC', attributes: ['9' => 90]));
+    Catalog::listings()->publish(new PublishProduct($product->id, $channel->id));
+
+    expect(Commerz::sellables()->resolve($variant->sellable, selContext($channel))->attributes)->toBe([7 => 70, 9 => 90]);
+    Catalog::attributes()->update(new UpdateAttribute($productAttribute->id, status: AttributeStatus::Retired));
+    expect(Commerz::sellables()->resolve($variant->sellable, selContext($channel))->attributes)->toBe([9 => 90]);
+});
+
+it('keeps every axis when localized option names collide', function (bool $literalCollision): void {
+    $channel = selChannel();
+    Catalog::options()->define(new DefineOption('length', selText('Size'), ['short' => selText('Short')]));
+    Catalog::options()->define(new DefineOption('width', selText('Size'), ['wide' => selText('Wide')]));
+    $axes = ['length' => 'short', 'width' => 'wide'];
+    if ($literalCollision) {
+        Catalog::options()->define(new DefineOption('height', selText('Size [length]'), ['high' => selText('High')]));
+        $axes['height'] = 'high';
+    }
+    $type = Catalog::productTypes()->create(new CreateProductType('dimensions', selText('Dimensions'), variantAxes: array_keys($axes)));
+    $product = Catalog::products()->create(new CreateProduct($type->id, 'dimensions', selText('Dimensions')));
+    $variant = Catalog::variants()->create(new CreateVariant($product->id, 'DIM', $axes));
+    Catalog::listings()->publish(new PublishProduct($product->id, $channel->id));
+
+    expect(Commerz::sellables()->resolve($variant->sellable, selContext($channel))->options)->toBe($literalCollision
+        ? ['Size [length] [length]' => 'Short', 'Size [width]' => 'Wide', 'Size [length]' => 'High']
+        : ['Size [length]' => 'Short', 'Size [width]' => 'Wide']);
+})->with([false, true]);

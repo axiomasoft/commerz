@@ -90,3 +90,21 @@ connection). The host supplies the connection, `CustomerDirectory` (otherwise
 guests only), its own `SellableProvider`s, authorization on its transport
 (the core checks invariants and context, not permissions), a queue for the
 outbox relay and payment/delivery adapters.
+
+## Catalog projection precision and text equality
+
+`attribute_index.num` is unconstrained PostgreSQL `numeric` after migration
+`2026_10_09_100009`; built-in decimal and measure values keep up to 30 whole
+digits and 12 fractional digits, and contributed types keep their exact numeric
+facts. A narrowing rollback refuses to round values or overflow them.
+
+Text projection terms retain a 255-character prefix for the bounded index.
+`equals` and `in` also compare the complete canonical JSONB document value of
+the matching product or variant, so distinct texts sharing that prefix do not
+match one another. Attribute codes and values are SQL bindings.
+
+Migration `2026_10_09_100010` widens variant measurements and the explicit
+variant/category positions to `bigint`, matching the non-negative PHP int64
+values their commands accept. Automatic variant positions refuse an int64
+overflow before insertion. The category subtree and product assignments are
+read in the same SQL statement and PostgreSQL snapshot.

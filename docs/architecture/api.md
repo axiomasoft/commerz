@@ -245,3 +245,15 @@ final class CrmPlugin implements CommerzPlugin
 }
 // config/commerz.php: 'stock' => 'unlimited', 'customers' => CrmCustomerDirectory::class
 ```
+
+## Foundation audit corrections
+
+All catalog list commands accept `first` from 1 to 200. Variant cursors validate
+both the int64 position and the UUID before SQL. Numeric option and attribute
+codes keep their identity in generation, filters and sellable snapshots.
+
+A sellable snapshot's `options` remains a map of display labels to localized
+values. If multiple axes resolve to the same display label, the catalog appends
+`[option_code]` to disambiguate them, repeating the suffix if a literal label
+already uses that key. This preserves every axis while retaining the existing
+map contract and the labels of unambiguous options.

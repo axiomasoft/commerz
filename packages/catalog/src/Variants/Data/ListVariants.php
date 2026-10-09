@@ -19,8 +19,8 @@ final readonly class ListVariants
         public int $first = 100,
         public ?Cursor $after = null,
     ) {
-        if ($first < 1 || $first > 500) {
-            throw new InvalidCommand('first', 'must be from 1 to 500', 'common.invalid_page_size');
+        if ($first < 1 || $first > 200) {
+            throw new InvalidCommand('first', 'must be from 1 to 200', 'common.invalid_page_size');
         }
     }
 }

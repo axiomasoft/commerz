@@ -11,6 +11,7 @@ use Commerz\Catalog\Options\Data\AddOptionValues;
 use Commerz\Catalog\Options\Data\DefineOption;
 use Commerz\Catalog\Products\Data\ArchiveProduct;
 use Commerz\Catalog\Products\Data\CreateProduct;
+use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Data\ProductView;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
 use Commerz\Catalog\ProductTypes\Data\CreateProductType;
@@ -37,6 +38,7 @@ use Commerz\Catalog\Variants\Exceptions\VariantNotFound;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Measures\LocalizedText;
+use Commerz\Pagination\Cursor;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -372,3 +374,51 @@ it('keeps an option value of a foreign option out of a combination (CAT-01 forei
         ->where('option_id', $size->id->value)
         ->update(['option_value_id' => $color->values[0]->id->value])))->toThrow(QueryException::class);
 });
+
+it('generates variants for numeric option codes without renumbering axes', function (): void {
+    $label = varLabel('Numeric');
+    Catalog::options()->define(new DefineOption('7', $label, ['a' => $label, 'b' => $label]));
+    Catalog::options()->define(new DefineOption('9', $label, ['c' => $label, 'd' => $label]));
+    $type = Catalog::productTypes()->create(new CreateProductType('numeric', $label, variantAxes: ['7', '9']));
+    $product = Catalog::products()->create(new CreateProduct($type->id, 'numeric', $label));
+    $generated = Catalog::variants()->generate(new GenerateVariants($product->id, ['7' => ['a', 'b'], '9' => ['c', 'd']], 'NUM-{7}-{9}'));
+
+    expect($generated->created)->toHaveCount(4)
+        ->and($generated->created[0]->axes)->toBe([7 => 'a', 9 => 'c'])
+        ->and($generated->created[3]->axes)->toBe([7 => 'b', 9 => 'd']);
+});
+
+it('round trips int64 measurements and positions accepted by variant commands', function (): void {
+    [, $gift] = varCatalog();
+    $large = 2_147_483_648;
+    $variant = Catalog::variants()->create(new CreateVariant($gift->id, 'LARGE', weightGrams: $large, dimensions: new Dimensions($large, $large, $large), position: $large));
+    expect($variant->weightGrams)->toBe($large)
+        ->and($variant->dimensions->lengthMm)->toBe($large)
+        ->and($variant->position)->toBe($large);
+    $updated = Catalog::variants()->update(new UpdateVariant($variant->id, weightGrams: PHP_INT_MAX, position: PHP_INT_MAX));
+    expect($updated->weightGrams)->toBe(PHP_INT_MAX)->and($updated->position)->toBe(PHP_INT_MAX);
+});
+
+it('rejects a malformed variant cursor before it reaches PostgreSQL', function (string $position): void {
+    [, $gift] = varCatalog();
+    expect(fn () => Catalog::variants()->list(new ListVariants($gift->id, after: Cursor::after($position))))
+        ->toThrow(InvalidCommand::class, 'valid cursor');
+})->with([
+    'invalid UUID layout' => ['0:'.str_repeat('-', 36)],
+    'position exceeds int64' => ['999999999999999999999:0190a0a0-0000-7000-8000-000000000001'],
+]);
+
+it('uses the catalog page limit for variants', function (): void {
+    expect((new ListVariants(ProductId::generate(), first: 200))->first)->toBe(200)
+        ->and(fn () => new ListVariants(ProductId::generate(), first: 201))->toThrow(InvalidCommand::class);
+});
+
+it('refuses to append positions beyond int64 without writing a variant', function (bool $generate): void {
+    [$tee] = varCatalog();
+    Catalog::variants()->create(new CreateVariant($tee->id, 'LAST', ['color' => 'red', 'size' => 's'], position: $generate ? PHP_INT_MAX - 1 : PHP_INT_MAX));
+    expect(fn () => $generate
+        ? varGenerate($tee)
+        : Catalog::variants()->create(new CreateVariant($tee->id, 'NEXT', ['color' => 'blue', 'size' => 'm'])))
+        ->toThrow(InvalidCommand::class, 'int64');
+    expect(DB::table('cmz_variants')->where('product_id', $tee->id->value)->count())->toBe(1);
+})->with([false, true]);

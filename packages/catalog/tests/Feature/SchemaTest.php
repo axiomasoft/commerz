@@ -377,3 +377,26 @@ it('drops and recreates the whole catalog schema on rollback and migrate', funct
         expect(DB::getSchemaBuilder()->hasTable(catalogTable($logical)))->toBeTrue($logical);
     }
 });
+
+it('widens an installed numeric projection without changing existing values and refuses a lossy rollback', function (): void {
+    $migration = require __DIR__.'/../../database/migrations/2026_10_09_100009_widen_commerz_attribute_numbers.php';
+    $migration->down();
+    $ids = catalogSeed();
+    $attribute = Uuid7::generate();
+    catalogInsert('attributes', ['id' => $attribute, 'code' => 'number', 'type' => 'decimal', 'name' => '{"en":"Number"}']);
+    catalogInsert('attribute_index', ['product_id' => $ids['product'], 'attribute_id' => $attribute, 'num' => '123.123456789012']);
+    $migration->up();
+
+    expect(DB::table(catalogTable('attribute_index'))->value('num'))->toBe('123.123456789012');
+    DB::table(catalogTable('attribute_index'))->update(['num' => '123.1234567890123']);
+    expect(fn () => DB::transaction(fn () => $migration->down()))->toThrow(LogicException::class, 'without losing precision')
+        ->and(DB::table(catalogTable('attribute_index'))->value('num'))->toBe('123.1234567890123');
+});
+
+it('refuses an int64 narrowing rollback without changing a stored measurement', function (): void {
+    $ids = catalogSeed();
+    DB::table(catalogTable('variants'))->where('id', $ids['variant'])->update(['weight_grams' => PHP_INT_MAX]);
+    $migration = require __DIR__.'/../../database/migrations/2026_10_09_100010_widen_commerz_catalog_integers.php';
+    expect(fn () => DB::transaction(fn () => $migration->down()))->toThrow(QueryException::class)
+        ->and(DB::table(catalogTable('variants'))->where('id', $ids['variant'])->value('weight_grams'))->toBe(PHP_INT_MAX);
+});

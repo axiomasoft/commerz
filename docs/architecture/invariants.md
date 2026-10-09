@@ -106,7 +106,8 @@ a batch of any size.
 
 - `Transactions::run(callable $work, int $lockTimeoutMs = 3000)` runs on the
   Commerz connection, sets `lock_timeout`, and joins an ambient transaction
-  when nested.
+  when nested through a savepoint. Each failed nested operation rolls back
+  its own writes and pending events while the host may continue (D20).
 - `OperationReceipts::once(scope, key, fingerprint, work, encode, decode)`
   locks `(scope, key)` inside the transaction: absent → run and store; same
   fingerprint → return the stored result; different fingerprint →
@@ -115,5 +116,6 @@ a batch of any size.
 - `Outbox::record(IntegrationEvent)` requires an open transaction. The relay
   `commerz:outbox:relay` takes batches with `FOR UPDATE SKIP LOCKED`, delivers
   to the event dispatcher and registered `outbox_consumer` contributions, and
-  marks delivery. Delivery is at least once; consumers deduplicate by
+  marks delivery. A relay refuses to run inside a transaction on the Commerz
+  connection, before claiming messages or calling consumers. Delivery is at least once; consumers deduplicate by
   `event_id`. Domain (Laravel) events are dispatched after commit.

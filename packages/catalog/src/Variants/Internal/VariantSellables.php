@@ -165,14 +165,38 @@ final readonly class VariantSellables implements SellableProvider
             ->whereIn('vov.variant_id', $variantIds)
             ->orderBy('po.position')
             ->orderBy('o.code')
-            ->select(['vov.variant_id', 'o.name as option_name', 'ov.label as value_label'])
+            ->select(['vov.variant_id', 'o.name as option_name', 'o.code as option_code', 'ov.label as value_label'])
             ->get();
+
+        $axes = [];
+
+        foreach ($rows as $row) {
+            $axes[Rows::string($row, 'variant_id')][] = [
+                'name' => Rows::localized($row, 'option_name')->resolve($locale),
+                'code' => Rows::string($row, 'option_code'),
+                'value' => Rows::localized($row, 'value_label')->resolve($locale),
+            ];
+        }
 
         $options = [];
 
-        foreach ($rows as $row) {
-            $name = Rows::localized($row, 'option_name')->resolve($locale);
-            $options[Rows::string($row, 'variant_id')][$name] = Rows::localized($row, 'value_label')->resolve($locale);
+        foreach ($axes as $variant => $variantAxes) {
+            $names = array_count_values(array_column($variantAxes, 'name'));
+            $values = [];
+
+            foreach ($variantAxes as $axis) {
+                $name = $axis['name'];
+                $key = $names[$name] > 1 ? $name.' ['.$axis['code'].']' : $name;
+
+                // Also avoid a generated key colliding with another axis's literal display name.
+                while (array_key_exists($key, $values) || ($key !== $name && array_key_exists($key, $names))) {
+                    $key .= ' ['.$axis['code'].']';
+                }
+
+                $values[$key] = $axis['value'];
+            }
+
+            $options[$variant] = $values;
         }
 
         return $options;
@@ -243,7 +267,10 @@ final readonly class VariantSellables implements SellableProvider
     /** @return array<array-key, mixed> product and variant attribute documents merged; their keys never overlap */
     private function document(object $row): array
     {
-        return [...Documents::decode(Rows::string($row, 'product_attributes')), ...Documents::decode(Rows::string($row, 'variant_attributes'))];
+        return array_replace(
+            Documents::decode(Rows::string($row, 'product_attributes')),
+            Documents::decode(Rows::string($row, 'variant_attributes')),
+        );
     }
 
     /**
