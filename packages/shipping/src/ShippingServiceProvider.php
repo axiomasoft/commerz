@@ -9,6 +9,8 @@ use Commerz\Plugins\CommerzPlugins;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Commerz\Shipping\Common\Internal\ShippingConfig;
 use Commerz\Shipping\Internal\ShippingPlugin;
+use Commerz\Shipping\Methods\Contracts\Methods;
+use Commerz\Shipping\Methods\Internal\DatabaseMethods;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Commerz\Shipping\Zones\Internal\DatabaseZones;
 use Illuminate\Contracts\Config\Repository;
@@ -31,6 +33,8 @@ final class ShippingServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(Zones::class, DatabaseZones::class);
+        $this->app->singleton(Methods::class, DatabaseMethods::class);
+        $this->app->singleton(Shipping::class);
 
         CommerzPlugins::builtIn(ShippingPlugin::class);
 

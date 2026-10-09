@@ -77,6 +77,18 @@ final class Rows
         return is_array($decoded) ? $decoded : throw new RuntimeException("Column '{$column}' is not a JSON object or list.");
     }
 
+    /** @return array<array-key, string> a JSON object of strings, e.g. a localized text */
+    public static function strings(object $row, string $column): array
+    {
+        $strings = [];
+
+        foreach (self::json($row, $column) as $key => $value) {
+            $strings[$key] = is_string($value) ? $value : throw new RuntimeException("Column '{$column}' holds a value that is not a string.");
+        }
+
+        return $strings;
+    }
+
     public static function date(object $row, string $column): DateTimeImmutable
     {
         return new DateTimeImmutable(self::string($row, $column));

@@ -1,0 +1,189 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P6.4",
+  "title": "Methods and rates: create/update/setRates/channels/enable/disable/archive/list, root and facade",
+  "status": "done",
+  "summary": "Модуль Methods: ZoneRate и команды create/update/setRates/assignChannels/unassignChannels/enable/disable/archive, find/findByCode/list, DatabaseMethods с блокировками shipping_methods → shipping_zones, RateCodec на запись и RateView с unsupported на чтение, событие MethodChanged; корень Shipping (zones(), methods()) и фасад; биндинги.",
+  "why": "Тарифы — источник цены доставки. Риски: тариф на архивную зону из-за гонки setRates×archiveZone (закрыто FOR SHARE зон); дубль (зона, валюта); freeAbove в чужой валюте; неизвестный перевозчик; канал без проверки; потерянный конфиг правила (не через RateCodec).",
+  "scope": {
+    "include": [
+      "Methods/Contracts/Methods, Methods/Data/{CreateMethod, UpdateMethod, SetMethodRates, ZoneRate, AssignMethodChannels, UnassignMethodChannels, EnableMethod, DisableMethod, ArchiveMethod, ListMethods, MethodView, RateView}, Methods/Enums/MethodStatus, Methods/Events/MethodChanged, Methods/Exceptions/{MethodNotFound, MethodArchived} по knowledge/shipping-design#methods",
+      "Methods/Internal/{DatabaseMethods, MethodRows}",
+      "Shipping.php (корень #[Api], final readonly: zones(), methods()) и Facades/Shipping.php; options() и bookings() добавят P6.5/P6.6",
+      "ShippingServiceProvider: singleton Methods → DatabaseMethods, Shipping",
+      "тесты: tests/Feature/Methods/MethodsTest.php (create с тарифами и каналами; unknown_carrier; unknown_rate/invalid_rate_config с путём rates.<i>.rate.params.<f>; duplicate_rate; too_many_rates; freeAbove чужой валюты; зона архивная/нет; канал архивный → ошибка Channels; setRates заменяет набор; update; enable/disable/archive и MethodArchived; findByCode; list по status/channel/zone с курсором; RateView::unsupported после удаления плагина-тарифа из конфига; taxIncluded по умолчанию из конфига; MethodChanged после коммита), tests/Feature/Methods/MethodLockTest.php (Concurrency::run: setRates на зону × archive той же зоны — итог согласован: либо тариф записан до архивации, либо setRates получил ZoneArchived), tests/Feature/Methods/Helpers.php, tests/Feature/ShippingRootTest.php (фасад и корень)"
+    ],
+    "exclude": [
+      "расчёт цены и стадия (P6.5)",
+      "брони (P6.6)"
+    ]
+  },
+  "depends_on": [
+    "P6.2",
+    "P6.3"
+  ],
+  "decisions": [
+    "D28"
+  ],
+  "reads": [
+    {
+      "why": "образец модуля с правилами через codec, каналами и статусами",
+      "required": true,
+      "path": "packages/promotions/src/Definitions/Internal/DatabasePromotionDefinitions.php"
+    },
+    {
+      "why": "образец корня",
+      "required": true,
+      "path": "packages/pricing/src/Pricing.php"
+    },
+    {
+      "why": "образец фасада",
+      "required": true,
+      "path": "packages/pricing/src/Facades/Pricing.php"
+    },
+    {
+      "why": "assertActive для назначения каналов",
+      "required": true,
+      "path": "packages/core/src/Stores/Contracts/Channels.php"
+    },
+    {
+      "why": "образец тестов модуля",
+      "required": true,
+      "path": "packages/promotions/tests/Feature/Definitions/PromotionDefinitionsTest.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/shipping/src/Methods/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Shipping.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Facades/Shipping.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/ShippingServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/shipping/tests/Feature/Methods/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Feature/ShippingRootTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, вес — int граммы.",
+    "Расхождение с knowledge/shipping-design, D28, D29, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid без FK; shipping пишет только в таблицы shipping_*.",
+    "Правила delivery_rate и стадия delivery не пишут в БД и не ходят в сеть; время — CommerceContext::$at.",
+    "Порядок блокировок пакета: shipping_methods (FOR UPDATE) → shipping_zones (FOR SHARE, id ASC); archive/restore/setMembers зоны держат только свою зону.",
+    "Правило тарифа пишется и читается только через RateCodec."
+  ],
+  "guidance": "Ключевые секции (документ уже в контексте фазы): shipping-design#methods — команды, проверки, блокировки — ядро item'а; shipping-design#schema — таблицы методов, каналов, тарифов; shipping-design#spi — RateCodec::encode/decode и RateView::unsupported; shipping-design#api — пример API, коды ошибок, события. MethodView::name — LocalizedText из jsonb name; запись — json_encode($name->texts). ZoneRate::taxIncluded null → ShippingConfig::$taxIncluded при записи (в БД всегда bool). RateView::rate — RateSpec(key, канонические params из БД); unsupported — reason LoadedRate или null. Корень — final readonly class Shipping с конструктором из контрактов, как Pricing.",
+  "examples": [
+    {
+      "path": "packages/promotions/src/Promotions.php"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Data/CreatePromotion.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Shipping",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Methods API",
+    "корень Shipping и фасад",
+    "тест блокировок setRates×archiveZone"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T19:10:32Z",
+    "finished_at": "2026-10-09T19:17:02Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "b31ebfd5-5c87-43b5-92e6-a9140c30685e"
+    },
+    "notes": "Methods module (create/update/setRates/channels/enable/disable/archive/find/findByCode/list), DatabaseMethods with methods→zones lock order, RateCodec on write and unsupported on read, MethodChanged; Shipping root, facade, bindings; 213 Shipping tests incl. setRates×archiveZone lock tests green.",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T19:17:02Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T19:17:02Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T19:17:02Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T19:17:02Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T19:17:02Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T19:17:02Z"
+}
