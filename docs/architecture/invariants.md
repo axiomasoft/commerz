@@ -9,9 +9,11 @@ one enforcement point; adding a write path that skips it is a defect.
 | ID | Invariant | Owner / enforcement point | Bypass closed | Test |
 |---|---|---|---|---|
 | INV-01 | A keyed command applies at most once in its scope; a retry with another payload is a conflict | `OperationReceipts::once` (core) + the owner's natural unique key | calling an `Internal` handler directly (arch gate: `Internal` is closed) | retry, concurrent retry, different payload |
-| INV-02 | `0 ≤ reserved ≤ on_hand` per level (unless `allow_negative`) | inventory: conditional `UPDATE … SET reserved = reserved + :q WHERE id = :id AND on_hand - reserved >= :q` + `CHECK (reserved >= 0)` | read-then-write in PHP (forbidden; only conditional `UPDATE` or `FOR UPDATE`) | 8 processes × last unit |
-| INV-03 | Every `on_hand` change is exactly one `cmz_stock_movements` row in the same transaction with a consistent `balance_after` | inventory `StockLedger`, the only writer of levels | writing a level without a movement (arch: only `Internal\StockLedger` writes `cmz_stock_levels`) | reconcile reports 0 differences after load |
-| INV-04 | Reservation: `quantity = consumed + released + outstanding`; consume, release and expire never free a unit twice | inventory reservation state machine, reservation row `FOR UPDATE` | expiry worker racing consume | expire vs consume race |
+| INV-02 | `reserved ≥ 0`, `on_hand ≥ 0`, `safety_stock ≥ 0` per level (`CHECK`); a reservation of a tracked item never makes `reserved > on_hand − safety_stock`; the excess exists only for `backorder` items or after a physical decrease (`adjust`/`count`), which publishes `StockShortfall` | inventory `StockLedger::hold`: conditional `UPDATE … RETURNING` under the level lock; allocation is computed over the locked rows | read-then-write in PHP; allocating from an unlocked read (Vendure ≤ 3.7.3) | 8 processes × last unit; 8 × a kit with a shared component |
+| INV-03 | Every `on_hand` change is exactly one `cmz_stock_movements` row in the same transaction, and `balance_after` is the new `on_hand` | inventory `StockLedger`, the only writer of levels and movements (`LedgerBoundaryTest`: the logical names `stock_levels` / `stock_movements` appear only in `StockLedger`, `LevelQueries` and `Reconciler`) | writing a level without a movement | `commerz:inventory:reconcile` reports 0 differences after concurrent load; a corrupted `on_hand` is reported, never repaired |
+| INV-04 | Reservation line: `units = consumed + released + expired + outstanding`, `outstanding ≥ 0`; `reserved(level) = Σ outstanding × quantity_per_unit`; consume, release and expire never free a unit twice | `CHECK` on the line; the demand header `FOR NO KEY UPDATE` serializes consume, release and expire of one demand; lines `FOR NO KEY UPDATE`; expiry takes foreign headers `SKIP LOCKED` only | the sweeper racing consume; a double release | expire vs consume race (2 × 20 repeats); release twice; `--repair-reserved` rebuilds `reserved` from the lines |
+| INV-05 | One demand holds at most one set of reservations; retrying `reserve` never reserves twice | `UNIQUE(demand)` on the header, `INSERT … ON CONFLICT DO NOTHING` as the first step | two parallel reserves of one demand | 4 processes × one demand → one set of lines |
+| INV-06 | Transfer: `received + lost ≤ quantity` per line; dispatch takes the stock from the source exactly once | transfer row `FOR NO KEY UPDATE` + state machine (draft → in_transit → completed \| cancelled); source stock held by a reservation of demand `transfer:{id}` from creation; `CHECK` on the line | double dispatch or receive | dispatch twice → `InvalidTransferState`; repeated receive with a key |
 | CAT-01 | An axis combination is unique within a product | catalog: `UNIQUE(product_id, option_signature)` over the sorted UUIDs of the option values + composite foreign keys of `cmz_variant_option_values` (value ∈ option ∈ the product's axes) + product row `FOR NO KEY UPDATE` in every variant-structure mutation | generating variants from two requests; inserting a value of a foreign option | concurrent generate (exactly N variants, no exception); raw insert of a foreign value → foreign-key error |
 | CAT-02 | An attribute value passed its type and domain for every writer | catalog `AttributeWriter`, the only writer of attribute documents and `cmz_attribute_index`; definitions read `FOR SHARE` while writing; imports go through the contract | direct JSONB `UPDATE`; a write racing a status or `filterable` change | import with an invalid value leaves document and projection untouched; arch test: only the writer writes `attributes` documents |
 | CAT-03 | Facet `red AND M` means one variant with both values | catalog `ProductQuery`: every filter of a search sits inside one `EXISTS` over an active variant (`cmz_attribute_index.variant_id`, `cmz_variant_option_values`) | filtering by product instead of variant | red/S + blue/M → 0 results |
@@ -66,6 +68,31 @@ Cancelling or expiring an unpaid order runs in one `Transactions::run`: order
 `promotions.restore_on` policy (default: expired and cancelled before payment)
 → state change → outbox.
 
+## Inventory lock order
+
+Inside the *stock* step of the global order, inventory locks in this order
+(D21):
+
+```text
+transfer row → reservation header of the demand
+  → stock levels ORDER BY (stock_item_id, location_id), one FOR NO KEY UPDATE statement
+  → reservation lines ORDER BY id FOR NO KEY UPDATE
+```
+
+`FOR NO KEY UPDATE`, not `FOR UPDATE`: movement and reservation rows reference
+the level by foreign key and take `FOR KEY SHARE` on it at `INSERT`. A command
+locks every level it needs in one statement; a second lock call can deadlock
+against another command. Lazy expiry and the sweeper take foreign headers only
+with `SKIP LOCKED` and only lines on levels already locked, so they never wait
+for another demand.
+
+`commerz:inventory:reconcile` reads one read-only `REPEATABLE READ` snapshot
+without locks (`ledger_sum`, `ledger_balance`, `reserved_sum`,
+`reservation_state`, `transfer_state`; exit 1 on any discrepancy).
+`--repair-reserved` rebuilds only `reserved` from the reservation lines under
+the level locks; `on_hand` is never repaired automatically (correct it with a
+count).
+
 ## Catalog lock order
 
 Inside the catalog an operation locks in this order, so concurrent catalog
@@ -85,10 +112,12 @@ a batch of any size.
 
 | Operation A | Operation B | Shared resource | Protection |
 |---|---|---|---|
-| reserve (order 1) | reserve (order 2) | stock level | conditional `UPDATE` on the level row |
-| reserve | adjust / count | stock level | both through `StockLedger` with level `FOR UPDATE` |
-| consume (shipment) | expire (worker) | reservation row | reservation `FOR UPDATE` + state check |
-| transfer dispatch | reserve at the source | source stock level | the same lock order |
+| reserve (order 1) | reserve (order 2) | stock levels | ordered `FOR NO KEY UPDATE` + conditional `UPDATE` |
+| reserve (demand X) | reserve (demand X) | demand header | `UNIQUE(demand)`; the second waits and receives the repeat |
+| reserve | adjust / count / receive | stock level | both through `StockLedger::lock` |
+| consume (shipment) | expire (worker) | demand header and lines | header `FOR NO KEY UPDATE`; the sweeper takes it `SKIP LOCKED` and re-checks |
+| count with `expectedOnHand` | reserve / consume | `on_hand` | the compare-and-set runs under the level lock |
+| transfer create / dispatch | reserve at the source | source stock level | the same lock order; the draft holds its stock as a reservation |
 | consume usage (order 1) | consume usage (order 2) | coupon/promotion counter | conditional `UPDATE used < limit` |
 | restore usage | consume usage | counter | restore is idempotent by `orderRef` (`cmz_promotion_usages` rows) |
 | place order | cart edit | cart row | `FOR UPDATE` + version |

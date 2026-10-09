@@ -69,6 +69,8 @@ prices never changes a placed order (ORD-02).
 | Store | business unit: seller, default currency, order numbering | `cmz_stores` (core) |
 | Channel | point of sale: website, POS, marketplace, B2B, CRM manager | `cmz_channels` (core): store, currencies, locales, `prices_include_tax`, status |
 | Stock location | warehouse, shop, pickup point | `cmz_stock_locations` (inventory); channel ↔ locations with priority in `cmz_stock_sources` |
+| Stock item and level | what lies on the shelf; its quantity per location | `cmz_stock_items` (policy `tracked \| backorder \| untracked`), `cmz_stock_item_links` (sellable → item × `quantity_per_unit`, several rows make a kit), `cmz_stock_levels` (`on_hand`, `reserved`, `safety_stock`, `version`), append-only `cmz_stock_movements` |
+| Reservation and transfer | held stock; goods moving between locations | `cmz_stock_reservations` (header per demand) + `_reservation_lines`; `cmz_stock_transfers` + `_transfer_lines` |
 | Customer | the host's buyer | `CustomerRef` + `CustomerDirectory` port; groups drive prices and promotions |
 | Actor | who executes a command (operator, customer, system) | `ActorRef` |
 

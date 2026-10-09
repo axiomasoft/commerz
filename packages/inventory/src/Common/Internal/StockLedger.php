@@ -245,6 +245,22 @@ final class StockLedger
         return $this->journal($level, $returned, -$quantity, $kind, $reference, null, $actor);
     }
 
+    /**
+     * Sets the level's `reserved` to `$quantity`, the sum its outstanding reservation lines hold: the reconciler's
+     * only repair. On-hand is never touched here; it is corrected by a count.
+     */
+    public function repairReserved(LevelRow $level, int $quantity): LevelRow
+    {
+        if ($quantity < 0) {
+            throw new LogicException('Reserved stock is zero or more.');
+        }
+
+        $returned = $this->update($level, 'reserved = ?', [$quantity], 'true', [])
+            ?? throw new LogicException("Level {$level->id} vanished under its lock.");
+
+        return $this->track($level, $level->with($returned), 0, null, null);
+    }
+
     public function setSafety(LevelRow $level, int $quantity): LevelRow
     {
         if ($quantity < 0) {

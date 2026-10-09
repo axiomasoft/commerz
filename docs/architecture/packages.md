@@ -11,7 +11,7 @@ packages may depend on each other.
 |---|---|---|---|---|---|
 | `packages/core` | `axiomasoft/commerz` | `Commerz\` | `store`, `channel`, `schema`, `operation`, `outbox` | defaults: unlimited stock, snapshot price, guest customers, null promotion usage | `illuminate/*` ^13, `brick/math` |
 | `packages/catalog` | `axiomasoft/commerz-catalog` | `Commerz\Catalog\` | `product`, `variant`, `option`, `attribute`, `category`, `listing` | `SellableProvider` (key `variant`) | core |
-| `packages/inventory` | `axiomasoft/commerz-inventory` | `Commerz\Inventory\` | `stock` (`cmz_stock_locations`, `_items`, `_item_links`, `_levels`, `_movements`, `_reservations`, `_transfers`, `_sources`) | `StockAvailability`, `StockReservations` | core |
+| `packages/inventory` | `axiomasoft/commerz-inventory` | `Commerz\Inventory\` | `stock` (`cmz_stock_locations`, `_items`, `_item_links`, `_levels`, `_movements`, `_reservations`, `_transfers`, `_sources`) | `StockAvailability`, `StockReservations`, `StockReturns` | core |
 | `packages/pricing` | `axiomasoft/commerz-pricing` | `Commerz\Pricing\` | `price`, `tax` | `PriceResolver`, quote stage `tax` | core |
 | `packages/promotions` | `axiomasoft/commerz-promotions` | `Commerz\Promotions\` | `promotion`, `coupon` | `PromotionUsage`, quote stages `promotions.*` | core |
 | `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\Shipping\` | `shipping` (`cmz_shipping_zones`, `_methods`, `_rates`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |
@@ -46,7 +46,7 @@ public categories it needs (see [Code layout](#code-layout)).
 | `Stores` | `Contracts\Stores`, `Contracts\Channels`, `StoreId`, `ChannelId`, commands, views, events |
 | `Pagination` | `Page<T>`, `Cursor` |
 | `Ports\Sellables` | `Sellables`, `SellableProvider`, `SellableSnapshot`, `SellableKind`, `SellableUnavailable` |
-| `Ports\Stock` | `StockAvailability`, `StockReservations`, DTOs, `InsufficientStock` |
+| `Ports\Stock` | `StockAvailability`, `StockReservations`, `StockReturns`, DTOs, `InsufficientStock` |
 | `Ports\Prices` | `PriceResolver`, `ResolvePrice`, `ResolvedPrice` |
 | `Ports\Promotions` | `PromotionUsage`, `ConsumePromotionUsage`, `RestorePromotionUsage`, `UsageLimitReached` |
 | `Ports\Delivery` | `DeliveryOptions`, `ShipmentBooking`, `DeliveryRequest`, `DeliveryOption`, `Address`, `Parcel` |

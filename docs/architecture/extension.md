@@ -59,7 +59,7 @@ packages.
 | `outbox_consumer` | core | — |
 | `attribute_type` | catalog (`Commerz\Catalog\Attributes\Contracts\AttributeType`) | `text`, `localized_text`, `integer`, `decimal`, `boolean`, `date`, `enum`, `multi_enum`, `measure`, `reference` |
 | `product_kind` | catalog (`Commerz\Catalog\ProductTypes\Contracts\ProductKind`: `key()`, `sellableKind()`, `requiresShipping()`) | `physical`, `digital`, `service` |
-| `allocation_strategy` | inventory | `priority`, `single_location` |
+| `allocation_strategy` | inventory (`Commerz\Inventory\Allocation\Contracts\AllocationStrategy`: `key()`, `allocate()`, `capacity()`; pure, no I/O) | `priority` (sources in priority order, a kit unit from one location), `single_location` (all needs of a request from one location). The plan is validated against the locked levels (`InvalidAllocationPlan`); selected by `commerz-inventory.allocation_strategy` |
 | `tax_calculator` | pricing | `rates` |
 | `promotion_condition` | promotions | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`, `channel.in` |
 | `promotion_effect` | promotions | `line.percent_off`, `line.fixed_off`, `order.percent_off`, `order.fixed_off`, `delivery.percent_off`, `buy_x_get_y` |
@@ -114,7 +114,7 @@ Every port has a core default so a partial installation works:
 
 | Port | Core default |
 |---|---|
-| `StockAvailability`, `StockReservations` | `UnlimitedStock` when `commerz.stock = unlimited`; `inventory` without the package → `InvalidConfiguration` on first use of the port |
+| `StockAvailability`, `StockReservations`, `StockReturns` | `UnlimitedStock` when `commerz.stock = unlimited`; `inventory` without the package → `InvalidConfiguration` on first use of the port |
 | `PriceResolver` | `SnapshotPriceResolver` (sellable base price, otherwise `PriceNotFound`) |
 | `PromotionUsage` | `NullPromotionUsage` (nothing applied) |
 | `CustomerDirectory` | guests only |

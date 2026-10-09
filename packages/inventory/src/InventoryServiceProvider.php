@@ -10,7 +10,9 @@ use Commerz\Inventory\Common\Internal\InventoryConfig;
 use Commerz\Inventory\Common\Internal\LevelQueries;
 use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Internal\Console\ExpireReservationsCommand;
+use Commerz\Inventory\Internal\Console\ReconcileStockCommand;
 use Commerz\Inventory\Internal\InventoryPlugin;
+use Commerz\Inventory\Internal\Reconciler;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Items\Internal\DatabaseStockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
@@ -67,6 +69,7 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->singleton(StockAvailability::class, DatabaseAvailability::class);
         $this->app->singleton(StockReturns::class, DatabaseStockReturns::class);
         $this->app->singleton(Transfers::class, DatabaseTransfers::class);
+        $this->app->singleton(Reconciler::class);
         $this->app->singleton(Inventory::class);
 
         CommerzPlugins::builtIn(InventoryPlugin::class);
@@ -85,7 +88,7 @@ final class InventoryServiceProvider extends ServiceProvider
                 __DIR__.'/../config/commerz-inventory.php' => config_path('commerz-inventory.php'),
             ], 'commerz-inventory-config');
 
-            $this->commands([ExpireReservationsCommand::class]);
+            $this->commands([ExpireReservationsCommand::class, ReconcileStockCommand::class]);
         }
     }
 }

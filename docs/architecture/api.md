@@ -122,10 +122,13 @@ $page = Catalog::products()->list(new ListProducts(
 
 ## Inventory: `Inventory`
 
-`locations()`, `items()`, `sources()`, `stock()` (receive, adjust, count,
-levels), `reservations()` (the `StockReservations` port), `transfers()`,
-`availability()` (the `StockAvailability` port), `movements()` (read-only
-ledger).
+`locations()`, `items()` (stock items and sellable links), `sources()`
+(channel → location with priority), `stock()` (`StockLevels`: receive, adjust,
+count with `expectedOnHand`, safety stock, levels), `reservations()` (the
+`StockReservations` port plus `find` and `expire`), `transfers()` (create →
+dispatch → receive, or cancel a draft), `availability()` (the
+`StockAvailability` port), `movements()` (read-only ledger). The package also
+implements the `StockReturns` port.
 
 ```php
 Inventory::items()->link(new LinkSellable(sellable: SellableRef::of('variant', $v->id), item: $item->id, quantityPerUnit: 1));
@@ -140,7 +143,23 @@ $result = Inventory::reservations()->reserve(new ReserveStock(
 Inventory::reservations()->consume(new ConsumeReservation(
     demand: 'order:01J…', sellable: SellableRef::of('variant', $v->id), quantity: 3, reference: 'fulfillment:…',
 ));
+
+app(StockReturns::class)->restock(new RestockStock(               // StockReturns: explicit, idempotent per reference
+    reference: 'return:01J…', channel: $channel->id,
+    lines: [new RestockLine(SellableRef::of('variant', $v->id), quantity: 1)], locationCode: 'msk-1',
+));
+
+$t = Inventory::transfers()->create(new CreateTransfer($wh->id, $pvz->id, [new TransferLine($item->id, 5)]));
+Inventory::transfers()->dispatch(new DispatchTransfer($t->id));                       // takes the stock off the source
+Inventory::transfers()->receive(new ReceiveTransfer($t->id, [new TransferReceipt($item->id, received: 4, lost: 1)]));
 ```
+
+`ConsumeReservation::$locationCode` ships only from that location (null lets
+inventory choose). A transfer holds its stock at the source as a reservation
+of demand `transfer:{id}` from creation; goods in transit live on the
+transfer's lines, not on a level. `commerz:inventory:reconcile` verifies the
+ledger, reservations and transfers (see *Inventory lock order* in
+`invariants.md`).
 
 Reservations are addressed by `demand` (the owner's reference), not by an
 internal reservation id, so sales never needs inventory identifiers.
