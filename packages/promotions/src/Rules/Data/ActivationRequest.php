@@ -13,7 +13,7 @@ final readonly class ActivationRequest
 {
     /**
      * @param  list<string>  $codes  as presented, cut to the configured maximum; the activator normalizes them
-     * @param  list<PromotionSummary>  $promotions  the candidates of this activator in this stage
+     * @param  list<PromotionSummary>  $promotions  the candidates of this activator, of every stage of the quote
      */
     public function __construct(public CommerceContext $context, public array $codes, public array $promotions) {}
 }
