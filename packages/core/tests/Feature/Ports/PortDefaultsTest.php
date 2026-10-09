@@ -30,6 +30,7 @@ use Commerz\Ports\Promotions\Internal\NullPromotionUsage;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Internal\UnlimitedStock;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Fakes\FakePrices;
@@ -73,6 +74,7 @@ it('binds the core defaults when no package implements a port', function (): voi
         ->and(app(CustomerDirectory::class))->toBeInstanceOf(GuestOnlyDirectory::class)
         ->and(app(StockAvailability::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(StockReservations::class))->toBeInstanceOf(UnlimitedStock::class)
+        ->and(app(StockReturns::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(DeliveryOptions::class)->options(new DeliveryRequest(pdContext(), new Address('RU'), new Parcel(100, Money::zero('RUB')))))->toBe([])
         ->and(app(CustomerDirectory::class)->find(CustomerRef::of('user', '1')))->toBeNull();
 });

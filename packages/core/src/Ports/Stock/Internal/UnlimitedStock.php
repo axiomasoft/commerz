@@ -6,6 +6,7 @@ namespace Commerz\Ports\Stock\Internal;
 
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\AvailabilityAnswer;
 use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\CheckAvailability;
@@ -16,9 +17,10 @@ use Commerz\Ports\Stock\Data\ReservationResult;
 use Commerz\Ports\Stock\Data\ReservedLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
+use Commerz\Ports\Stock\Data\RestockStock;
 
 /** `commerz.stock = unlimited`: everything is available, nothing is held or written. */
-final readonly class UnlimitedStock implements StockAvailability, StockReservations
+final readonly class UnlimitedStock implements StockAvailability, StockReservations, StockReturns
 {
     public function check(CheckAvailability $query): AvailabilityAnswer
     {
@@ -39,4 +41,6 @@ final readonly class UnlimitedStock implements StockAvailability, StockReservati
     public function release(ReleaseReservation $command): void {}
 
     public function consume(ConsumeReservation $command): void {}
+
+    public function restock(RestockStock $command): void {}
 }

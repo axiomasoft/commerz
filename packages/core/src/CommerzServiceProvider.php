@@ -41,6 +41,7 @@ use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Sellables\Internal\SellableRouter;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Internal\UnlimitedStock;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Internal\StagedQuotePipeline;
@@ -112,13 +113,14 @@ final class CommerzServiceProvider extends ServiceProvider
 
         $unlimited = static function (Application $app): UnlimitedStock {
             if ($app->make(CommerzConfig::class)->stock === StockMode::Inventory) {
-                throw new InvalidConfiguration('commerz.stock', "'inventory' needs a package implementing StockAvailability and StockReservations (axiomasoft/commerz-inventory); install it or set 'unlimited'");
+                throw new InvalidConfiguration('commerz.stock', "'inventory' needs a package implementing StockAvailability, StockReservations and StockReturns (axiomasoft/commerz-inventory); install it or set 'unlimited'");
             }
 
             return new UnlimitedStock;
         };
         $this->app->singletonIf(StockAvailability::class, $unlimited);
         $this->app->singletonIf(StockReservations::class, $unlimited);
+        $this->app->singletonIf(StockReturns::class, $unlimited);
 
         $this->app->singletonIf(CustomerDirectory::class, static function (Application $app): CustomerDirectory {
             $class = $app->make(CommerzConfig::class)->customers;

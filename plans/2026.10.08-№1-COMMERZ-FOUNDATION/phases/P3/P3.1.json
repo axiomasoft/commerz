@@ -1,0 +1,199 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P3.1",
+  "title": "Kernel: stock port extension — StockReturns and location-bound consume (D22)",
+  "status": "done_with_deviations",
+  "summary": "В ядре есть #[Api] Commerz\\Ports\\Stock\\Contracts\\StockReturns::restock(RestockStock) с DTO RestockStock/RestockLine, ConsumeReservation принимает ?string $locationCode = null; UnlimitedStock и testkit FakeStock реализуют новое; дефолт ядра биндит StockReturns через singletonIf.",
+  "why": "P7 (sales) вернёт принятый возврат на склад и отгрузит из выбранной локации только через порт ядра; контракт должен существовать до параллельных lanes P3/P7 (D22). Риски: поломка существующих вызовов ConsumeReservation (параметр строго последний, с дефолтом), рассинхрон FakeStock с семантикой порта (идемпотентность по reference).",
+  "scope": {
+    "include": [
+      "packages/core/src/Ports/Stock/Contracts/StockReturns.php (#[Api]) — docblock: присоединяется к транзакции вызывающего, идемпотентно по reference, REF-01",
+      "packages/core/src/Ports/Stock/Data/{RestockStock, RestockLine}.php (#[Api], final readonly): RestockStock(string $reference, ChannelId $channel, list<RestockLine> $lines, ?string $locationCode = null) — reference через StockLines::assertDemand-эквивалент (assertReference, код stock.invalid_reference), lines непустые/уникальные (обобщить StockLines::assertUnique на RestockLine), locationCode `[a-z0-9][a-z0-9_.-]{0,63}` (stock.invalid_location); RestockLine(SellableRef, int quantity >= 1)",
+      "ConsumeReservation: последний параметр `public ?string $locationCode = null` с той же проверкой формата",
+      "UnlimitedStock implements StockReturns (restock — no-op); CommerzServiceProvider::registerPortDefaults: singletonIf(StockReturns::class, $unlimited)",
+      "packages/testkit/src/Fakes/FakeStock.php: implements StockReturns; `public private(set) array $restocked`; restock увеличивает onHand лимитированных ref, повтор reference — no-op; consume с locationCode ≠ LOCATION → ReservationNotFound",
+      "тесты: packages/core/tests/Feature/Ports/StockPortTest.php (валидация DTO, UnlimitedStock no-op, биндинг StockReturns по умолчанию и при stock=inventory без пакета → InvalidConfiguration при резолве), packages/core/tests/Feature/Ports/PortDefaultsTest.php дополнить; packages/testkit/tests/Feature/FakeStockTest.php (restock идемпотентен, consume с локацией)"
+    ],
+    "exclude": [
+      "реализация в inventory (P3.4, P3.5)",
+      "docs/architecture (P3.7)",
+      "вызовы из sales (P7)"
+    ]
+  },
+  "decisions": [
+    "D22"
+  ],
+  "reads": [
+    {
+      "why": "точная форма изменения порта",
+      "required": true,
+      "ref": "knowledge/inventory-design#port-changes"
+    },
+    {
+      "why": "куда добавить параметр",
+      "required": true,
+      "path": "packages/core/src/Ports/Stock/Data/ConsumeReservation.php"
+    },
+    {
+      "why": "общие проверки формы",
+      "required": true,
+      "path": "packages/core/src/Ports/Stock/Data/StockLines.php"
+    },
+    {
+      "why": "дефолт ядра",
+      "required": true,
+      "path": "packages/core/src/Ports/Stock/Internal/UnlimitedStock.php"
+    },
+    {
+      "why": "registerPortDefaults — биндинг StockReturns",
+      "required": true,
+      "path": "packages/core/src/CommerzServiceProvider.php"
+    },
+    {
+      "why": "фейк порта",
+      "required": true,
+      "path": "packages/testkit/src/Fakes/FakeStock.php"
+    },
+    {
+      "why": "стиль тестов портов",
+      "required": true,
+      "path": "packages/core/tests/Feature/Ports/PortDefaultsTest.php"
+    },
+    {
+      "ref": "knowledge/kernel-contracts#ports",
+      "why": "канонический контракт порта Ports\\Stock (уже включает D22) — сверить реализацию",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/core/src/Ports/Stock/**",
+      "change": "any"
+    },
+    {
+      "path": "packages/core/src/CommerzServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/core/tests/Feature/Ports/**",
+      "change": "any"
+    },
+    {
+      "path": "packages/testkit/src/Fakes/FakeStock.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/testkit/tests/Feature/FakeStockTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: …, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; количества — int (bigint в БД).",
+    "Расхождение с knowledge/inventory-design, D21/D22 или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Изменение строго аддитивное: существующие конструкторы и методы не меняют порядок/тип параметров; новых обязательных параметров нет.",
+    "Ядро не знает inventory: никаких ссылок на Commerz\\Inventory."
+  ],
+  "guidance": "Ошибки формы — Commerz\\Errors\\InvalidCommand(field, message, code) как в существующих DTO порта. Проверку reference вынести в StockLines::assertReference (та же регулярка, что assertDemand) — demand и reference одного формата. assertUnique сейчас типизирован list<AvailabilityLine|ReserveLine>: расширить тип на RestockLine. Для FakeStock идемпотентность по reference — массив обработанных reference.",
+  "examples": [
+    {
+      "path": "packages/core/src/Ports/Stock/Data/ReserveStock.php"
+    },
+    {
+      "path": "packages/core/src/Ports/Stock/Contracts/StockReservations.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/core/tests packages/testkit/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "порт StockReturns + DTO",
+    "ConsumeReservation::$locationCode",
+    "UnlimitedStock/FakeStock обновлены",
+    "тесты ядра и testkit"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T06:08:40Z",
+    "finished_at": "2026-10-09T06:11:13Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "cd34f7d2-fdfb-44ca-88b7-107deb9594f4"
+    },
+    "notes": "StockReturns + RestockStock/RestockLine, ConsumeReservation::$locationCode, StockLines::assertReference/assertLocation, UnlimitedStock/FakeStock updated, tests added",
+    "deviations": [
+      "V4: docker compose denied for user; postgres already up on :54329; pest part run directly (232 passed)"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T06:11:13Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T06:11:13Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T06:11:13Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T06:11:13Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T06:11:13Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T06:11:13Z"
+}

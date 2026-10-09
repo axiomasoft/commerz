@@ -11,12 +11,16 @@ use Commerz\Identity\SellableRef;
 #[Api(since: '0.1')]
 final readonly class ConsumeReservation
 {
-    /** @param  string  $reference  the document that ships the stock, e.g. `fulfillment:01J…` */
+    /**
+     * @param  string  $reference  the document that ships the stock, e.g. `fulfillment:01J…`
+     * @param  string|null  $locationCode  ships only from this location; null lets the stock implementation choose
+     */
     public function __construct(
         public string $demand,
         public SellableRef $sellable,
         public int $quantity,
         public string $reference,
+        public ?string $locationCode = null,
     ) {
         StockLines::assertDemand($demand);
 
@@ -27,5 +31,7 @@ final readonly class ConsumeReservation
         if (trim($reference) === '' || strlen($reference) > 191) {
             throw new InvalidCommand('reference', 'must be 1..191 bytes', 'stock.invalid_reference');
         }
+
+        StockLines::assertLocation($locationCode);
     }
 }

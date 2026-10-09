@@ -2,25 +2,119 @@
   "$schema": "urn:swissknifeman:task:plan:phase:v1",
   "id": "P3",
   "title": "Inventory package",
-  "design": "skeleton",
-  "goal": "axiomasoft/commerz-inventory: места хранения, складская номенклатура и связи sellable→item (с коэффициентом), уровни (on_hand/reserved) + append-only журнал, резервы по demand с истечением, перемещения, источники каналов с приоритетом и allocation_strategy, реализация StockAvailability/StockReservations, сверка commerz:inventory:reconcile.",
-  "context": "Решение D10 (levels+movements+reservations, резерв при размещении по умолчанию). Инварианты INV-02..04, порядок блокировок — knowledge/invariants. Обязательны конкурентные тесты на PostgreSQL.",
+  "design": "detailed",
+  "goal": "axiomasoft/commerz-inventory: места хранения, складская номенклатура (политики tracked|backorder|untracked) и связи sellable→item с коэффициентом (комплекты), источники каналов с приоритетом и SPI allocation_strategy, уровни (on_hand/reserved/safety) + append-only журнал через единственный StockLedger, резервы по demand (заголовок + строки) с истечением, перемещения, реализация портов StockAvailability/StockReservations/StockReturns, сверка commerz:inventory:reconcile и expire-команда.",
+  "context": "Детализировано после закрытия P1–P2 против реального кода ядра (D16). Модель, схема, SPI, алгоритмы, иерархия блокировок и API — knowledge/inventory-design; решения D10, D21 (модель v0.1), D22 (аддитивное расширение порта Ports\\Stock в P3.1 — единственная правка ядра фазы, на неё опирается P7). Инварианты INV-02..06 — knowledge/inventory-design#concurrency (уточняют knowledge/invariants). Образец реализации пакета — packages/catalog (P2): Database*-модули на query builder, Common/Internal, плагин, миграции CommerzMigration, многопроцессные тесты на Concurrency::run. Конкурентные тесты на PostgreSQL обязательны.",
+  "contract": {
+    "consumes": [
+      "Commerz\\Ports\\Stock (StockAvailability, StockReservations, StockReturns из P3.1, DTO, InsufficientStock, ReservationNotFound)",
+      "Plugins (PluginRegistrar, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+      "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+      "Operations (Transactions, OperationReceipts, Fingerprint, CommittedEvents), Outbox (Outbox, IntegrationEvent)",
+      "Stores\\Contracts\\Channels (find, assertActive)",
+      "Identity (EntityId, SellableRef, ActorRef, IdempotencyKey), Measures\\Unit, Pagination (Page, Cursor)",
+      "testkit (Concurrency, PluginContractTests, PackageTestCase)"
+    ],
+    "produces": [
+      "axiomasoft/commerz-inventory: Inventory root + фасад; модули Locations, Items, Sources, Stock, Movements, Reservations, Availability, Transfers, Allocation",
+      "SPI allocation_strategy (встроенные priority, single_location)",
+      "реализации портов StockAvailability, StockReservations, StockReturns",
+      "core: Ports\\Stock\\Contracts\\StockReturns, ConsumeReservation::$locationCode (D22); testkit FakeStock обновлён",
+      "Artisan: commerz:inventory:expire-reservations, commerz:inventory:reconcile"
+    ],
+    "boundaries": [
+      "inventory пишет только в таблицы существительного stock",
+      "без FK и записи в таблицы ядра; канал — только через контракт Channels; sellable — только SellableRef-строки",
+      "без зависимостей на другие feature-пакеты (каталог не нужен: связи по SellableRef)",
+      "только StockLedger пишет cmz_stock_levels и cmz_stock_movements"
+    ]
+  },
   "scope": {
     "include": [
-      "packages/inventory/**"
+      "packages/inventory/**",
+      "packages/core/src/Ports/Stock/**, packages/core/src/CommerzServiceProvider.php, packages/core/tests/Feature/Ports/**, packages/testkit/src/Fakes/FakeStock.php, packages/testkit/tests/** (только P3.1, D22)",
+      "docs/architecture/{api,invariants,decisions,data,extension}.md"
     ],
     "exclude": [
-      "ячейки, партии, серийные номера, себестоимость"
+      "ячейки, партии, серийные номера, себестоимость",
+      "transit-локация и несколько отгрузок одного перемещения, поставки/incoming (D21)",
+      "частичный резерв с событием недостачи (резерв — всё или ничего), конвертация единиц",
+      "вызов портов из sales (P7) и сквозные сценарии магазина (P8)"
     ]
   },
   "depends_on": [
     "P1"
   ],
-  "deliverables": [
-    "Inventory API",
-    "конкурентные тесты последней единицы и expire vs consume",
-    "reconcile-команда"
+  "pitfalls": [
+    "блокировка уровней вторым запросом или вне порядка (stock_item_id, location_id) — deadlock между reserve и transfer/consume",
+    "consume/expire, берущие строку резерва раньше уровня (прототип Grok) — цикл с ленивым истечением; порядок: документ → заголовок → уровни → строки",
+    "ленивое истечение, ждущее чужой заголовок: только SKIP LOCKED и только строки на уже заблокированных уровнях",
+    "FOR UPDATE вместо FOR NO KEY UPDATE на уровне: INSERT строк резерва/движений берёт KEY SHARE по FK",
+    "аллокация по незаблокированному чтению (Vendure ≤3.7.3) — oversell",
+    "int32-колонки количеств (A9 аудита) и переполнение units × quantity_per_unit",
+    "чтение списка/доступности из нескольких снимков (A11) — использовать один запрос или REPEATABLE READ",
+    "конкурентные тесты под RefreshDatabase — данные должны коммититься"
   ],
-  "items": [],
-  "batches": []
+  "deliverables": [
+    "Inventory API (locations, items, sources, stock, movements, reservations, availability, transfers)",
+    "SPI allocation_strategy с priority и single_location",
+    "реализации StockAvailability, StockReservations, StockReturns; порт ядра расширен (D22)",
+    "конкурентные тесты: последняя единица, комплекты, обратный порядок строк, expire vs consume, один demand × 4",
+    "commerz:inventory:reconcile и commerz:inventory:expire-reservations",
+    "docs/architecture синхронизированы (INV-02..06, API, D21, D22)"
+  ],
+  "items": [
+    "P3.1",
+    "P3.2",
+    "P3.3",
+    "P3.4",
+    "P3.5",
+    "P3.6",
+    "P3.7"
+  ],
+  "batches": [
+    {
+      "id": "BP3-1",
+      "items": [
+        "P3.1",
+        "P3.2"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP3-2",
+      "items": [
+        "P3.3"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP3-3",
+      "items": [
+        "P3.4"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP3-4",
+      "items": [
+        "P3.5"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP3-5",
+      "items": [
+        "P3.6"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP3-6",
+      "items": [
+        "P3.7"
+      ],
+      "mode": "recommended"
+    }
+  ]
 }

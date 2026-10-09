@@ -19,7 +19,23 @@ final class StockLines
         }
     }
 
-    /** @param  list<AvailabilityLine|ReserveLine>  $lines */
+    /** A reference names the document that moves the stock, e.g. `return:01J…`: the same shape as a demand. */
+    public static function assertReference(string $reference): void
+    {
+        if (strlen($reference) > 191 || preg_match('/\A[^\p{Cc}\s][^\p{Cc}]*\z/u', $reference) !== 1) {
+            throw new InvalidCommand('reference', 'must be 1..191 bytes of printable text', 'stock.invalid_reference');
+        }
+    }
+
+    /** A location code names a stock location: `[a-z0-9][a-z0-9_.-]{0,63}`. */
+    public static function assertLocation(?string $locationCode): void
+    {
+        if ($locationCode !== null && preg_match('/\A[a-z0-9][a-z0-9_.-]{0,63}\z/', $locationCode) !== 1) {
+            throw new InvalidCommand('locationCode', 'must match [a-z0-9][a-z0-9_.-]{0,63}', 'stock.invalid_location');
+        }
+    }
+
+    /** @param  list<AvailabilityLine|ReserveLine|RestockLine>  $lines */
     public static function assertUnique(array $lines): void
     {
         if ($lines === []) {

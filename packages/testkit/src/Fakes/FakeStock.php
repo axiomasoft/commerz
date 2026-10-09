@@ -8,6 +8,7 @@ use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\AvailabilityAnswer;
 use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\CheckAvailability;
@@ -18,16 +19,18 @@ use Commerz\Ports\Stock\Data\ReservationResult;
 use Commerz\Ports\Stock\Data\ReservedLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
+use Commerz\Ports\Stock\Data\RestockStock;
 use Commerz\Ports\Stock\Data\StockAllocation;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 
 /**
  * In-memory stock with the port's semantics: refs without a limit are unlimited; reserve is all-or-nothing and
- * idempotent per demand; consume takes held units out of stock. Every command is recorded.
+ * idempotent per demand; consume takes held units out of stock; restock puts units back, once per reference. The
+ * fake has a single location, `fake`: consuming from any other location finds no reservation. Every command is recorded.
  */
 #[Api(since: '0.1')]
-final class FakeStock implements StockAvailability, StockReservations
+final class FakeStock implements StockAvailability, StockReservations, StockReturns
 {
     public const string LOCATION = 'fake';
 
@@ -45,6 +48,12 @@ final class FakeStock implements StockAvailability, StockReservations
 
     /** @var list<ConsumeReservation> */
     public private(set) array $consumed = [];
+
+    /** @var list<RestockStock> */
+    public private(set) array $restocked = [];
+
+    /** @var array<string, true> references already restocked */
+    private array $restockedReferences = [];
 
     public function limit(SellableRef $sellable, int $onHand): self
     {
@@ -134,7 +143,7 @@ final class FakeStock implements StockAvailability, StockReservations
         $key = (string) $command->sellable;
         $held = $this->held[$command->demand][$key] ?? 0;
 
-        if ($held < $command->quantity) {
+        if ($command->locationCode !== null && $command->locationCode !== self::LOCATION || $held < $command->quantity) {
             throw new ReservationNotFound($command->demand, $key);
         }
 
@@ -143,6 +152,25 @@ final class FakeStock implements StockAvailability, StockReservations
 
         if (isset($this->onHand[$key])) {
             $this->onHand[$key] -= $command->quantity;
+        }
+    }
+
+    public function restock(RestockStock $command): void
+    {
+        $this->restocked[] = $command;
+
+        if (isset($this->restockedReferences[$command->reference])) {
+            return;
+        }
+
+        $this->restockedReferences[$command->reference] = true;
+
+        foreach ($command->lines as $line) {
+            $key = (string) $line->sellable;
+
+            if (isset($this->onHand[$key])) {
+                $this->onHand[$key] += $line->quantity;
+            }
         }
     }
 
