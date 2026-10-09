@@ -5,4 +5,3 @@ Note: Using configuration file /home/vostrikov/projects/packages/commerz/phpstan
 
 
  [OK] No errors
-
