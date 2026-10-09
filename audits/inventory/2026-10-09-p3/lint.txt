@@ -1,0 +1,2 @@
+> pint --test packages tests
+{"tool":"pint","result":"passed"}

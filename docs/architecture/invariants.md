@@ -75,6 +75,7 @@ Inside the *stock* step of the global order, inventory locks in this order
 
 ```text
 transfer row → reservation header of the demand
+  → stock items ORDER BY id, then locations ORDER BY id (FOR SHARE, when resolving stock)
   → stock levels ORDER BY (stock_item_id, location_id), one FOR NO KEY UPDATE statement
   → reservation lines ORDER BY id FOR NO KEY UPDATE
 ```
@@ -85,13 +86,28 @@ locks every level it needs in one statement; a second lock call can deadlock
 against another command. Lazy expiry and the sweeper take foreign headers only
 with `SKIP LOCKED` and only lines on levels already locked, so they never wait
 for another demand.
+Transfer creation guards the items and locations before inserting its new
+reservation header; that unique demand never waits for an existing header.
+
+Item lifecycle changes take the item row `FOR NO KEY UPDATE` before checking
+its levels and unresolved transfer lines. A draft or in-transit transfer
+blocks archiving the item and changing its policy to `untracked`; stock in
+transit still belongs to the item even when its source level is empty.
 
 `commerz:inventory:reconcile` reads one read-only `REPEATABLE READ` snapshot
 without locks (`ledger_sum`, `ledger_balance`, `reserved_sum`,
 `reservation_state`, `transfer_state`; exit 1 on any discrepancy).
+Line-free active demands (untracked or unlimited stock) and expired headers
+whose last outstanding lines were lazily expired are valid; the sweeper
+closes the latter. A closed header with outstanding lines remains an error.
 `--repair-reserved` rebuilds only `reserved` from the reservation lines under
 the level locks; `on_hand` is never repaired automatically (correct it with a
 count).
+
+Availability and the tracked reservation guard subtract `reserved` and
+`safety_stock` in PostgreSQL `numeric` before comparing or clamping the
+result. Each stored quantity is `bigint`, but their intermediate difference
+can fall below the signed 64-bit range.
 
 ## Catalog lock order
 

@@ -327,6 +327,21 @@ it('consumes untracked and unlimited sellables the demand reserved without holdi
         ->toThrow(ReservationNotFound::class);
 });
 
+it('consumes untracked and unlimited sellables with an explicit location hint', function (): void {
+    rsvConfigure(['unlinked_sellables' => 'unlimited']);
+    $channel = rsvChannel();
+    rsvSource($channel, 'main');
+    rsvItem('ebook', ['ebook' => 1], StockPolicy::Untracked);
+    rsvReserve($channel, 'order:1', ['ebook' => 2, 'loose' => 1]);
+
+    Inventory::reservations()->consume(new ConsumeReservation('order:1', SellableRef::of('variant', 'ebook'), 2, 'fulfillment:1', 'main'));
+    Inventory::reservations()->consume(new ConsumeReservation('order:1', SellableRef::of('variant', 'loose'), 1, 'fulfillment:1', 'main'));
+
+    expect(Inventory::reservations()->find('order:1')->state)->toBe(ReservationState::Closed)
+        ->and(DB::table('cmz_stock_movements')->count())->toBe(0)
+        ->and(DB::table('cmz_stock_levels')->count())->toBe(0);
+});
+
 it('repeats a live demand that holds only untracked sellables without writing', function (): void {
     $channel = rsvChannel();
     $main = rsvSource($channel, 'main');

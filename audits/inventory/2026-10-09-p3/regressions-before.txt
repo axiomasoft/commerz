@@ -1,0 +1,125 @@
+
+  ⨯⨯⨯⨯⨯⨯⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Transfers\TransfersTest > it kee…
+  Exception [Commerz\Inventory\Items\Exceptions\StockItemNotEmpty] not thrown.
+
+  at packages/inventory/tests/Feature/Transfers/TransfersTest.php:70
+     66▕
+     67▕     expect([rsvLevel($item, $from)->onHand, rsvLevel($item, $from)->reserved])->toBe([0, 0]);
+     68▕
+     69▕     if ($change === 'archive') {
+  ➜  70▕         expect(fn () => Inventory::items()->archive(new ArchiveStockItem($item)))->toThrow(StockItemNotEmpty::class);
+     71▕     } else {
+     72▕         expect(fn () => Inventory::items()->update(new UpdateStockItem($item, policy: StockPolicy::Untracked)))->toThrow(UntrackedStockItem::class);
+     73▕     }
+     74▕
+
+  1   packages/inventory/tests/Feature/Transfers/TransfersTest.php:70
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Transfers\TransfersTest > it kee…
+  Exception [Commerz\Inventory\Items\Exceptions\UntrackedStockItem] not thrown.
+
+  at packages/inventory/tests/Feature/Transfers/TransfersTest.php:72
+     68▕
+     69▕     if ($change === 'archive') {
+     70▕         expect(fn () => Inventory::items()->archive(new ArchiveStockItem($item)))->toThrow(StockItemNotEmpty::class);
+     71▕     } else {
+  ➜  72▕         expect(fn () => Inventory::items()->update(new UpdateStockItem($item, policy: StockPolicy::Untracked)))->toThrow(UntrackedStockItem::class);
+     73▕     }
+     74▕
+     75▕     $current = Inventory::items()->find($item);
+     76▕     expect([$current->status, $current->policy])->toBe([StockItemStatus::Active, StockPolicy::Tracked]);
+
+  1   packages/inventory/tests/Feature/Transfers/TransfersTest.php:72
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Console\ReconcileTest > it accep…
+  Expected status code 0 but received 1.
+Failed asserting that 1 matches expected 0.
+
+  at packages/inventory/tests/Feature/Console/ReconcileTest.php:52
+     48▕
+     49▕     rsvReserve($channel, 'order:ebook', ['ebook' => 2]);
+     50▕
+     51▕     expect(Inventory::reservations()->find('order:ebook')->lines)->toBe([]);
+  ➜  52▕     $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+     53▕ })->with(['untracked', 'unlinked-unlimited']);
+     54▕
+     55▕ it('accepts a header whose last outstanding lines were lazily expired', function (): void {
+     56▕     $channel = rsvChannel();
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Console\ReconcileTest > it accep…
+  Expected status code 0 but received 1.
+Failed asserting that 1 matches expected 0.
+
+  at packages/inventory/tests/Feature/Console/ReconcileTest.php:52
+     48▕
+     49▕     rsvReserve($channel, 'order:ebook', ['ebook' => 2]);
+     50▕
+     51▕     expect(Inventory::reservations()->find('order:ebook')->lines)->toBe([]);
+  ➜  52▕     $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+     53▕ })->with(['untracked', 'unlinked-unlimited']);
+     54▕
+     55▕ it('accepts a header whose last outstanding lines were lazily expired', function (): void {
+     56▕     $channel = rsvChannel();
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Console\ReconcileTest > it accep…
+  Expected status code 0 but received 1.
+Failed asserting that 1 matches expected 0.
+
+  at packages/inventory/tests/Feature/Console/ReconcileTest.php:65
+     61▕     rsvReserve($channel, 'order:new', ['tee' => 2]);
+     62▕
+     63▕     $line = Inventory::reservations()->find('cart:expired')->lines[0];
+     64▕     expect([$line->expired, $line->outstanding])->toBe([2, 0]);
+  ➜  65▕     $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+     66▕ });
+     67▕
+     68▕ it('still flags an active settled generation with released lines', function (): void {
+     69▕     rcnWorld();
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Availability\Ava…  QueryException
+  SQLSTATE[22003]: Numeric value out of range: 7 ERROR:  bigint out of range (Connection: testing, Host: 127.0.0.1, Port: 54329, Database: commerz_test, SQL: with src as (select s.location_id, s.priority, l.code from cmz_stock_sources s join cmz_stock_locations l on l.id = s.location_id where s.channel_id = 01a1204c-87df-70e5-b0ae-06d55bbfa01b and l.status = 'active') select k.sellable_ref, k.stock_item_id, k.quantity_per_unit, i.policy, i.status as item_status, src.location_id, src.code as location_code, src.priority, greatest(0, lv.on_hand - lv.reserved - lv.safety_stock + coalesce(x.expired, 0))::bigint as free from cmz_stock_item_links k join cmz_stock_items i on i.id = k.stock_item_id left join src on true left join cmz_stock_levels lv on lv.stock_item_id = k.stock_item_id and lv.location_id = src.location_id left join lateral (select sum((ln.units - ln.consumed_units - ln.released_units - ln.expired_units)::numeric * ln.quantity_per_unit) as expired from cmz_stock_reservation_lines ln join cmz_stock_reservations r on r.id = ln.reservation_id and r.generation = ln.generation where ln.stock_level_id = lv.id and ln.units - ln.consumed_units - ln.released_units - ln.expired_units > 0 and r.state = 'active' and r.expires_at <= now()) x on true where k.sellable_ref in (variant:tee) order by k.sellable_ref, k.stock_item_id, src.priority, src.code)
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+    436▕             );
+    437▕
+    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    439▕
+  ➜ 440▕             $statement->execute();
+    441▕
+    442▕             return $statement->fetchAll(...$fetchUsing);
+    443▕         });
+    444▕     }
+
+      +4 vendor frames
+  5   packages/inventory/src/Common/Internal/LevelQueries.php:173
+  6   packages/inventory/src/Availability/Internal/DatabaseAvailability.php:41
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Packages\inventory\tests\Feature\Reservation…  ReservationNotFound
+  Reservation 'order:1/variant:ebook' was not found.
+
+  at packages/inventory/src/Reservations/Internal/DatabaseReservations.php:121
+    117▕
+    118▕     public function consume(ConsumeReservation $command): void
+    119▕     {
+    120▕         $this->transactions->run(fn () => $this->ledger->within(function () use ($command): void {
+  ➜ 121▕             $missing = new ReservationNotFound($command->demand, (string) $command->sellable);
+    122▕             $header = $this->store->lock($command->demand) ?? throw $missing;
+    123▕             $id = Rows::string($header, 'id');
+    124▕
+    125▕             $lines = array_values(array_filter(
+
+  1   packages/inventory/src/Reservations/Internal/DatabaseReservations.php:121
+  2   packages/inventory/src/Common/Internal/StockLedger.php:66
+
+
+  Tests:    7 failed (11 assertions)
+  Duration: 0.65s
+

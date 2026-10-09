@@ -149,8 +149,9 @@ final readonly class Reconciler
     {
         $headers = $this->tables->table('stock_reservations');
         $rows = $this->db()->select(
-            'select r.demand, r.state, count(*) filter (where '.self::OUTSTANDING.' > 0) as outstanding,'
-            .' coalesce(sum(ln.consumed_units), 0)::text as consumed'
+            'select r.demand, r.state, count(ln.id) as lines, count(*) filter (where '.self::OUTSTANDING.' > 0) as outstanding,'
+            .' coalesce(sum(ln.consumed_units), 0)::text as consumed, coalesce(sum(ln.expired_units), 0)::text as expired_units,'
+            .' coalesce(r.expires_at <= now(), false) as expired'
             ." from {$headers} r left join {$this->lines()} ln on ln.reservation_id = r.id and ln.generation = r.generation"
             .' group by r.id, r.demand, r.state order by r.demand',
         );
@@ -166,7 +167,10 @@ final readonly class Reconciler
 
             if ($state === 'closed' && $outstanding > 0) {
                 $found[] = new Discrepancy(Discrepancy::RESERVATION_STATE, 'demand:'.Rows::string($row, 'demand'), 'closed without outstanding lines', "closed with {$outstanding} outstanding");
-            } elseif ($state === 'active' && $outstanding === 0 && Rows::string($row, 'consumed') === '0') {
+            } elseif ($state === 'active' && $outstanding === 0 && Rows::string($row, 'consumed') === '0'
+                && Rows::int($row, 'lines') > 0
+                && ! (Rows::bool($row, 'expired') && Rows::string($row, 'expired_units') !== '0')) {
+                // Line-free unlimited demands stay active; lazy expiry leaves an expired header for the sweeper.
                 $found[] = new Discrepancy(Discrepancy::RESERVATION_STATE, 'demand:'.Rows::string($row, 'demand'), 'closed', 'active without outstanding lines');
             }
         }

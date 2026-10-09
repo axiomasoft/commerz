@@ -92,7 +92,7 @@ final readonly class DatabaseStockItems implements StockItems
             }
 
             if ($command->policy instanceof StockPolicy && $command->policy->value !== Rows::string($row, 'policy')) {
-                if ($command->policy === StockPolicy::Untracked && $this->levels->lockedItemNonEmpty($command->item->value)) {
+                if ($command->policy === StockPolicy::Untracked && ($this->hasOpenTransfer($command->item) || $this->levels->lockedItemNonEmpty($command->item->value))) {
                     throw new UntrackedStockItem(Rows::string($row, 'sku'));
                 }
 
@@ -118,7 +118,7 @@ final readonly class DatabaseStockItems implements StockItems
                 return $this->find($command->item);
             }
 
-            if ($this->levels->lockedItemNonEmpty($command->item->value)) {
+            if ($this->hasOpenTransfer($command->item) || $this->levels->lockedItemNonEmpty($command->item->value)) {
                 throw new StockItemNotEmpty(Rows::string($row, 'sku'));
             }
 
@@ -263,6 +263,17 @@ final readonly class DatabaseStockItems implements StockItems
         $this->db()->table($this->tables->table('stock_items'))
             ->where('id', $id->value)
             ->update(['status' => $status->value, 'updated_at' => Clock::now()]);
+    }
+
+    /** The caller holds the item row; new transfers cannot pass their item lock until this change commits. */
+    private function hasOpenTransfer(StockItemId $item): bool
+    {
+        return $this->db()->table($this->tables->table('stock_transfer_lines').' as ln')
+            ->join($this->tables->table('stock_transfers').' as t', 't.id', '=', 'ln.transfer_id')
+            ->where('ln.stock_item_id', $item->value)
+            ->whereIn('t.state', ['draft', 'in_transit'])
+            ->whereRaw('ln.quantity - ln.received - ln.lost > 0')
+            ->exists();
     }
 
     private function lock(StockItemId $id, string $mode): object

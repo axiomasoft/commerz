@@ -1,0 +1,8 @@
+> phpstan analyse --memory-limit=1G
+Note: Using configuration file /home/vostrikov/projects/packages/commerz/phpstan.neon.
+   0/472 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%
+ 472/472 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+
+ [OK] No errors
+

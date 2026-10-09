@@ -155,9 +155,15 @@ Inventory::transfers()->receive(new ReceiveTransfer($t->id, [new TransferReceipt
 ```
 
 `ConsumeReservation::$locationCode` ships only from that location (null lets
-inventory choose). A transfer holds its stock at the source as a reservation
+inventory choose); untracked and unlimited sellables hold no physical stock
+and consume successfully with a location hint too. Consumption is not
+idempotent per reference: the caller deduplicates its fulfilment document.
+A transfer holds its stock at the source as a reservation
 of demand `transfer:{id}` from creation; goods in transit live on the
-transfer's lines, not on a level. `commerz:inventory:reconcile` verifies the
+transfer's lines, not on a level. An item with unresolved lines on a draft or
+in-transit transfer cannot be archived or changed to `untracked`, even when
+its levels are empty. Fully received or lost lines no longer block these
+changes. `commerz:inventory:reconcile` verifies the
 ledger, reservations and transfers (see *Inventory lock order* in
 `invariants.md`).
 

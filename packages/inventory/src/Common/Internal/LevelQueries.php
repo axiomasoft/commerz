@@ -176,7 +176,7 @@ final readonly class LevelQueries
             ." where s.channel_id = ? and l.status = 'active')"
             .' select k.sellable_ref, k.stock_item_id, k.quantity_per_unit, i.policy, i.status as item_status,'
             .' src.location_id, src.code as location_code, src.priority,'
-            .' greatest(0, lv.on_hand - lv.reserved - lv.safety_stock + coalesce(x.expired, 0))::bigint as free'
+            .' greatest(0, lv.on_hand::numeric - lv.reserved - lv.safety_stock + coalesce(x.expired, 0))::bigint as free'
             ." from {$this->tables->table('stock_item_links')} k"
             ." join {$this->tables->table('stock_items')} i on i.id = k.stock_item_id"
             .' left join src on true'

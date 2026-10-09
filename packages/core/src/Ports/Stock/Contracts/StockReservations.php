@@ -32,6 +32,7 @@ interface StockReservations
 
     /**
      * Turns held stock into a sale (stock leaves on fulfilment); may be partial.
+     * Not idempotent per reference: the caller deduplicates its fulfilment document.
      *
      * @throws ReservationNotFound the demand holds less than `$quantity` of the sellable
      */

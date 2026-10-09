@@ -8,13 +8,13 @@ use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 
-/** A stock item that still holds or reserves stock cannot be archived. */
+/** A stock item that holds, reserves or has unresolved goods in a transfer cannot be archived. */
 #[Api(since: '0.1')]
 final class StockItemNotEmpty extends CommerzException
 {
     public function __construct(public readonly string $sku)
     {
-        parent::__construct("Stock item '{$sku}' still holds or reserves stock.");
+        parent::__construct("Stock item '{$sku}' still holds or reserves stock, or has an unresolved transfer.");
     }
 
     public function code(): string

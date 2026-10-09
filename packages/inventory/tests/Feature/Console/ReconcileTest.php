@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Items\Data\StockItemId;
+use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Stock\Data\AdjustStock;
 use Commerz\Inventory\Transfers\Data\DispatchTransfer;
+use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +35,42 @@ it('reports a clean state with exit 0', function (): void {
     Inventory::stock()->adjust(new AdjustStock(rsvItem('cap', ['cap' => 1]), Inventory::locations()->create(new CreateLocation('aux', 'Aux'))->id, 3, 'found'));
 
     $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('Stock is consistent.')->assertSuccessful();
+});
+
+it('accepts active reservations without stock lines', function (string $kind): void {
+    $channel = rsvChannel();
+
+    if ($kind === 'untracked') {
+        rsvItem('ebook', ['ebook' => 1], StockPolicy::Untracked);
+    } else {
+        rsvConfigure(['unlinked_sellables' => 'unlimited']);
+    }
+
+    rsvReserve($channel, 'order:ebook', ['ebook' => 2]);
+
+    expect(Inventory::reservations()->find('order:ebook')->lines)->toBe([]);
+    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+})->with(['untracked', 'unlinked-unlimited']);
+
+it('accepts a header whose last outstanding lines were lazily expired', function (): void {
+    $channel = rsvChannel();
+    $main = rsvSource($channel, 'main');
+    $tee = rsvItem('tee', ['tee' => 1]);
+    rsvReceive($tee, $main, 2);
+    rsvReserve($channel, 'cart:expired', ['tee' => 2], new DateTimeImmutable('-1 minute'));
+    rsvReserve($channel, 'order:new', ['tee' => 2]);
+
+    $line = Inventory::reservations()->find('cart:expired')->lines[0];
+    expect([$line->expired, $line->outstanding])->toBe([2, 0]);
+    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+});
+
+it('still flags an active settled generation with released lines', function (): void {
+    rcnWorld();
+    Inventory::reservations()->release(new ReleaseReservation('order:1'));
+    DB::table('cmz_stock_reservations')->where('demand', 'order:1')->update(['state' => 'active']);
+
+    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('reservation_state')->assertFailed();
 });
 
 it('finds a corrupted reserved and repairs only that with --repair-reserved', function (): void {

@@ -140,8 +140,8 @@ final readonly class DatabaseReservations implements Reservations
                 }
             }
 
-            // Untracked and unlimited sellables hold no lines: there is nothing to ship.
-            if ($lines === [] && $command->locationCode === null && isset($this->unlimited([new ReserveLine($command->sellable, $command->quantity)])[(string) $command->sellable])) {
+            // Untracked and unlimited sellables hold no lines: there is nothing to ship from the hinted location.
+            if ($lines === [] && isset($this->unlimited([new ReserveLine($command->sellable, $command->quantity)])[(string) $command->sellable])) {
                 $this->store->closeIfSettled($id);
                 $this->events->dispatch(new StockConsumed($command->demand, $command->sellable, $command->quantity, $command->reference, []));
 

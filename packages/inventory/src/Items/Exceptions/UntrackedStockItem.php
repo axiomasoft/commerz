@@ -10,14 +10,14 @@ use Commerz\Errors\ErrorCategory;
 
 /**
  * An untracked item keeps no levels: stock cannot be placed on it, and the policy cannot change to it while stock is
- * held or reserved.
+ * held, reserved or unresolved in a transfer.
  */
 #[Api(since: '0.1')]
 final class UntrackedStockItem extends CommerzException
 {
     public function __construct(public readonly string $sku, ?string $message = null)
     {
-        parent::__construct($message ?? "Stock item '{$sku}' cannot become untracked while its levels hold or reserve stock.");
+        parent::__construct($message ?? "Stock item '{$sku}' cannot become untracked while stock is held, reserved or unresolved in a transfer.");
     }
 
     /** Stock was placed on an untracked item. */

@@ -9,8 +9,11 @@ use Commerz\Identity\SellableRef;
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Items\Data\ArchiveStockItem;
 use Commerz\Inventory\Items\Data\StockItemId;
+use Commerz\Inventory\Items\Data\UpdateStockItem;
+use Commerz\Inventory\Items\Enums\StockItemStatus;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Items\Exceptions\StockItemArchived;
+use Commerz\Inventory\Items\Exceptions\StockItemNotEmpty;
 use Commerz\Inventory\Items\Exceptions\StockItemNotFound;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Data\ArchiveLocation;
@@ -56,6 +59,36 @@ use Illuminate\Support\Facades\Event;
 uses(RefreshDatabase::class);
 
 require_once __DIR__.'/Helpers.php';
+
+it('keeps an item active and tracked while its last stock is in transit', function (string $change): void {
+    [$from, $to, $item] = trfWorld();
+    $sent = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($from, $to, [$item->value => 10])->id));
+
+    expect([rsvLevel($item, $from)->onHand, rsvLevel($item, $from)->reserved])->toBe([0, 0]);
+
+    if ($change === 'archive') {
+        expect(fn () => Inventory::items()->archive(new ArchiveStockItem($item)))->toThrow(StockItemNotEmpty::class);
+    } else {
+        expect(fn () => Inventory::items()->update(new UpdateStockItem($item, policy: StockPolicy::Untracked)))->toThrow(UntrackedStockItem::class);
+    }
+
+    $current = Inventory::items()->find($item);
+    expect([$current->status, $current->policy])->toBe([StockItemStatus::Active, StockPolicy::Tracked]);
+
+    $received = trfReceive($sent, [$item->value => [10]]);
+
+    expect($received->state)->toBe(TransferState::Completed)
+        ->and(rsvLevel($item, $to)->onHand)->toBe(10);
+})->with(['archive', 'untrack']);
+
+it('allows item lifecycle changes once all its goods in transit are settled as lost', function (): void {
+    [$from, $to, $item] = trfWorld();
+    $sent = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($from, $to, [$item->value => 10])->id));
+    trfReceive($sent, [$item->value => [0, 10]]);
+
+    expect(Inventory::items()->update(new UpdateStockItem($item, policy: StockPolicy::Untracked))->policy)->toBe(StockPolicy::Untracked)
+        ->and(Inventory::items()->archive(new ArchiveStockItem($item))->status)->toBe(StockItemStatus::Archived);
+});
 
 it('drafts a transfer and reserves the units at the source', function (): void {
     [$from, $to, $item] = trfWorld();
@@ -290,10 +323,11 @@ it('moves several items in one document', function (): void {
         ->and(trfReceive($sent, [$tee->value => [1]])->state)->toBe(TransferState::Completed);
 });
 
-it('does not receive stock the item policy or archive status no longer allows', function (): void {
+it('refuses receiving an item archived outside the inventory API', function (): void {
     [$from, $to, $item] = trfWorld(2);
     $sent = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($from, $to, [$item->value => 2])->id));
-    Inventory::items()->archive(new ArchiveStockItem($item));
+    // The API prevents this transition while stock is in transit; retain the receipt's defensive status check.
+    DB::table('cmz_stock_items')->where('id', $item->value)->update(['status' => 'archived']);
 
     expect(fn () => trfReceive($sent, [$item->value => [2]]))->toThrow(StockItemArchived::class)
         ->and(trfReceive($sent, [$item->value => [0, 2]])->state)->toBe(TransferState::Completed);

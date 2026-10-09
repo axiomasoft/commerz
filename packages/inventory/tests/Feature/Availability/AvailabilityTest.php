@@ -96,6 +96,17 @@ it('keeps safety stock out of availability', function (): void {
     expect(avlCheck($channel, ['tee' => 1]))->toBe(['tee' => 3]);
 });
 
+it('handles a bigint shortfall without overflowing before clamping availability', function (): void {
+    $channel = rsvChannel();
+    $main = rsvSource($channel, 'main');
+    $tee = rsvItem('tee', ['tee' => 1], StockPolicy::Backorder);
+    rsvReserve($channel, 'order:huge', ['tee' => PHP_INT_MAX]);
+    Inventory::stock()->setSafetyStock(new SetSafetyStock($tee, $main, PHP_INT_MAX));
+
+    expect(rsvLevel($tee, $main)->available)->toBe(PHP_INT_MIN)
+        ->and(avlCheck($channel, ['tee' => 1]))->toBe(['tee' => null]);
+});
+
 it('leaves archived locations and items out', function (): void {
     $channel = rsvChannel();
     $main = rsvSource($channel, 'main');

@@ -196,7 +196,7 @@ final class StockLedger
             $level,
             'reserved = reserved + ?',
             [$quantity],
-            '(? = 1 or on_hand - reserved - safety_stock >= ?)',
+            '(? = 1 or on_hand::numeric - reserved - safety_stock >= ?)',
             [$backorder ? 1 : 0, $quantity],
         ) ?? throw new InsufficientStock('stock_item:'.$level->item, $quantity, max(0, $this->current($level)->view()->available));
 
