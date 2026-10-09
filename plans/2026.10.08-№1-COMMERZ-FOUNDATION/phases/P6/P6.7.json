@@ -1,0 +1,202 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P6.7",
+  "title": "Shipping end-to-end scenario, api-blueprint reconciliation and architecture docs",
+  "status": "done_with_deviations",
+  "summary": "Сквозной сценарий пакета (зоны → метод с тарифами → options/explain → квота с delivery → бронь manual и повтор), сверка с api-blueprint#shipping и architecture (deviation-записи), синхронизация docs/architecture: API Shipping, инварианты SHP-01..06, решения D28/D29, kinds (free_over → free_above), таблицы shipping_* и lock order пакета.",
+  "why": "Документация — контракт для P7 (sales вызывает ShipmentBooking и собирает DeliverySelection) и для внешних адаптеров перевозчиков. Риск: docs/architecture продолжают обещать free_over и blueprint-форму CreateMethod, которых нет.",
+  "scope": {
+    "include": [
+      "tests/Feature/ShippingScenarioTest.php — сценарий по knowledge/shipping-design#api через фасад и порты ядра (DeliveryOptions, QuotePipeline с DeliverySelection, ShipmentBooking)",
+      "docs/architecture/api.md — раздел Shipping по #api (заменить blueprint-пример)",
+      "docs/architecture/invariants.md — SHP-01..SHP-06 по #invariants",
+      "docs/architecture/decisions.md — строки D28, D29",
+      "docs/architecture/extension.md — delivery_rate: flat, weight_table (+ free_above как поле тарифа), carrier: manual с book/find",
+      "docs/architecture/data.md — таблицы shipping_* и порядок блокировок пакета (methods → zones; bookings отдельно)",
+      "docs/architecture/packages.md — строка shipping: таблицы zones, zone_members, methods, method_channels, rates, bookings",
+      "plan.py log PLAN1 P6.7 --type deviation для каждого отличия от api-blueprint#shipping и architecture#extension-model (список — #api)"
+    ],
+    "exclude": [
+      "правка knowledge/api-blueprint и knowledge/architecture (они — исторический вход; актуальное — docs/architecture и shipping-design)",
+      "сквозные сценарии магазина (P8)"
+    ]
+  },
+  "depends_on": [
+    "P6.5",
+    "P6.6"
+  ],
+  "decisions": [
+    "D28",
+    "D29",
+    "D14"
+  ],
+  "reads": [
+    {
+      "why": "заменяемый раздел Shipping",
+      "required": true,
+      "path": "docs/architecture/api.md"
+    },
+    {
+      "why": "реестр kinds",
+      "required": true,
+      "path": "docs/architecture/extension.md"
+    },
+    {
+      "why": "реестр инвариантов",
+      "required": true,
+      "path": "docs/architecture/invariants.md"
+    },
+    {
+      "why": "таблицы и блокировки",
+      "required": true,
+      "path": "docs/architecture/data.md"
+    },
+    {
+      "why": "строки решений",
+      "required": true,
+      "path": "docs/architecture/decisions.md"
+    },
+    {
+      "why": "образец сценарного теста",
+      "required": true,
+      "path": "packages/promotions/tests/Feature/PromotionsScenarioTest.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/shipping/tests/Feature/ShippingScenarioTest.php",
+      "change": "create"
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/decisions.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/data.md",
+      "change": "modify"
+    },
+    {
+      "path": "docs/architecture/packages.md",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, вес — int граммы.",
+    "Расхождение с knowledge/shipping-design, D28, D29, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid без FK; shipping пишет только в таблицы shipping_*.",
+    "Правила delivery_rate и стадия delivery не пишут в БД и не ходят в сеть; время — CommerceContext::$at.",
+    "docs/architecture описывает фактический код; каждое отличие от blueprint записано deviation-логом."
+  ],
+  "guidance": "Ключевые секции (документ уже в контексте фазы): shipping-design#api — API, отличия от blueprint, коды, события — ядро item'а; shipping-design#invariants — SHP-01..06 для invariants.md; shipping-design#booking — lock/протокол для data.md и invariants.md; api-blueprint#shipping (global) — исходный blueprint для сверки. Сценарий: RU + Москва, courier (weight_table по России, flat + free_above по Москве) и pickup; options для RU-MOW и RU-SPE; explain с not_in_channel; квота с DeliverySelection('courier', RU-MOW) — DeliveryCharge и totals.deliveryTotal; book('fulfillment:1') manual → booked, повтор → тот же tracking без события. Тексты docs — английские, как остальные docs/architecture.",
+  "examples": [
+    {
+      "path": "docs/architecture/invariants.md"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Shipping",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "сценарный тест",
+    "docs/architecture синхронизированы",
+    "deviation-записи"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T19:40:19Z",
+    "finished_at": "2026-10-09T19:44:02Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "51506e43-2daa-427b-aa6e-be68f4fcd8f9"
+    },
+    "notes": "ShippingScenarioTest end to end (293 Shipping tests green); docs/architecture synced: API Shipping, SHP-01..06, D28/D29, kinds, shipping tables, lock order.",
+    "deviations": [
+      "api-blueprint/extension-model differences logged (6 deviation events); scenario test in packages/shipping/tests"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T19:44:02Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T19:44:02Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T19:44:02Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T19:44:02Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T19:44:02Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T19:44:02Z"
+}

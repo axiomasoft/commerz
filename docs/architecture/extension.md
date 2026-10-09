@@ -64,8 +64,8 @@ packages.
 | `promotion_condition` | promotions (`Commerz\Promotions\Rules\Contracts\PromotionCondition`: `key()`, `version()`, `stages()`, `role()`, `normalize()`, `upgrade()`, pure `evaluate()`) | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`. No `channel.in`: a promotion's channels are its assignment (D26) |
 | `promotion_effect` | promotions (`PromotionEffect`: `key()`, `version()`, `stages()`, `normalize()`, `upgrade()`, pure `apply(EffectInput): list<Discount>`) | `line.percent_off`, `line.fixed_off`, `order.percent_off`, `order.fixed_off`, `delivery.percent_off`, `buy_x_get_y` |
 | `promotion_activator` | promotions (`PromotionActivator`: `key()`, `activate(ActivationRequest): ActivationResult`; may read, never writes) | `automatic`, `coupon` (the coupon module plugs in through this same SPI, D5) |
-| `delivery_rate` | shipping | `flat`, `weight_table`, `free_over` |
-| `carrier` | shipping | `manual` |
+| `delivery_rate` | shipping (`Commerz\Shipping\Rates\Contracts\DeliveryRate`: `key()`, `version()`, `normalize()`, `upgrade()`, pure `price()` returning `RatePrice::of(Money)` or `RatePrice::unavailable(reason)`; no writes, no network, time from the context) | `flat`, `weight_table` (steps `{up_to_grams, amount}`, inclusive, above the last step unavailable). The free-delivery threshold is the tariff field `free_above` applied by the engine to any rule, not a rule key (D28) |
+| `carrier` | shipping (`Commerz\Shipping\Carriers\Contracts\Carrier`: `key()`, `book(CarrierBooking)`, `find(CarrierBooking): ?BookedShipment`; called only by `ShipmentBooking`, outside transactions, D29) | `manual` (no network; tracking from `meta['tracking']`, else the reference) |
 | `payment_gateway` | sales | `manual` (offline / invoice) |
 | `order_number_generator` | sales | `sequence` |
 

@@ -320,17 +320,72 @@ app(PromotionUsage::class)->restore(new RestorePromotionUsage('order:'.$orderId,
 
 ## Shipping: `Shipping`
 
-`zones()`, `methods()`, `options()` (the `DeliveryOptions` port), `bookings()`
-(the `ShipmentBooking` port, always outside a database transaction).
+`zones()`, `methods()`, `options()` (`ShippingOptions`: `list` and `explain`;
+`list` is the same answer as the `DeliveryOptions` port), `bookings()` (journal
+reads; booking itself is the `ShipmentBooking` port, always outside a database
+transaction).
 
 ```php
+$ru  = Shipping::zones()->create(new CreateZone(code: 'ru', name: 'Россия', members: [ZoneMember::country('RU')]));
+$msk = Shipping::zones()->create(new CreateZone(code: 'msk', name: 'Москва', members: [ZoneMember::region('RU-MOW')]));
 Shipping::methods()->create(new CreateMethod(
-    code: 'courier', name: LocalizedText::of(['ru' => 'Курьер']), zones: [$zone->id], channels: [$channel->id],
-    rate: new RuleSpec('weight_table', ['steps' => [[1000, '300.00'], [5000, '500.00']], 'currency' => 'RUB']),
-    carrier: 'manual',
+    code: 'courier', name: new LocalizedText(['ru' => 'Курьер', 'en' => 'Courier']), carrier: 'manual',
+    channels: [$channel->id],
+    rates: [
+        new ZoneRate($ru->id, Currency::of('RUB'), new RateSpec('weight_table', ['steps' => [
+            ['up_to_grams' => 1000, 'amount' => Money::of('300.00', 'RUB')],
+            ['up_to_grams' => 5000, 'amount' => Money::of('500.00', 'RUB')],
+        ]]), etaDays: 3),
+        new ZoneRate($msk->id, Currency::of('RUB'), new RateSpec('flat', ['amount' => Money::of('250.00', 'RUB')]),
+            freeAbove: Money::of('5000.00', 'RUB'), etaDays: 1),
+    ],
 ));
-$options = Shipping::options()->options(new DeliveryRequest($ctx, destination: $address, parcel: $parcel));
+$options = Shipping::options()->list(new DeliveryRequest($ctx, destination: $address, parcel: $parcel));
+$why     = Shipping::options()->explain(new DeliveryRequest($ctx, $address, $parcel));   // a verdict per method
+// A quote with `DeliverySelection('courier', $address, $parcel)` adds a `DeliveryCharge` and `totals.deliveryTotal`.
+// Outside a transaction (SHP-04), safe to repeat (SHP-03):
+app(ShipmentBooking::class)->book(new BookShipment('fulfillment:'.$id, 'manual', 'courier', $address, $parcel));
+$booking = Shipping::bookings()->find('fulfillment:'.$id);   // BookingView; list(ListBookings) pages by (created_at, id)
 ```
+
+- A zone has members of three kinds (country, ISO 3166-2 region, postal prefix
+  within a country); zones overlap and the most specific matching active zone
+  with a tariff wins: postal prefix > region > country, a tie by `zone.code`
+  (D28, SHP-06). A tariff is one row per (method, zone, currency): a
+  `delivery_rate` rule, `freeAbove`, `taxIncluded`, `etaDays`. The currency is
+  the context's; there is no conversion.
+- `freeAbove` compares the goods after discounts, inclusive; the quote stage
+  recomputes that base, so an option and the quote give one price (SHP-01).
+  A selected method that cannot deliver fails the quote with
+  `QuoteFailed(method_unavailable)` (SHP-02).
+- Differences from the historical `api-blueprint#shipping` (each logged as a
+  deviation in P6.7): `CreateZone(members: list<ZoneMember>)` instead of
+  `match: ZoneMatch::regions(...)`; `rates: list<ZoneRate>` per (zone,
+  currency) instead of `zones:` plus one `rate:`; the rule is
+  `Commerz\Shipping\Rates\Data\RateSpec`, not the promotions `RuleSpec`;
+  `weight_table` steps are `{up_to_grams, amount: Money}`; `free_over` became
+  the tariff field `freeAbove` (D28); `options()` is `ShippingOptions` with
+  `list()` and `explain()`; `bookings()` was added.
+- Booking states: `pending → booked | rejected | unknown`. A timeout is
+  `unknown`, never "failed, create again": the retry calls `Carrier::find` by
+  the same reference and books anew only when it finds nothing (D29).
+- Errors (stable codes): `shipping.zone_not_found`, `zone_archived`,
+  `method_not_found`, `method_archived`, `duplicate_code`,
+  `duplicate_zone_member`, `too_many_zone_members`, `duplicate_rate`,
+  `too_many_rates`, `unknown_rate`, `invalid_rate_config`,
+  `invalid_rate_result`, `unknown_carrier`, `carrier_mismatch`,
+  `carrier_rejected`, `invalid_carrier_result`, `currency_mismatch`,
+  `delivery_unavailable`, `booking_not_found`, `booking_in_progress`,
+  `booking_outcome_unknown`, `booking_inside_transaction`; shapes
+  `shipping.invalid_*`; from the core `common.idempotency_conflict`,
+  `delivery.invalid_*`, `quotes.failed` (reason `method_unavailable`).
+- Explain verdicts: `available`, `method_not_found`, `method_disabled`,
+  `not_in_channel`, `unsupported_carrier`, `no_zone`, `no_rate_for_currency`,
+  `unsupported_rate`, `invalid_rate_result`, or a rule's own reason
+  (`weight_out_of_range`).
+- Events after commit: `ZoneChanged`, `MethodChanged`,
+  `ShipmentBooked(reference, carrier, tracking)`. No outbox in 0.1: no package
+  consumes them.
 
 ## Sales: `Sales`
 

@@ -26,6 +26,12 @@ one enforcement point; adding a write path that skips it is a defect.
 | PRM-03 | A coupon code is unique per installation in its canonical form, and input is matched the way uniqueness is checked | `cmz_coupons.code` `UNIQUE` + `CHECK` on the canonical form; `PromotionCodes::couponCode` (trim + upper case) is the only normalization of writes and lookups | `AUTUMN` and `autumn` as two coupons; a generation collision; a case-sensitive lookup | `SchemaTest`, golden test G17, concurrent generation, `PromotionsScenarioTest` (code `' autumn '`) |
 | PRM-04 | The same input and data give the same adjustments in a total order | `ActivePromotions` loads `order by stage, priority desc, code asc`; rules run by `position`; `buy_x_get_y` sorts units by (value, line index) | "as the database returned them"; float arithmetic; an unstable sort | golden test G2 with permuted creation order |
 | PRM-05 | A promotion applies whole or not at all, and never takes a line, the order or the delivery below zero; a plugin's result is not trusted | `PromotionEngine` works on a temporary state and keeps it only when every effect passes `DiscountGuard` (currency, target, lines, ≥ 0, clamping); `ActivationResult` and `ConditionOutcome` are validated | partial application when a budget or guard refuses; an effect returning junk or a foreign currency; a discount above the price | golden tests G7 and G16, `RuleTrustTest` |
+| SHP-01 | For one input, a method's price in `DeliveryOptions`, `list`, `explain` and the `delivery` quote stage is the same | shipping `MethodPricer`, the only price path; the stage only supplies the goods base | a second price calculation in the stage | options vs quote (G14) |
+| SHP-02 | A selected method that cannot deliver to the address, channel, currency or weight never yields a quote without delivery | `DeliveryStage` → `QuoteFailed(method_unavailable)` | silently dropping the delivery | unavailable method (G12) |
+| SHP-03 | At most one carrier call per `reference` at a time; after an unknown outcome `find` runs before any new booking | `shipping_bookings`: `UNIQUE(reference)`, `ON CONFLICT`, `FOR UPDATE`, lease, `attempts` fencing | retry after a timeout; calling `Carrier` directly | concurrent booking C1, C3–C5 |
+| SHP-04 | A carrier call never runs inside a database transaction | `CarrierShipmentBooking` refuses an ambient transaction (`shipping.booking_inside_transaction`) | booking from a host `Transactions::run` that later rolls back | booking inside a transaction |
+| SHP-05 | A tariff with an unknown or outdated rule, or an unknown carrier, is not offered (fail-closed) but stays visible to the admin | `RateCodec::decode` → unsupported; verdicts `unsupported_rate`, `unsupported_carrier`; `RateView::$unsupported` | applying a tariff with a broken config | unsupported rate (G9) |
+| SHP-06 | Zone choice is deterministic: specificity rank, then `zone.code` | `MethodPricer` zone step | database row order | zone ranking (G4, G4b) |
 | ORD-01 | Retrying `PlaceOrder` never creates a second order | sales: `UNIQUE(cart_id)` on orders + `OperationReceipts` | client timeout and retry | concurrent double submit |
 | ORD-02 | An order keeps the accepted amounts and snapshots; repricing live data never changes it | sales: snapshot lines, no FK to catalog | refreshing an order from the catalog | change the price after placement |
 | ORD-03 | Per line `ordered = cancelled + fulfilled + outstanding` | sales `OrderLineLedger` | shipping more than ordered | partial shipment + cancel |
@@ -210,6 +216,18 @@ coupons and the per-customer rows from the consumed usages, and lists rules
 with an unsupported key, version, stage or parameters; it exits 1 on any discrepancy and repairs
 nothing.
 
+## Shipping lock order
+
+Shipping locks inside its own tables in this order: **method row `FOR UPDATE`
+→ zone rows `FOR SHARE` by `id ASC`** (`setRates`, `create` with tariffs).
+`archive`, `restore` and `setMembers` of a zone lock only that zone
+`FOR UPDATE`, so `setRates` × `archiveZone` serialise without a cycle. The
+booking journal is a separate resource and is never locked together with them.
+A booking runs as claim transaction → carrier call with no transaction →
+fenced finish transaction (D29); the lease must exceed the carrier client's
+timeout (`commerz-shipping.booking.lease_seconds`, default 120). Quoting,
+`list` and `explain` read without locks.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
@@ -220,6 +238,9 @@ nothing.
 | consume (shipment) | expire (worker) | demand header and lines | header `FOR NO KEY UPDATE`; the sweeper takes it `SKIP LOCKED` and re-checks |
 | count with `expectedOnHand` | reserve / consume | `on_hand` | the compare-and-set runs under the level lock |
 | transfer create / dispatch | reserve at the source | source stock level | the same lock order; the draft holds its stock as a reservation |
+| book (reference X) | book (reference X) | `shipping_bookings` row | `UNIQUE(reference)` + `ON CONFLICT` + `FOR UPDATE` + lease; the second gets `BookingInProgress` or the stored result |
+| book after an expired lease | the stale owner's finish | `attempts` | the finish `UPDATE … WHERE attempts = :attempt AND state = 'pending'` writes nothing for the old owner |
+| set rates | archive zone | method and zone rows | method first, then the zone `FOR SHARE`; archive takes only the zone |
 | consume usage (order 1) | consume usage (order 2) | promotion / coupon counter | conditional `UPDATE used < limit` (re-read after the wait) |
 | consume usage | consume usage (same customer) | customer usage row | `INSERT … ON CONFLICT DO UPDATE … WHERE used < limit` |
 | consume usage (same `orderRef`) | consume usage | redemption header | `UNIQUE(order_ref)`; the second waits and compares the fingerprint |

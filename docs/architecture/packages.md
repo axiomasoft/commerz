@@ -14,7 +14,7 @@ packages may depend on each other.
 | `packages/inventory` | `axiomasoft/commerz-inventory` | `Commerz\Inventory\` | `stock` (`cmz_stock_locations`, `_items`, `_item_links`, `_levels`, `_movements`, `_reservations`, `_transfers`, `_sources`) | `StockAvailability`, `StockReservations`, `StockReturns` | core |
 | `packages/pricing` | `axiomasoft/commerz-pricing` | `Commerz\Pricing\` | `price`, `tax` | `PriceResolver`, quote stage `tax` | core |
 | `packages/promotions` | `axiomasoft/commerz-promotions` | `Commerz\Promotions\` | `promotion`, `coupon` | `PromotionUsage`, quote stages `promotions.*` | core |
-| `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\Shipping\` | `shipping` (`cmz_shipping_zones`, `_methods`, `_rates`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |
+| `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\Shipping\` | `shipping` (`cmz_shipping_zones`, `_zone_members`, `_methods`, `_method_channels`, `_rates`, `_bookings`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |
 | `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\Sales\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` | none (consumer of ports) | core |
 | `packages/full` | `axiomasoft/commerz-full` | — | — | — | all of the above (metapackage) |
 | `packages/testkit` | `axiomasoft/commerz-testkit` | `Commerz\Testkit\` | — | in-memory fakes of all ports, plugin contract tests, concurrency harness | core (dev use) |

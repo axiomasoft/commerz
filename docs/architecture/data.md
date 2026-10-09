@@ -78,6 +78,7 @@ prices never changes a placed order (ORD-02).
 | Reservation and transfer | held stock; goods moving between locations | `cmz_stock_reservations` (header per demand) + `_reservation_lines`; `cmz_stock_transfers` + `_transfer_lines` |
 | Price list and price | what a sellable costs in a channel; windows never overlap (PRC-01) | `cmz_price_lists` (code, currency, `priority`, `tax_included` null = as channel, status), `cmz_price_list_channels`, `cmz_prices` (`sellable_ref`, `customer_group`, `min_quantity`, `amount_minor`, `compare_at_minor`, `valid_from`/`valid_until`) |
 | Tax class, zone and rate | what tax applies where and when (TAX-01) | `cmz_tax_classes`, `cmz_tax_zones`, `cmz_tax_zone_members` (`country`, `region`; unique nulls not distinct), `cmz_tax_rates` (`rate_bp`, `code`, validity window) |
+| Shipping zone, method, tariff and booking | where, with what and for how much a parcel goes; one carrier call per reference (SHP-03) | see *Shipping tables* below |
 | Promotion, rule, coupon and usage | what is discounted and how often it may be spent (PRM-01, PRM-03) | see *Promotions tables* below |
 | Customer | the host's buyer | `CustomerRef` + `CustomerDirectory` port; groups drive prices and promotions |
 | Actor | who executes a command (operator, customer, system) | `ActorRef` |
@@ -136,6 +137,22 @@ varchar(191)` strings.
   header to `restored`.
 - Percent effects round with `commerz-promotions.rounding` (default `half_up`);
   amounts are `Money`, rates basis points (`rateBp`).
+
+## Shipping tables
+
+Owned by `commerz-shipping`, noun `shipping`. Foreign keys only inside the
+package; `channel_id` is a uuid checked through `Channels::assertActive`.
+
+| Table | Holds | Notes |
+|---|---|---|
+| `cmz_shipping_zones` | `code` (unique), `name`, `status` (`active`, `archived`) | zones are archived, never deleted |
+| `cmz_shipping_zone_members` | `country`, `region`, `postal_prefix` | `UNIQUE … NULLS NOT DISTINCT`; a member is a country, a region of it, or a postal prefix of it |
+| `cmz_shipping_methods` | `code` (unique), `name` jsonb, `carrier`, `status` (`active`, `disabled`, `archived`), `position` | |
+| `cmz_shipping_method_channels` | `PK (method_id, channel_id)` | no foreign key to `cmz_channels` |
+| `cmz_shipping_rates` | per (method, zone, currency): `rate_key`, `rate_version`, `params` jsonb, `free_above_minor`, `tax_included`, `eta_days` | `UNIQUE (method, zone, currency)`; `params` is an object written by the rule's codec |
+| `cmz_shipping_bookings` | the carrier-call journal: `reference` (unique), `carrier`, `method_code`, `fingerprint`, `state`, `attempts`, `claimed_at`, `tracking`, `label_ref`, `result`, `error_*`, `booked_at` | `CHECK` that `booked` has tracking and `booked_at` |
+
+Lock order: *Shipping lock order* in `invariants.md`.
 
 ## Catalog projection precision and text equality
 
