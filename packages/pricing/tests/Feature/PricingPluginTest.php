@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Pricing\Tests\Feature;
+
+use Commerz\CommerzServiceProvider;
+use Commerz\PluginGraph;
+use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
+use Commerz\Pricing\Internal\PricingPlugin;
+use Commerz\Pricing\PricingServiceProvider;
+use Commerz\Testkit\PackageTestCase;
+use Commerz\Testkit\PluginContractTests;
+use PHPUnit\Framework\Attributes\Test;
+
+final class PricingPluginTest extends PackageTestCase
+{
+    use PluginContractTests;
+
+    protected function commerzProviders(): array
+    {
+        return [CommerzServiceProvider::class, PricingServiceProvider::class];
+    }
+
+    protected function pluginClass(): string
+    {
+        return PricingPlugin::class;
+    }
+
+    #[Test]
+    public function declares_the_tax_calculator_kind(): void
+    {
+        $registry = PluginGraph::compile(app(), [PricingPlugin::class]);
+
+        self::assertInstanceOf(PluginInspector::class, $registry);
+
+        $kinds = [];
+
+        foreach ($registry->describe() as $plugin) {
+            if ($plugin->class === PricingPlugin::class) {
+                foreach ($plugin->kinds as $kind) {
+                    $kinds[$kind->name] = $kind->interface;
+                }
+            }
+        }
+
+        self::assertSame(['tax_calculator' => TaxCalculator::class], $kinds);
+    }
+}

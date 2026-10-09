@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+use Commerz\Errors\InvalidConfiguration;
+use Commerz\Money\RoundingMode;
+use Commerz\Pricing\Common\Internal\PricingConfig;
+
+it('defaults to the base price fallback, the rates calculator and half-up tax rounding', function (): void {
+    $config = PricingConfig::fromArray([]);
+
+    expect($config->fallbackToSellable)->toBeTrue()
+        ->and($config->taxCalculator)->toBe('rates')
+        ->and($config->defaultTaxClass)->toBe('standard')
+        ->and($config->deliveryTaxClass)->toBe('standard')
+        ->and($config->defaultTaxZone)->toBeNull()
+        ->and($config->taxRounding)->toBe(RoundingMode::HalfUp);
+});
+
+it('reads the shipped config file', function (): void {
+    $config = PricingConfig::fromArray(require __DIR__.'/../../config/commerz-pricing.php');
+
+    expect($config)->toEqual(PricingConfig::fromArray([]));
+});
+
+it('reads every key', function (): void {
+    $config = PricingConfig::fromArray([
+        'fallback_to_sellable' => false,
+        'tax' => ['calculator' => 'acme.avalara', 'default_class' => 'general', 'delivery_class' => null, 'default_zone' => 'ru', 'rounding' => 'half_even'],
+    ]);
+
+    expect($config->fallbackToSellable)->toBeFalse()
+        ->and($config->taxCalculator)->toBe('acme.avalara')
+        ->and($config->defaultTaxClass)->toBe('general')
+        ->and($config->deliveryTaxClass)->toBeNull()
+        ->and($config->defaultTaxZone)->toBe('ru')
+        ->and($config->taxRounding)->toBe(RoundingMode::HalfEven);
+});
+
+it('accepts a rounding mode enum', function (): void {
+    expect(PricingConfig::fromArray(['tax' => ['rounding' => RoundingMode::Floor]])->taxRounding)->toBe(RoundingMode::Floor);
+});
+
+it('names the offending key', function (array $config, string $path): void {
+    expect(fn () => PricingConfig::fromArray($config))
+        ->toThrow(fn (InvalidConfiguration $e) => expect($e->path)->toBe($path));
+})->with([
+    'fallback not a bool' => [['fallback_to_sellable' => 1], 'commerz-pricing.fallback_to_sellable'],
+    'tax not an array' => [['tax' => 'rates'], 'commerz-pricing.tax'],
+    'calculator not a string' => [['tax' => ['calculator' => 1]], 'commerz-pricing.tax.calculator'],
+    'calculator malformed' => [['tax' => ['calculator' => 'Rates One']], 'commerz-pricing.tax.calculator'],
+    'rounding unknown' => [['tax' => ['rounding' => 'banker']], 'commerz-pricing.tax.rounding'],
+    'rounding not a string' => [['tax' => ['rounding' => 3]], 'commerz-pricing.tax.rounding'],
+    'default class null' => [['tax' => ['default_class' => null]], 'commerz-pricing.tax.default_class'],
+    'default class malformed' => [['tax' => ['default_class' => 'Standard']], 'commerz-pricing.tax.default_class'],
+    'delivery class malformed' => [['tax' => ['delivery_class' => 'a b']], 'commerz-pricing.tax.delivery_class'],
+    'default zone malformed' => [['tax' => ['default_zone' => 7]], 'commerz-pricing.tax.default_zone'],
+]);
