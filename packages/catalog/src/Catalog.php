@@ -6,6 +6,8 @@ namespace Commerz\Catalog;
 
 use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
+use Commerz\Catalog\Categories\Contracts\Categories;
+use Commerz\Catalog\Listings\Contracts\Listings;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
@@ -21,6 +23,8 @@ final readonly class Catalog
         private ProductTypes $productTypes,
         private Products $products,
         private Variants $variants,
+        private Categories $categories,
+        private Listings $listings,
     ) {}
 
     public function products(): Products
@@ -46,5 +50,15 @@ final readonly class Catalog
     public function productTypes(): ProductTypes
     {
         return $this->productTypes;
+    }
+
+    public function categories(): Categories
+    {
+        return $this->categories;
+    }
+
+    public function listings(): Listings
+    {
+        return $this->listings;
     }
 }

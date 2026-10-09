@@ -9,8 +9,12 @@ use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Attributes\Internal\AttributeIndexer;
 use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Attributes\Internal\DatabaseAttributes;
+use Commerz\Catalog\Categories\Contracts\Categories;
+use Commerz\Catalog\Categories\Internal\DatabaseCategories;
 use Commerz\Catalog\Common\Internal\CatalogConfig;
 use Commerz\Catalog\Internal\CatalogPlugin;
+use Commerz\Catalog\Listings\Contracts\Listings;
+use Commerz\Catalog\Listings\Internal\DatabaseListings;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Options\Internal\DatabaseOptions;
 use Commerz\Catalog\Products\Contracts\Products;
@@ -47,6 +51,8 @@ final class CatalogServiceProvider extends ServiceProvider
         $this->app->singleton(ProductTypes::class, DatabaseProductTypes::class);
         $this->app->singleton(Products::class, DatabaseProducts::class);
         $this->app->singleton(Variants::class, DatabaseVariants::class);
+        $this->app->singleton(Categories::class, DatabaseCategories::class);
+        $this->app->singleton(Listings::class, DatabaseListings::class);
         $this->app->singleton(Catalog::class);
 
         CommerzPlugins::builtIn(CatalogPlugin::class);
