@@ -1,0 +1,165 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.1",
+  "title": "Kernel: QuoteResult::appliedPromotions — one fold of adjustments per promotion (D25)",
+  "status": "done",
+  "summary": "Ядро получает QuoteResult::appliedPromotions(): одна свёртка корректировок квоты в list<AppliedPromotion> для PromotionUsage::consume — свои line-корректировки строк, затем объявленные order-, затем delivery-корректировки, группировка по promotionId, без повторного счёта долей order-корректировок (D25).",
+  "why": "Источник applied для consume в sales (P7) и в тестах promotions; бюджет акции (spent) должен равняться реально выданной скидке. Риски: двойной счёт долей order-скидки (QuotedLine::$adjustments содержит и доли, target Order с lineId); int-ключи PHP для id вида '1'; молчаливое слияние разных couponCode одной акции.",
+  "scope": {
+    "include": [
+      "packages/core/src/Quotes/Data/QuoteResult.php: публичный метод appliedPromotions(): list<AppliedPromotion> по knowledge/promotions-design#kernel-changes (docblock на английском, как соседний код)",
+      "packages/core/tests/Feature/Quotes/AppliedPromotionsTest.php: сценарии из knowledge/promotions-design#kernel-changes"
+    ],
+    "exclude": [
+      "любые другие файлы ядра и testkit",
+      "пакет promotions (P5.2+)"
+    ]
+  },
+  "depends_on": [],
+  "decisions": [
+    "D25",
+    "D23"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#kernel-changes",
+      "why": "сигнатура, алгоритм и тесты — ядро item'а",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteResult.php",
+      "why": "изменяемый класс",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/QuotedLine.php",
+      "why": "состав adjustments строки (свои + доли)",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/Adjustment.php",
+      "why": "target/lineId/promotionId/couponCode",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Promotions/Data/AppliedPromotion.php",
+      "why": "тип результата и его проверки",
+      "required": true
+    },
+    {
+      "path": "packages/core/tests/Feature/Quotes/QuotePipelineTest.php",
+      "why": "образец теста конвейера с тестовой стадией",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteResult.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/core/tests/Feature/Quotes/AppliedPromotionsTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Изменение ядра только аддитивное: существующие сигнатуры, конструктор QuoteResult и поведение не меняются."
+  ],
+  "guidance": "Обход: foreach lines → foreach line->adjustments, где target === AdjustmentTarget::Line; затем orderAdjustments (они все Order без lineId); затем deliveryAdjustments. Пропуск adjustment->promotionId === null. Хранить порядок первых появлений в list<string> $ids и суммы в list<Money> по индексу (array_search по $ids), не в массиве с ключом-id. couponCode: первое значение фиксируется; любое отличие (включая null против кода) → new InvalidCommand('adjustments', \"promotion '{id}' carries two coupon codes\", 'quotes.inconsistent_promotion'). discount = Money::zero(currency)->minus(Σ amount) — положителен. Тест строит QuoteResult через реальный конвейер с тестовой стадией, добавляющей Adjustment::line/order/delivery с promotionId, либо через new QuoteResult(...) с готовыми QuotedLine — показать, что доля order-корректировки на строке не удваивает сумму.",
+  "examples": [
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteState.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest packages/core/tests/Feature/Quotes",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "QuoteResult::appliedPromotions()",
+    "AppliedPromotionsTest"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T14:27:20Z",
+    "finished_at": "2026-10-09T14:29:16Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "high",
+      "session": "44fc8c4f-3eed-4768-85f5-af3b0acde4f7"
+    },
+    "notes": "QuoteResult::appliedPromotions() + AppliedPromotionsTest (9 scenarios, real pipeline)",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T14:29:16Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T14:29:16Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T14:29:16Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T14:29:16Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T14:29:16Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T14:29:16Z"
+}

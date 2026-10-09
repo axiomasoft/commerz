@@ -2,27 +2,136 @@
   "$schema": "urn:swissknifeman:task:plan:phase:v1",
   "id": "P5",
   "title": "Promotions & coupons package",
-  "design": "skeleton",
-  "goal": "axiomasoft/commerz-promotions: акции с условиями/эффектами по стабильным ключам и config_version, активаторы automatic/coupon, стадии promotions.catalog/cart/delivery, детерминированный stacking (priority, stackable/exclusive/stop_further), распределение скидок, объяснение отказов, купоны (коды, генерация партий, нормализация), лимиты total/per-customer и бюджеты, PromotionUsage consume/restore.",
-  "context": "Решения D5 (купоны внутри пакета через тот же SPI), D13 (расход при размещении, restore по политике), D15 (последовательное сложение внутри стадии). Инварианты PRM-01/02.",
+  "design": "detailed",
+  "goal": "axiomasoft/commerz-promotions: акции с явной стадией (catalog/cart/delivery), условиями и эффектами по стабильным ключам с config_version (fail-closed для неизвестных), активаторы automatic/coupon через публичный SPI (D5), стадии promotions.* с детерминированным stacking (priority DESC, code ASC; stackable/exclusive/stopFurther; последовательное сложение D15), атомарное применение с клампингом, explain с вердиктами, купоны (канонические коды, генерация партий), лимиты total/per-customer/coupon и бюджет с PromotionUsage consume/restore под протоколом блокировок D27 (PRM-01).",
+  "context": "Детализировано после закрытия P1–P4 против реального кода ядра (D16). Модель, схема, SPI, алгоритмы стадий и BXGY, протокол расхода, golden-примеры и API — knowledge/promotions-design; решения D25 (единственная правка ядра фазы в P5.1: QuoteResult::appliedPromotions), D26 (модель и движок), D27 (счётчики и блокировки), D5, D13, D15, D23. Порт PromotionUsage и QuoteState — knowledge/kernel-contracts и код ядра. Образец пакета — packages/pricing (P4): Database*-модули на query builder, Common/Internal, плагин с declareKind, стадии с резолвом зависимостей из контейнера на каждый apply, миграции CommerzMigration, многопроцессные тесты на Concurrency::run. Конкурентные тесты на PostgreSQL обязательны.",
+  "contract": {
+    "consumes": [
+      "Commerz\\Ports\\Promotions (PromotionUsage, ConsumePromotionUsage, RestorePromotionUsage, AppliedPromotion, RestoreReason, UsageLimitReached)",
+      "Quotes (QuoteStage, QuoteState: lineNet/itemsNet/allocatedOrderAdjustments/deliveryNet/withAdjustment/withRejection, Adjustment, Rejection, QuoteInput, QuoteResult с appliedPromotions из P5.1, QuoteAnchor, StagePosition, QuotePipeline, QuoteFailed)",
+      "Money (Money::percentage, MoneyAllocator, Currency, Rate, RoundingMode)",
+      "Plugins (PluginRegistrar::declareKind/contribute/quoteStage, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+      "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+      "Operations (Transactions, OperationReceipts, CommittedEvents, Fingerprint), Errors (InvalidCommand, NotFound, IdempotencyConflict, InvalidConfiguration)",
+      "Stores\\Contracts\\Channels (assertActive), Identity (EntityId, SellableRef, CustomerRef, IdempotencyKey), Context\\CommerceContext, Pagination (Page, Cursor)",
+      "testkit (Concurrency, PluginContractTests, PackageTestCase, FakePrices, FakeSellables)"
+    ],
+    "produces": [
+      "axiomasoft/commerz-promotions: корень Promotions + фасад; модули Rules (SPI), Definitions, Coupons, Evaluation (Internal), Usage",
+      "SPI promotion_condition / promotion_effect / promotion_activator со встроенными 5 условиями, 6 эффектами, активаторами automatic и coupon",
+      "quote stages promotions.catalog, promotions.cart, promotions.delivery и Promotions::promotions()->explain",
+      "реализация порта PromotionUsage (DatabasePromotionUsage) и команда commerz:promotions:reconcile",
+      "core (D25): QuoteResult::appliedPromotions()",
+      "инварианты PRM-01..PRM-05 в docs/architecture"
+    ],
+    "boundaries": [
+      "promotions пишет только в таблицы существительных promotion и coupon",
+      "без FK и записи в таблицы ядра; канал — только через контракт Channels; клиент и заказ — Ref-строки",
+      "без зависимостей на другие feature-пакеты (категории и атрибуты — только из SellableSnapshot)",
+      "стадии, условия, эффекты и активаторы не пишут в БД и не ходят в сеть; расход — только PromotionUsage::consume"
+    ]
+  },
   "scope": {
     "include": [
-      "packages/promotions/**"
+      "packages/promotions/**",
+      "packages/core/src/Quotes/Data/QuoteResult.php и packages/core/tests/Feature/Quotes/AppliedPromotionsTest.php (только P5.1, D25)",
+      "docs/architecture/{api,invariants,decisions,data,extension}.md"
     ],
     "exclude": [
       "подарочные сертификаты, бонусные баллы",
-      "поиск глобального оптимума комбинаций"
+      "поиск глобального оптимума комбинаций; exclusive через стадии",
+      "BXGY с разными наборами buy/get (через плагин), автодобавление подарка в корзину",
+      "скидочные цены в листинге каталога без квоты",
+      "вызовы consume/restore из sales и снимок корректировок в заказе (P7), сквозные сценарии магазина (P8)"
     ]
   },
   "depends_on": [
     "P1"
   ],
-  "deliverables": [
-    "Promotions API",
-    "встроенные условия/эффекты",
-    "конкурентный тест последней квоты",
-    "golden-тесты распределения"
+  "pitfalls": [
+    "счётчик used/spent у безлимитной акции или купона — горячая строка, сериализующая все размещения (D27: только при лимите)",
+    "read-then-write лимита в PHP без блокировки или условного UPDATE — превышение лимита (PRM-01)",
+    "смена лимита без FOR UPDATE и пересчёта — потерянный параллельный расход",
+    "блокировки не по id ASC или не в порядке coupons → promotions → customer usages — 40P01",
+    "расход или чтение-с-записью в стадии квоты; now() вместо context.at",
+    "каждая стадия грузит акции заново — тройная загрузка и рассогласование между стадиями (одна сессия на QuoteInput, catalog её обновляет)",
+    "частичное применение акции при отказе бюджета/guard'а (PRM-05); скидка больше цены без клампинга",
+    "доверие плагину: строки вне набора, чужая валюта, отрицательная скидка, activation чужой акции",
+    "нормализация кода купона в двух местах по-разному (PRM-03); case-sensitive поиск",
+    "строковые line id и promotion id вида '1' как ключи PHP-массива становятся int",
+    "двойной счёт долей order-корректировки при свёртке applied (D25)",
+    "BXGY: материализация единиц при большом quantity; сортировка без tie-break (PRM-04)",
+    "тестовый плагин стадии регистрировать в defineEnvironment до миграций (урок A5 аудита P4)",
+    "конкурентные тесты под RefreshDatabase-транзакцией — данные должны коммититься"
   ],
-  "items": [],
-  "batches": []
+  "deliverables": [
+    "Promotions API (promotions(): PromotionDefinitions, coupons(): Coupons) и explain",
+    "SPI правил и активаторов, встроенные правила, RuleCodec с fail-closed unsupported",
+    "стадии promotions.* с golden-тестами G1–G22",
+    "PromotionUsage consume/restore с конкурентными тестами C1–C7 и reconcile",
+    "правка ядра D25 с тестами",
+    "docs/architecture синхронизированы (PRM-01..05, API, D25–D27, kinds, данные)"
+  ],
+  "items": [
+    "P5.1",
+    "P5.2",
+    "P5.3",
+    "P5.4",
+    "P5.5",
+    "P5.6",
+    "P5.7",
+    "P5.8"
+  ],
+  "batches": [
+    {
+      "id": "BP5-1",
+      "items": [
+        "P5.1",
+        "P5.2"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-2",
+      "items": [
+        "P5.3"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-3",
+      "items": [
+        "P5.4"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-4",
+      "items": [
+        "P5.5"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-5",
+      "items": [
+        "P5.6"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-6",
+      "items": [
+        "P5.7"
+      ],
+      "mode": "recommended"
+    },
+    {
+      "id": "BP5-7",
+      "items": [
+        "P5.8"
+      ],
+      "mode": "recommended"
+    }
+  ]
 }
