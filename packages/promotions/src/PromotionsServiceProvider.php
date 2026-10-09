@@ -7,6 +7,10 @@ namespace Commerz\Promotions;
 use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
+use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
+use Commerz\Promotions\Definitions\Internal\PromotionRows;
+use Commerz\Promotions\Definitions\Internal\UsageCounters;
 use Commerz\Promotions\Internal\PromotionsPlugin;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
@@ -27,6 +31,11 @@ final class PromotionsServiceProvider extends ServiceProvider
 
             return PromotionsConfig::fromArray(is_array($config) ? $config : []);
         });
+
+        $this->app->singleton(PromotionRows::class);
+        $this->app->singleton(UsageCounters::class);
+        $this->app->singleton(PromotionDefinitions::class, DatabasePromotionDefinitions::class);
+        $this->app->singleton(Promotions::class);
 
         CommerzPlugins::builtIn(PromotionsPlugin::class);
 

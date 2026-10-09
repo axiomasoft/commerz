@@ -1,0 +1,212 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.4",
+  "title": "Promotion definitions: create/update/pause/resume/archive/channels/list, counter recompute, root and facade",
+  "status": "done_with_deviations",
+  "summary": "Модуль Definitions: create, update, pause, resume, archive, assignChannels, unassignChannels, find, findByCode, list акций с выводом валюты, проверкой активатора и правил через RuleCodec, каналами через Channels::assertActive, ревизией, пересчётом счётчиков при смене лимитов (UsageCounters) и событием PromotionChanged; корень Promotions (promotions()) и фасад.",
+  "why": "Единственный путь записи определений акций; его FOR UPDATE + пересчёт — половина протокола PRM-01 (D27): без них смена лимита теряет параллельный расход. Риски: обновление без FOR UPDATE; смена stage/activator/currency (запрещена); событие при no-op или до коммита; правила, записанные мимо RuleCodec; вывод валюты, принимающий две разные валюты.",
+  "scope": {
+    "include": [
+      "Definitions/Contracts/PromotionDefinitions (без explain — его добавит P5.6), Definitions/Data/{CreatePromotion, UpdatePromotion, UsageLimits, PromotionWindow, PausePromotion, ResumePromotion, ArchivePromotion, AssignPromotionChannels, UnassignPromotionChannels, ListPromotions, PromotionView, PromotionUsageSummary}, Definitions/Enums/{PromotionStatus, Stacking}, Definitions/Events/PromotionChanged, Definitions/Exceptions/{PromotionNotFound, PromotionArchived} — по knowledge/promotions-design#writes и #api",
+      "Definitions/Internal/{DatabasePromotionDefinitions, PromotionRows, UsageCounters}: алгоритмы #writes; UsageCounters::recompute по #usage («Смена лимитов»)",
+      "Promotions.php (корень #[Api] final readonly: promotions(): PromotionDefinitions), Facades/Promotions, провайдер: singleton PromotionDefinitions и Promotions",
+      "tests/Feature/Definitions/PromotionDefinitionsTest.php: create (вывод валюты из budget/правил, конфликт валют, unknown_activator, unknown_rule, rule_not_allowed_in_stage, канал другой валюты → CurrencyNotAllowed ядра, DuplicateCode), update (null — не менять, revision, правила заменяются, снятие лимитов UsageLimits(), clearBudget, PromotionWindow), pause/resume/archive (переходы, повтор — no-op без события, archived → PromotionArchived), каналы (последний канал → promotions.no_channels), list с фильтрами и курсором, события ровно один раз после коммита и ни одного при откате; tests/Feature/Definitions/UsageCountersTest.php (редемпции и usages вставлены SQL: смена лимита пересчитывает used/spent только по consumed, строки покупателей пересоздаются)"
+    ],
+    "exclude": [
+      "explain и его Data (P5.6)",
+      "купоны (P5.5)",
+      "consume/restore (P5.7)"
+    ]
+  },
+  "depends_on": [
+    "P5.3"
+  ],
+  "decisions": [
+    "D26",
+    "D27"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#writes",
+      "why": "команды и алгоритмы — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#usage",
+      "why": "режимы блокировок и пересчёт счётчиков",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#api",
+      "why": "корень, view, коды ошибок, события",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#schema",
+      "why": "колонки promotions/channels/rules/customer_usages",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/PriceLists/Internal/DatabasePriceLists.php",
+      "why": "образец Database*-модуля: Transactions, savepoint, события после коммита, каналы",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Pricing.php",
+      "why": "образец корня",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Facades/Pricing.php",
+      "why": "образец фасада",
+      "required": true
+    },
+    {
+      "path": "packages/promotions/src/Rules/Internal/RuleCodec.php",
+      "why": "encode правил (P5.2)",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/PriceLists/PriceListsTest.php",
+      "why": "образец feature-тестов модуля и проверки событий",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/src/Definitions/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Promotions.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Facades/Promotions.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/PromotionsServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Definitions/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка/обновление, которые могут нарушить ограничение, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid, клиент/заказ — varchar(191) ref-строки.",
+    "Стадии, условия, эффекты и активаторы не пишут в БД, не ходят в сеть и берут время только из context.at.",
+    "Блокировки строго в порядке и режимах knowledge/promotions-design#usage (заголовок → coupons → promotions → customer usages, id ASC).",
+    "code, stage, activator и currency акции неизменяемы после создания.",
+    "Любая мутация определения блокирует строку акции FOR UPDATE (не NO KEY UPDATE): только это ждёт consume, державших FOR KEY SHARE (D27)."
+  ],
+  "guidance": "PromotionView собирается одним запросом акции + каналы + правила (order by role, position) + агрегат usage: select count(*), currency, sum(discount_minor) from promotion_usages u join promotion_redemptions r on r.id = u.redemption_id where u.promotion_id = ? and r.state = 'consumed' group by currency. RuleSpec в view — канонические params из jsonb. list — курсор по code (Cursor::after(code)), limit+1 для next. Вывод валюты: CreatePromotion хранит входные RuleSpec; DatabasePromotionDefinitions считает currencies() через RuleParams::fromInput. UsageCounters::recompute вызывается в той же транзакции под уже взятым FOR UPDATE. Событие PromotionChanged — CommittedEvents::dispatch только при реальном изменении (сравнить прежнюю строку).",
+  "examples": [
+    {
+      "path": "packages/pricing/src/PriceLists/Data/CreatePriceList.php"
+    },
+    {
+      "path": "packages/pricing/src/PriceLists/Data/PriceListView.php"
+    },
+    {
+      "path": "packages/pricing/src/PriceLists/Exceptions/PriceListArchived.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "PromotionDefinitions (без explain)",
+    "UsageCounters",
+    "корень Promotions и фасад"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T15:24:03Z",
+    "finished_at": "2026-10-09T15:33:22Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5",
+      "effort": "high",
+      "session": "2d8a9b19-6e8d-4476-b71f-cf34b304175a"
+    },
+    "notes": "PromotionDefinitions (create/update/pause/resume/archive/assign/unassign/find/findByCode/list), PromotionRows, UsageCounters::recompute, Promotions root + facade + provider singletons; every mutation selects the promotion FOR UPDATE (asserted by test), events once after commit; 202 promotions tests green",
+    "deviations": [
+      "CreatePromotion argument order (effects before conditions) and ListPromotions first/after naming; see log"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T15:33:22Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T15:33:22Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T15:33:22Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T15:33:22Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T15:33:22Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T15:33:22Z"
+}
