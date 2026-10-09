@@ -15,12 +15,16 @@ use Commerz\Catalog\Attributes\Internal\Types\MeasureType;
 use Commerz\Catalog\Attributes\Internal\Types\MultiEnumType;
 use Commerz\Catalog\Attributes\Internal\Types\ReferenceType;
 use Commerz\Catalog\Attributes\Internal\Types\TextType;
+use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
+use Commerz\Catalog\ProductTypes\Internal\Kinds\DigitalKind;
+use Commerz\Catalog\ProductTypes\Internal\Kinds\PhysicalKind;
+use Commerz\Catalog\ProductTypes\Internal\Kinds\ServiceKind;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\ContributionKind;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
 
-/** The catalog's own plugin: declares the `attribute_type` kind and contributes the built-in types. */
+/** The catalog's own plugin: declares the `attribute_type` and `product_kind` kinds and contributes the built-ins. */
 final class CatalogPlugin implements CommerzPlugin
 {
     public const string ID = 'commerz.catalog';
@@ -34,11 +38,17 @@ final class CatalogPlugin implements CommerzPlugin
     {
         $registrar->declareKind(new ContributionKind(AttributeType::KIND, AttributeType::class, self::ID));
 
+        $registrar->declareKind(new ContributionKind(ProductKind::KIND, ProductKind::class, self::ID));
+
         foreach ([
             TextType::class, LocalizedTextType::class, IntegerType::class, DecimalType::class, BooleanType::class,
             DateType::class, EnumType::class, MultiEnumType::class, MeasureType::class, ReferenceType::class,
         ] as $type) {
             $registrar->contribute(AttributeType::KIND, $type);
+        }
+
+        foreach ([PhysicalKind::class, DigitalKind::class, ServiceKind::class] as $kind) {
+            $registrar->contribute(ProductKind::KIND, $kind);
         }
     }
 }
