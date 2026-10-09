@@ -8,6 +8,7 @@ use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\ContributionKind;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
+use Commerz\Promotions\Coupons\Internal\CouponActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
@@ -26,8 +27,8 @@ use Commerz\Promotions\Rules\Internal\Effects\OrderPercentOff;
 
 /**
  * The promotions' own plugin: declares the `promotion_condition`, `promotion_effect` and `promotion_activator` kinds and
- * contributes the built-in rules and the `automatic` activator through them, as a third-party plugin would. The
- * `coupon` activator and the quote stages are contributed as they are added.
+ * contributes the built-in rules and the `automatic` and `coupon` activators through them, as a third-party plugin
+ * would. The quote stages are contributed as they are added.
  */
 final class PromotionsPlugin implements CommerzPlugin
 {
@@ -53,5 +54,6 @@ final class PromotionsPlugin implements CommerzPlugin
         }
 
         $registrar->contribute(PromotionActivator::KIND, AutomaticActivator::class);
+        $registrar->contribute(PromotionActivator::KIND, CouponActivator::class);
     }
 }

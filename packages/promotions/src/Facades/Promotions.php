@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Facades;
 
 use Commerz\Attributes\Api;
+use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static PromotionDefinitions promotions()
+ * @method static Coupons coupons()
  *
  * @see \Commerz\Promotions\Promotions
  */

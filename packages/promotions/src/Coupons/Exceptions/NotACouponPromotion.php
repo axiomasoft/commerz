@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Commerz\Promotions\Coupons\Exceptions;
+
+use Commerz\Attributes\Api;
+use Commerz\Errors\CommerzException;
+use Commerz\Errors\ErrorCategory;
+
+/** Coupons belong to promotions of the `coupon` activator; this promotion is switched on another way. */
+#[Api(since: '0.1')]
+final class NotACouponPromotion extends CommerzException
+{
+    public function __construct(public readonly string $promotion, public readonly string $activator)
+    {
+        parent::__construct("Promotion '{$promotion}' is activated by '{$activator}', not by coupons.");
+    }
+
+    public function code(): string
+    {
+        return 'promotions.not_a_coupon_promotion';
+    }
+
+    public function category(): ErrorCategory
+    {
+        return ErrorCategory::Conflict;
+    }
+
+    public function context(): array
+    {
+        return ['promotion' => $this->promotion, 'activator' => $this->activator];
+    }
+}

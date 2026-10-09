@@ -1,0 +1,208 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.5",
+  "title": "Coupons: create, generate batches, disable/enable/limit, lookup and the coupon activator",
+  "status": "done_with_deviations",
+  "summary": "Модуль Coupons: create, generate (шаблон с '#', алфавит из конфига, CSPRNG, пачки ON CONFLICT DO NOTHING с догенерацией, идемпотентность по ключу), disable, enable, setLimit (с пересчётом used), find, findByCode, list; активатор coupon (CouponActivator) как вклад promotion_activator; корень coupons().",
+  "why": "Купоны — активатор через публичный SPI (D5) и вторая половина PRM-03: одна нормализация (PromotionCodes::couponCode) для записи, поиска и активации. Риски: case-sensitive поиск или вторая нормализация; SELECT-перед-INSERT вместо UNIQUE; генерация из малого пространства кодов (бесконечные коллизии); генерация, держащая FOR SHARE (блокирует consume) вместо FOR KEY SHARE; активатор, пишущий в БД.",
+  "scope": {
+    "include": [
+      "Coupons/Contracts/Coupons, Coupons/Data/{CreateCoupon, GenerateCoupons, CouponView, CouponBatchView, DisableCoupon, EnableCoupon, SetCouponLimit, ListCoupons}, Coupons/Enums/CouponStatus, Coupons/Events/CouponsGenerated, Coupons/Exceptions/{CouponNotFound, CodeSpaceExhausted, NotACouponPromotion} — по knowledge/promotions-design#writes (Купоны) и #api",
+      "Coupons/Internal/{DatabaseCoupons, CouponPattern, CouponActivator}: алгоритмы #writes и активатор по #builtins",
+      "Internal/PromotionsPlugin: contribute CouponActivator; Promotions.php: coupons(): Coupons; провайдер: singleton Coupons",
+      "tests/Feature/Coupons/CouponsTest.php (create: нормализация ' autumn ' → AUTUMN, неканоничный код, DuplicateCode в разном регистре, акция не coupon → NotACouponPromotion, archived → PromotionArchived; disable/enable no-op повтор; setLimit пересчитывает used по consumed usages, вставленным SQL; findByCode регистронезависим; list с batch/status и курсором), tests/Feature/Coupons/CouponGenerationTest.php (count точный, все коды по шаблону и уникальны, pattern_too_small, идемпотентный повтор с ключом возвращает ту же партию, другой payload → IdempotencyConflict; Concurrency::run 4 процесса × generate 500 по одному шаблону → 2000 уникальных кодов), tests/Feature/Coupons/CouponActivatorTest.php (все ветки #builtins: не распознан, duplicate_code, coupon_disabled, promotion_not_active, coupon_exhausted, duplicate_promotion, успешная Activation с каноническим couponCode и presentedCode), tests/Unit/Coupons/CouponPatternTest.php"
+    ],
+    "exclude": [
+      "движок и отказ unknown_code (P5.6)",
+      "расход купона (P5.7)"
+    ]
+  },
+  "depends_on": [
+    "P5.4"
+  ],
+  "decisions": [
+    "D5",
+    "D26",
+    "D27"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#writes",
+      "why": "команды купонов и генерация — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#builtins",
+      "why": "алгоритм активатора coupon",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#usage",
+      "why": "режимы блокировок (KEY SHARE для генерации, FOR UPDATE для disable/setLimit) и пересчёт used купона",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#schema",
+      "why": "coupons, coupon_batches",
+      "required": true
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Internal/DatabasePromotionDefinitions.php",
+      "why": "стиль модуля и чтение акции (P5.4)",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Operations/Contracts/OperationReceipts.php",
+      "why": "идемпотентность generate",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/Prices/PriceConcurrencyTest.php",
+      "why": "образец многопроцессного теста с коммитом данных",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/src/Coupons/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Internal/PromotionsPlugin.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/Promotions.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/PromotionsServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Coupons/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Unit/Coupons/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/PromotionsPluginTest.php",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка/обновление, которые могут нарушить ограничение, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid, клиент/заказ — varchar(191) ref-строки.",
+    "Стадии, условия, эффекты и активаторы не пишут в БД, не ходят в сеть и берут время только из context.at.",
+    "Блокировки строго в порядке и режимах knowledge/promotions-design#usage (заголовок → coupons → promotions → customer usages, id ASC).",
+    "Нормализация кода купона — только PromotionCodes::couponCode (P5.2): в create, findByCode, активаторе и consume.",
+    "Случайность — random_int (CSPRNG), никаких mt_rand/str_shuffle."
+  ],
+  "guidance": "CouponPattern: разобрать шаблон после strtoupper; '#' — слот; литералы проверить по [A-Z0-9_-]; число слотов ≥ 4; capacity = |alphabet|^slots через brick/math BigInteger (не переполнять int); capacity < 100 × count → pattern_too_small. generate: Transactions::run → (OperationReceipts::once при ключе) → select акции for key share (нет → PromotionNotFound, archived → PromotionArchived, activator ≠ coupon → NotACouponPromotion) → INSERT batch → цикл ≤ 10 раундов: сгенерировать недостающее число (без дублей внутри раунда), вставить пачками по 1000 `insert … on conflict (code) do nothing returning id`, вычесть вставленные. Encode/decode результата для receipts — массив полей CouponBatchView. CouponActivator резолвит соединение как Database*-модули; один запрос coupons where code = any(?).",
+  "examples": [
+    {
+      "path": "packages/pricing/src/Prices/Internal/PriceWrites.php"
+    },
+    {
+      "path": "packages/pricing/src/Prices/Internal/DatabasePrices.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Coupons API",
+    "CouponPattern",
+    "активатор coupon",
+    "конкурентная генерация"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T15:34:34Z",
+    "finished_at": "2026-10-09T15:42:54Z",
+    "executor": {
+      "provider": "claude",
+      "model": "sonnet-5-5",
+      "effort": "high",
+      "session": "32587875-8f5a-4695-b9ea-ef45a598c5d4"
+    },
+    "notes": "Coupons module: create/generate/disable/enable/setLimit/find/findByCode/list, CouponPattern, CouponActivator contributed by the plugin, coupons() on the root and facade; generate takes the promotion FOR KEY SHARE, inserts sorted chunks with ON CONFLICT DO NOTHING and tops up in <=10 rounds, keyed via OperationReceipts; 4x500 concurrent generation gives 2000 unique codes; 241 promotions tests green",
+    "deviations": [
+      "CouponPattern uses saturating int capacity instead of brick/math; concurrency tests in a separate file; BuiltInRulesPluginTest updated for the coupon activator"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T15:42:54Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T15:42:54Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T15:42:54Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T15:42:54Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T15:42:54Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T15:42:54Z"
+}

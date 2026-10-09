@@ -7,6 +7,8 @@ namespace Commerz\Promotions;
 use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Coupons\Contracts\Coupons;
+use Commerz\Promotions\Coupons\Internal\DatabaseCoupons;
 use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\PromotionRows;
@@ -35,6 +37,7 @@ final class PromotionsServiceProvider extends ServiceProvider
         $this->app->singleton(PromotionRows::class);
         $this->app->singleton(UsageCounters::class);
         $this->app->singleton(PromotionDefinitions::class, DatabasePromotionDefinitions::class);
+        $this->app->singleton(Coupons::class, DatabaseCoupons::class);
         $this->app->singleton(Promotions::class);
 
         CommerzPlugins::builtIn(PromotionsPlugin::class);

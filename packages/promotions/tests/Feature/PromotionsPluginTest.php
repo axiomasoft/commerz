@@ -53,4 +53,22 @@ final class PromotionsPluginTest extends PackageTestCase
             'promotion_activator' => PromotionActivator::class,
         ], $kinds);
     }
+
+    #[Test]
+    public function contributes_the_automatic_and_coupon_activators(): void
+    {
+        $contributed = [];
+
+        foreach (PluginGraph::compile(app(), [PromotionsPlugin::class])->describe() as $plugin) {
+            foreach ($plugin->contributions as $contribution) {
+                if ($contribution->kind === PromotionActivator::KIND) {
+                    $contributed[] = $contribution->key;
+                }
+            }
+        }
+
+        sort($contributed);
+
+        self::assertSame(['automatic', 'coupon'], $contributed);
+    }
 }

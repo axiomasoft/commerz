@@ -28,7 +28,7 @@ it('contributes the built-in conditions, effects and activator under their keys'
 
     expect($contributions->has(PromotionActivator::KIND, 'automatic'))->toBeTrue()
         ->and($contributions->get(PromotionActivator::KIND, 'automatic', PromotionActivator::class))->toBeInstanceOf(AutomaticActivator::class)
-        ->and($contributions->has(PromotionActivator::KIND, 'coupon'))->toBeFalse();
+        ->and($contributions->has(PromotionActivator::KIND, 'coupon'))->toBeTrue();
 });
 
 it('registers each key once: the built-ins agree with their own key()', function (): void {
@@ -48,7 +48,7 @@ it('registers each key once: the built-ins agree with their own key()', function
 
     expect($contributions->keys(PromotionCondition::KIND))->toHaveCount(5)
         ->and($contributions->keys(PromotionEffect::KIND))->toHaveCount(6)
-        ->and($contributions->keys(PromotionActivator::KIND))->toBe(['automatic']);
+        ->and($contributions->keys(PromotionActivator::KIND))->toBe(['automatic', 'coupon']);
 });
 
 it('switches on every candidate of the automatic activator and rejects nothing', function (): void {
