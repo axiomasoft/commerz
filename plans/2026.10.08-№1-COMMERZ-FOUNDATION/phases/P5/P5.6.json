@@ -1,0 +1,213 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P5.6",
+  "title": "Promotion engine: quote session, activation, stage algorithm with stacking and guards, three stages and explain",
+  "status": "in_progress",
+  "summary": "Движок акций: сессия квоты (PromotionSessions с WeakMap по QuoteInput, ActivePromotions::load с активацией и отказами по кодам), PromotionEngine с алгоритмом стадии (порядок priority DESC/code ASC, Exclusive/stopFurther, лимиты-подсказки, два прохода условий, эффекты на временном состоянии, DiscountGuard с клампингом, бюджет, атомарность), три стадии promotions.catalog/cart/delivery, explain с вердиктами.",
+  "why": "Сердце пакета: превращает данные акций в корректировки квоты детерминированно и объяснимо (PRM-04, PRM-05, D15, D26). Риски: тройная загрузка и рассогласование стадий; устаревшая сессия при повторном run() того же входа; частичное применение акции; доверие плагину (строки вне набора, чужая валюта, activation чужой акции); Rejection для автоматических акций (шум); глотание исключений плагинов; время не из context.at.",
+  "scope": {
+    "include": [
+      "Evaluation/Internal/{PromotionSessions, PromotionSession, ActivePromotions, CandidatePromotion, PromotionEngine, DiscountGuard}.php по knowledge/promotions-design#engine",
+      "Evaluation/Internal/Stages/{CatalogPromotionsStage, CartPromotionsStage, DeliveryPromotionsStage}.php (key promotions.<stage>, At своего якоря, зависимости из контейнера на каждый apply)",
+      "Internal/PromotionsPlugin: quoteStage × 3; провайдер: singleton PromotionSessions",
+      "explain: Definitions/Data/{ExplainPromotions, PromotionExplanation, PromotionVerdict}, Definitions/Enums/VerdictKind, метод explain() в PromotionDefinitions и DatabasePromotionDefinitions (делегирует Internal-классу Evaluation)",
+      "tests/Feature/Evaluation/GoldenTest.php — G1–G22 из #golden (G16: spent_minor задаётся SQL-ом; G18: строка promotion_customer_usages SQL-ом; G19: строка правила с ключом acme.missing SQL-ом) с перестановками для PRM-04; tests/Feature/Evaluation/PromotionSessionsTest.php (три стадии одного прогона — одна загрузка; повторный run() того же QuoteInput после изменения акции видит изменение; сессия не держит вход живым); tests/Feature/Evaluation/RuleTrustTest.php (фикстурные плагины: LineFilter вернул чужую строку, эффект вернул чужую валюту/отрицательную скидку/строку вне набора/Order в catalog, активатор активировал чужую акцию или дважды → QuoteFailed с cause promotions.invalid_rule_result; исключение плагина → QuoteFailed stage_error; отказ бюджета не оставляет корректировок предыдущих эффектов этой акции); tests/Feature/Evaluation/ExplainTest.php (G22, сбой конвейера → failure, вердикты)",
+      "tests/Fixtures: тестовый плагин со стадией At Delivery (DeliveryCharge из QuoteInput::$delivery) и фикстурные правила; регистрация в defineEnvironment до миграций"
+    ],
+    "exclude": [
+      "consume/restore (P5.7)",
+      "изменения ядра (запрещены; D25 — только P5.1)"
+    ]
+  },
+  "depends_on": [
+    "P5.5",
+    "P5.1"
+  ],
+  "decisions": [
+    "D26",
+    "D15",
+    "D25",
+    "D5"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/promotions-design#engine",
+      "why": "сессия, активация, алгоритм стадии, explain — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#golden",
+      "why": "G1–G22 — приёмочные примеры",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#rules-spi",
+      "why": "данные SPI, стадии/роли, LoadedRule",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#builtins",
+      "why": "семантика встроенных правил в golden",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Internal/StagedQuotePipeline.php",
+      "why": "порядок стадий, обёртка исключений, один объект input на прогон",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteState.php",
+      "why": "withAdjustment/withRejection/lineNet/itemsNet/deliveryNet",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/Rejection.php",
+      "why": "форма отказа",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/src/Calculation/Internal/TaxStage.php",
+      "why": "образец стадии с контейнером на каждый apply",
+      "required": true
+    },
+    {
+      "path": "packages/pricing/tests/Feature/Calculation/TaxStageTest.php",
+      "why": "образец golden-тестов через конвейер и тестового плагина в defineEnvironment",
+      "required": true
+    },
+    {
+      "ref": "knowledge/kernel-contracts#quotes",
+      "why": "контракт стадий и состояния квоты",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/promotions/src/Evaluation/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Internal/PromotionsPlugin.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/PromotionsServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Contracts/PromotionDefinitions.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Internal/DatabasePromotionDefinitions.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Data/ExplainPromotions.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Data/PromotionExplanation.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Data/PromotionVerdict.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/src/Definitions/Enums/VerdictKind.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Evaluation/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/promotions/tests/Fixtures/**",
+      "change": "modify"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/PromotionsPluginTest.php",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, ставки — int bp, количества — int.",
+    "Расхождение с knowledge/promotions-design, D25–D27, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Стадии, условия, эффекты и активаторы не пишут в БД, не ходят в сеть и берут время только из context.at.",
+    "Акция применяется целиком или никак: эффекты считаются на временном QuoteState next, который отбрасывается при любом отказе (PRM-05).",
+    "Rejection в QuoteState — только для акций, активированных кодом (couponCode ≠ null), и для отказов по кодам; полный вердикт — trace сессии для explain.",
+    "Движок не знает о купонах (D5): никаких обращений к Coupons из Evaluation."
+  ],
+  "guidance": "PromotionSessions: private WeakMap $sessions; start(QuoteInput) создаёт и кладёт; for(QuoteInput) — $this->sessions[$input] ?? start(). CatalogPromotionsStage вызывает start, две другие — for. ActivePromotions::load — запросы из #engine; активаторы — Contributions::get(PromotionActivator::KIND, key, PromotionActivator::class), ключи обходить по sort(). CandidatePromotion — Internal-представление строки акции (summary, stacking, stopFurther, limits, budget, used, spent, conditions/effects как LoadedRule, activation). Ключи массивов по promotion id (UUID-строка) безопасны; line id хранить только в списках (id вида '1' станет int-ключом). orderNet для клампинга: itemsNet() + Σ Order-корректировок. Rejection source: стадия ('promotions.cart' и т. д.); отказы по кодам — 'promotions.catalog'. PromotionVerdict.discount — положительная сумма. explain: QuotePipeline из контейнера, try { $quote = run($input) } catch (QuoteFailed $e) { $failure = \"quotes.failed:{$e->stage}:{$e->reason}\" }; вердикты — из sessions->for только если сессия уже существует (добавить метод find(QuoteInput): ?PromotionSession).",
+  "examples": [
+    {
+      "path": "packages/core/src/Quotes/Internal/BaseStage.php"
+    },
+    {
+      "path": "packages/pricing/src/Calculation/Internal/TaxResultValidator.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Promotions",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "PromotionEngine и три стадии",
+    "сессия квоты",
+    "explain",
+    "golden G1–G22, проверки доверия плагинам"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T15:44:29Z",
+    "executor": {
+      "provider": "claude-code",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "1d98a512-321b-46dd-8830-01d9413bf18c"
+    }
+  },
+  "updated_at": "2026-10-09T15:44:29Z"
+}
