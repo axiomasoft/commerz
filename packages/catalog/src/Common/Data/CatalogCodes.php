@@ -38,4 +38,34 @@ final class CatalogCodes
 
         return $value;
     }
+
+    public static function barcode(string $value): string
+    {
+        if (strlen($value) < 1 || strlen($value) > 64 || preg_match('/\A[^\s\p{Cc}]+\z/u', $value) !== 1) {
+            throw new InvalidCommand('barcode', 'must be 1 to 64 bytes without whitespace or control characters', 'catalog.invalid_barcode');
+        }
+
+        return $value;
+    }
+
+    /**
+     * A combination of variant axes: option code => value code.
+     *
+     * @param  array<array-key, mixed>  $axes
+     * @return array<string, string>
+     */
+    public static function combination(string $field, array $axes): array
+    {
+        $combination = [];
+
+        foreach ($axes as $option => $value) {
+            if (! is_string($value)) {
+                throw new InvalidCommand($field, "the value of axis '{$option}' must be a value code", 'catalog.invalid_axes');
+            }
+
+            $combination[self::code($field, (string) $option)] = self::code($field, $value);
+        }
+
+        return $combination;
+    }
 }

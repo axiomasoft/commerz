@@ -17,6 +17,8 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\Products\Internal\DatabaseProducts;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
+use Commerz\Catalog\Variants\Contracts\Variants;
+use Commerz\Catalog\Variants\Internal\DatabaseVariants;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
@@ -44,6 +46,7 @@ final class CatalogServiceProvider extends ServiceProvider
         $this->app->singleton(Options::class, DatabaseOptions::class);
         $this->app->singleton(ProductTypes::class, DatabaseProductTypes::class);
         $this->app->singleton(Products::class, DatabaseProducts::class);
+        $this->app->singleton(Variants::class, DatabaseVariants::class);
         $this->app->singleton(Catalog::class);
 
         CommerzPlugins::builtIn(CatalogPlugin::class);

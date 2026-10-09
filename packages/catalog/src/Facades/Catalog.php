@@ -9,10 +9,12 @@ use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Variants\Contracts\Variants;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static Products products()
+ * @method static Variants variants()
  * @method static Options options()
  * @method static Attributes attributes()
  * @method static ProductTypes productTypes()

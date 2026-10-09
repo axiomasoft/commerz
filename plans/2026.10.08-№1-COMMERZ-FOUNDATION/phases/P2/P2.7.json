@@ -1,0 +1,180 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P2.7",
+  "title": "Variants: create, generate, update, archive (CAT-01)",
+  "status": "done_with_deviations",
+  "summary": "Работает Catalog::variants() (create/generate/update/setAttributes/archive/restore/find/findBySku/list) с сигнатурой по UUID значений, разрежённой генерацией с бюджетом и dryRun, атрибутами уровня variant через AttributeWriter; конкурентная генерация одних комбинаций создаёт каждую ровно один раз.",
+  "why": "CAT-01: комбинация осей уникальна в товаре при любом числе параллельных запросов; повтор генерации безопасен. Риски: гонка двух генераций, чужая опция в комбинации, SKU-коллизия посреди генерации (должен быть полный откат), взрыв декартова произведения.",
+  "scope": {
+    "include": [
+      "Variants/Contracts/Variants (#[Api]); Data/{VariantId, CreateVariant, GenerateVariants, GeneratedVariants, PlannedVariant, UpdateVariant, SetVariantAttributes, ArchiveVariant, RestoreVariant, ListVariants, VariantView, Dimensions}; Enums/VariantStatus; Events/{VariantCreated, VariantUpdated}; Exceptions/{VariantNotFound, DuplicateCombination, InvalidAxes, TooManyVariants}",
+      "Variants/Internal/{DatabaseVariants, OptionSignature, AxisResolver, SkuPattern} по knowledge/catalog-design#variants",
+      "VariantView::$sellable = SellableRef::of('variant', $id->value); $axes упорядочены по позиции оси товара",
+      "Catalog::variants() + фасад + биндинг",
+      "tests/Feature/Variants/VariantsTest.php: простой товар (сигнатура ''), второй вариант без осей → DuplicateCombination; оси неполные/лишние/неизвестное значение → InvalidAxes; пример blueprint (3 из 4 с except); повторная generate → всё в skipped; dryRun ничего не пишет; > лимита → TooManyVariants до записи; SKU-коллизия → DuplicateCode и ни одного нового варианта; archive/restore; update с clear; атрибуты variant-уровня, product-уровень на варианте → AttributeNotAllowed; создание на архивном товаре → ProductArchived",
+      "tests/Feature/Variants/GenerateConcurrencyTest.php: Commerz\\Testkit\\Concurrency::run(4, generate тех же осей) → итог ровно N вариантов, у каждого воркера created+skipped = N, исключений нет; данные коммитятся (без RefreshDatabase), таблицы чистятся в afterEach как в packages/core/tests/Feature/ConcurrencyTest.php"
+    ],
+    "exclude": [
+      "фильтры (P2.9)",
+      "SellableProvider (P2.10)"
+    ]
+  },
+  "depends_on": [
+    "P2.6"
+  ],
+  "decisions": [
+    "D17"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/catalog-design#variants",
+      "why": "сигнатура, AxisResolver, create/generate/SKU — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#concurrency",
+      "why": "CAT-01 и блокировка товара",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#api",
+      "why": "строка Variants таблицы API",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#attribute-writer",
+      "why": "вызов writer'а для variant-уровня",
+      "required": true
+    },
+    {
+      "path": "packages/core/tests/Feature/ConcurrencyTest.php",
+      "why": "как писать многопроцессный тест на Concurrency::run (beforeEach migrate, очистка таблиц)",
+      "required": true
+    },
+    {
+      "path": "packages/testkit/src/Concurrency.php",
+      "why": "API Concurrency::run",
+      "required": true
+    },
+    {
+      "ref": "knowledge/invariants#catalog",
+      "why": "строка CAT-01 реестра инвариантов: enforcement, обход, тест",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/catalog/src/Variants/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Catalog.php",
+      "change": "any",
+      "note": "created by P2.4"
+    },
+    {
+      "path": "packages/catalog/src/Facades/Catalog.php",
+      "change": "any",
+      "note": "created by P2.4"
+    },
+    {
+      "path": "packages/catalog/src/CatalogServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/Variants/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float.",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table(); мутации — Transactions::run; уникальные нарушения — во вложенном savepoint ($db->transaction) → доменное исключение (как DatabaseStores::create).",
+    "Строки изменяемых сущностей блокировать ->lock('for no key update'), определения у писателя — ->lock('for share'); порядок блокировок — knowledge/catalog-design#concurrency.",
+    "Расхождение с knowledge/catalog-design или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной.",
+    "Любая мутация структуры вариантов товара начинается с блокировки строки товара 'for no key update' (CAT-01); UNIQUE и ON CONFLICT DO NOTHING — страховка, не основной механизм.",
+    "generate атомарна: либо все planned-без-skipped созданы, либо ни одного.",
+    "Бюджет и валидация осей/шаблона — до любой записи."
+  ],
+  "guidance": "Разбор UniqueConstraintViolationException по имени ограничения: имена строятся `ConstraintNames::unique($tables->table('variants'), ['product_id', 'option_signature'])` и т.д.; сравнивайте `str_contains($e->getMessage(), $name)`. В generate массовая вставка вариантов — один INSERT … ON CONFLICT (product_id, option_signature) DO NOTHING RETURNING id (query builder: `insertOrIgnoreReturning` недоступен — используйте `$db->select('insert into … on conflict … do nothing returning id', $bindings)` или вставку по одной в savepoint). Затем вставка `variant_option_values`. У GenerateVariants нет атрибутов: если у типа есть required-атрибуты уровня variant со статусом active, generate бросает MissingRequiredAttributes до любой записи (создавайте такие варианты через create).",
+  "examples": [
+    {
+      "path": "packages/core/src/Stores/Internal/DatabaseStores.php"
+    },
+    {
+      "path": "packages/core/src/Stores/Internal/StoreRows.php"
+    },
+    {
+      "path": "packages/core/tests/Feature/Stores/StoresTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/catalog/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "модуль Variants",
+    "тесты CAT-01 включая 4-процессную генерацию"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T03:09:02Z",
+    "finished_at": "2026-10-09T03:18:37Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "058a8d01-2c35-43fa-bef2-76cf574efb9f"
+    },
+    "notes": "Variants module: create/generate/update/setAttributes/archive/restore/find/findBySku/list; OptionSignature by value UUIDs, AxisResolver, SkuPattern, GenerationPlan; generate locks the product for no key update, one savepoint, INSERT ... ON CONFLICT (product_id, option_signature) DO NOTHING RETURNING id, SKU collision rolls everything back; dryRun reads without locks; budget/axes/pattern/required-attribute checks before writes. Catalog::variants() + facade + binding. VariantsTest (20) + GenerateConcurrencyTest (4 processes). V1/V2/rector green; V3 pest direct (docker.sock denied): 199 green incl. Arch.",
+    "deviations": [
+      "CatalogCodes gained barcode()/combination() (extra path)"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T03:18:37Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T03:18:37Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T03:18:37Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T03:18:37Z"
+}

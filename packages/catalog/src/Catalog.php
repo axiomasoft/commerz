@@ -9,6 +9,7 @@ use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Variants\Contracts\Variants;
 
 /** Root of the catalog API: accessors of the module contracts. */
 #[Api(since: '0.1')]
@@ -19,11 +20,17 @@ final readonly class Catalog
         private Attributes $attributes,
         private ProductTypes $productTypes,
         private Products $products,
+        private Variants $variants,
     ) {}
 
     public function products(): Products
     {
         return $this->products;
+    }
+
+    public function variants(): Variants
+    {
+        return $this->variants;
     }
 
     public function options(): Options
