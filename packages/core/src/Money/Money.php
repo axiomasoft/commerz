@@ -93,6 +93,24 @@ final readonly class Money
         return new self($minor, $this->currency);
     }
 
+    /**
+     * The part of this amount that is already tax at `$rate`: `round(amount × bp / (10000 + bp))`, to a whole minor
+     * unit. For a gross price of 1220.00 at 22% it is 220.00.
+     */
+    public function includedPart(Rate $rate, RoundingMode $mode): self
+    {
+        try {
+            $minor = BigDecimal::of($this->amountMinor)
+                ->multipliedBy($rate->basisPoints)
+                ->dividedBy(10_000 + $rate->basisPoints, 0, $mode->toBrick())
+                ->toInt();
+        } catch (MathException) {
+            throw new InvalidCommand('amount', 'result does not fit int64', 'money.overflow');
+        }
+
+        return new self($minor, $this->currency);
+    }
+
     public function isZero(): bool
     {
         return $this->amountMinor === 0;

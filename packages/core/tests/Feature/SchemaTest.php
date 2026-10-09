@@ -45,7 +45,14 @@ it('names constraints by the canon and shortens long names deterministically', f
         ->and(ConstraintNames::unique('cmz_orders', 'cart_id'))->toBe('cmz_orders_cart_id_uq')
         ->and(ConstraintNames::foreign('cmz_channels', 'store_id'))->toBe('cmz_channels_store_id_fk')
         ->and(ConstraintNames::check('cmz_stock_levels', 'reserved_not_negative'))->toBe('cmz_stock_levels_reserved_not_negative_ck')
+        ->and(ConstraintNames::exclusion('cmz_prices', 'validity_overlap'))->toBe('cmz_prices_validity_overlap_ex')
         ->and(ConstraintNames::primary('cmz_orders'))->toBe('cmz_orders_pk');
+
+    $long = 'cmz_tax_rates_'.str_repeat('x', 50).'_ex';
+    $exclusion = ConstraintNames::exclusion('cmz_tax_rates', str_repeat('x', 50));
+
+    expect($exclusion)->toHaveLength(63)
+        ->toBe(substr($long, 0, 54).'_'.substr(sha1($long), 0, 8));
 
     $columns = ['promotion_id', 'customer_ref', 'coupon_id', 'order_ref'];
     $full = 'cmz_promotion_customer_usages_promotion_id_customer_ref_coupon_id_order_ref_uq';
@@ -152,6 +159,8 @@ it('gives migrations helpers for keys, money, refs, timestamps and checks', func
             });
 
             $this->check($table, 'quantity_positive', 'quantity > 0');
+            $this->db()->statement('create extension if not exists btree_gist');
+            $this->exclude($table, 'sellable_once', 'sellable_ref with =');
         }
 
         public function down(): void
@@ -179,6 +188,7 @@ it('gives migrations helpers for keys, money, refs, timestamps and checks', func
         ->and(constraintsOf('cmz_x_test_items'))->toBe([
             'cmz_x_test_items_pk',
             'cmz_x_test_items_quantity_positive_ck',
+            'cmz_x_test_items_sellable_once_ex',
             'cmz_x_test_items_sellable_ref_customer_ref_uq',
         ])
         ->and($migration->getConnection())->toBeNull();

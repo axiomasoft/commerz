@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Internal;
 
+use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
-use Commerz\Money\MoneyAllocator;
 use Commerz\Quotes\Contracts\QuoteStage;
-use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Data\QuoteTotals;
@@ -50,8 +49,6 @@ final readonly class TotalsStage implements QuoteStage
         }
 
         $lineAdjustments = [];
-        $orderAdjustments = [];
-        $deliveryNet = $state->delivery->price ?? $zero;
         $discount = $zero;
 
         foreach ($state->adjustments as $adjustment) {
@@ -61,8 +58,7 @@ final readonly class TotalsStage implements QuoteStage
 
             match ($adjustment->target) {
                 AdjustmentTarget::Line => $lineAdjustments[(string) $adjustment->lineId][] = $adjustment,
-                AdjustmentTarget::Order => $orderAdjustments[] = $adjustment,
-                AdjustmentTarget::Delivery => $deliveryNet = $deliveryNet->plus($adjustment->amount),
+                AdjustmentTarget::Order, AdjustmentTarget::Delivery => null,
             };
 
             if ($adjustment->target !== AdjustmentTarget::Delivery) {
@@ -70,17 +66,23 @@ final readonly class TotalsStage implements QuoteStage
             }
         }
 
-        $nets = [];
-
         foreach ($state->lines as $line) {
-            $nets[$line->lineId] = $state->lineNet($line->lineId);
-
-            if ($nets[$line->lineId]->isNegative()) {
+            if ($state->lineNet($line->lineId)->isNegative()) {
                 throw new QuoteFailed($this->key(), 'negative_line', "line '{$line->lineId}' is discounted below zero");
             }
         }
 
-        $allocated = $this->allocate($orderAdjustments, $nets);
+        try {
+            $allocated = [];
+
+            foreach ($state->allocatedOrderAdjustments() as $share) {
+                $allocated[(string) $share->lineId][] = $share;
+            }
+        } catch (InvalidCommand $e) {
+            throw new QuoteFailed($this->key(), 'negative_total', $e->getMessage(), $e);
+        }
+
+        $deliveryNet = $state->deliveryNet() ?? $zero;
 
         if ($deliveryNet->isNegative()) {
             throw new QuoteFailed($this->key(), 'negative_delivery', 'delivery is discounted below zero');
@@ -142,35 +144,5 @@ final readonly class TotalsStage implements QuoteStage
         }
 
         return $state->withTotals($settled, new QuoteTotals($subtotal, $discount, $deliveryNet, $taxTotal, $total));
-    }
-
-    /**
-     * @param  list<Adjustment>  $orderAdjustments
-     * @param  array<string, Money>  $nets  line id => net after line adjustments
-     * @return array<string, list<Adjustment>> line id => allocated shares
-     */
-    private function allocate(array $orderAdjustments, array $nets): array
-    {
-        // Line ids such as '1' become integer array keys, so ids and amounts are kept as parallel lists.
-        $ids = array_map(strval(...), array_keys($nets));
-        $remaining = array_map(static fn (Money $net): int => $net->amountMinor, array_values($nets));
-        $allocated = [];
-
-        foreach ($orderAdjustments as $adjustment) {
-            if (array_sum($remaining) + $adjustment->amount->amountMinor < 0) {
-                throw new QuoteFailed($this->key(), 'negative_total', 'order-level adjustments exceed the items total');
-            }
-
-            foreach (MoneyAllocator::allocate($adjustment->amount, array_values($remaining)) as $index => $share) {
-                if ($share->isZero()) {
-                    continue;
-                }
-
-                $allocated[$ids[$index]][] = $adjustment->allocatedTo($ids[$index], $share);
-                $remaining[$index] += $share->amountMinor;
-            }
-        }
-
-        return $allocated;
     }
 }

@@ -8,7 +8,7 @@ use Commerz\Attributes\Api;
 use InvalidArgumentException;
 
 /**
- * Index and constraint names: `{table}_{cols}_{ix|uq|fk|ck}` and `{table}_pk`. A name longer than 63 bytes keeps its
+ * Index and constraint names: `{table}_{cols}_{ix|uq|fk|ck}`, `{table}_{name}_ex` and `{table}_pk`. A name longer than 63 bytes keeps its
  * first 54 bytes + '_' + the first 8 hex digits of the sha1 of the full name. Frozen: released migrations used it.
  */
 #[Api(since: '0.1')]
@@ -39,6 +39,12 @@ final class ConstraintNames
     public static function check(string $table, string $name): string
     {
         return self::name($table, self::part($name), 'ck');
+    }
+
+    /** `$name` describes the rule, e.g. `window_overlap`; names an `EXCLUDE USING gist` constraint. */
+    public static function exclusion(string $table, string $name): string
+    {
+        return self::name($table, self::part($name), 'ex');
     }
 
     public static function primary(string $table): string

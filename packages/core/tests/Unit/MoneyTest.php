@@ -123,3 +123,26 @@ it('parses rates', function (): void {
         ->and(fn () => Rate::percent('-1'))->toThrow(InvalidCommand::class)
         ->and(fn () => Rate::bp(-1))->toThrow(InvalidCommand::class);
 });
+
+it('extracts the tax already included in a gross amount', function (string $gross, int $bp, RoundingMode $mode, string $expected): void {
+    expect(Money::of($gross, 'RUB')->includedPart(Rate::bp($bp), $mode)->toDecimal())->toBe($expected);
+})->with([
+    'round figure' => ['1220.00', 2200, RoundingMode::HalfUp, '220.00'],
+    'rounded down' => ['99.99', 2200, RoundingMode::HalfUp, '18.03'],
+    'zero rate' => ['99.99', 0, RoundingMode::HalfUp, '0.00'],
+    'small amount' => ['0.05', 2000, RoundingMode::HalfUp, '0.01'], // 5 × 2000 / 12000 = 0.83
+    'negative refund' => ['-1220.00', 2200, RoundingMode::HalfUp, '-220.00'],
+]);
+
+it('rounds an included part that lands exactly on .5 by the mode', function (RoundingMode $mode, int $expected): void {
+    // 15 minor at 100% (10000 bp): 15 × 10000 / 20000 = 7.5
+    expect(Money::ofMinor(15, 'USD')->includedPart(Rate::bp(10_000), $mode)->amountMinor)->toBe($expected);
+})->with([
+    'half up' => [RoundingMode::HalfUp, 8],
+    'half down' => [RoundingMode::HalfDown, 7],
+    'half even' => [RoundingMode::HalfEven, 8],
+]);
+
+it('keeps an included part within the amount even at the int64 edge', function (): void {
+    expect(Money::ofMinor(PHP_INT_MAX, 'JPY')->includedPart(Rate::bp(10_000), RoundingMode::Down)->amountMinor)->toBe(intdiv(PHP_INT_MAX, 2));
+});

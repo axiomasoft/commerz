@@ -9,6 +9,7 @@ use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Money\MoneyAllocator;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 
 /**
@@ -82,6 +83,69 @@ final readonly class QuoteState
         }
 
         return $total;
+    }
+
+    /**
+     * Shares of every order-level adjustment carried by the lines, in adjustment order then line order: each one is
+     * spread by MoneyAllocator over what is left of each line (its net after line adjustments and earlier shares), so
+     * no line goes below zero and the shares add up exactly. The same split the totals stage settles, so a tax computed
+     * on it matches the settled lines to the minor unit.
+     *
+     * @return list<Adjustment> allocated shares (target Order, lineId set); zero shares are omitted
+     *
+     * @throws InvalidCommand quotes.negative_total when order-level adjustments exceed the items total
+     */
+    public function allocatedOrderAdjustments(): array
+    {
+        // Line ids such as '1' become integer array keys, so ids and amounts are kept as parallel lists.
+        $ids = [];
+        $remaining = [];
+
+        foreach ($this->lines as $line) {
+            $ids[] = $line->lineId;
+            $remaining[] = $this->lineNet($line->lineId)->amountMinor;
+        }
+
+        $allocated = [];
+
+        foreach ($this->adjustments as $adjustment) {
+            if ($adjustment->target !== AdjustmentTarget::Order) {
+                continue;
+            }
+
+            if (array_sum($remaining) + $adjustment->amount->amountMinor < 0) {
+                throw new InvalidCommand('adjustments', 'order-level adjustments exceed the items total', 'quotes.negative_total');
+            }
+
+            foreach (MoneyAllocator::allocate($adjustment->amount, array_values($remaining)) as $index => $share) {
+                if ($share->isZero()) {
+                    continue;
+                }
+
+                $allocated[] = $adjustment->allocatedTo($ids[$index], $share);
+                $remaining[$index] += $share->amountMinor;
+            }
+        }
+
+        return $allocated;
+    }
+
+    /** Delivery price after delivery adjustments, or null without a delivery charge. */
+    public function deliveryNet(): ?Money
+    {
+        if ($this->delivery === null) {
+            return null;
+        }
+
+        $net = $this->delivery->price;
+
+        foreach ($this->adjustments as $adjustment) {
+            if ($adjustment->target === AdjustmentTarget::Delivery) {
+                $net = $net->plus($adjustment->amount);
+            }
+        }
+
+        return $net;
     }
 
     /** Adds the line, or replaces the line with the same id. The id must come from the input. */

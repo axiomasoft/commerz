@@ -167,4 +167,15 @@ abstract class CommerzMigration extends Migration
 
         $this->db()->statement("alter table \"{$table}\" add constraint \"{$constraint}\" check ({$expression})");
     }
+
+    /**
+     * Adds `EXCLUDE USING gist ($elements)` named `{table}_{name}_ex` to an existing table, e.g. `$elements`
+     * `price_list_id with =, validity with &&`. Needs the `btree_gist` extension for scalar columns.
+     */
+    protected function exclude(string $table, string $name, string $elements): void
+    {
+        $constraint = ConstraintNames::exclusion($table, $name);
+
+        $this->db()->statement("alter table \"{$table}\" add constraint \"{$constraint}\" exclude using gist ({$elements})");
+    }
 }
