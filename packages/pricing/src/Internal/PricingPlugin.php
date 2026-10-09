@@ -10,8 +10,9 @@ use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Internal\RatesTaxCalculator;
+use Commerz\Pricing\Calculation\Internal\TaxStage;
 
-/** The pricing's own plugin: declares the `tax_calculator` kind and contributes the built-in `rates` calculator; the tax stage joins it later. */
+/** The pricing's own plugin: declares the `tax_calculator` kind and contributes the built-in `rates` calculator and the `tax` quote stage. */
 final class PricingPlugin implements CommerzPlugin
 {
     public const string ID = 'commerz.pricing';
@@ -25,5 +26,6 @@ final class PricingPlugin implements CommerzPlugin
     {
         $registrar->declareKind(new ContributionKind(TaxCalculator::KIND, TaxCalculator::class, self::ID));
         $registrar->contribute(TaxCalculator::KIND, RatesTaxCalculator::class);
+        $registrar->quoteStage(TaxStage::class);
     }
 }
