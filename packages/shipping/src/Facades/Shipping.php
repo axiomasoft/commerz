@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Facades;
 
 use Commerz\Attributes\Api;
+use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Zones zones()
  * @method static Methods methods()
  * @method static ShippingOptions options()
+ * @method static Bookings bookings()
  *
  * @see \Commerz\Shipping\Shipping
  */

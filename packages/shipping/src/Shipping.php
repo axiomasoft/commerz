@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping;
 
 use Commerz\Attributes\Api;
+use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
@@ -17,6 +18,7 @@ final readonly class Shipping
         private Zones $zones,
         private Methods $methods,
         private ShippingOptions $options,
+        private Bookings $bookings,
     ) {}
 
     public function zones(): Zones
@@ -32,5 +34,10 @@ final readonly class Shipping
     public function options(): ShippingOptions
     {
         return $this->options;
+    }
+
+    public function bookings(): Bookings
+    {
+        return $this->bookings;
     }
 }

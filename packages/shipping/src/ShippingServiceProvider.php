@@ -7,7 +7,11 @@ namespace Commerz\Shipping;
 use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
+use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Schema\Contracts\SchemaOwnership;
+use Commerz\Shipping\Bookings\Contracts\Bookings;
+use Commerz\Shipping\Bookings\Internal\CarrierShipmentBooking;
+use Commerz\Shipping\Bookings\Internal\DatabaseBookings;
 use Commerz\Shipping\Common\Internal\ShippingConfig;
 use Commerz\Shipping\Internal\ShippingPlugin;
 use Commerz\Shipping\Methods\Contracts\Methods;
@@ -38,8 +42,10 @@ final class ShippingServiceProvider extends ServiceProvider
         $this->app->singleton(Zones::class, DatabaseZones::class);
         $this->app->singleton(Methods::class, DatabaseMethods::class);
         $this->app->singleton(ShippingOptions::class, DatabaseShippingOptions::class);
-        // A plain singleton replaces the kernel's `singletonIf` NoDelivery default.
+        $this->app->singleton(Bookings::class, DatabaseBookings::class);
+        // Plain singletons replace the kernel's `singletonIf` NoDelivery defaults.
         $this->app->singleton(DeliveryOptions::class, DatabaseShippingOptions::class);
+        $this->app->singleton(ShipmentBooking::class, CarrierShipmentBooking::class);
         $this->app->singleton(Shipping::class);
 
         CommerzPlugins::builtIn(ShippingPlugin::class);
