@@ -6,6 +6,7 @@ namespace Commerz\Shipping;
 
 use Commerz\Attributes\Api;
 use Commerz\Shipping\Methods\Contracts\Methods;
+use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
 
 /** Root of the shipping API: accessors of the module contracts. */
@@ -15,6 +16,7 @@ final readonly class Shipping
     public function __construct(
         private Zones $zones,
         private Methods $methods,
+        private ShippingOptions $options,
     ) {}
 
     public function zones(): Zones
@@ -25,5 +27,10 @@ final readonly class Shipping
     public function methods(): Methods
     {
         return $this->methods;
+    }
+
+    public function options(): ShippingOptions
+    {
+        return $this->options;
     }
 }

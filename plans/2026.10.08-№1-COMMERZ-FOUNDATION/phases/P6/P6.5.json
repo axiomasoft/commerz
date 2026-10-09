@@ -1,0 +1,214 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P6.5",
+  "title": "Delivery options, explain and the delivery quote stage on one MethodPricer (SHP-01, SHP-02)",
+  "status": "done_with_deviations",
+  "summary": "CandidateRates (один SQL: методы ⋈ каналы ⋈ тарифы ⋈ активные зоны ⋈ совпавшие участники с рангом), MethodPricer с вердиктами по шагам knowledge/shipping-design#pricing, применение free_above, DatabaseShippingOptions (ShippingOptions::list/explain и порт DeliveryOptions), DeliveryStage At Delivery с пересчётом стоимости товаров после скидок и fail-closed QuoteFailed(method_unavailable); golden G1–G17.",
+  "why": "Это цена доставки в каждой квоте и каждом списке вариантов. Риски: второй путь расчёта в стадии (SHP-01); квота без доставки при недоступном методе (SHP-02); free_above по сумме до скидок; выбор зоны по порядку строк (SHP-06); исключение плагина-тарифа роняет весь список; LIKE с непроверенным индексом.",
+  "scope": {
+    "include": [
+      "Options/Contracts/ShippingOptions, Options/Data/{OptionsExplanation, MethodVerdict}, Options/Exceptions/DeliveryUnavailable по knowledge/shipping-design#pricing и #api",
+      "Options/Internal/{CandidateRates, CandidateRate, MethodPricer, PricedMethod, DatabaseShippingOptions, DeliveryStage}",
+      "сопоставление адреса и ранги — по knowledge/shipping-design#zones (таблица рангов, SQL с параметрами)",
+      "Internal/ShippingPlugin: quoteStage(DeliveryStage::class)",
+      "ShippingServiceProvider: singleton ShippingOptions → DatabaseShippingOptions; singleton(DeliveryOptions::class, DatabaseShippingOptions::class); Shipping::options()",
+      "тесты: tests/Feature/Options/GoldenTest.php (G1–G10, G14–G17 через Shipping::options() и app(DeliveryOptions::class)), tests/Feature/Options/DeliveryStageTest.php (G11–G13, G15, G17 через QuotePipeline; G11 — тестовая стадия After CartPromotions с order-корректировкой), tests/Feature/Options/ExplainTest.php (все вердикты #api), tests/Feature/Options/Helpers.php (фикстура #golden), tests/Fixtures/{ThrowingRate, ForeignCurrencyRate, OrderDiscountStage}.php"
+    ],
+    "exclude": [
+      "брони (P6.6)",
+      "сквозная квота с promotions.delivery и tax (P8)"
+    ]
+  },
+  "depends_on": [
+    "P6.4"
+  ],
+  "decisions": [
+    "D28"
+  ],
+  "reads": [
+    {
+      "why": "itemsNet, adjustments, withDelivery, withRejection",
+      "required": true,
+      "path": "packages/core/src/Quotes/Data/QuoteState.php"
+    },
+    {
+      "why": "QuoteFailed пробрасывается как есть; порядок якорей",
+      "required": true,
+      "path": "packages/core/src/Quotes/Internal/StagedQuotePipeline.php"
+    },
+    {
+      "why": "вход порта",
+      "required": true,
+      "path": "packages/core/src/Ports/Delivery/Data/DeliveryRequest.php"
+    },
+    {
+      "why": "образец стадии с резолвом из контейнера на каждый apply",
+      "required": true,
+      "path": "packages/pricing/src/Calculation/Internal/TaxStage.php"
+    },
+    {
+      "why": "образец теста стадии через QuotePipeline и фикстурных стадий",
+      "required": true,
+      "path": "packages/pricing/tests/Feature/Calculation/TaxStageTest.php"
+    },
+    {
+      "why": "образец фикстурной стадии",
+      "required": true,
+      "path": "packages/promotions/tests/Fixtures/FlatDeliveryStage.php"
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/shipping/src/Options/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/src/Internal/ShippingPlugin.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/shipping/src/ShippingServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/shipping/src/Shipping.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/shipping/src/Facades/Shipping.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/shipping/tests/Feature/Options/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Fixtures/ThrowingRate.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Fixtures/ForeignCurrencyRate.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/shipping/tests/Fixtures/OrderDiscountStage.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, вес — int граммы.",
+    "Расхождение с knowledge/shipping-design, D28, D29, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенной транзакции (savepoint), чтобы не отравить транзакцию хоста.",
+    "Нет FK на таблицы ядра и других пакетов; channel_id — uuid без FK; shipping пишет только в таблицы shipping_*.",
+    "Правила delivery_rate и стадия delivery не пишут в БД и не ходят в сеть; время — CommerceContext::$at.",
+    "MethodPricer — единственный расчёт цены метода; стадия и options не считают цену сами (SHP-01).",
+    "Выбранный недоступный метод → QuoteFailed('delivery', 'method_unavailable', …, DeliveryUnavailable); никакого молчаливого withDelivery(null) (SHP-02).",
+    "options/list/explain не бросают из-за плагина-тарифа: исключение или неверный результат → вердикт invalid_rate_result.",
+    "Индекс адреса — только через PostalCode::normalize и параметром запроса; ввод не конкатенируется в SQL."
+  ],
+  "guidance": "Ключевые секции (документ уже в контексте фазы): shipping-design#pricing — алгоритм вердиктов, options, explain, стадия — ядро item'а; shipping-design#zones — ранги совпадения и SQL сопоставления; shipping-design#golden — golden-фикстура и ожидания G1–G17; shipping-design#invariants — SHP-01, SHP-02, SHP-05, SHP-06. Стоимость товаров в стадии: $goods = $state->itemsNet(); foreach adjustments с target Order → $goods = $goods->plus($a->amount); при отрицательном — Money::zero. Parcel стадии: new Parcel($sel->parcel->weightGrams, $goods, $sel->parcel->lengthMm, …). Сортировка list: position, затем price->amountMinor, затем methodCode. Ранги считать в PHP по строкам CandidateRates (country 0, region 50, postal 100+strlen). Имя метода — LocalizedText::resolve($context->locale). DeliveryStage::key() = QuoteAnchor::Delivery->value.",
+  "examples": [
+    {
+      "path": "packages/promotions/src/Evaluation/Internal/Stages/DeliveryPromotionsStage.php"
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Evaluation/GoldenTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Shipping",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "ShippingOptions list/explain и порт DeliveryOptions",
+    "стадия delivery",
+    "golden-тесты G1–G17"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T19:19:11Z",
+    "finished_at": "2026-10-09T19:28:54Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "1786fb21-4064-4c98-bff2-60fbfdfc9bfc"
+    },
+    "notes": "Options module: ShippingOptions list/explain + DeliveryOptions port on DatabaseShippingOptions; CandidateRates single SQL (rank in PHP, postal via PostalCode::normalize as parameter); MethodPricer sole price path (SHP-01) with ordered verdicts, plugin failures → invalid_rate_result; DeliveryStage At delivery on goods after order discounts, fail-closed QuoteFailed(method_unavailable, DeliveryUnavailable) (SHP-02); Shipping::options(); golden G1–G17 + explain verdicts; 261 Shipping tests green.",
+    "deviations": [
+      "Fixed P6.4 MethodRows defect: empty rate params stored as JSON [] violated the params object CHECK; now {}."
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T19:28:54Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T19:28:54Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T19:28:54Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-09T19:28:54Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-09T19:28:54Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T19:28:54Z"
+}

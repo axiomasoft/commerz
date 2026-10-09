@@ -6,12 +6,14 @@ namespace Commerz\Shipping\Facades;
 
 use Commerz\Attributes\Api;
 use Commerz\Shipping\Methods\Contracts\Methods;
+use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static Zones zones()
  * @method static Methods methods()
+ * @method static ShippingOptions options()
  *
  * @see \Commerz\Shipping\Shipping
  */

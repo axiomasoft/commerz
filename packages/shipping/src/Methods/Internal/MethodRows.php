@@ -114,7 +114,8 @@ final readonly class MethodRows
                 'currency' => $rate->currency->code,
                 'rate_key' => $stored[$index]->key,
                 'rate_version' => $stored[$index]->version,
-                'params' => json_encode($stored[$index]->params->toArray(), JSON_THROW_ON_ERROR),
+                // An empty map must stay a JSON object (`{}`, not `[]`) for the column's object check.
+                'params' => $stored[$index]->params->toArray() === [] ? '{}' : json_encode($stored[$index]->params->toArray(), JSON_THROW_ON_ERROR),
                 'free_above_minor' => $rate->freeAbove?->amountMinor,
                 'tax_included' => $rate->taxIncluded ?? $this->shipping->taxIncluded,
                 'eta_days' => $rate->etaDays,
