@@ -6,6 +6,8 @@ namespace Commerz\Catalog;
 
 use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Internal\CatalogConfig;
+use Commerz\Catalog\Internal\CatalogPlugin;
+use Commerz\Plugins\CommerzPlugins;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -25,6 +27,8 @@ final class CatalogServiceProvider extends ServiceProvider
 
             return CatalogConfig::fromArray(is_array($config) ? $config : []);
         });
+
+        CommerzPlugins::builtIn(CatalogPlugin::class);
 
         $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
             $ownership->declare('commerz.catalog', self::NOUNS);

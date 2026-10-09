@@ -1,0 +1,194 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P2.3",
+  "title": "Attribute type SPI, 10 built-in types and the commerz.catalog plugin",
+  "status": "done",
+  "summary": "Объявлен SPI AttributeType (kind attribute_type) с DTO AttributeDefinition, IndexFact, FilterOperator и исключениями InvalidAttributeValue/InvalidAttributeConfig; реализованы 10 встроенных типов (text, localized_text, integer, decimal, boolean, date, enum, multi_enum, measure, reference); плагин commerz.catalog объявляет kind и вносит типы; провайдер регистрирует плагин.",
+  "why": "Тип атрибута — точка расширения (acme.color_swatch) и половина CAT-02: что не прошло normalize, не попадёт в документ. Ошибка в нормализации (float, округление, неканоничная форма) ломает фильтры и идемпотентность записи.",
+  "scope": {
+    "include": [
+      "Attributes/Contracts/AttributeType (#[Spi Implement], KIND) — сигнатура строго по knowledge/catalog-design#attribute-types",
+      "Attributes/Data/{AttributeDefinition, AttributeChoiceView, AttributeChoiceId, IndexFact}; Attributes/Enums/FilterOperator; Attributes/Exceptions/{InvalidAttributeValue, InvalidAttributeConfig}",
+      "Attributes/Internal/Types/{Text,LocalizedText,Integer,Decimal,Boolean,Date,Enum,MultiEnum,Measure,Reference}Type — по таблице встроенных типов",
+      "Internal/CatalogPlugin: manifest('commerz.catalog', '0.1.0'), declareKind(new ContributionKind(AttributeType::KIND, AttributeType::class, 'commerz.catalog')), contribute каждого типа",
+      "CatalogServiceProvider::register: CommerzPlugins::builtIn(CatalogPlugin::class)",
+      "tests/Unit/Attributes/*TypeTest.php: на каждый тип — принятые входы → каноническая форма, идемпотентность normalize(normalize(x)), отказы (float, null, лишние знаки, неизвестный выбор, чужая единица, пустая строка), факты index(), config() с дефолтами и ошибками",
+      "tests/Feature/CatalogPluginTest.php: класс extends Commerz\\Testkit\\PluginContractTests (pluginClass = CatalogPlugin, expectedContributions — 10 ключей attribute_type)"
+    ],
+    "exclude": [
+      "хранение определений (P2.4)",
+      "запись значений (P2.6)",
+      "product_kind (P2.5)",
+      "sellable_provider (P2.10)"
+    ]
+  },
+  "depends_on": [
+    "P2.2"
+  ],
+  "decisions": [
+    "D9",
+    "D17"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/catalog-design#attribute-types",
+      "why": "SPI, DTO и таблица встроенных типов — контракт item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/catalog-design#layout",
+      "why": "раскладка модуля и маркеры",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Plugins/PluginRegistrar.php",
+      "why": "declareKind/contribute",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Internal/CorePlugin.php",
+      "why": "образец встроенного плагина",
+      "required": true
+    },
+    {
+      "path": "packages/testkit/src/PluginContractTests.php",
+      "why": "базовый контрактный тест плагина",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Measures/Measure.php",
+      "why": "Measure VO и правило единиц (Unit::assert)",
+      "required": true
+    },
+    {
+      "path": "audits/grok/code-examples/Catalog/Types/MeasureAttributeType.php",
+      "why": "прототип measure-типа (сверить, не копировать конверсию единиц)",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/catalog/src/Attributes/Contracts/AttributeType.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Attributes/Data/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Attributes/Enums/FilterOperator.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Attributes/Exceptions/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Attributes/Internal/Types/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/Internal/CatalogPlugin.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/src/CatalogServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/catalog/tests/Unit/Attributes/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/catalog/tests/Feature/CatalogPluginTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float.",
+    "Без Eloquent: query builder на соединении CommerzConfig::$connection, имена таблиц только TableNames::table(); мутации — Transactions::run; уникальные нарушения — во вложенном savepoint ($db->transaction) → доменное исключение (как DatabaseStores::create).",
+    "Строки изменяемых сущностей блокировать ->lock('for no key update'), определения у писателя — ->lock('for share'); порядок блокировок — knowledge/catalog-design#concurrency.",
+    "Расхождение с knowledge/catalog-design или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной.",
+    "Типы — чистые: без IO, БД, контейнера; stateless; конструктор без аргументов.",
+    "Ни float, ни null в результате normalize/config; десятичные — brick/math BigDecimal без округления (лишние знаки → InvalidAttributeValue).",
+    "Ключи встроенных типов — ровно 10 из таблицы; изменение ключа после релиза запрещено (ключ хранится в данных)."
+  ],
+  "guidance": "`AttributeDefinition` (#[Api], final readonly): `string $code`, `array<string, mixed> $config` (уже канонический), `list<AttributeChoiceView> $choices`; метод `choice(string $code): ?AttributeChoiceView`. `AttributeChoiceView`: `AttributeChoiceId $id, string $code, LocalizedText $label, int $position`.\n\nDecimal: `BigDecimal::of($input)` (int или numeric-string; `is_float` → ошибка), `$d->stripTrailingZeros()->getScale() > $scale` → ошибка, иначе `(string) $d->toScale($scale)`. Границы min/max в config — строки, сравнение `compareTo`.\n\nmulti_enum: вход — непустой список строк; каждый код через `$definition->choice()`; сортировка по `(position, code)`; `index` → `IndexFact::choice($choice->id)` на каждый. Filter-сценарий (P2.9) передаёт один код, обёрнутый в список.\n\nlocalized_text: `new LocalizedText($array)` валидирует локали/пустоту; maxLength — по каждому тексту; `ksort`.\n\nreference: принимать `Commerz\\Identity\\Ref` (`$ref->type`, `$ref->id`) или строку; разбор строки — по первому ':' и тем же правилам, что `Ref::__construct`.",
+  "examples": [
+    {
+      "path": "packages/core/src/Internal/CorePlugin.php"
+    },
+    {
+      "path": "packages/testkit/tests/Feature/PluginContractTestsTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "docker compose up -d --wait postgres && scripts/php84 vendor/bin/pest packages/catalog/tests",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "SPI AttributeType + DTO + исключения",
+    "10 встроенных типов",
+    "плагин commerz.catalog",
+    "unit-тесты типов и контрактный тест плагина"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-09T02:24:18Z",
+    "finished_at": "2026-10-09T02:28:44Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "17ef965f-bf6e-41c6-8e33-94b50318c501"
+    },
+    "notes": "SPI AttributeType + DTO/exceptions, 10 built-in types, commerz.catalog plugin registered in provider; 99 catalog tests green.",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-09T02:28:44Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-09T02:28:44Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-09T02:28:44Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-09T02:28:44Z"
+}
