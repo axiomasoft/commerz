@@ -49,6 +49,7 @@ final readonly class DatabaseProducts implements Products
         private Transactions $transactions,
         private CommittedEvents $events,
         private AttributeWriter $writer,
+        private ProductQuery $query,
     ) {}
 
     public function create(CreateProduct $command): ProductView
@@ -194,21 +195,7 @@ final readonly class DatabaseProducts implements Products
 
     public function list(ListProducts $query): Page
     {
-        $builder = $this->db()->table($this->tables->table('products'))->orderBy('handle')->limit($query->first + 1);
-
-        if ($query->type instanceof ProductTypeId) {
-            $builder->where('product_type_id', $query->type->value);
-        }
-
-        if ($query->status instanceof ProductStatus) {
-            $builder->where('status', $query->status->value);
-        }
-
-        if ($query->after instanceof Cursor) {
-            $builder->where('handle', '>', $query->after->position());
-        }
-
-        $rows = $builder->get()->all();
+        $rows = $this->query->rows($query);
         $more = count($rows) > $query->first;
         $views = $this->views(array_slice($rows, 0, $query->first));
 

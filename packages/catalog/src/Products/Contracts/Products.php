@@ -6,6 +6,8 @@ namespace Commerz\Catalog\Products\Contracts;
 
 use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotAllowed;
+use Commerz\Catalog\Attributes\Exceptions\AttributeNotFilterable;
+use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotWritable;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Exceptions\MissingRequiredAttributes;
@@ -21,6 +23,7 @@ use Commerz\Catalog\Products\Exceptions\ProductArchived;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
+use Commerz\Errors\InvalidCommand;
 use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 
@@ -55,6 +58,10 @@ interface Products
     /** @throws ProductNotFound */
     public function findByHandle(string $handle): ProductView;
 
-    /** @return Page<ProductView> */
+    /**
+     * @return Page<ProductView>
+     *
+     * @throws AttributeNotFound|AttributeNotFilterable|InvalidAttributeValue|InvalidCommand|UnsupportedContribution
+     */
     public function list(ListProducts $query): Page;
 }

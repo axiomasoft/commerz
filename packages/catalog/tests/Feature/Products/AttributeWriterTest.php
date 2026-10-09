@@ -226,6 +226,7 @@ it('keeps a value of an uninstalled type as stored, unprojected and read-only', 
 it('has the attribute writer as the only writer of attribute documents and the projection (CAT-02)', function (): void {
     $root = dirname(__DIR__, 3).'/src';
     $writers = [];
+    $readers = [];
     $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
 
     foreach ($files as $file) {
@@ -234,11 +235,18 @@ it('has the attribute writer as the only writer of attribute documents and the p
         }
 
         $source = (string) file_get_contents($file->getPathname());
+        $path = substr($file->getPathname(), strlen($root) + 1);
+        $writes = preg_match('/->(insert|insertUsing|insertOrIgnore|upsert|update|updateOrInsert|delete|truncate)\(/', $source) === 1;
 
-        if (preg_match("/'attributes'\\s*=>|\\bset\\s+\"?attributes\"?\\s*=|table\\('attribute_index'\\)/i", $source) === 1) {
-            $writers[] = substr($file->getPathname(), strlen($root) + 1);
+        if (preg_match("/'attributes'\\s*=>|\\bset\\s+\"?attributes\"?\\s*=/i", $source) === 1
+            || (preg_match("/table\\('attribute_index'\\)/", $source) === 1 && $writes)) {
+            $writers[] = $path;
+        } elseif (preg_match("/table\\('attribute_index'\\)/", $source) === 1) {
+            $readers[] = $path;
         }
     }
 
-    expect($writers)->toBe(['Attributes/Internal/AttributeWriter.php']);
+    // Readers of the projection (the filter compiler) issue no write statement at all.
+    expect($writers)->toBe(['Attributes/Internal/AttributeWriter.php'])
+        ->and($readers)->toBe(['Products/Internal/FilterCompiler.php']);
 });

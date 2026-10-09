@@ -208,6 +208,25 @@ final readonly class AttributeWriter implements AttributeIndexer
     }
 
     /**
+     * Definitions of the codes as committed now, without a lock: for readers such as the filter compiler.
+     *
+     * @param  list<string>  $codes
+     * @return array<string, StoredAttribute> code => definition
+     */
+    public function read(array $codes): array
+    {
+        $codes = array_values(array_unique($codes));
+
+        if ($codes === []) {
+            return [];
+        }
+
+        $db = $this->db();
+
+        return $this->stored($db, $db->table($this->tables->table('attributes'))->whereIn('code', $codes)->get()->all());
+    }
+
+    /**
      * Attribute slots of the type on the owner's level.
      *
      * @return array<string, bool> code => required
