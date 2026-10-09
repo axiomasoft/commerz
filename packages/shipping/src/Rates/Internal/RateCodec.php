@@ -15,6 +15,7 @@ use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateResult;
+use Throwable;
 
 /**
  * The only way a rate goes into and comes out of storage. Writing is strict: an unknown key or wrong parameters
@@ -66,23 +67,18 @@ final readonly class RateCodec
 
         try {
             $rate = $this->contributions->get(DeliveryRate::KIND, $stored->key, DeliveryRate::class);
-        } catch (UnsupportedContribution $e) {
-            return LoadedRate::unsupported($e->getMessage());
-        }
+            $current = $rate->version();
 
-        $current = $rate->version();
+            if ($current < 1) {
+                return LoadedRate::unsupported('the plugin version must be at least 1');
+            }
 
-        if ($current < 1) {
-            return LoadedRate::unsupported('the plugin version must be at least 1');
-        }
+            if ($stored->version > $current) {
+                return LoadedRate::unsupported("stored at version {$stored->version}, the plugin knows {$current}");
+            }
 
-        if ($stored->version > $current) {
-            return LoadedRate::unsupported("stored at version {$stored->version}, the plugin knows {$current}");
-        }
+            $params = $stored->params;
 
-        $params = $stored->params;
-
-        try {
             if ($stored->version < $current) {
                 $params = $rate->upgrade($params, $stored->version);
             }
@@ -90,6 +86,8 @@ final readonly class RateCodec
             return LoadedRate::loaded($rate, $rate->normalize($params, $scope));
         } catch (InvalidRateConfig $e) {
             return LoadedRate::unsupported("stored parameters are invalid: {$e->getMessage()}");
+        } catch (Throwable $e) {
+            return LoadedRate::unsupported("rate '{$stored->key}' could not be loaded: {$e->getMessage()}");
         }
     }
 

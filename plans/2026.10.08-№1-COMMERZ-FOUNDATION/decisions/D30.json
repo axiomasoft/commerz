@@ -1,0 +1,45 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D30",
+  "title": "Shipping booking replay and recovery are governed by the journal, not mutable method settings",
+  "date": "2026-10-09",
+  "status": "accepted",
+  "question": "Should changing or archiving a shipping method block replay or recovery of an already journaled carrier operation?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Journal first: validate current method only for a new operation or a fresh attempt after rejected; booked returns its durable result without resolving a carrier, recovery uses the original immutable payload and original carrier contribution",
+      "pros": "Method maintenance cannot strand a shipment; conflicts, lease and fencing stay authoritative"
+    },
+    {
+      "id": "B",
+      "text": "Validate current method on every call before reading the journal",
+      "cons": "Archive/carrier changes deny replay and prevent find for possibly existing shipments"
+    }
+  ],
+  "context": "P6 audit A2: carrier() checked the current method before claim(), so an archived method or changed carrier stranded unknown bookings and denied durable booked replays. D29 promises stored-result replay and recovery by the original reference and fingerprint.",
+  "decision": "A — Journal first: validate current method only for a new operation or a fresh attempt after rejected; booked returns its durable result without resolving a carrier, recovery uses the original immutable payload and original carrier contribution",
+  "rationale": "Owner delegated architecture and explicitly authorized audit corrections. Journal authority preserves D29 for already accepted operations; new/rejected attempts still validate the current method. No public signature or schema change; unavailable original carrier fails closed and leaves recovery retryable.",
+  "applies_to": [
+    "P6",
+    "P6.6",
+    "P6.7",
+    "P7"
+  ],
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "packages/shipping/src/Bookings/Internal/CarrierShipmentBooking.php:62"
+    },
+    {
+      "kind": "repo",
+      "ref": "packages/shipping/tests/Feature/Bookings/ShipmentBookingTest.php"
+    }
+  ],
+  "actor": {
+    "provider": "codex",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}

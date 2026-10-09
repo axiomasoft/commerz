@@ -22,5 +22,6 @@ final class FixturePlugin implements CommerzPlugin
     {
         $registrar->contribute(DeliveryRate::KIND, FixedRate::class);
         $registrar->contribute(DeliveryRate::KIND, NewerRate::class);
+        $registrar->contribute(DeliveryRate::KIND, BrokenLoadingRate::class);
     }
 }

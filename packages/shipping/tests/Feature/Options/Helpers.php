@@ -29,6 +29,7 @@ use Commerz\Shipping\Methods\Data\ZoneRate;
 use Commerz\Shipping\Options\Data\MethodVerdict;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateSpec;
+use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
 use Commerz\Shipping\Tests\Fixtures\FixedRate;
 use Commerz\Shipping\Tests\Fixtures\ForeignCurrencyRate;
 use Commerz\Shipping\Tests\Fixtures\OrderDiscountStage;
@@ -68,6 +69,7 @@ final class OpPlugin implements CommerzPlugin
         $registrar->contribute(DeliveryRate::KIND, ThrowingRate::class);
         $registrar->contribute(DeliveryRate::KIND, ForeignCurrencyRate::class);
         $registrar->contribute(DeliveryRate::KIND, FixedRate::class);
+        $registrar->contribute(DeliveryRate::KIND, BrokenLoadingRate::class);
         $registrar->quoteStage(OrderDiscountStage::class);
     }
 }

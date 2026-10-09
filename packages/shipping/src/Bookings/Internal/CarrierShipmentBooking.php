@@ -59,11 +59,19 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
             throw new BookingInsideTransaction($command->reference);
         }
 
-        $carrier = $this->carrier($command);
-        $claim = $this->journal->claim($command);
+        $claim = $this->journal->claim($command, fn () => $this->validateCreate($command));
 
         if ($claim->booked instanceof BookedShipment) {
             return $claim->booked;
+        }
+
+        try {
+            $carrier = $this->contributions->get(Carrier::KIND, $command->carrier, Carrier::class);
+        } catch (Throwable $e) {
+            // Recovery needs the original carrier. If it is unavailable, preserve a retryable unknown outcome.
+            $this->journal->finish($claim, BookingState::Unknown, error: $e);
+
+            throw $e;
         }
 
         $booking = new CarrierBooking($command, $claim->attempt);
@@ -98,7 +106,7 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
      * @throws CarrierMismatch
      * @throws UnsupportedContribution
      */
-    private function carrier(BookShipment $command): Carrier
+    private function validateCreate(BookShipment $command): void
     {
         $method = $this->methods->findByCode($command->methodCode);
 
@@ -113,8 +121,6 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
         if (! $this->contributions->has(Carrier::KIND, $command->carrier)) {
             throw new UnsupportedContribution(Carrier::KIND, $command->carrier, 'no carrier is installed under this key');
         }
-
-        return $this->contributions->get(Carrier::KIND, $command->carrier, Carrier::class);
     }
 
     /** Records the shipment; one the package cannot trust leaves the booking unknown, since the carrier may have made it. */
@@ -148,7 +154,7 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
             $shipment->carrier !== $carrier => "the booking is by '{$shipment->carrier}'",
             ! self::isText($shipment->tracking) => 'the tracking number must be 1..191 bytes of UTF-8',
             $shipment->labelRef !== null && ! self::isText($shipment->labelRef) => 'the label reference must be 1..191 bytes of UTF-8',
-            ! self::isMeta($shipment->meta) => 'meta must map string keys to scalars that encode as JSON',
+            ! self::isMeta($shipment->meta) => 'meta must map string keys to scalars representable as PostgreSQL JSON without NUL',
             default => null,
         };
 
@@ -166,7 +172,9 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
     private static function isMeta(array $meta): bool
     {
         foreach ($meta as $key => $value) {
-            if (! is_string($key) || ! is_scalar($value)) {
+            if (! is_string($key) || ! is_scalar($value)
+                || str_contains($key, "\0")
+                || (is_string($value) && str_contains($value, "\0"))) {
                 return false;
             }
         }

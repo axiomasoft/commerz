@@ -78,8 +78,13 @@ final readonly class RecordingCarrier implements Carrier
     private static function shipment(CarrierBooking $booking): BookedShipment
     {
         $reference = $booking->shipment->reference;
+        $meta = match ($booking->shipment->meta['result_meta'] ?? null) {
+            'nul_key' => ["bad\0key" => 'value'],
+            'nul_value' => ['note' => "bad\0value"],
+            default => ['attempt' => $booking->attempt],
+        };
 
-        return new BookedShipment(self::KEY, "TRK-{$reference}", "label:{$reference}", ['attempt' => $booking->attempt]);
+        return new BookedShipment(self::KEY, "TRK-{$reference}", "label:{$reference}", $meta);
     }
 
     private static function record(string $kind, CarrierBooking $booking): void

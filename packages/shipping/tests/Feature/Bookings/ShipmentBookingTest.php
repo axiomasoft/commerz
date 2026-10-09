@@ -14,6 +14,7 @@ use Commerz\Shipping\Bookings\Internal\BookingJournal;
 use Commerz\Shipping\Bookings\Internal\CarrierShipmentBooking;
 use Commerz\Shipping\Methods\Data\ArchiveMethod;
 use Commerz\Shipping\Methods\Data\DisableMethod;
+use Commerz\Shipping\Methods\Data\UpdateMethod;
 use Commerz\Shipping\Tests\Fixtures\RecordingCarrier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -58,6 +59,90 @@ it('returns the recorded shipment for a repeat with the same payload without cal
         ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1'])
         ->and(bkRow()->attempts)->toBe(1);
 });
+
+it('replays a booked shipment after the method changes or its original carrier is removed', function (string $change): void {
+    $first = bkBook(bkCommand());
+    $method = mtMethods()->findByCode('recorded');
+
+    match ($change) {
+        'archive' => mtMethods()->archive(new ArchiveMethod($method->id)),
+        'carrier' => mtMethods()->update(new UpdateMethod($method->id, carrier: 'manual')),
+        'uninstall' => mtUsePlugins([]),
+    };
+    app()->forgetInstance(ShipmentBooking::class);
+    app()->forgetInstance(BookingJournal::class);
+
+    expect(bkBook(bkCommand()))->toEqual($first)
+        ->and(bkOutcome(bkCommand(city: 'Tula')))->toBe('common.idempotency_conflict')
+        ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1']);
+})->with(['archive', 'carrier', 'uninstall']);
+
+it('recovers a journaled shipment using its original carrier after the method changes', function (string $state, string $change): void {
+    $command = bkCommand(meta: ['fail' => 'timeout', 'found' => true]);
+
+    if ($state === 'unknown') {
+        bkOutcome($command);
+    } else {
+        app(BookingJournal::class)->claim($command);
+        bkExpireLease();
+    }
+
+    $method = mtMethods()->findByCode('recorded');
+
+    if ($change === 'archive') {
+        mtMethods()->archive(new ArchiveMethod($method->id));
+    } else {
+        mtMethods()->update(new UpdateMethod($method->id, carrier: 'manual'));
+    }
+
+    expect(bkOutcome($command))->toBe('booked TRK-fulfillment:1')
+        ->and(RecordingCarrier::calls('find'))->toBe(['find fulfillment:1 2'])
+        ->and(RecordingCarrier::calls('book'))->toHaveCount($state === 'unknown' ? 1 : 0)
+        ->and(bkRow()->state)->toBe('booked');
+})->with(['unknown', 'pending'])->with(['archive', 'carrier']);
+
+it('still validates a new attempt after a final rejection against the current method', function (): void {
+    bkOutcome(bkCommand(meta: ['fail' => 'reject']));
+    mtMethods()->archive(new ArchiveMethod(mtMethods()->findByCode('recorded')->id));
+
+    expect(bkOutcome(bkCommand()))->toBe('shipping.method_archived')
+        ->and([bkRow()->state, bkRow()->attempts])->toBe(['rejected', 1])
+        ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1']);
+});
+
+it('keeps recovery retryable while the original carrier is uninstalled', function (): void {
+    $command = bkCommand(meta: ['fail' => 'timeout', 'found' => true]);
+    bkOutcome($command);
+    mtUsePlugins([]);
+    app()->forgetInstance(ShipmentBooking::class);
+    app()->forgetInstance(BookingJournal::class);
+
+    expect(bkOutcome($command))->toBe('plugins.unsupported_contribution')
+        ->and([bkRow()->state, bkRow()->attempts])->toBe(['unknown', 2])
+        ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1']);
+
+    mtUsePlugins([BkPlugin::class]);
+    app()->forgetInstance(ShipmentBooking::class);
+    app()->forgetInstance(BookingJournal::class);
+
+    expect(bkOutcome($command))->toBe('booked TRK-fulfillment:1')
+        ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1', 'find fulfillment:1 3']);
+});
+
+it('records unrepresentable carrier metadata as unknown on book and recovery', function (string $meta, bool $recover): void {
+    Event::fake([ShipmentBooked::class]);
+    $command = bkCommand(meta: ['result_meta' => $meta, 'found' => true]);
+
+    if ($recover) {
+        app(BookingJournal::class)->claim($command);
+        bkExpireLease();
+    }
+
+    expect(bkOutcome($command))->toBe('shipping.invalid_carrier_result')
+        ->and([bkRow()->state, bkRow()->tracking, bkRow()->error_code])->toBe(['unknown', null, 'shipping.invalid_carrier_result'])
+        ->and(RecordingCarrier::calls('book'))->toHaveCount($recover ? 0 : 1);
+    Event::assertNotDispatched(ShipmentBooked::class);
+})->with(['nul_key', 'nul_value'])->with([false, true]);
 
 it('refuses a booked reference with another payload', function (): void {
     bkBook(bkCommand());

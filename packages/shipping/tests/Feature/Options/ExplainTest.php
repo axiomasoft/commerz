@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 // Every explain verdict of knowledge/shipping-design#api.
 
+use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Methods\Data\ArchiveMethod;
 use Commerz\Shipping\Options\Internal\MethodPricer;
 use Commerz\Shipping\Options\Internal\PricedMethod;
+use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateSpec;
+use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -73,6 +76,17 @@ it('explains a rate plugin that failed', function (): void {
     mtMethod('flaky', ['channels' => [$this->web], 'rates' => [mtRate($this->golden['zones']['ru']->id, ['rate' => new RateSpec('test.throwing')])]]);
 
     expect(opVerdict(opRequest($this->web), 'flaky')->message)->toContain('the rate service is down');
+});
+
+it('keeps healthy options and admin reads available when a stored tariff plugin crashes', function (): void {
+    $method = mtMethod('broken', ['channels' => [$this->web], 'rates' => [mtRate($this->golden['zones']['ru']->id, ['rate' => new RateSpec('test.broken_loading')])]]);
+    $rate = app(Contributions::class)->get(DeliveryRate::KIND, 'test.broken_loading', DeliveryRate::class);
+    expect($rate)->toBeInstanceOf(BrokenLoadingRate::class);
+    $rate->failOn = 'normalize';
+
+    expect(opVerdict(opRequest($this->web), 'broken')->verdict)->toBe('unsupported_rate')
+        ->and(array_keys(opOptions(opRequest($this->web))))->toBe(['courier', 'pickup'])
+        ->and(mtMethods()->find($method->id)->rates[0]->unsupported)->toContain('normalize failed');
 });
 
 it('passes on the reason a rate gave', function (): void {

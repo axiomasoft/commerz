@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Bookings\Internal;
 
+use Closure;
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\IdempotencyConflict;
@@ -47,14 +48,20 @@ final readonly class BookingJournal
     ) {}
 
     /**
+     * Current method validation belongs only to a new operation, or a new attempt after a final refusal (D30).
+     * It runs before the claim commits, so failure leaves no new row or lease. Replay and recovery depend on the
+     * original journaled payload, never mutable method settings.
+     *
+     * @param  (Closure(): void)|null  $validateCreate
+     *
      * @throws BookingInProgress another process holds a live lease of the reference
      * @throws IdempotencyConflict the reference was booked, or may have been, with another payload
      */
-    public function claim(BookShipment $command): BookingClaim
+    public function claim(BookShipment $command, ?Closure $validateCreate = null): BookingClaim
     {
         $fingerprint = self::fingerprint($command);
 
-        return $this->transactions->run(function () use ($command, $fingerprint): BookingClaim {
+        return $this->transactions->run(function () use ($command, $fingerprint, $validateCreate): BookingClaim {
             $db = $this->db();
             $table = $this->tables->table('shipping_bookings');
             $id = Uuid7::generate();
@@ -69,6 +76,8 @@ final readonly class BookingJournal
             );
 
             if ($inserted !== []) {
+                $validateCreate?->__invoke();
+
                 return BookingClaim::create($id, $command->reference, 1);
             }
 
@@ -88,6 +97,8 @@ final readonly class BookingJournal
 
             if ($state === BookingState::Rejected) {
                 // The carrier created nothing: a new attempt may correct the payload.
+                $validateCreate?->__invoke();
+
                 $this->lease($id, $attempt, [
                     'carrier' => $command->carrier,
                     'method_code' => $command->methodCode,

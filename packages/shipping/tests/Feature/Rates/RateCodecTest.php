@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
@@ -13,6 +14,7 @@ use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateResult;
 use Commerz\Shipping\Rates\Internal\RateCodec;
 use Commerz\Shipping\Rates\Internal\StoredRate;
+use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
 use Commerz\Shipping\Tests\Fixtures\FixturePlugin;
 
 beforeEach(function (): void {
@@ -116,3 +118,18 @@ it('refuses a price in a currency other than the tariff\'s', function (): void {
         ->and(fn () => $codec->assertPrice('test.fixed', RatePrice::of(Money::of('1.00', 'USD')), Currency::of('RUB')))
         ->toThrow(InvalidRateResult::class, 'the price is in USD, the tariff is in RUB');
 });
+
+it('contains unexpected plugin failures while loading a stored tariff', function (string $operation, int $version): void {
+    $rate = app(Contributions::class)->get(DeliveryRate::KIND, 'test.broken_loading', DeliveryRate::class);
+    expect($rate)->toBeInstanceOf(BrokenLoadingRate::class);
+    $rate->failOn = $operation;
+
+    $loaded = rtCodec()->decode(new StoredRate($rate->key(), $version, RateParams::fromInput([])), rtScope());
+
+    expect($loaded->isSupported())->toBeFalse()
+        ->and($loaded->reason)->toContain("{$operation} failed");
+})->with([
+    ['version', 2],
+    ['normalize', 2],
+    ['upgrade', 1],
+]);

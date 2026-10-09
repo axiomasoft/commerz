@@ -369,6 +369,13 @@ $booking = Shipping::bookings()->find('fulfillment:'.$id);   // BookingView; lis
 - Booking states: `pending → booked | rejected | unknown`. A timeout is
   `unknown`, never "failed, create again": the retry calls `Carrier::find` by
   the same reference and books anew only when it finds nothing (D29).
+- The booking journal governs repeats (D30): `booked` returns the stored result
+  even after the method is archived, its carrier is changed or its plugin is
+  removed. `unknown` or expired `pending` recovers with the original carrier
+  and payload. An unavailable original carrier leaves the outcome `unknown`
+  for a later retry. New operations and fresh attempts after final rejection
+  validate the current method. Invalid carrier results, including metadata
+  containing NUL that PostgreSQL cannot store, become `unknown`.
 - Errors (stable codes): `shipping.zone_not_found`, `zone_archived`,
   `method_not_found`, `method_archived`, `duplicate_code`,
   `duplicate_zone_member`, `too_many_zone_members`, `duplicate_rate`,

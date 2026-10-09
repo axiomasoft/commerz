@@ -228,6 +228,15 @@ fenced finish transaction (D29); the lease must exceed the carrier client's
 timeout (`commerz-shipping.booking.lease_seconds`, default 120). Quoting,
 `list` and `explain` read without locks.
 
+The journal determines whether an attempt is new, a replay or recovery (D30).
+Only new operations and fresh attempts after a final rejection validate the
+current method; validation runs before the claim commits, and failure rolls it
+back. A booked replay returns without resolving any carrier. Recovery uses the
+original carrier and fingerprint regardless of later method maintenance; a
+missing carrier leaves the outcome unknown and retryable. Stored-rate plugin
+failures in version, upgrade or normalization mark that tariff unsupported
+without aborting healthy options or admin reads (SHP-05).
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
