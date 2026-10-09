@@ -186,10 +186,28 @@ or new state is acceptable, the limit is enforced at placement. A guest
 rejects it (`customer_required`) and `consume` throws
 `UsageLimitReached(per_customer)`.
 
+Coupon code creation (`create` and `generate`) takes a transaction advisory
+lock scoped to `commerz.coupon_codes:<physical coupons table>` before a
+promotion row or generation receipt. The lock covers all rounds and remains
+held until the outer transaction ends: sorting each round alone cannot prevent
+a later round from waiting on an earlier insert of another uncommitted batch.
+Administrative code creation is serialized across promotions because codes
+are unique across the installation; quoting, placement, restore and coupon
+status/limit updates do not acquire this lock. Hosts composing definition
+mutations with code creation must call code creation first. This is the P5
+audit correction to the generation algorithm.
+
+Line discounts are capped by both `lineNet(lineId)` and the remaining
+items total after declared order adjustments. Order discounts remain declared
+and are allocated over the final line nets by D23 at settlement; later line
+discounts may change the shares, but cannot leave too little to carry their
+total. Budget guards compare the discount to `budget - spent`, avoiding
+overflow for supported 64-bit minor amounts.
+
 `commerz:promotions:reconcile` is read-only on one `REPEATABLE READ` snapshot:
 it recounts `used` / `spent_minor` of limited promotions, `used` of limited
 coupons and the per-customer rows from the consumed usages, and lists rules
-with an unsupported key or version; it exits 1 on any discrepancy and repairs
+with an unsupported key, version, stage or parameters; it exits 1 on any discrepancy and repairs
 nothing.
 
 ## Interfering operations

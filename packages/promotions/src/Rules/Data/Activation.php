@@ -8,7 +8,10 @@ use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 
-/** One promotion an activator switched on, and the code (canonical, and as presented) that did it, if any. */
+/**
+ * One promotion an activator switched on. `couponCode` is an owned package coupon counted at placement;
+ * `presentedCode` may instead be a third-party activation code with no package coupon.
+ */
 #[Api(since: '0.1')]
 final readonly class Activation
 {

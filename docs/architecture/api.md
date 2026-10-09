@@ -280,6 +280,9 @@ app(PromotionUsage::class)->restore(new RestorePromotionUsage('order:'.$orderId,
   `commerz-promotions.coupons.alphabet`) with random codes and refuses a pattern
   with too few `#` or whose code space is smaller than 100 times the count
   (`promotions.pattern_too_small`).
+  Code creation is serialized across promotions until the outer transaction
+  ends to avoid collisions deadlocking across generation rounds; hosts that
+  also mutate definitions in that transaction call code creation first.
 - `explain` re-runs the real pipeline and returns a `PromotionExplanation`:
   the `QuoteResult` (or the `failure` code and no quote), a `PromotionVerdict`
   per candidate in stage order (`Applied` with the discount, `Rejected` or

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Usage\Internal;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Money\Currency;
 use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Common\Internal\Rows;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Data\RuleParams;
+use Commerz\Promotions\Rules\Data\RuleScope;
+use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
@@ -143,15 +146,21 @@ final readonly class UsageReconciler
         $promotions = $db->table($this->tables->table('promotions'))
             ->where('status', '<>', PromotionStatus::Archived->value)
             ->orderBy('code')
-            ->get(['id', 'code', 'activator'])
+            ->get(['id', 'code', 'activator', 'stage', 'currency'])
             ->all();
 
         $codes = [];
+        $scopes = [];
         $found = [];
 
         foreach ($promotions as $promotion) {
             $code = Rows::string($promotion, 'code');
             $codes[Rows::string($promotion, 'id')] = $code;
+            $currency = Rows::nullableString($promotion, 'currency');
+            $scopes[Rows::string($promotion, 'id')] = new RuleScope(
+                PromotionStage::from(Rows::string($promotion, 'stage')),
+                $currency === null ? null : Currency::of($currency),
+            );
             $activator = Rows::string($promotion, 'activator');
 
             if (! $this->contributions->has(PromotionActivator::KIND, $activator)) {
@@ -177,7 +186,7 @@ final readonly class UsageReconciler
             $role = Rows::string($row, 'role') === RuleCodec::EFFECT ? RuleCodec::EFFECT : RuleCodec::CONDITION;
 
             try {
-                $loaded = $this->codec->decode(new StoredRule(Rows::string($row, 'rule_key'), Rows::int($row, 'config_version'), RuleParams::fromInput(Rows::json($row, 'config'))), $role);
+                $loaded = $this->codec->decode(new StoredRule(Rows::string($row, 'rule_key'), Rows::int($row, 'config_version'), RuleParams::fromInput(Rows::json($row, 'config'))), $role, $scopes[Rows::string($row, 'promotion_id')]);
                 $reason = $loaded->reason;
             } catch (InvalidRuleConfig|RuntimeException $e) {
                 $reason = "stored parameters cannot be read: {$e->getMessage()}";

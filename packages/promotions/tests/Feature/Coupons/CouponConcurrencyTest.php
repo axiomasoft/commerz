@@ -53,3 +53,30 @@ it('keeps one batch when processes retry a keyed generation', function (): void 
         ->and(DB::table('cmz_coupons')->count())->toBe(300)
         ->and(DB::table('cmz_coupon_batches')->count())->toBe(1);
 })->group('concurrency');
+
+it('avoids deadlock when later generation rounds collide with codes held by another batch', function (): void {
+    config()->set('commerz-promotions.coupons.alphabet', 'ABCD');
+    $promotion = cpnPromotion()->id->value;
+    cpnCoupon(new PromotionId($promotion), 'X-CCCC');
+    cpnCoupon(new PromotionId($promotion), 'X-DDDD');
+
+    $counts = Concurrency::run(2, function (int $worker) use ($promotion): int {
+        require_once __DIR__.'/../../Fixtures/CollisionRandom.php';
+        $codes = $worker === 0 ? ['AAAA', 'CCCC', 'BBBB', 'CAAA'] : ['BBBB', 'DDDD', 'AAAA', 'CBBB'];
+        $GLOBALS['coupon_collision_indexes'] = array_map(static fn (string $letter): int => ord($letter) - ord('A'), str_split(implode('', $codes)));
+        $inserts = 0;
+        DB::listen(static function ($query) use (&$inserts): void {
+            if (str_starts_with($query->sql, 'insert into "cmz_coupons"') && str_contains($query->sql, 'returning id') && ++$inserts === 1) {
+                // Both first rounds hold one new code; their next rounds ask for each other's code.
+                usleep(250_000);
+            }
+        });
+
+        return Promotions::coupons()->generate(new GenerateCoupons(new PromotionId($promotion), 2, 'X-####'))->count;
+    }, timeoutSeconds: 15);
+
+    expect($counts)->toBe([2, 2])
+        ->and(DB::table('cmz_coupons')->count())->toBe(6)
+        ->and(DB::table('cmz_coupon_batches')->count())->toBe(2)
+        ->and(DB::table('cmz_coupons')->whereNotNull('batch_id')->select('batch_id')->groupBy('batch_id')->havingRaw('count(*) <> 2')->count())->toBe(0);
+})->group('concurrency');

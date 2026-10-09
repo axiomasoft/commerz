@@ -324,7 +324,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
             $updated = $db->update(
                 "update {$this->wrap($table)} set used = used + case when usage_limit is null then 0 else 1 end,"
                 .' spent_minor = spent_minor + case when budget_minor is null then 0 else ? end, updated_at = ?'
-                .' where id = ? and (usage_limit is null or used < usage_limit) and (budget_minor is null or spent_minor + ? <= budget_minor)',
+                .' where id = ? and (usage_limit is null or used < usage_limit) and (budget_minor is null or ? <= budget_minor - spent_minor)',
                 [$discount, $now, $promotion->promotionId, $discount],
             );
 

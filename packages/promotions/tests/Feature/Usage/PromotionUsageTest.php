@@ -21,6 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 require_once __DIR__.'/Helpers.php';
+
 require_once __DIR__.'/../Evaluation/Helpers.php';
 
 uses(RefreshDatabase::class);
@@ -264,4 +265,13 @@ it('consumes what a real quote applied (D25)', function (): void {
         ->and(usgCouponUsed('SAVE50'))->toBe(1)
         ->and(usgCustomers($cart))->toBe(['customer:a' => 1])
         ->and(DB::table('cmz_promotion_usages')->orderBy('discount_minor')->pluck('discount_minor')->map(static fn ($d): int => (int) $d)->all())->toBe([5_000, 10_000]);
+});
+
+it('refuses a budget overflow with a limit error and rolls back the redemption', function (): void {
+    $promotion = pdfPromotion('huge', ['budget' => Money::ofMinor(PHP_INT_MAX, 'RUB')]);
+    DB::table('cmz_promotions')->where('id', $promotion->id->value)->update(['spent_minor' => PHP_INT_MAX - 50]);
+
+    expect(usgOutcome(fn () => usgConsume('order:overflow', [usgApplied($promotion, '1.00')])))->toBe('limit:budget')
+        ->and(DB::table('cmz_promotion_redemptions')->where('order_ref', 'order:overflow')->exists())->toBeFalse()
+        ->and(usgPromotionCounters($promotion)['spent'])->toBe(PHP_INT_MAX - 50);
 });

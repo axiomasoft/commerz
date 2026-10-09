@@ -99,16 +99,26 @@ those anchors like any other (D26).
   positive `Money` in the quote currency). The engine does not trust them:
   `DiscountGuard` checks the line, the currency and the remaining price,
   clamps at zero, and a promotion applies whole or not at all (PRM-05).
+  A line discount is also capped by the remaining items total after any
+  declared order discounts, whose total is preserved when shares are allocated
+  over the final line nets at settlement (D23).
 - **Activators** decide which promotions are switched on for a quote:
   `automatic` all of them, `coupon` those whose code is presented. They return
   an `ActivationResult` (activations plus `CodeRejection`s); the engine knows
   neither word, so a plugin can add `acme.referral` the same way.
+  A third-party code uses `Activation($promotion, presentedCode: $code)`:
+  `presentedCode` is matched against input codes and carries quote rejections;
+  `couponCode` is reserved for an owned package coupon counted at placement.
+  Without a package coupon, `PromotionUsage` still enforces promotion and
+  customer limits and budget; spending a plugin's own resource is its concern.
 - **Order and stacking** within a stage: `priority DESC, code ASC`; `Stackable`
   promotions apply one after another to the reduced price, `Exclusive` only as
   the first of its stage and then stops the rest; `stopFurther` stops the rest
   after an applied promotion.
 - **Storage and trust.** Rules are stored as key + `config_version` + canonical
-  JSONB parameters; a missing rule, activator or an unreadable version makes the
+  JSONB parameters. Loading validates stage and parameters against the
+  promotion's currency after any upgrade, including at the current version.
+  A missing rule, activator, unreadable version or invalid parameters makes the
   promotion `unsupported` (not applied, verdict `unsupported_rule`, listed by
   `commerz:promotions:reconcile`). Stages and rules are pure: no database
   writes, no network, time from `context.at`; the one spending point is

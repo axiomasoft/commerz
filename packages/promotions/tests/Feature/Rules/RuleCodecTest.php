@@ -96,8 +96,8 @@ it('limits the number of rules: up to 20 conditions, 1 to 10 effects', function 
         ->and(rcFailure(fn () => rcCodec()->encode($effects(11), RuleCodec::EFFECT, rcScope())))->toBe('promotions.invalid_rules @ effects');
 });
 
-it('decodes a rule stored at the current version as it is', function (): void {
-    $loaded = rcCodec()->decode(new StoredRule('test.min_items', 2, RuleParams::fromInput(['min' => 4])), RuleCodec::CONDITION);
+it('validates a rule stored at the current version against its scope', function (): void {
+    $loaded = rcCodec()->decode(new StoredRule('test.min_items', 2, RuleParams::fromInput(['min' => 4])), RuleCodec::CONDITION, rcScope());
 
     expect($loaded->isSupported())->toBeTrue()
         ->and($loaded->rule)->toBeInstanceOf(PromotionCondition::class)
@@ -106,14 +106,14 @@ it('decodes a rule stored at the current version as it is', function (): void {
 });
 
 it('upgrades the parameters of an older version', function (): void {
-    $loaded = rcCodec()->decode(new StoredRule('test.min_items', 1, RuleParams::fromInput(['minimum' => 4])), RuleCodec::CONDITION);
+    $loaded = rcCodec()->decode(new StoredRule('test.min_items', 1, RuleParams::fromInput(['minimum' => 4])), RuleCodec::CONDITION, rcScope());
 
     expect($loaded->isSupported())->toBeTrue()
         ->and($loaded->params?->toArray())->toBe(['min' => 4]);
 });
 
 it('does not throw on stored data: a missing key, a newer version or a failed upgrade is unsupported', function (string $key, int $version, array $params, string $role, string $reason): void {
-    $loaded = rcCodec()->decode(new StoredRule($key, $version, RuleParams::fromInput($params)), $role);
+    $loaded = rcCodec()->decode(new StoredRule($key, $version, RuleParams::fromInput($params)), $role, rcScope());
 
     expect($loaded->isSupported())->toBeFalse()
         ->and($loaded->rule)->toBeNull()
@@ -125,4 +125,17 @@ it('does not throw on stored data: a missing key, a newer version or a failed up
     'stored by a newer plugin' => ['test.min_items', 3, ['min' => 1], RuleCodec::CONDITION, 'stored at version 3, the plugin knows 2'],
     'the upgrade fails on the old shape' => ['test.min_items', 1, ['min' => 1], RuleCodec::CONDITION, 'cannot be upgraded'],
     'the plugin cannot read version 1' => ['test.newer', 1, [], RuleCodec::EFFECT, 'the old format is gone'],
+    'invalid parameters at the current version' => ['test.min_items', 2, ['min' => 0], RuleCodec::CONDITION, 'stored parameters are invalid'],
+    'unknown parameter at the current version' => ['test.min_items', 2, ['min' => 1, 'extra' => 1], RuleCodec::CONDITION, 'unknown parameter'],
+]);
+
+it('refuses stored rules whose stage or amount currency is no longer supported', function (RuleScope $scope, string $reason): void {
+    $loaded = rcCodec()->decode(new StoredRule('test.flat_off', 1, RuleParams::fromInput(['amount' => Money::of('1.00', 'RUB')])), RuleCodec::EFFECT, $scope);
+
+    expect($loaded->isSupported())->toBeFalse()
+        ->and($loaded->reason)->toContain($reason);
+})->with([
+    'stage changed by a plugin' => [rcScope(PromotionStage::Delivery), 'not allowed in the delivery stage'],
+    'foreign currency' => [rcScope(currency: 'USD'), 'currency must be USD'],
+    'no promotion currency' => [rcScope(currency: null), 'set the promotion currency'],
 ]);

@@ -81,7 +81,7 @@ final readonly class PromotionEngine
 
             $refused = match (true) {
                 ! $total->isPositive() => ['no_discount', 'The promotion gives no discount on this quote.'],
-                $candidate->budget instanceof Money && $candidate->spent instanceof Money && $candidate->spent->plus($total)->compare($candidate->budget) > 0 => ['budget_exhausted', 'The budget of the promotion is spent.'],
+                $candidate->budget instanceof Money && $candidate->spent instanceof Money && $total->compare($candidate->budget->minus($candidate->spent)) > 0 => ['budget_exhausted', 'The budget of the promotion is spent.'],
                 default => null,
             };
 
@@ -211,7 +211,7 @@ final readonly class PromotionEngine
     {
         $session->record($this->verdict($stage, $candidate, $kind, $reason, null));
 
-        if ($candidate->couponCode() === null) {
+        if ($candidate->presentedCode() === null) {
             return $state;
         }
 

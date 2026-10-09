@@ -9,6 +9,7 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -102,4 +103,39 @@ it('rejects a promotion that gives nothing on what is left', function (): void {
     $input = evInput(['100.00']);
 
     expect(evVerdicts($input))->toBe(['first|applied|100.00', 'second|rejected|no_discount']);
+});
+
+it('clamps line discounts after an order discount to the remaining items total', function (array $amounts, array $expected): void {
+    evPromotion('order', PromotionStage::Cart, [evOrderFixed('90.00')], ['priority' => 10]);
+    evPromotion('line', PromotionStage::Cart, [evLineFixed('100.00', 'line')]);
+
+    $result = evRun(evInput($amounts));
+
+    expect(evDiscounts($result))->toBe($expected)
+        ->and($result->total->toDecimal())->toBe('0.00');
+})->with([
+    'one line' => [['100.00'], ['line:1 -10.00 line', 'order -90.00 order']],
+    'two lines' => [['100.00', '100.00'], ['line:1 -100.00 line', 'line:2 -10.00 line', 'order -90.00 order']],
+]);
+
+it('rejects invalid stored rule parameters without failing the quote and reports them in reconcile', function (array $config): void {
+    $promotion = evPromotion('broken', PromotionStage::Cart, [evLinePercent(1000)]);
+    evPromotion('healthy', PromotionStage::Cart, [evLinePercent(500)]);
+    DB::table('cmz_promotion_rules')->where('promotion_id', $promotion->id->value)->update(['config' => json_encode($config, JSON_THROW_ON_ERROR)]);
+    $input = evInput(['100.00']);
+
+    expect(evDiscounts(evRun($input)))->toBe(['line:1 -5.00 healthy'])
+        ->and(evVerdicts($input))->toBe(['broken|rejected|unsupported_rule', 'healthy|applied|5.00']);
+    $this->artisan('commerz:promotions:reconcile')->expectsOutputToContain('unsupported_rule')->assertExitCode(1);
+})->with([
+    'missing rate' => [[]],
+    'out of range rate' => [['rateBp' => 10001]],
+    'unknown parameter' => [['rateBp' => 1000, 'extra' => 1]],
+]);
+
+it('rejects an over-budget discount without overflowing the money range', function (): void {
+    $promotion = evPromotion('huge', PromotionStage::Cart, [evLineFixed('1.00', 'line')], ['budget' => Money::ofMinor(PHP_INT_MAX, 'RUB')]);
+    evSetColumns($promotion, ['spent_minor' => PHP_INT_MAX - 50]);
+
+    expect(evVerdicts(evInput(['100.00'])))->toBe(['huge|rejected|budget_exhausted']);
 });

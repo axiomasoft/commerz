@@ -1,0 +1,24 @@
+
+  ⨯
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Usage\ActivatorUsa…  QuoteFailed   
+  Quote failed in stage 'promotions.catalog' (stage_error): Rule 'test.rogue' returned an invalid result: code 'EXTERNAL' switched a promotion on without a coupon code.
+
+  at packages/promotions/src/Evaluation/Internal/ActivePromotions.php:344
+    340▕                 throw new InvalidRuleResult($key, "code '{$activation->presentedCode}' was not presented");
+    341▕             }
+    342▕ 
+    343▕             if ($activation->presentedCode !== null && $activation->couponCode === null) {
+  ➜ 344▕                 throw new InvalidRuleResult($key, "code '{$activation->presentedCode}' switched a promotion on without a coupon code");
+    345▕             }
+    346▕ 
+    347▕             $activated[] = $id;
+    348▕         }
+
+  1   packages/promotions/src/Evaluation/Internal/ActivePromotions.php:344
+  2   packages/promotions/src/Evaluation/Internal/ActivePromotions.php:84
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 0.21s
+

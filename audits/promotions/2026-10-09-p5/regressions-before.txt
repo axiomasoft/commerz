@@ -1,0 +1,201 @@
+
+  ⨯⨯⨯⨯⨯⨯⨯⨯
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTru…  QuoteFailed   
+  Quote failed in stage 'totals' (negative_total): Invalid adjustments: order-level adjustments exceed the items total.
+
+  at packages/core/src/Quotes/Data/QuoteState.php:117
+    113▕                 continue;
+    114▕             }
+    115▕ 
+    116▕             if (array_sum($remaining) + $adjustment->amount->amountMinor < 0) {
+  ➜ 117▕                 throw new InvalidCommand('adjustments', 'order-level adjustments exceed the items total', 'quotes.negative_total');
+    118▕             }
+    119▕ 
+    120▕             foreach (MoneyAllocator::allocate($adjustment->amount, array_values($remaining)) as $index => $share) {
+    121▕                 if ($share->isZero()) {
+
+  1   packages/core/src/Quotes/Data/QuoteState.php:117
+  2   packages/core/src/Quotes/Internal/TotalsStage.php:78
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTru…  QuoteFailed   
+  Quote failed in stage 'totals' (negative_total): Invalid adjustments: order-level adjustments exceed the items total.
+
+  at packages/core/src/Quotes/Data/QuoteState.php:117
+    113▕                 continue;
+    114▕             }
+    115▕ 
+    116▕             if (array_sum($remaining) + $adjustment->amount->amountMinor < 0) {
+  ➜ 117▕                 throw new InvalidCommand('adjustments', 'order-level adjustments exceed the items total', 'quotes.negative_total');
+    118▕             }
+    119▕ 
+    120▕             foreach (MoneyAllocator::allocate($adjustment->amount, array_values($remaining)) as $index => $share) {
+    121▕                 if ($share->isZero()) {
+
+  1   packages/core/src/Quotes/Data/QuoteState.php:117
+  2   packages/core/src/Quotes/Internal/TotalsStage.php:78
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTru…  QuoteFailed   
+  Quote failed in stage 'promotions.cart' (stage_error): Invalid rule parameter rateBp: is required.
+
+  at packages/promotions/src/Rules/Data/RuleParams.php:181
+    177▕ 
+    178▕     private function required(string $key): mixed
+    179▕     {
+    180▕         if (! array_key_exists($key, $this->values) || $this->values[$key] === null) {
+  ➜ 181▕             throw new InvalidRuleConfig($key, 'is required');
+    182▕         }
+    183▕ 
+    184▕         return $this->values[$key];
+    185▕     }
+
+  1   packages/promotions/src/Rules/Data/RuleParams.php:181
+  2   packages/promotions/src/Rules/Data/RuleParams.php:77
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTru…  QuoteFailed   
+  Quote failed in stage 'promotions.cart' (stage_error): Invalid rule parameter rateBp: expected an integer from 1 to 10000.
+
+  at packages/promotions/src/Rules/Data/RuleParams.php:194
+    190▕             throw new InvalidRuleConfig($key, 'expected an integer');
+    191▕         }
+    192▕ 
+    193▕         if ($value < $min || $value > $max) {
+  ➜ 194▕             throw new InvalidRuleConfig($key, "expected an integer from {$min} to {$max}");
+    195▕         }
+    196▕ 
+    197▕         return $value;
+    198▕     }
+
+  1   packages/promotions/src/Rules/Data/RuleParams.php:194
+  2   packages/promotions/src/Rules/Data/RuleParams.php:77
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTrustTest > it r…   
+  Failed asserting that two arrays are identical.
+   Array &0 [
+  -    0 => 'line:1 -5.00 healthy',
+  +    0 => 'line:1 -10.00 broken',
+  +    1 => 'line:1 -4.50 healthy',
+   ]
+  
+
+  at packages/promotions/tests/Feature/Evaluation/RuleTrustTest.php:127
+    123▕     evPromotion('healthy', PromotionStage::Cart, [evLinePercent(500)]);
+    124▕     DB::table('cmz_promotion_rules')->where('promotion_id', $promotion->id->value)->update(['config' => json_encode($config, JSON_THROW_ON_ERROR)]);
+    125▕     $input = evInput(['100.00']);
+    126▕ 
+  ➜ 127▕     expect(evDiscounts(evRun($input)))->toBe(['line:1 -5.00 healthy'])
+    128▕         ->and(evVerdicts($input))->toBe(['broken|rejected|unsupported_rule', 'healthy|applied|5.00']);
+    129▕     $this->artisan('commerz:promotions:reconcile')->expectsOutputToContain('unsupported_rule')->assertExitCode(1);
+    130▕ })->with([
+    131▕     'missing rate' => [[]],
+
+  1   packages/promotions/tests/Feature/Evaluation/RuleTrustTest.php:127
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Evaluation\RuleTrustTest > it r…   
+  Failed asserting that two arrays are identical.
+  -Array &0 [
+  -    0 => 'huge|rejected|budget_exhausted',
+  -]
+  +Array &0 []
+  
+
+  at packages/promotions/tests/Feature/Evaluation/RuleTrustTest.php:140
+    136▕ it('rejects an over-budget discount without overflowing the money range', function (): void {
+    137▕     $promotion = evPromotion('huge', PromotionStage::Cart, [evLineFixed('1.00', 'line')], ['budget' => Money::ofMinor(PHP_INT_MAX, 'RUB')]);
+    138▕     evSetColumns($promotion, ['spent_minor' => PHP_INT_MAX - 50]);
+    139▕ 
+  ➜ 140▕     expect(evVerdicts(evInput(['100.00'])))->toBe(['huge|rejected|budget_exhausted']);
+    141▕ });
+    142▕
+
+  1   packages/promotions/tests/Feature/Evaluation/RuleTrustTest.php:140
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Usage\Promotion…  QueryException   
+  SQLSTATE[22003]: Numeric value out of range: 7 ERROR:  bigint out of range (Connection: testing, Host: 127.0.0.1, Port: 54329, Database: commerz_test, SQL: update "cmz_promotions" set used = used + case when usage_limit is null then 0 else 1 end, spent_minor = spent_minor + case when budget_minor is null then 0 else 100 end, updated_at = 2026-10-09 18:31:57.594840+00:00 where id = 01a121ef-ab96-72c7-820c-3ed928d02346 and (usage_limit is null or used < usage_limit) and (budget_minor is null or spent_minor + 100 <= budget_minor))
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:626
+    622▕             $statement = $this->getPdo()->prepare($query);
+    623▕ 
+    624▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    625▕ 
+  ➜ 626▕             $statement->execute();
+    627▕ 
+    628▕             $this->recordsHaveBeenModified(
+    629▕                 ($count = $statement->rowCount()) > 0
+    630▕             );
+
+      +5 vendor frames 
+  6   packages/promotions/src/Usage/Internal/DatabasePromotionUsage.php:324
+  7   packages/promotions/src/Usage/Internal/DatabasePromotionUsage.php:74
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Packages\promotions\tests\Feature\Coupons\Coupo…  RuntimeException   
+  Concurrency::run() workers failed:
+worker 0: Illuminate\Database\QueryException: SQLSTATE[40P01]: Deadlock detected: 7 ERROR:  deadlock detected
+DETAIL:  Process 331 waits for ShareLock on transaction 21809; blocked by process 332.
+Process 332 waits for ShareLock on transaction 21808; blocked by process 331.
+HINT:  See server log for query details.
+CONTEXT:  while inserting index tuple (0,4) in relation "cmz_coupons" (Connection: testing, Host: 127.0.0.1, Port: 54329, Database: commerz_test, SQL: insert into "cmz_coupons" (id, promotion_id, batch_id, code, usage_limit, used, created_at, updated_at) values (01a121ef-acc2-76a4-9a22-0420af6c9618, 01a121ef-abb4-701a-b1d3-459961c94d0b, 01a121ef-abc6-758f-ad23-57170f992440, X-BBBB, 1, 0, 2026-10-09 18:31:57.890913+00:00, 2026-10-09 18:31:57.890913+00:00) on conflict (code) do nothing returning id)
+#0 vendor/laravel/framework/src/Illuminate/Database/Connection.php(813): Illuminate\Database\Connection->runQueryCallback()
+#1 vendor/laravel/framework/src/Illuminate/Database/Connection.php(426): Illuminate\Database\Connection->run()
+#2 packages/promotions/src/Coupons/Internal/DatabaseCoupons.php(291): Illuminate\Database\Connection->select()
+#3 packages/promotions/src/Coupons/Internal/DatabaseCoupons.php(245): Commerz\Promotions\Coupons\Internal\DatabaseCoupons->insertCodes()
+#4 packages/promotions/src/Coupons/Internal/DatabaseCoupons.php(115): Commerz\Promotions\Coupons\Internal\DatabaseCoupons->generateBatch()
+#5 packages/promotions/src/Coupons/Internal/DatabaseCoupons.php(118): Commerz\Promotions\Coupons\Internal\DatabaseCoupons->{closure:{closure:Commerz\Promotions\Coupons\Internal\DatabaseCoupons::generate():114}:115}()
+#6 packages/core/src/Operations/Internal/DatabaseTransactions.php(51): Commerz\Promotions\Coupons\Internal\DatabaseCoupons->{closure:Commerz\Promotions\Coupons\Internal\DatabaseCoupons::generate():114}()
+#7 vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php(35): Commerz\Operations\Internal\DatabaseTransactions::{closure:Commerz\Operations\Internal\DatabaseTransactions::run():48}()
+#8 packages/core/src/Operations/Internal/DatabaseTransactions.php(48): Illuminate\Database\Connection->transaction()
+#9 packages/promotions/src/Coupons/Internal/DatabaseCoupons.php(114): Commerz\Operations\Internal\DatabaseTransactions->run()
+#10 packages/promotions/tests/Feature/Coupons/CouponConcurrencyTest.php(75): Commerz\Promotions\Coupons\Internal\DatabaseCoupons->generate()
+#11 packages/testkit/src/Concurrency.php(100): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->{closure:{closure:packages/promotions/tests/Feature/Coupons/CouponConcurrencyTest.php:57}:63}()
+#12 packages/testkit/src/Concurrency.php(65): Commerz\Testkit\Concurrency::child()
+#13 packages/promotions/tests/Feature/Coupons/CouponConcurrencyTest.php(63): Commerz\Testkit\Concurrency::run()
+#14 vendor/pestphp/pest/src/Factories/TestCaseMethodFactory.php(135): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->{closure:packages/promotions/tests/Feature/Coupons/CouponConcurrencyTest.php:57}()
+#15 [internal function]: P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->{closure:Pest\Factories\TestCaseMethodFactory::getClosure():125}()
+#16 vendor/pestphp/pest/src/Concerns/Testable.php(508): call_user_func_array()
+#17 vendor/pestphp/pest/src/Support/ExceptionTrace.php(24): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->{closure:Pest\Concerns\Testable::__callClosure():508}()
+#18 vendor/pestphp/pest/src/Concerns/Testable.php(508): Pest\Support\ExceptionTrace::ensure()
+#19 vendor/pestphp/pest/src/Concerns/Testable.php(322): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->__callClosure()
+#20 vendor/pestphp/pest/src/Factories/TestCaseFactory.php(170) : eval()'d code(51): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->__runTest()
+#21 vendor/phpunit/phpunit/src/Framework/TestCase.php(1137): P\Packages\promotions\tests\Feature\Coupons\CouponConcurrencyTest->__pest_evaluable_it_avoids_deadlock_when_later_generation_rounds_collide_with_codes_held_by_another_batch()
+#22 vendor/phpunit/phpunit/src/Framework/TestCase.php(1463): PHPUnit\Framework\TestCase->invokeTestMethod()
+#23 vendor/phpunit/phpunit/src/Framework/TestCase.php(399): PHPUnit\Framework\TestCase->runTest()
+#24 vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(162): PHPUnit\Framework\TestCase->runLifecycle()
+#25 vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(89): PHPUnit\Framework\TestRunner\TestRunner->runInProcess()
+#26 vendor/phpunit/phpunit/src/Framework/TestCase.php(290): PHPUnit\Framework\TestRunner\TestRunner->run()
+#27 vendor/phpunit/phpunit/src/Framework/TestSuite.php(654): PHPUnit\Framework\TestCase->run()
+#28 vendor/phpunit/phpunit/src/Framework/TestSuite.php(431): PHPUnit\Framework\TestSuite->runTests()
+#29 vendor/phpunit/phpunit/src/Framework/TestSuite.php(654): PHPUnit\Framework\TestSuite->run()
+#30 vendor/phpunit/phpunit/src/Framework/TestSuite.php(431): PHPUnit\Framework\TestSuite->runTests()
+#31 vendor/phpunit/phpunit/src/TextUI/TestRunner.php(72): PHPUnit\Framework\TestSuite->run()
+#32 vendor/phpunit/phpunit/src/TextUI/Application.php(284): PHPUnit\TextUI\TestRunner->run()
+#33 vendor/pestphp/pest/src/Kernel.php(104): PHPUnit\TextUI\Application->run()
+#34 vendor/pestphp/pest/bin/pest(207): Pest\Kernel->handle()
+#35 vendor/pestphp/pest/bin/pest(215): {closure:vendor/pestphp/pest/bin/pest:21}()
+#36 vendor/bin/pest(119): include('...')
+#37 {main}
+
+  at packages/testkit/src/Concurrency.php:145
+    141▕             $results[] = $outcome['value'] ?? null;
+    142▕         }
+    143▕ 
+    144▕         if ($failures !== []) {
+  ➜ 145▕             throw new RuntimeException("Concurrency::run() workers failed:\n".implode("\n", $failures));
+    146▕         }
+    147▕ 
+    148▕         return $results;
+    149▕     }
+
+  1   packages/testkit/src/Concurrency.php:145
+  2   packages/testkit/src/Concurrency.php:80
+
+
+  Tests:    8 failed (3 assertions)
+  Duration: 1.90s
+

@@ -19,6 +19,7 @@ use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
 use Commerz\Promotions\Rules\Data\RuleParams;
+use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleResult;
@@ -183,8 +184,7 @@ final readonly class ActivePromotions
             return [];
         }
 
-        $ids = array_map(static fn (object $row): string => Rows::string($row, 'id'), $rows);
-        $rules = $this->rules($ids);
+        $rules = $this->rules($rows);
         $customerUsed = $this->customerUsage($context, $rows);
         $candidates = [];
 
@@ -221,13 +221,23 @@ final readonly class ActivePromotions
     }
 
     /**
-     * @param  list<string>  $ids
+     * @param  list<object>  $promotions  promotion rows with their stage and currency
      * @return array<string, array<string, list<LoadedRule>>> by promotion id and role, in declared order
      */
-    private function rules(array $ids): array
+    private function rules(array $promotions): array
     {
+        $scopes = [];
+
+        foreach ($promotions as $promotion) {
+            $currency = Rows::nullableString($promotion, 'currency');
+            $scopes[Rows::string($promotion, 'id')] = new RuleScope(
+                PromotionStage::from(Rows::string($promotion, 'stage')),
+                $currency === null ? null : Currency::of($currency),
+            );
+        }
+
         $rows = $this->db()->table($this->tables->table('promotion_rules'))
-            ->whereIn('promotion_id', $ids)
+            ->whereIn('promotion_id', array_keys($scopes))
             ->orderBy('promotion_id')
             ->orderBy('role')
             ->orderBy('position')
@@ -241,7 +251,7 @@ final readonly class ActivePromotions
             $key = Rows::string($row, 'rule_key');
 
             try {
-                $loaded = $this->codec->decode(new StoredRule($key, Rows::int($row, 'config_version'), RuleParams::fromInput(Rows::json($row, 'config'))), $role);
+                $loaded = $this->codec->decode(new StoredRule($key, Rows::int($row, 'config_version'), RuleParams::fromInput(Rows::json($row, 'config'))), $role, $scopes[Rows::string($row, 'promotion_id')]);
             } catch (InvalidRuleConfig|RuntimeException $e) {
                 $loaded = LoadedRule::unsupported($key, "stored parameters cannot be read: {$e->getMessage()}");
             }
@@ -328,10 +338,6 @@ final readonly class ActivePromotions
 
             if ($activation->presentedCode !== null && ! in_array($activation->presentedCode, $codes, true)) {
                 throw new InvalidRuleResult($key, "code '{$activation->presentedCode}' was not presented");
-            }
-
-            if ($activation->presentedCode !== null && $activation->couponCode === null) {
-                throw new InvalidRuleResult($key, "code '{$activation->presentedCode}' switched a promotion on without a coupon code");
             }
 
             $activated[] = $id;

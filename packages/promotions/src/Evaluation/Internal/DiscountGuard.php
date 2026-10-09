@@ -83,7 +83,12 @@ final class DiscountGuard
             throw new InvalidRuleResult($rule, "line '{$discount->lineId}' is not one of the eligible lines");
         }
 
-        return $next->lineNet($discount->lineId);
+        $line = $next->lineNet($discount->lineId);
+        $order = OrderNet::of($next);
+
+        // Order adjustments remain declared and are allocated at settlement. Preserve their total even when a
+        // later line discount changes the allocation weights (D23); otherwise their shares can exceed the items.
+        return $line->compare($order) > 0 ? $order : $line;
     }
 
     /** @return list<AdjustmentTarget> */

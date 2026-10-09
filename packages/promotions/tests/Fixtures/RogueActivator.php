@@ -33,6 +33,7 @@ final class RogueActivator implements PromotionActivator
                 $code === 'TWICE' => [new Activation($first, 'TWICE', $code), new Activation($first, 'TWICE', $code)],
                 $code === 'GHOST' => [new Activation($first, 'GHOST', 'NOT-PRESENTED')],
                 $code === 'RIGHT' => [new Activation($first, 'RIGHT', $code)],
+                $code === 'EXTERNAL' => [new Activation($first, presentedCode: $code)],
                 default => [],
             }];
         }

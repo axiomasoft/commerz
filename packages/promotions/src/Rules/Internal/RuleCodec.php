@@ -91,7 +91,7 @@ final readonly class RuleCodec
      *
      * @param  'condition'|'effect'  $role
      */
-    public function decode(StoredRule $stored, string $role): LoadedRule
+    public function decode(StoredRule $stored, string $role, RuleScope $scope): LoadedRule
     {
         $kind = $this->kind($role);
 
@@ -107,18 +107,32 @@ final readonly class RuleCodec
 
         $current = $rule->version();
 
+        if ($current < 1) {
+            return LoadedRule::unsupported($stored->key, 'the plugin version must be at least 1');
+        }
+
         if ($stored->version > $current) {
             return LoadedRule::unsupported($stored->key, "stored at version {$stored->version}, the plugin knows {$current}");
         }
 
-        if ($stored->version === $current) {
-            return LoadedRule::loaded($stored->key, $rule, $stored->params);
+        if (! in_array($scope->stage, $rule->stages(), true)) {
+            return LoadedRule::unsupported($stored->key, "not allowed in the {$scope->stage->value} stage");
+        }
+
+        $params = $stored->params;
+
+        if ($stored->version < $current) {
+            try {
+                $params = $rule->upgrade($params, $stored->version);
+            } catch (InvalidRuleConfig $e) {
+                return LoadedRule::unsupported($stored->key, "version {$stored->version} cannot be upgraded: {$e->getMessage()}");
+            }
         }
 
         try {
-            return LoadedRule::loaded($stored->key, $rule, $rule->upgrade($stored->params, $stored->version));
+            return LoadedRule::loaded($stored->key, $rule, $rule->normalize($params, $scope));
         } catch (InvalidRuleConfig $e) {
-            return LoadedRule::unsupported($stored->key, "version {$stored->version} cannot be upgraded: {$e->getMessage()}");
+            return LoadedRule::unsupported($stored->key, "stored parameters are invalid: {$e->getMessage()}");
         }
     }
 

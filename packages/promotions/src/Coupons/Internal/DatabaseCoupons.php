@@ -48,8 +48,9 @@ use UnexpectedValueException;
 
 /**
  * Lock order: coupons `for update` when a coupon changes (disable, enable, limit); the promotion `for key share` when
- * coupons are added to it, so that archiving it (`for update`) waits for them and they never wait for an order being
- * placed (D27). A change of a coupon takes no promotion row, a creation takes no coupon row.
+ * coupons are added to it, so that archiving it (`for update`) waits for them (D27). Code creation takes the shared
+ * transaction advisory lock before a promotion or receipt: retries in later generation rounds must not cycle over
+ * codes inserted by another uncommitted batch. A change of a coupon takes no promotion row or code-creation lock.
  */
 final readonly class DatabaseCoupons implements Coupons
 {
@@ -72,6 +73,7 @@ final readonly class DatabaseCoupons implements Coupons
     public function create(CreateCoupon $command): CouponView
     {
         return $this->transactions->run(function () use ($command): CouponView {
+            $this->lockCodes();
             $this->lockCouponPromotion($command->promotion);
 
             $db = $this->db();
@@ -112,6 +114,7 @@ final readonly class DatabaseCoupons implements Coupons
         }
 
         return $this->transactions->run(function () use ($command, $pattern): CouponBatchView {
+            $this->lockCodes();
             $work = fn (): CouponBatchView => $this->generateBatch($command, $pattern);
 
             if (! $command->idempotencyKey instanceof IdempotencyKey) {
@@ -257,8 +260,8 @@ final readonly class DatabaseCoupons implements Coupons
     /**
      * One round: `$wanted` fresh random codes, no repeats among them, inserted in chunks. A code another batch (or a
      * concurrent one) already holds is skipped by `on conflict do nothing`; the caller asks again for the rest. The
-     * codes go in sorted order, so two batches that meet over several codes wait for each other in the same order and
-     * never in a cycle.
+     * codes go in sorted order within a round. The code-creation lock covers all rounds: sorting a new round alone
+     * cannot order it against codes held from an earlier round of another batch.
      *
      * @return int how many of the codes were new
      */
@@ -348,6 +351,13 @@ final readonly class DatabaseCoupons implements Coupons
             ->first();
 
         return $row ?? throw new CouponNotFound($id->value);
+    }
+
+    private function lockCodes(): void
+    {
+        $this->db()->select('select pg_advisory_xact_lock(hashtextextended(?, 0))', [
+            'commerz.coupon_codes:'.$this->tables->table('coupons'),
+        ]);
     }
 
     /**

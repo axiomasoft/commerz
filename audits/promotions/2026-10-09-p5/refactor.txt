@@ -1,0 +1,4 @@
+> rector --dry-run
+
+ [OK] Rector is done!                                                           
+
