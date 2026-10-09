@@ -172,19 +172,61 @@ internal reservation id, so sales never needs inventory identifiers.
 
 ## Pricing: `Pricing`
 
-`priceLists()`, `prices()`, `taxes()`. Implements `PriceResolver` and the
-`tax` quote stage.
+`priceLists()`, `prices()`, `taxes()`. Implements the `PriceResolver` port and
+the `tax` quote stage; declares the `tax_calculator` SPI (built-in `rates`).
 
 ```php
+$list = Pricing::priceLists()->create(new CreatePriceList(
+    code: 'retail', name: 'Retail', currency: Currency::of('RUB'), channels: [$channel->id],
+    priority: 0, taxInclusion: TaxInclusion::AsChannel,
+));
 Pricing::prices()->set(new SetPrice(
     priceList: $list->id, sellable: SellableRef::of('variant', $v->id),
     amount: Money::of('1990.00', 'RUB'), compareAt: Money::of('2490.00', 'RUB'),
     minQuantity: 1, customerGroup: null, validFrom: null, validUntil: null,
-));
-Pricing::taxes()->setRate(new SetTaxRate(taxClass: 'standard', zone: 'RU', rateBp: 2000));
+));                                              // same key and window: updates the amount
+Pricing::prices()->setMany(new SetPrices($list->id, [/* SetPrice… */]));   // 1..1000, atomic
+Pricing::prices()->reschedule(new ReschedulePrice($priceId, validFrom: null, validUntil: $at));
+Pricing::prices()->remove(new RemovePrice($priceId));
+Pricing::prices()->list(new ListPrices($list->id));                          // Page<PriceView>
 
 [$price] = Pricing::prices()->resolveMany([new ResolvePrice(SellableRef::of('variant', $v->id), quantity: 2)], $ctx);
+$why = Pricing::prices()->explain(new ExplainPrice(SellableRef::of('variant', $v->id), quantity: 2, context: $ctx));
+// PriceExplanation: the ResolvedPrice, every candidate with a CandidateVerdict, fallbackUsed
+
+Pricing::taxes()->defineClass(new DefineTaxClass(code: 'standard', name: 'Standard'));
+Pricing::taxes()->defineZone(new DefineTaxZone(code: 'ru', name: 'Russia', members: [new TaxZoneMember('RU')]));
+Pricing::taxes()->setRate(new SetTaxRate(taxClass: 'standard', zone: 'ru', rateBp: 2200, code: 'vat', validFrom: $from));
+Pricing::taxes()->rescheduleRate(new RescheduleTaxRate($rateId, validFrom: $from, validUntil: null));
+Pricing::taxes()->zoneFor(new Address('RU', 'RU-MOW'));                      // ?TaxZoneView
 ```
+
+- Price lists: one currency, `priority` (higher wins), `TaxInclusion`
+  (`Included`, `Excluded`, `AsChannel` = the channel's `pricesIncludeTax`),
+  channels assigned through `Channels::assertActive`; lists are archived,
+  never deleted. Prices are current configuration and are deleted physically
+  (an order keeps its snapshot, ORD-02).
+- Selection (D24, PRC-02): list priority DESC → lowest applicable amount →
+  customer group → min quantity DESC → list code → price id. `explain` returns
+  the same decision with a `CandidateVerdict` per candidate (`Selected`,
+  `Outranked`, `GroupMismatch`, `BelowMinQuantity`, `OutsideWindow`).
+- Without an applicable price the sellable's own price is used when
+  `fallback_to_sellable` is on and the currency matches; otherwise
+  `prices.price_not_found` (core).
+- Tax: a `SetTaxRate` zone is a tax zone code (a set of countries or regions),
+  not a country. Windows are `[validFrom, validUntil)`; a rate change by date
+  is `reschedule` of the old rate then `setRate` of the new one in one
+  `Transactions::run`.
+- Views: `PriceListView`, `PriceView`, `TaxClassView`, `TaxZoneView`,
+  `TaxRateView`.
+- Events after commit: `PriceListChanged`, `PricesChanged`, `TaxRatesChanged`.
+- Exceptions (stable codes): `pricing.price_list_not_found`,
+  `pricing.price_list_archived`, `pricing.price_not_found`,
+  `pricing.price_window_overlap`, `pricing.duplicate_code`,
+  `pricing.currency_mismatch`, `pricing.tax_class_not_found`,
+  `pricing.tax_zone_not_found`, `pricing.tax_rate_not_found`,
+  `pricing.tax_rate_overlap`, `pricing.tax_zone_member_taken`,
+  `pricing.invalid_tax_result`, `pricing.invalid_*` (command shapes).
 
 ## Promotions: `Promotions`
 
