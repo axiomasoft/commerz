@@ -57,7 +57,12 @@ it('rejects a plan the sources or needs do not allow', function (callable $plan,
         [planned('x', 'main', 2)],
         [alloc_need('x', 2, [alloc_component('a', PHP_INT_MAX)])],
         [alloc_source('main', 1, ['a' => PHP_INT_MAX])],
-    ), 'takes more'],
+    ), 'overflows int64 in stock units'],
+    'int64 overflow of backorder stock units' => [fn () => validated(
+        [planned('x', 'main', 2)],
+        [alloc_need('x', 2, [alloc_component('b', PHP_INT_MAX, backorder: true)])],
+        [alloc_source('main', 1, ['b' => 0])],
+    ), 'overflows int64'],
     'int64 overflow of placed units' => [fn () => validated(
         [planned('x', 'main', PHP_INT_MAX), planned('x', 'east', 1)],
         [alloc_need('x', PHP_INT_MAX, [alloc_component('a')])],

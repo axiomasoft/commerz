@@ -58,13 +58,16 @@ final class AllocationPlanValidator
             }
 
             foreach ($needs[$sellable]->components as $component) {
+                $stock = Quantities::mul($allocation->units, $component->quantityPerUnit)
+                    ?? throw new InvalidAllocationPlan("'{$sellable}' overflows int64 in stock units");
+
+                // Backorder components may go beyond free stock, but their stock units still fit int64.
                 if ($component->backorder) {
                     continue;
                 }
 
                 $item = (string) $component->item;
-                $stock = Quantities::mul($allocation->units, $component->quantityPerUnit);
-                $total = $stock === null ? null : Quantities::add($used[$location][$item] ?? 0, $stock);
+                $total = Quantities::add($used[$location][$item] ?? 0, $stock);
                 $free = $sources[$location]->free[$item] ?? 0;
 
                 if ($total === null || $total > $free) {

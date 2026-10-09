@@ -8,13 +8,22 @@ use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 
-/** An untracked item keeps no levels: the policy cannot change to it while stock is held or reserved. */
+/**
+ * An untracked item keeps no levels: stock cannot be placed on it, and the policy cannot change to it while stock is
+ * held or reserved.
+ */
 #[Api(since: '0.1')]
 final class UntrackedStockItem extends CommerzException
 {
-    public function __construct(public readonly string $sku)
+    public function __construct(public readonly string $sku, ?string $message = null)
     {
-        parent::__construct("Stock item '{$sku}' cannot become untracked while its levels hold or reserve stock.");
+        parent::__construct($message ?? "Stock item '{$sku}' cannot become untracked while its levels hold or reserve stock.");
+    }
+
+    /** Stock was placed on an untracked item. */
+    public static function keepsNoLevels(string $sku): self
+    {
+        return new self($sku, "Stock item '{$sku}' is untracked and keeps no stock levels.");
     }
 
     public function code(): string
