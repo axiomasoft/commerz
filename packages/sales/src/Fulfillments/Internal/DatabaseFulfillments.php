@@ -12,6 +12,7 @@ use Commerz\Operations\Fingerprint;
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Pagination\Page;
+use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
@@ -94,17 +95,42 @@ final readonly class DatabaseFulfillments implements Fulfillments
             throw new OperationInsideTransaction('sales.fulfillments.book');
         }
 
-        // Read without a lock: a shipped fulfillment has nothing to book, and the carrier call must hold no lock.
+        // A completed booking needs no network. A manual shipment only bypasses it when no carrier call was begun.
         $fulfillment = $this->rows->get($command->fulfillment);
 
-        if ($fulfillment->status !== FulfillmentStatus::Created) {
+        if ($fulfillment->methodCode !== null
+            || ($fulfillment->status !== FulfillmentStatus::Created && ! $this->rows->bookingRequested($fulfillment->id))) {
             return $fulfillment;
         }
 
         $request = $this->booking->request($fulfillment, $command);
+
+        // Commit the intent before the network. Re-read under the locks so a manual shipment that won before this
+        // intent does not cause a carrier call. Once requested, a retry recovers the same reference even if shipped.
+        $requested = $this->transactions->run(function () use ($fulfillment): bool {
+            $this->locks->lock($fulfillment->order);
+            $current = $this->rows->lock($fulfillment->id);
+
+            if ($current->methodCode !== null) {
+                return false;
+            }
+
+            if ($current->status !== FulfillmentStatus::Created) {
+                return $this->rows->bookingRequested($current->id);
+            }
+
+            $this->rows->requestBooking($current->id);
+
+            return true;
+        });
+
+        if (! $requested) {
+            return $this->rows->get($fulfillment->id);
+        }
+
         $booked = $this->booking->send($request);
 
-        return $this->shipped($fulfillment->id, $booked->carrier, $booked->tracking, $booked->labelRef, $request->methodCode, $command->actor);
+        return $this->shipped($fulfillment->id, $booked->carrier, $booked->tracking, $booked->labelRef, $request->methodCode, $command->actor, $booked);
     }
 
     public function markDelivered(MarkFulfillmentDelivered $command): FulfillmentView
@@ -194,20 +220,27 @@ final readonly class DatabaseFulfillments implements Fulfillments
      * Ships the fulfillment under the locks of its order and itself. A repeat with the same carrier and tracking is
      * the same shipment; another one never overwrites it.
      */
-    private function shipped(FulfillmentId $id, ?string $carrier, ?string $tracking, ?string $labelRef, ?string $methodCode, ?ActorRef $actor): FulfillmentView
+    private function shipped(FulfillmentId $id, ?string $carrier, ?string $tracking, ?string $labelRef, ?string $methodCode, ?ActorRef $actor, ?BookedShipment $booking = null): FulfillmentView
     {
         $orderId = $this->rows->orderOf($id);
 
-        return $this->transactions->run(function () use ($id, $orderId, $carrier, $tracking, $labelRef, $methodCode, $actor): FulfillmentView {
+        return $this->transactions->run(function () use ($id, $orderId, $carrier, $tracking, $labelRef, $methodCode, $actor, $booking): FulfillmentView {
             $order = $this->locks->lock($orderId);
             $current = $this->rows->lock($id);
 
             if ($current->status !== FulfillmentStatus::Created) {
                 if ($current->carrier === $carrier && $current->tracking === $tracking) {
+                    if ($booking !== null && $methodCode !== null && $current->methodCode === null) {
+                        $this->rows->attachBooking($id, $booking, $methodCode);
+                        $this->journal->append($order->id, 'fulfillment_booking_attached', $actor, ['fulfillment_id' => $id->value]);
+
+                        return $this->rows->get($id);
+                    }
+
                     return $current;
                 }
 
-                throw new FulfillmentAlreadyShipped($id->value, $current->carrier, $current->tracking);
+                throw new FulfillmentAlreadyShipped($id->value, $current->carrier, $current->tracking, $booking);
             }
 
             $this->rows->markShipped($id, $carrier, $tracking, $labelRef, $methodCode);

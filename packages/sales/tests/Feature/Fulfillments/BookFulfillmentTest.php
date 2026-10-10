@@ -196,7 +196,7 @@ it('passes on an unsupported carrier and keeps the fulfillment created', functio
         ->and(slsFulfillments()->find($created->id)->status)->toBe(FulfillmentStatus::Created);
 });
 
-it('refuses to overwrite a shipment made by hand while the carrier was being asked', function (): void {
+it('preserves a conflicting carrier booking in the error on the first call and on a retry', function (): void {
     $created = slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 1)]));
     bkfCarrier(new readonly class($created->id) implements ShipmentBooking
     {
@@ -207,12 +207,72 @@ it('refuses to overwrite a shipment made by hand while the carrier was being ask
             // Another operator ships it by hand during the call.
             slsFulfillments()->ship(new ShipFulfillment($this->fulfillment, 'manual', 'HAND-1'));
 
-            return new BookedShipment($command->carrier, 'TR-2');
+            return new BookedShipment($command->carrier, 'TR-2', 'label:2');
         }
     });
 
+    foreach (range(1, 2) as $attempt) {
+        app()->forgetInstance(Fulfillments::class);
+        expect(fn () => slsFulfillments()->book(new BookFulfillment($created->id)))->toThrow(function (FulfillmentAlreadyShipped $error) use ($created): void {
+            expect($error->booking)->toEqual(new BookedShipment('test', 'TR-2', 'label:2'))
+                ->and($error->context())->toBe([
+                    'fulfillment' => $created->id->value, 'carrier' => 'manual', 'tracking' => 'HAND-1',
+                    'booking_reference' => 'fulfillment:'.$created->id->value,
+                    'booking_carrier' => 'test', 'booking_tracking' => 'TR-2', 'booking_label_ref' => 'label:2',
+                ]);
+        });
+    }
+
+    expect(slsFulfillments()->find($created->id)->tracking)->toBe('HAND-1');
+});
+
+it('recovers an unknown booking even when a manual shipment overtook its lost answer', function (): void {
+    $created = slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 1)]));
+    $calls = [];
+    bkfCarrier(new class($created->id, $calls) implements ShipmentBooking
+    {
+        public function __construct(private readonly FulfillmentId $fulfillment, private array &$calls) {}
+
+        public function book(BookShipment $command): BookedShipment
+        {
+            $this->calls[] = $command->reference;
+
+            if (count($this->calls) === 1) {
+                slsFulfillments()->ship(new ShipFulfillment($this->fulfillment, 'manual', 'HAND-1'));
+
+                throw new RuntimeException('carrier answer lost');
+            }
+
+            return new BookedShipment($command->carrier, 'TR-2', 'label:2');
+        }
+    });
+
+    expect(fn () => slsFulfillments()->book(new BookFulfillment($created->id)))->toThrow(RuntimeException::class, 'carrier answer lost');
+    app()->forgetInstance(Fulfillments::class);
     expect(fn () => slsFulfillments()->book(new BookFulfillment($created->id)))->toThrow(FulfillmentAlreadyShipped::class)
+        ->and($calls)->toBe(['fulfillment:'.$created->id->value, 'fulfillment:'.$created->id->value])
         ->and(slsFulfillments()->find($created->id)->tracking)->toBe('HAND-1');
+});
+
+it('attaches the carrier label when a manual shipment already matches the booking', function (): void {
+    $created = slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 1)]));
+    bkfCarrier(new readonly class($created->id) implements ShipmentBooking
+    {
+        public function __construct(private FulfillmentId $fulfillment) {}
+
+        public function book(BookShipment $command): BookedShipment
+        {
+            slsFulfillments()->ship(new ShipFulfillment($this->fulfillment, $command->carrier, 'TR-1'));
+
+            return new BookedShipment($command->carrier, 'TR-1', 'label:1');
+        }
+    });
+
+    $booked = slsFulfillments()->book(new BookFulfillment($created->id));
+
+    expect([$booked->carrier, $booked->tracking, $booked->labelRef, $booked->methodCode])->toBe(['test', 'TR-1', 'label:1', 'flat:300.00'])
+        ->and(slsFulfillments()->book(new BookFulfillment($created->id)))->toEqual($booked)
+        ->and(fulOutbox('sales.fulfillment_shipped'))->toBe(1);
 });
 
 it('does not know a fulfillment that does not exist', function (): void {

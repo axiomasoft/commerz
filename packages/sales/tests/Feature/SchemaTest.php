@@ -22,6 +22,22 @@ const SALES_TABLES = [
 
 const SALES_NOW = '2026-10-14 10:00:00+00';
 
+it('adds booking intent to existing fulfillments without rewriting their shipment on upgrade or rollback', function (): void {
+    $id = Uuid7::generate();
+    DB::table(slsTable('fulfillments'))->insert([
+        'id' => $id, 'order_id' => slsOrder(), 'status' => 'shipped', 'carrier' => 'manual',
+        'tracking' => 'OLD-1', 'shipped_at' => SALES_NOW,
+    ]);
+    $migration = require __DIR__.'/../../database/migrations/2026_10_14_100005_add_commerz_fulfillment_booking_intent.php';
+    $migration->down();
+    expect(DB::getSchemaBuilder()->hasColumn(slsTable('fulfillments'), 'booking_requested'))->toBeFalse()
+        ->and(DB::table(slsTable('fulfillments'))->where('id', $id)->value('tracking'))->toBe('OLD-1');
+    $migration->up();
+    $stored = DB::table(slsTable('fulfillments'))->where('id', $id)->first();
+
+    expect([$stored->booking_requested, $stored->tracking, $stored->carrier])->toBe([false, 'OLD-1', 'manual']);
+});
+
 function slsTable(string $logical): string
 {
     return app(TableNames::class)->table($logical);

@@ -57,14 +57,16 @@ interface Fulfillments
     /**
      * Books the shipment with the carrier of the order's delivery and ships the fulfillment with the carrier's answer.
      * Must be called outside any database transaction. The booking is idempotent at the shipping package by the
-     * reference `fulfillment:{id}`, so a repeat after a lost answer is safe; a fulfillment already shipped is
-     * returned without a call.
+     * reference `fulfillment:{id}`, so a repeat after a lost answer is safe. An already booked fulfillment or a
+     * manual shipment with no booking intent is returned without a call. An in-flight booking overtaken by a manual
+     * shipment is recovered by that same reference, and a conflicting answer is reported on every retry with the
+     * booked shipment (including its label) in the exception. Retry with the same dimensions and meta.
      *
      * @throws OperationInsideTransaction
      * @throws FulfillmentNotFound
      * @throws FulfillmentNotBookable
      * @throws UnsupportedContribution no carrier under the one of the delivery
-     * @throws FulfillmentAlreadyShipped it was shipped meanwhile with another tracking number
+     * @throws FulfillmentAlreadyShipped it was shipped meanwhile with another tracking number; `booking` preserves the carrier's answer
      */
     public function book(BookFulfillment $command): FulfillmentView;
 

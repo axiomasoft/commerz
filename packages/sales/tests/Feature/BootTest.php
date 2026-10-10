@@ -27,5 +27,6 @@ it('loads the sales migrations', function (): void {
         '2026_10_14_100002_create_commerz_order_tables.php',
         '2026_10_14_100003_create_commerz_fulfillment_tables.php',
         '2026_10_14_100004_create_commerz_payment_tables.php',
+        '2026_10_14_100005_add_commerz_fulfillment_booking_intent.php',
     ]);
 })->group('boot');

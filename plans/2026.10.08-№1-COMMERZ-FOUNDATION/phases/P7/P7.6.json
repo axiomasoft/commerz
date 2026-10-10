@@ -24,7 +24,8 @@
     "D14",
     "D29",
     "D30",
-    "D22"
+    "D22",
+    "D35"
   ],
   "reads": [
     {
@@ -110,6 +111,18 @@
       "path": "packages/sales/tests/Feature/Helpers.php",
       "change": "any",
       "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/database/migrations/2026_10_14_100005_add_commerz_fulfillment_booking_intent.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/SchemaTest.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/sales/tests/Feature/BootTest.php",
+      "change": "modify"
     }
   ],
   "rules": [
@@ -182,47 +195,45 @@
     "status": "not_needed"
   },
   "result": {
-    "started_at": "2026-10-10T06:12:01Z",
-    "finished_at": "2026-10-10T06:20:35Z",
+    "started_at": "2026-10-10T09:44:21Z",
+    "finished_at": "2026-10-10T10:14:12Z",
     "executor": {
-      "provider": "anthropic",
-      "model": "sonnet-5.5",
+      "provider": "codex",
+      "model": "gpt-6.1-sol",
       "effort": "high",
-      "session": "c5529ab6-0305-4701-9fe7-2e7be3cb5c17"
+      "session": "01a1251b-257e-77d0-a264-4e860fca8930"
     },
-    "notes": "Fulfillments module: DatabaseFulfillments (create under order lock: ledger then Physical consume by lineId, receipt-keyed; ship/markDelivered fenced by order+document locks; book outside transaction via FulfillmentBooking with reference fulfillment:{id}), FulfillmentRows sole writer, outbox sales.fulfillment_shipped, events; Sales::fulfillments() and facade. Tests: FulfillmentsTest, BookFulfillmentTest, C6 FulfillmentConcurrencyTest, gate unit test, CancelLinesTest partial-fulfillment case. Sales 383 passed, Arch 13 passed.",
+    "notes": "G1/D35: durable private intent, additive migration, purchased booking surfaced in conflict, matching carrier label attached once. GREEN closure: knowledge/audit-p7-fixes-2026-10-10; Grok 4.7 GREEN. V1/V2/V3 root Composer checks passed; V4/V5 covered by full Composer test (2075 passed/14472 assertions; includes Sales/Arch/Shipping/Integration), isolated commerz_test.",
     "deviations": [
-      "parcel counts only requires_shipping lines; FulfillmentNotBookable nothing_to_ship added; BookFulfillment takes ?actor",
-      "ship repeat compares carrier and tracking",
-      "FulfillmentBooking/FulfillmentRows sole gate classes; SalesRootTest, facade, Helpers extended outside task_files"
+      "G1/D35: durable private intent, additive migration, purchased booking surfaced in conflict, matching carrier label attached once."
     ],
     "checks": [
       {
         "id": "V1",
         "exit": 0,
-        "at": "2026-10-10T06:20:35Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V2",
         "exit": 0,
-        "at": "2026-10-10T06:20:35Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V3",
         "exit": 0,
-        "at": "2026-10-10T06:20:35Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V4",
         "exit": 0,
-        "at": "2026-10-10T06:20:35Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V5",
         "exit": 0,
-        "at": "2026-10-10T06:20:35Z"
+        "at": "2026-10-10T10:14:12Z"
       }
     ]
   },
-  "updated_at": "2026-10-10T06:20:35Z"
+  "updated_at": "2026-10-10T10:14:12Z"
 }

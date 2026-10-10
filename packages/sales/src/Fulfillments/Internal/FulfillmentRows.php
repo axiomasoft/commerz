@@ -8,6 +8,7 @@ use Commerz\Configuration\CommerzConfig;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Internal\Clock;
 use Commerz\Sales\Common\Internal\Rows;
@@ -79,6 +80,30 @@ final readonly class FulfillmentRows
         $row = $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->lockForUpdate()->first();
 
         return $this->hydrate([$row ?? throw new FulfillmentNotFound($id->value)])[0];
+    }
+
+    /** A durable intent: a manual shipment cannot turn an in-flight carrier call into an unobservable booking. */
+    public function bookingRequested(FulfillmentId $id): bool
+    {
+        $row = $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->first(['booking_requested']);
+
+        return $row !== null && Rows::bool($row, 'booking_requested');
+    }
+
+    /** The caller holds the order and fulfillment locks; the shipping package owns network deduplication and leases. */
+    public function requestBooking(FulfillmentId $id): void
+    {
+        $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->update(['booking_requested' => true]);
+    }
+
+    /** A manual shipment that matched the carrier's answer keeps its original times and gains the carrier label. */
+    public function attachBooking(FulfillmentId $id, BookedShipment $booking, string $methodCode): void
+    {
+        $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->update([
+            'method_code' => $methodCode,
+            'label_ref' => $booking->labelRef,
+            'updated_at' => Clock::now(),
+        ]);
     }
 
     public function markShipped(FulfillmentId $id, ?string $carrier, ?string $tracking, ?string $labelRef, ?string $methodCode): void
