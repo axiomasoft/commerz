@@ -20,8 +20,7 @@
   "decision": "A — cmz_stock_levels (on_hand, reserved) + append-only cmz_stock_movements + cmz_stock_reservations по demand; резерв условным UPDATE; ReservationTiming по умолчанию OnOrderPlaced, опция OnCheckout с TTL",
   "rationale": "Проще и доказуемо; соответствует ReserveOnOrder commercetools и урокам Vendure 3.7.4 (блокировка строки уровня).",
   "applies_to": [
-    "P3",
-    "P7"
+    "P3"
   ],
   "actor": {
     "provider": "claude-code",

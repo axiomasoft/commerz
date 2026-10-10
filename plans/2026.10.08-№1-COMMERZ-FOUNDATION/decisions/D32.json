@@ -1,0 +1,39 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D32",
+  "title": "Срок оплаты и резерв: склад держит резерв без expiresAt, истечение — команда sales; заказ с попыткой оплаты не истекает; захват после отмены → payment_requires_refund",
+  "date": "2026-10-09",
+  "status": "accepted",
+  "question": "Кто истекает неоплаченный заказ и освобождает резерв, и что делать с оплатой, пришедшей после отмены?",
+  "options": [
+    {
+      "id": "A",
+      "text": "ReserveStock::$expiresAt = null; sales хранит payment_due_at (корзина kind cart — config, черновик — без срока); expireDue/commerz:sales:expire-orders под FOR UPDATE SKIP LOCKED перепроверяет: placed ∧ unpaid ∧ срок прошёл ∧ ничего не исполнено ∧ нет платежей initiating|pending|requires_action|unknown|authorized; отмена release + restore(Expired|Cancelled), политику решает promotions; поздний захват применяется, заказ остаётся cancelled, outbox sales.payment_requires_refund",
+      "pros": "оплаченный заказ не остаётся без товара; деньги не теряются молча; один владелец срока"
+    },
+    {
+      "id": "B",
+      "text": "Резерв с expiresAt = срок оплаты, склад истекает сам",
+      "cons": "оплата во время 3-DS после истечения резерва — оплаченный заказ без товара; два таймера"
+    },
+    {
+      "id": "C",
+      "text": "Истекать и при незавершённой попытке оплаты",
+      "cons": "захват после истечения становится нормой, ручные возвраты"
+    }
+  ],
+  "context": "invariants#placement описывает отмену/истечение; Ports\\Stock::ReserveStock имеет expiresAt; promotions restore_on по умолчанию cancelled, expired (D13, D27). Perplexity 2026-10-10: Saleor истекает только неподтверждённые заказы без попыток транзакций, истечение освобождает резерв и ваучер, отмена — нет. Детали — knowledge/sales-design#lifecycle.",
+  "decision": "A — ReserveStock::$expiresAt = null; sales хранит payment_due_at (корзина kind cart — config, черновик — без срока); expireDue/commerz:sales:expire-orders под FOR UPDATE SKIP LOCKED перепроверяет: placed ∧ unpaid ∧ срок прошёл ∧ ничего не исполнено ∧ нет платежей initiating|pending|requires_action|unknown|authorized; отмена release + restore(Expired|Cancelled), политику решает promotions; поздний захват применяется, заказ остаётся cancelled, outbox sales.payment_requires_refund",
+  "rationale": "Owner delegated architecture (M3). Владелец срока — заказ, иначе два таймера рассинхронизируются; попытка оплаты блокирует истечение (как Saleor), а захват после ручной отмены публикуется как требующий возврата, а не теряется.",
+  "applies_to": [
+    "P7.3",
+    "P7.4",
+    "P7.5"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}

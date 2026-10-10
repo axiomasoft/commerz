@@ -1,0 +1,51 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D31",
+  "title": "Модель продаж: корзина с version и одной строкой на sellable, черновик CRM = корзина kind draft, заказ — снимок с id строк корзины, три производных состояния",
+  "date": "2026-10-09",
+  "status": "accepted",
+  "question": "Как устроены корзина, черновой заказ CRM и состояния заказа, чтобы один путь размещения держал ORD-01..03 и CTX-01?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Корзина (канал/валюта фиксированы, version, UNIQUE(cart_id, sellable_ref)); черновик CRM — корзина kind=draft, редактируется командами Carts и размещается тем же Checkout::place; заказ — неизменяемый снимок QuoteResult с order_lines.id = cart_lines.id; OrderState placed|completed|cancelled (+CancelReason), PaymentState и FulfillmentState — производные от сумм и журнала строк, пересчитываются одной функцией под блокировкой заказа; amount_due уменьшается на точную долю отменённых строк (MoneyAllocator)",
+      "pros": "один путь размещения для магазина и CRM (ORD-01 через UNIQUE(cart_id)); lineId корректировок квоты валидны в заказе; состояния не расходятся с деньгами и журналом"
+    },
+    {
+      "id": "B",
+      "text": "Черновик — заказ в состоянии draft с редактируемыми строками (Saleor, Medusa v2)",
+      "cons": "строки заказа то живые, то снимки; второй путь записи заказа и второй механизм квоты; ORD-02 держится только соглашением"
+    },
+    {
+      "id": "C",
+      "text": "Хранимые независимые состояния, меняемые командами",
+      "cons": "PaymentState расходится с суммами платежей при гонках событий; нужен второй источник правды"
+    }
+  ],
+  "context": "api-blueprint#sales: DraftOrder и OrderState draft → placed были бумажными. Реальное ядро: QuoteLineInput::lineId задаёт id строки, ReserveStock требует уникальный sellable на строку, QuoteResult::appliedPromotions (D25). Perplexity 2026-10-10: Medusa v1 строит DraftOrder поверх корзины; Saleor/Shopify разделяют платёжный и исполнительный статусы, Saleor не имеет partially_refunded в chargeStatus. Детали — knowledge/sales-design#model, #carts, #placement, #lifecycle.",
+  "decision": "A — Корзина (канал/валюта фиксированы, version, UNIQUE(cart_id, sellable_ref)); черновик CRM — корзина kind=draft, редактируется командами Carts и размещается тем же Checkout::place; заказ — неизменяемый снимок QuoteResult с order_lines.id = cart_lines.id; OrderState placed|completed|cancelled (+CancelReason), PaymentState и FulfillmentState — производные от сумм и журнала строк, пересчитываются одной функцией под блокировкой заказа; amount_due уменьшается на точную долю отменённых строк (MoneyAllocator)",
+  "rationale": "Owner delegated architecture (M3). Один путь «корзина → заказ» для магазина и CRM держит ORD-01 одним уникальным ключом и ORD-02 одним писателем снимка; производные состояния не могут разойтись с деньгами и журналом строк (ORD-03). Отклонение от blueprint (нет OrderState::Draft) фиксируется в P7.9.",
+  "applies_to": [
+    "P7",
+    "P7.2",
+    "P7.3",
+    "P7.4",
+    "P7.9"
+  ],
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "plans/2026.10.08-№1-COMMERZ-FOUNDATION/knowledge/sales-design.json#model"
+    },
+    {
+      "kind": "repo",
+      "ref": "packages/core/src/Quotes/Data/QuoteResult.php"
+    }
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}

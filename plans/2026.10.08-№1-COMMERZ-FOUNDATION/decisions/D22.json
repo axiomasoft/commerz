@@ -27,8 +27,7 @@
   "decision": "A — В P3 аддитивно расширить ядро: новый #[Api] Commerz\\Ports\\Stock\\Contracts\\StockReturns::restock(RestockStock(reference, channel, lines, ?locationCode)) — идемпотентно по reference, присоединяется к транзакции; ConsumeReservation получает последний параметр ?string $locationCode = null; UnlimitedStock и FakeStock реализуют новое; inventory реализует в P3.4",
   "rationale": "Owner delegated architecture (M3). Additive kernel port change before 0.1 lets P3 implement and test restock and location-bound consume, so P7 consumes a finished contract in its parallel lane; same precedent as D18.",
   "applies_to": [
-    "P3",
-    "P7"
+    "P3"
   ],
   "evidence": [
     {

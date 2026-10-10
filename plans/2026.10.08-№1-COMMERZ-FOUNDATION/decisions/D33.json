@@ -1,0 +1,50 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D33",
+  "title": "Платежи: SPI payment_gateway (initiate/find/refund/findRefund), журнал попыток с арендой и фенсингом, unknown → reconcile через find, inbox событий UNIQUE(gateway, external_event_id) с fingerprint, монотонные переходы; без capture/void в 0.1",
+  "date": "2026-10-09",
+  "status": "accepted",
+  "question": "Как sales вызывает платёжного провайдера и применяет его события, держа PAY-01, PAY-02 и запрет переплаты?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Строка payments = попытка (reference payment:{id} как ключ идемпотентности у провайдера); Tx A под FOR UPDATE заказа проверяет balance и пишет initiating; сеть вне транзакции; PaymentDeclined → failed, любое иное исключение → unknown; finish с фенсингом attempts; reconcile: аренда, find(reference), null для initiating/unknown → failed; события — inbox payment_events с UNIQUE(gateway, external_event_id) и fingerprint под блокировкой заказа, семантический id события задаёт адаптер; PaymentTransitions монотонны (captured сильнее всего); refunds — тот же протокол; capture/void — событиями провайдера",
+      "pros": "двойной webhook и повтор после таймаута не удваивают деньги; переплата невозможна под блокировкой; один протокол с D29"
+    },
+    {
+      "id": "B",
+      "text": "Тонкий вызов шлюза из команды без журнала, статус из ответа",
+      "cons": "таймаут → failed → повторная оплата; нарушает PAY-02"
+    },
+    {
+      "id": "C",
+      "text": "Сессии платежа + отдельные capture/cancel команды (Medusa v2)",
+      "cons": "вдвое больше SPI и состояний; для 0.1 захват приходит событиями, адаптеры добавят capture позже аддитивно"
+    }
+  ],
+  "context": "invariants PAY-01/PAY-02, architecture#extension-model (kind payment_gateway, built-in manual), D29 (журнал брони). Perplexity 2026-10-10: Stripe/YooKassa/Adyen — ключ идемпотентности на логическую операцию, таймаут/500 = неизвестный исход, сверка запросом; у YooKassa нет id события — ключ event+object.id; Adyen — eventCode+pspReference; Medusa v2 разделяет initiate/authorize/capture/cancel/refund. Детали — knowledge/sales-design#spi, #payments, #returns-refunds, #locks.",
+  "decision": "A — Строка payments = попытка (reference payment:{id} как ключ идемпотентности у провайдера); Tx A под FOR UPDATE заказа проверяет balance и пишет initiating; сеть вне транзакции; PaymentDeclined → failed, любое иное исключение → unknown; finish с фенсингом attempts; reconcile: аренда, find(reference), null для initiating/unknown → failed; события — inbox payment_events с UNIQUE(gateway, external_event_id) и fingerprint под блокировкой заказа, семантический id события задаёт адаптер; PaymentTransitions монотонны (captured сильнее всего); refunds — тот же протокол; capture/void — событиями провайдера",
+  "rationale": "Owner delegated architecture (M3). Гарантия против двойного списания живёт в sales, а не в каждом адаптере; протокол тот же, что проверен в D29; события провайдера идемпотентны по семантическому ключу, который адаптер обязан передать; capture/void добавляются позже аддитивно.",
+  "applies_to": [
+    "P7.1",
+    "P7.5",
+    "P7.7",
+    "P7.8"
+  ],
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "plans/2026.10.08-№1-COMMERZ-FOUNDATION/knowledge/sales-design.json#model"
+    },
+    {
+      "kind": "repo",
+      "ref": "packages/core/src/Quotes/Data/QuoteResult.php"
+    }
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}
