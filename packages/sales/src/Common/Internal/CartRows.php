@@ -67,8 +67,12 @@ final readonly class CartRows
         return $cart->state === CartState::Open ? $cart : throw new CartNotOpen($cart->id, $cart->state->value);
     }
 
-    /** Inserts an empty open cart of the context and returns its id. */
-    public function insert(CommerceContext $context, CartKind $kind, ?ActorRef $actor): string
+    /**
+     * Inserts an empty open cart of the context and returns its id.
+     *
+     * @param  array<string, mixed>  $columns  more columns of `carts` set from the start (a draft's codes, addresses, delivery method)
+     */
+    public function insert(CommerceContext $context, CartKind $kind, ?ActorRef $actor, array $columns = []): string
     {
         $id = Uuid7::generate();
         $now = Clock::now();
@@ -86,7 +90,7 @@ final readonly class CartRows
             'version' => 1,
             'created_at' => $now,
             'updated_at' => $now,
-        ]);
+        ] + $columns);
 
         return $id;
     }
@@ -101,6 +105,19 @@ final readonly class CartRows
         $this->db()->table($this->tables->table('carts'))
             ->where('id', $cart->id)
             ->update($changes + ['version' => $cart->version + 1, 'updated_at' => Clock::now()]);
+    }
+
+    /**
+     * Marks a locked cart placed. The version stays: a repeated placement with the same idempotency key must find the
+     * fingerprint it was first made with.
+     */
+    public function convert(CartRow $cart): void
+    {
+        $now = Clock::now();
+
+        $this->db()->table($this->tables->table('carts'))
+            ->where('id', $cart->id)
+            ->update(['state' => CartState::Converted->value, 'converted_at' => $now, 'updated_at' => $now]);
     }
 
     public function view(CartRow $cart): CartView

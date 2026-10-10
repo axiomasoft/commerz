@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Common\Internal;
 
 use Commerz\Configuration\CommerzConfig;
+use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
@@ -40,11 +41,23 @@ final readonly class CartLines
      */
     public function assertPurchasable(CartRow $cart, SellableRef $sellable): void
     {
-        $at = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        $snapshot = $this->sellables->resolve($sellable, $cart->context($at));
+        $this->assertAllPurchasable($cart->context(new DateTimeImmutable('now', new DateTimeZone('UTC'))), [$sellable]);
+    }
 
-        if (! $snapshot->purchasable) {
-            throw new SellableNotPurchasable($sellable, $snapshot->unavailableReason);
+    /**
+     * The same check for the sellables of a cart that does not exist yet (a draft), in one read.
+     *
+     * @param  list<SellableRef>  $sellables
+     *
+     * @throws SellableNotPurchasable
+     * @throws SellableUnavailable
+     */
+    public function assertAllPurchasable(CommerceContext $context, array $sellables): void
+    {
+        foreach ($this->sellables->resolveMany($sellables, $context) as $snapshot) {
+            if (! $snapshot->purchasable) {
+                throw new SellableNotPurchasable($snapshot->ref, $snapshot->unavailableReason);
+            }
         }
     }
 

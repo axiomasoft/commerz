@@ -8,8 +8,12 @@ use Commerz\Attributes\Api;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Internal\DatabaseCarts;
+use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Checkout\Internal\OrderPlacement;
 use Commerz\Sales\Common\Internal\SalesConfig;
 use Commerz\Sales\Internal\SalesPlugin;
+use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Orders\Internal\DatabaseOrders;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -31,6 +35,8 @@ final class SalesServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(Carts::class, DatabaseCarts::class);
+        $this->app->singleton(Checkout::class, OrderPlacement::class);
+        $this->app->singleton(Orders::class, DatabaseOrders::class);
         $this->app->singleton(Sales::class);
 
         CommerzPlugins::builtIn(SalesPlugin::class);
