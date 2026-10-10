@@ -1,0 +1,156 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P8.4",
+  "title": "Cross-package concurrency suite on PostgreSQL with deadlock detection and a positive control",
+  "status": "in_progress",
+  "summary": "tests/EndToEnd/Concurrency/*Test.php покрывают межпакетные пары E1–E7 (оверсейл, лимит купона, обратный порядок строк, резерв vs инвентаризация, cancel vs capture, expire vs fulfillment, refund restore vs consume) на реальных пакетах через Concurrency::run; детектор классифицирует SQLSTATE и проверяет дельту pg_stat_database.deadlocks; позитивный контроль доказывает, что детектор видит 40P01.",
+  "why": "Инварианты склада, лимитов и размещения доказаны в каждом пакете на fakes соседей; композиция реальных блокировок разных пакетов в одной транзакции не проверялась. Риски: цикл блокировок между inventory и promotions/sales; оверсейл при реальном резерве; детектор, молча принимающий deadlock за ожидаемую ошибку (вакуумный тест). Конкурентность и целостность данных — общая модель в assembly-design#concurrency.",
+  "scope": {
+    "include": [
+      "tests/EndToEnd/Concurrency/Support/Outcome.php (классификация исходов, извлечение SQLSTATE по цепочке, дельта deadlocks)",
+      "tests/EndToEnd/Concurrency/PlacementConcurrencyTest.php (E1–E3)",
+      "tests/EndToEnd/Concurrency/LifecycleConcurrencyTest.php (E4–E7)",
+      "tests/EndToEnd/Concurrency/DetectorControlTest.php (позитивный контроль)",
+      "исправления порядка блокировок в пакетах-владельцах с регрессией в их *ConcurrencyTest"
+    ],
+    "exclude": [
+      "изменение ShopWorld/EndToEndTestCase",
+      "нагрузочные/бенчмарк-прогоны",
+      "retry в Transactions::run (контракт — без retry)"
+    ]
+  },
+  "depends_on": [
+    "P8.1"
+  ],
+  "decisions": [
+    "D20",
+    "D21",
+    "D27",
+    "D29",
+    "D32",
+    "D33",
+    "D35"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/assembly-design#concurrency",
+      "why": "инвариантная модель, enforcement, bypass, пары, детектор — ядро item'а",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "section": "Global lock order, Sales lock order, Interfering operations",
+      "why": "порядок блокировок и защиты пар",
+      "required": true
+    },
+    {
+      "path": "packages/testkit/src/Concurrency.php",
+      "why": "харнесс форка, ограничения (committed data, без fakes)",
+      "required": true
+    },
+    {
+      "path": "packages/sales/tests/Feature/Checkout/PlacementConcurrencyTest.php",
+      "why": "образец: migrate/truncate, исходы-строки",
+      "required": true
+    },
+    {
+      "path": "packages/promotions/tests/Feature/Usage/UsageConcurrencyTest.php",
+      "why": "образец лимитов и обратного порядка",
+      "required": false
+    },
+    {
+      "path": "packages/inventory/tests/Feature/Reservations/ReservationConcurrencyTest.php",
+      "why": "образец резерва vs ledger",
+      "required": false
+    },
+    {
+      "path": "tests/EndToEnd/Support/ShopWorld.php",
+      "why": "мир в родителе до форка",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "tests/EndToEnd/Concurrency/**",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Все PHP/Composer-команды — через scripts/php84 (локальный php по умолчанию 8.3).",
+    "EndToEnd-тесты используют только публичный API (корни/фасады пакетов, контракты Commerz\\Ports\\*, Commerz\\Testkit); Internal не импортируется.",
+    "Дефект, найденный сборкой, чинится в пакете-владельце с регрессионным тестом в его suite и записью plan.py log PLAN1 <item> --type deviation; правка контракта ядра — только аддитивно и с решением plan.py add-decision --by agent.",
+    "Тесты с записью в БД — только на изолированной commerz_test (PackageTestCase guard); перед запуском: docker compose up -d postgres и pg_isready.",
+    "Воркер ловит только ожидаемые доменные исключения (по классу) и возвращает строку-исход; любое иное → 'error:<SQLSTATE или класс>'; тест падает на любом error:*. Ни один тест не ловит QueryException/PDOException целиком.",
+    "В воркере первой командой SET deadlock_timeout = '100ms' (ошибка SET — явный провал); lock_timeout — из Transactions::run (3 c); дедлайн Concurrency::run 30 c.",
+    "Позитивный контроль обязателен и должен падать, если детектор не видит 40P01.",
+    "Данные committed: без RefreshDatabase; migrate в beforeEach, truncate всех cmz_* в afterEach.",
+    "Тесты пропускаются (markTestSkipped) только при отсутствии pcntl, как существующие *ConcurrencyTest."
+  ],
+  "guidance": "Outcome::sqlState(Throwable): цикл по getPrevious(), PDOException::errorInfo[0] или getCode() по /^[0-9A-Z]{5}$/. Outcome::deadlocks(): SELECT pg_stat_clear_snapshot(); SELECT deadlocks FROM pg_stat_database WHERE datname = current_database(); delta после Concurrency::run — опрос до 2 с, пока значение не стабилизируется. E3: 8 пар корзин с противоположным порядком строк, склада достаточно → все 'ok'. E5: заранее размещённый неоплаченный заказ с инициированным manual-платежом; воркер 0 — cancel, воркер 1 — recordEvent Captured; допустимы ровно два исхода из assembly-design. Для каждой пары после run — reconcile-команды без исправления → exit 0.",
+  "examples": [
+    {
+      "path": "packages/sales/tests/Feature/Checkout/PlacementConcurrencyTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest tests/EndToEnd/Concurrency",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=EndToEnd",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "E1–E7 зелёные на реальных пакетах",
+    "детектор с позитивным контролем",
+    "исправления порядка блокировок (если найдены)"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T10:30:58Z",
+    "executor": {
+      "provider": "claude-code",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+    }
+  },
+  "updated_at": "2026-10-10T10:30:58Z"
+}
