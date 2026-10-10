@@ -83,3 +83,31 @@ jobs:
       - run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update --no-interaction
       - run: composer update --prefer-dist --no-interaction --no-progress
       - run: composer test
+
+  docs:
+    name: Documentation site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, mbstring, bcmath, intl
+          coverage: none
+          tools: composer:v2
+      - id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-docs-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-docs-
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: composer docs:reference -- --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - run: npm ci --prefix docs
+      - run: npm run docs:build --prefix docs

@@ -74,8 +74,10 @@ Every multi-resource operation locks in this order:
 `location_id`) → coupons → promotions → customer usages → payments → refunds**
 
 Any new operation must follow it; a violation is a defect. `lock_timeout` is
-3 s. On `LockNotAvailable` or deadlock, only the whole transaction is retried,
-at most 3 times with jitter.
+3 s. On `LockNotAvailable` or deadlock the transaction rolls back and the
+exception reaches the caller: there is no automatic retry
+(`Transactions::run` says so in its contract), and the caller repeats the whole
+operation, never a part of it.
 
 Cancelling or expiring an unpaid order (D32: expiry is a sales command over
 `payment_due_at`; an order with a payment attempt is skipped) runs in one

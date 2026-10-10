@@ -1,0 +1,1815 @@
+{
+  "ref": "PLAN1.P8.6/U2",
+  "unit": {
+    "$schema": "urn:swissknifeman:task:plan:unit:v1",
+    "id": "U2",
+    "item": "P8.6",
+    "title": "Package pages and package READMEs",
+    "goal": "docs/packages/<pkg>/index.md для core, catalog, inventory, pricing, promotions, shipping, sales, testkit, full и packages/<pkg>/README.md",
+    "files": [
+      "docs/packages/**",
+      "packages/*/README.md"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "cmd": "for p in core catalog inventory pricing promotions shipping sales testkit full; do test -f docs/packages/$p/index.md && test -f packages/$p/README.md || exit 1; done",
+        "expect": "exit 0",
+        "kind": "acceptance"
+      }
+    ],
+    "route": {
+      "class": "implementation",
+      "effort": "medium"
+    },
+    "mode": "either",
+    "instructions": "Структура страницы — rules item P8.6; ключи конфига из packages/<pkg>/config/*.php; команды и plugin ID — assembly-design#baseline; ссылка на ../../reference/api/<pkg>.md.",
+    "status": "dispatched",
+    "outcome": {
+      "agent": {
+        "provider": "anthropic",
+        "model": "sonnet-5.5"
+      },
+      "at": "2026-10-10T12:55:43Z"
+    },
+    "updated_at": "2026-10-10T12:55:43Z",
+    "kind": "implementation"
+  },
+  "context": {
+    "ref": "PLAN1.P8.6",
+    "plan": {
+      "$schema": "urn:swissknifeman:task:plan:plan:v1",
+      "id": "2026.10.08-№1-COMMERZ-FOUNDATION",
+      "short_id": "PLAN1",
+      "title": "Plan №1 — Commerz — embeddable commerce package family: architecture, API and v0 build",
+      "status": "active",
+      "created": "2026-10-08",
+      "updated_at": "2026-10-08T17:30:22Z",
+      "repository": "commerz",
+      "owner": "Dmitry Vostrikov",
+      "authoring": {
+        "provider": "claude-code",
+        "model": "claude-opus-5-5",
+        "effort": "xhigh"
+      },
+      "goal": "Построить Commerz — headless, transport-agnostic семейство Laravel-пакетов электронной коммерции (ядро + catalog, inventory, pricing, promotions, shipping, sales), которое встраивается и в CRM, и в интернет-магазины, с чистым типизированным API в стиле Chatom/AzGuard/Vaulter и дисциплиной CoreX. Результат плана — рабочий релиз 0.1: все пакеты с публичным API, портами, плагинами, проверенными инвариантами (склад, лимиты акций, размещение заказа, платежи) и сквозными сценариями магазина и CRM.",
+      "context": "Репозиторий содержит только исследовательский корпус (docs/discovery/2026-10-08, audits/chatgpt, audits/grok) и корневые заготовки (composer.json, CI, agent docs); кода пакетов нет. Корпус синтезирован в knowledge/architecture (решения и карта пакетов), knowledge/api-blueprint (целевой публичный API), knowledge/kernel-contracts (порты ядра и сигнатуры), knowledge/invariants (инварианты, транзакции, порядок блокировок). Соседние пакеты экосистемы: /home/vostrikov/projects/packages/{chatom,azguard,vaulter,corex} — источники стиля, не зависимости. Стратегия D16 (rolling wave): архитектура и API всех фаз зафиксированы в knowledge; P1 исполняется сразу; после закрытия P1 фазы P2–P7 детализируются одним проходом против реального кода ядра и исполняются параллельными lanes; затем P8. P2–P7 зависят только от P1 и могут выполняться параллельно.",
+      "non_goals": [
+        "HTTP/REST API, админка (Filament), storefront UI — отдельные будущие пакеты commerz-http/commerz-filament",
+        "Мосты экосистемы (commerz-corex, -azguard, -vaulter, -chatom) и конкретные платёжные/доставочные адаптеры — после 0.1",
+        "WMS (ячейки, партии, серийные номера), себестоимость, закупки, marketplace-расчёты, подписки, подарочные сертификаты и бонусы",
+        "Поддержка MySQL/SQLite, Laravel < 13, PHP < 8.4",
+        "Публикация на Packagist и split-зеркала"
+      ],
+      "rules": [
+        "Стек фиксирован: PHP ^8.4, Laravel ^13, PostgreSQL ≥16 (CI/тесты на 17). Локальный php по умолчанию 8.3 — все PHP/Composer-команды запускать через scripts/php84.",
+        "Feature-пакет зависит только от axiomasoft/commerz (ядро); межпакетное взаимодействие — только через порты Commerz\\Ports\\* и события; чужой Internal не импортировать; писать только в свои таблицы.",
+        "Публичный тип вне Internal обязан нести #[Api] или #[Spi]; в публичных сигнатурах нет Eloquent-моделей, Builder, Request, float для денег/количеств.",
+        "Каждая мутация — command-DTO внутрь, иммутабельный View/Result наружу; команда сама владеет своим инвариантом (без низкоуровневых increment-API).",
+        "Сетевые вызовы (платёж, перевозчик) никогда не внутри транзакции БД; многоресурсные транзакции соблюдают глобальный порядок блокировок из knowledge/invariants#placement.",
+        "Расхождение реализации с knowledge/kernel-contracts или api-blueprint фиксировать plan.py log --type deviation с причиной, а не молча.",
+        "Проверка item'а: lint:check, analyse и тесты затронутого пакета; arch-гейт — при изменении границ. Без повторов успешных проверок ради ритуала.",
+        "Владелец делегировал архитектуру агенту (M3, CLAUDE.md «Owner delegation»): решать и записывать решение (plan.py add-decision/decide --by agent), спрашивать только о необратимых внешних действиях, потере данных, секретах или конфликте с целями; найденные дефекты исправлять сразу, в том числе в ранее сделанном."
+      ],
+      "phases": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8"
+      ],
+      "settings": {
+        "design_audit": "none",
+        "scout": "off",
+        "context_pack": "scoped"
+      }
+    },
+    "brief": {
+      "$schema": "urn:swissknifeman:task:plan:brief:v1",
+      "messages": [
+        {
+          "id": "M1",
+          "date": "2026-10-08",
+          "text": "/task:plan-design new\n\nСмотри, я сейчас в данный момент в репозитории куча мыслей от разных AI-агентов по созданию идеального пакета вот для электронной коммерции. То есть он должен делиться на пакеджес: там отдельно модуль для складов, для магазинов, для каталога, для деливери, доставка, для промокодов. Ну, таких вот маркетинга, типа акции и так далее. Оформление заказов. То есть это похоже вот на то, что мы делаем в Core X — ядро для Flex CRM. Но он должен быть ещё очень схож по экосистеме с Asgard, Chat, Walter. То есть у него должно быть точно такое же чистое API, он должен быть легко расширяемым и так далее. Сейчас нужно создать план на разработку этого пакета. Но ты сначала должен проанализировать всё, что остальные агенты написали, синтезировать это всё и принять решение. Но возможно ты ни с чем не согласишься и скажешь: У меня есть вот идеальная картина как бы в голове, и нужно будет работать по вот этому плану. То есть сначала мы сейчас делаем верхний слой плана, разрабатываем полностью структуру, идеальное API и так далее. И этот пакет должен... его философия, что он может встраиваться и в CRM-ки, и в интернет-магазины и так далее. То есть как вот и другие пакеты из экосистемы, которые я тебе сказал. Пользуйся сколько угодно Perplexity, поиском. Это самая важная часть, нужно прям мозгами тратить усилия, чтобы создать вот идеальную структуру. Потом будем детализировать все фазы, поскольку это план с нуля, и только потом всё разрабатывать. Но надо стараться тоже вот его вот такими кусками определёнными делать, то есть не растягивать там на сотни пунктов. То есть важно именно вот чтобы разработка тоже быстро велась.\n"
+        },
+        {
+          "id": "M2",
+          "date": "2026-10-08",
+          "text": "ориентируемся только под свежий стек, laravel 13, php 8.4",
+          "kind": "owner"
+        },
+        {
+          "id": "M3",
+          "date": "2026-10-08",
+          "text": "я полностью полагаюсь на тебя, запиши в CLAUDE.md, что ты оставляешь на собой право поиска идеальных архитектурных решений, справшивать меня только в крайних случаях, все проблемы и недочеты фиксить по мере поступления, мне важен финальный продукт. Опиши только для агента как лучше будет воспринимать",
+          "kind": "owner"
+        },
+        {
+          "id": "M4",
+          "date": "2026-10-08",
+          "text": "и фазу мы сразу начинаем выполнять? или проектирвоание всех, а потом исполнение? выбери оптимальную стратегию, я полагаюсь на тебя",
+          "kind": "owner"
+        }
+      ],
+      "requirements": [
+        {
+          "id": "B1",
+          "text": "Семейство пакетов: склады, магазины, каталог, доставка, промокоды/маркетинг (акции), оформление заказов",
+          "source": "M1",
+          "owners": [
+            "P1",
+            "P2",
+            "P3",
+            "P5",
+            "P6",
+            "P7"
+          ]
+        },
+        {
+          "id": "B2",
+          "text": "Чистое API и расширяемость в стиле экосистемы Azguard, Chatom, Vaulter; дисциплина CoreX",
+          "source": "M1",
+          "owners": [
+            "P1"
+          ]
+        },
+        {
+          "id": "B3",
+          "text": "Встраиваемость: и в CRM, и в интернет-магазины",
+          "source": "M1",
+          "owners": [
+            "P1",
+            "P7",
+            "P8"
+          ]
+        },
+        {
+          "id": "B4",
+          "text": "Проанализировать материалы агентов, синтезировать и принять собственное решение; сначала верхний слой (структура, идеальное API), затем детализация всех фаз, затем разработка",
+          "source": "M1",
+          "owners": [
+            "P1"
+          ]
+        },
+        {
+          "id": "B5",
+          "text": "Крупные куски, без сотен пунктов; разработка должна идти быстро",
+          "source": "M1"
+        },
+        {
+          "id": "B6",
+          "text": "Только свежий стек: Laravel 13, PHP 8.4",
+          "source": "M2",
+          "owners": [
+            "P1"
+          ]
+        },
+        {
+          "id": "B7",
+          "text": "Архитектурные решения принимает агент; владельца спрашивать только в крайних случаях; проблемы и недочёты исправлять по мере обнаружения; критерий — финальный продукт",
+          "source": "M3"
+        }
+      ],
+      "constraints": [
+        "PHP ^8.4, Laravel ^13 (M2)",
+        "Существующие исследовательские материалы не изменять"
+      ],
+      "environment": [
+        "Локальный CLI php = 8.3; php8.4 доступен как /usr/bin/php8.4 — использовать scripts/php84",
+        "Docker доступен для PostgreSQL 17"
+      ]
+    },
+    "phase": {
+      "$schema": "urn:swissknifeman:task:plan:phase:v1",
+      "id": "P8",
+      "title": "Assembly, end-to-end & release 0.1",
+      "design": "detailed",
+      "goal": "Собрать семейство: commerz-full, сквозные сценарии на реальных пакетах (интернет-магазин: каталог→склад→цены→акции→доставка→заказ→оплата→отгрузка→возврат; CRM: SellableProvider хоста без catalog/inventory), конкурентный набор на PostgreSQL через все пакеты, документация (VitePress-структура как у Chatom), API manifest (#[Api]/#[Spi] → docs/reference), CHANGELOG и тег 0.1.0.",
+      "context": "Финальная интеграция после P2–P7 (все GREEN, 2075 тестов). Здесь подтверждается, что порты из P1 выдержали реальные реализации; расхождения закрываются до 0.1. Факты исходного состояния, харнесс, сценарии, модель конкурентности, формат манифеста, дерево docs и процедура релиза — knowledge/assembly-design. Решения D36 (версионирование и проверка дистрибутива), D37 (VitePress в docs/).",
+      "scope": {
+        "include": [
+          "packages/full и composer.json всех пакетов (ограничения ^0.1, .gitattributes, LICENSE, README)",
+          "tests/EndToEnd (харнесс, сборка, магазин, CRM, конкурентность)",
+          "tests/Arch/ApiManifestTest + packages/*/resources/contracts/php-api.json",
+          "scripts/generate-api-manifest.php, scripts/generate-api-reference.php, scripts/test-consumer-install.sh, tests/Consumer",
+          "docs/** (VitePress-сайт, reference, правка docs/architecture)",
+          "README.md, CHANGELOG.md, LICENSE, .github/workflows/ci.yml",
+          "исправления дефектов, найденных сборкой, в пакете-владельце"
+        ],
+        "exclude": [
+          "публикация на Packagist, split-зеркала, git push тега",
+          "HTTP/Filament, мосты экосистемы, реальные платёжные/доставочные адаптеры",
+          "семантический BC-diff между версиями (после 0.1)"
+        ]
+      },
+      "depends_on": [
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7"
+      ],
+      "pitfalls": [
+        "сценарий на fakes вместо реальных пакетов — сборка не доказана",
+        "импорт Internal в EndToEnd-тестах — сценарий проверяет не публичный API",
+        "конкурентный тест, глотающий 40P01/55P03 как ожидаемую ошибку — детектор вакуумен; нужен позитивный контроль",
+        "docs по api-blueprint вместо кода (124 deviation) — неверные примеры",
+        "@dev в опубликованных composer.json; проверка установки только в монорепо (path symlink скрывает недостающие зависимости)",
+        "тег без явного разрешения владельца или его push"
+      ],
+      "deliverables": [
+        "tests/EndToEnd: сборка, магазин, CRM, межпакетная конкурентность — зелёные на PostgreSQL 17",
+        "php-api.json для 8 пакетов + docs/reference/api, проверка в CI",
+        "VitePress-сайт docs/, README, LICENSE, CHANGELOG 0.1.0",
+        "consumer smoke из artifact-архивов в свежем Laravel 13",
+        "локальный аннотированный тег v0.1.0 (по разрешению владельца)"
+      ],
+      "items": [
+        "P8.1",
+        "P8.2",
+        "P8.3",
+        "P8.4",
+        "P8.5",
+        "P8.6",
+        "P8.7",
+        "P8.8"
+      ],
+      "batches": [
+        {
+          "id": "BP8-1",
+          "items": [
+            "P8.1"
+          ],
+          "mode": "recommended"
+        },
+        {
+          "id": "BP8-2",
+          "items": [
+            "P8.2",
+            "P8.3",
+            "P8.4",
+            "P8.5"
+          ],
+          "mode": "recommended"
+        },
+        {
+          "id": "BP8-3",
+          "items": [
+            "P8.6"
+          ],
+          "mode": "recommended"
+        },
+        {
+          "id": "BP8-4",
+          "items": [
+            "P8.7"
+          ],
+          "mode": "recommended"
+        },
+        {
+          "id": "BP8-5",
+          "items": [
+            "P8.8"
+          ],
+          "mode": "recommended"
+        }
+      ]
+    },
+    "item": {
+      "$schema": "urn:swissknifeman:task:plan:item:v1",
+      "id": "P8.6",
+      "title": "Documentation: VitePress site, READMEs, LICENSE and architecture doc corrections (D37)",
+      "status": "in_progress",
+      "summary": "docs/ — VitePress 1.6.4 сайт (англ.) со структурой assembly-design#docs-site: getting-started, concepts, packages/*, how-to, operations, reference (+ сгенерированный api), architecture; корневой README.md, README и LICENSE каждого пакета, корневой LICENSE; docs/architecture/invariants.md исправлен про retry; CI-job docs собирает сайт.",
+      "why": "Документация — SemVer-поверхность и вход для встраивания в магазин/CRM; без неё 0.1 не пригоден потребителю. Риски: примеры по api-blueprint (124 deviation) вместо кода; мёртвые ссылки; утверждение docs, противоречащее контракту (retry).",
+      "scope": {
+        "include": [
+          "docs/package.json, docs/package-lock.json, docs/.vitepress/config.ts, docs/index.md",
+          "docs/{getting-started,concepts,packages,how-to,operations}/**, docs/reference/*.md (кроме api/)",
+          "README.md, LICENSE, packages/*/README.md, packages/*/LICENSE",
+          "docs/architecture/invariants.md: global lock order — без автоматического retry",
+          "docs/.gitignore (node_modules, .vitepress/cache, .vitepress/dist); .github/workflows/ci.yml: job docs"
+        ],
+        "exclude": [
+          "docs/reference/api/** (генерируется P8.5)",
+          "docs/discovery/**",
+          "CHANGELOG (P8.7)",
+          "изменение кода пакетов"
+        ]
+      },
+      "depends_on": [
+        "P8.2",
+        "P8.3",
+        "P8.4",
+        "P8.5"
+      ],
+      "decisions": [
+        "D37",
+        "D36"
+      ],
+      "reads": [
+        {
+          "ref": "knowledge/assembly-design#docs-site",
+          "why": "дерево, правила, README/LICENSE — ядро item'а",
+          "required": true
+        },
+        {
+          "ref": "knowledge/assembly-design#baseline",
+          "why": "команды, plugin ID, порты, факт об отсутствии retry",
+          "required": true
+        },
+        {
+          "path": "docs/architecture/README.md",
+          "why": "позиционирование и стиль",
+          "required": true
+        },
+        {
+          "path": "docs/architecture/api.md",
+          "why": "источник API-примеров",
+          "required": true
+        },
+        {
+          "path": "docs/architecture/extension.md",
+          "why": "kinds и стадии для how-to и reference",
+          "required": true
+        },
+        {
+          "path": "docs/architecture/data.md",
+          "why": "reference/data-model",
+          "required": true
+        },
+        {
+          "path": "tests/EndToEnd/ShopScenarioTest.php",
+          "why": "проверенный код для quick-start магазина",
+          "required": true
+        },
+        {
+          "path": "tests/EndToEnd/CrmScenarioTest.php",
+          "why": "проверенный код для crm-embedding",
+          "required": true
+        },
+        {
+          "path": "packages/*/config/*.php",
+          "why": "ключи конфигурации для reference/configuration",
+          "required": true
+        }
+      ],
+      "task_files": [
+        {
+          "path": "docs/package.json",
+          "change": "create"
+        },
+        {
+          "path": "docs/package-lock.json",
+          "change": "create"
+        },
+        {
+          "path": "docs/.gitignore",
+          "change": "create"
+        },
+        {
+          "path": "docs/.vitepress/config.ts",
+          "change": "create"
+        },
+        {
+          "path": "docs/index.md",
+          "change": "create"
+        },
+        {
+          "path": "docs/getting-started/**",
+          "change": "create"
+        },
+        {
+          "path": "docs/concepts/**",
+          "change": "create"
+        },
+        {
+          "path": "docs/packages/**",
+          "change": "create"
+        },
+        {
+          "path": "docs/how-to/**",
+          "change": "create"
+        },
+        {
+          "path": "docs/operations/**",
+          "change": "create"
+        },
+        {
+          "path": "docs/reference/*.md",
+          "change": "create"
+        },
+        {
+          "path": "docs/architecture/invariants.md",
+          "change": "modify"
+        },
+        {
+          "path": "README.md",
+          "change": "create"
+        },
+        {
+          "path": "LICENSE",
+          "change": "create"
+        },
+        {
+          "path": "packages/*/README.md",
+          "change": "create"
+        },
+        {
+          "path": "packages/*/LICENSE",
+          "change": "create"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "change": "modify"
+        }
+      ],
+      "rules": [
+        "Источник истины для примеров — код, EndToEnd-тесты и docs/architecture; не api-blueprint. Каждое имя класса/метода в примере проверить grep'ом по packages/*/src.",
+        "Английский язык, стиль docs/architecture; относительные ссылки; без маркетинговых обещаний сверх реализованного (non_goals плана — в разделе limitations).",
+        "VitePress — точная версия 1.6.4; docs/node_modules и .vitepress/{cache,dist} не коммитятся.",
+        "Страница пакета: назначение, установка, конфиг, корень/фасад, таблицы, kinds, команды, события, ссылка на reference/api/<pkg>."
+      ],
+      "guidance": "Units: U1 — каркас сайта и сквозные страницы; U2 — страницы пакетов и README пакетов; U3 — how-to/operations/reference и правка architecture + CI. Sidebar в U1 перечисляет все страницы дерева сразу; сборка (V2) — после всех units. Сохранять docs/architecture файлами как есть; в sidebar раздел Architecture ссылается на /architecture/README и остальные файлы. Внешний образец (вне репозитория, читать по абсолютному пути, необязательно): /home/vostrikov/projects/packages/chatom/docs/.vitepress/config.ts — образец nav/sidebar.",
+      "validation": [
+        {
+          "id": "V1",
+          "cmd": "npm ci --prefix docs",
+          "expect": "exit 0",
+          "kind": "acceptance"
+        },
+        {
+          "id": "V2",
+          "cmd": "npm run docs:build --prefix docs",
+          "expect": "exit 0",
+          "kind": "acceptance"
+        },
+        {
+          "id": "V3",
+          "cmd": "scripts/php84 composer docs:reference -- --check",
+          "expect": "exit 0",
+          "kind": "acceptance"
+        },
+        {
+          "id": "V4",
+          "cmd": "test -f README.md && test -f LICENSE && for p in packages/*/; do test -f \"$p/README.md\" && test -f \"$p/LICENSE\" || exit 1; done",
+          "expect": "exit 0",
+          "kind": "acceptance"
+        },
+        {
+          "id": "V5",
+          "cmd": "! grep -n 'retried at most' docs/architecture/invariants.md",
+          "expect": "exit 0",
+          "kind": "acceptance"
+        }
+      ],
+      "deliverables": [
+        "VitePress-сайт собирается без мёртвых ссылок",
+        "README/LICENSE корня и пакетов",
+        "docs/architecture без ложного retry",
+        "CI job docs"
+      ],
+      "route": {
+        "class": "implementation",
+        "effort": "medium"
+      },
+      "review": {
+        "mode": "none"
+      },
+      "authority": {
+        "kind": "routine"
+      },
+      "rag": {
+        "need": "none",
+        "status": "not_needed"
+      },
+      "units": [
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "result": {
+        "started_at": "2026-10-10T12:42:43Z",
+        "executor": {
+          "provider": "anthropic",
+          "model": "sonnet-5.5",
+          "effort": "medium",
+          "session": "ecb053c1-3eca-47c3-8b66-9f9ae1a8840d"
+        }
+      },
+      "updated_at": "2026-10-10T12:42:43Z"
+    },
+    "decisions": [
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D37",
+        "title": "Documentation site: VitePress in docs/ with architecture kept in place",
+        "date": "2026-10-10",
+        "status": "accepted",
+        "question": "Где и как строить продуктовую документацию 0.1?",
+        "options": [
+          {
+            "id": "A",
+            "text": "docs/ как корень VitePress 1.6.4 (англ.), структура Chatom; docs/architecture остаётся на месте и входит разделом Architecture; docs/discovery исключён srcExclude; reference/api генерируется из php-api.json",
+            "pros": "единый сайт без переноса обязательных путей; мёртвые ссылки ловит build"
+          },
+          {
+            "id": "B",
+            "text": "Отдельный каталог website/",
+            "cons": "дублирование или перенос docs/architecture; расхождение путей"
+          },
+          {
+            "id": "C",
+            "text": "VitePress 2.0 alpha",
+            "cons": "нестабильный контракт"
+          }
+        ],
+        "context": "Chatom: docs/ — VitePress 1.6.4 (getting-started, concepts, how-to, packages, operations, reference). Commerz: docs/architecture (англ., обязательная архитектура, на неё ссылаются CLAUDE.md/AGENTS.md) и docs/discovery (рус. исследование). VitePress 2.0 на 2026-10 — alpha.",
+        "decision": "A — docs/ как корень VitePress 1.6.4 (англ.), структура Chatom; docs/architecture остаётся на месте и входит разделом Architecture; docs/discovery исключён srcExclude; reference/api генерируется из php-api.json",
+        "rationale": "Matches the ecosystem (Chatom) without moving docs/architecture, which agent entrypoints and plans reference; stable VitePress 1.6.4 only; generated API reference keeps docs and code from drifting; vitepress build fails on dead links, giving a cheap acceptance check.",
+        "applies_to": [
+          "P8",
+          "P8.5",
+          "P8.6"
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D36",
+        "title": "Release 0.1.0 versioning and distribution check",
+        "date": "2026-10-10",
+        "status": "accepted",
+        "question": "Как версионировать и проверять первый релиз монорепо (межпакетные ограничения, тег, проверка дистрибутива)?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Lockstep-версия, межпакетные ^0.1, корень ^0.1@dev + path options.versions 0.1.x-dev, аннотированный локальный тег v0.1.0, проверка формы дистрибутива через composer archive + artifact-репозиторий в свежем Laravel 13",
+            "pros": "стандартная совместимость Composer; патчи пакетов независимы; доказана установка без монорепо"
+          },
+          {
+            "id": "B",
+            "text": "self.version между пакетами",
+            "cons": "жёсткий lockstep патчей у потребителя без выгоды; ломает path-разработку без точных версий"
+          },
+          {
+            "id": "C",
+            "text": "Оставить ^0.1@dev и тегать как есть",
+            "cons": "@dev в опубликованных manifest вводит в заблуждение; форма дистрибутива не проверена"
+          }
+        ],
+        "context": "Сейчас пакеты требуют друг друга ^0.1@dev; корень minimum-stability dev, path packages/*. Split и Packagist — non_goals. Perplexity 2026-10-10: @dev — только в корне, пакеты публикуют ^0.1; монорепо-установка не доказывает установку потребителем.",
+        "decision": "A — Lockstep-версия, межпакетные ^0.1, корень ^0.1@dev + path options.versions 0.1.x-dev, аннотированный локальный тег v0.1.0, проверка формы дистрибутива через composer archive + artifact-репозиторий в свежем Laravel 13",
+        "rationale": "Owner delegated architecture (M3). Composer semantics: stability flags are root-only, so @dev belongs to the development root; ^0.1 keeps patch releases interoperable; a clean-consumer artifact install is the only evidence that the distributed packages resolve and boot without the monorepo. Tag stays local; push/publish remain owner actions.",
+        "applies_to": [
+          "P8",
+          "P8.1",
+          "P8.7",
+          "P8.8"
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D1",
+        "title": "Стек: PHP ^8.4, Laravel ^13",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Какие версии PHP/Laravel поддерживать?",
+        "options": [
+          {
+            "id": "A",
+            "text": "PHP ^8.4, Laravel ^13 только",
+            "pros": "свежий стек, одна матрица, совпадает с указанием владельца",
+            "cons": "нет установки в проекты на Laravel 12"
+          },
+          {
+            "id": "B",
+            "text": "PHP ^8.4, Laravel ^12|^13 (как Chatom/Vaulter)",
+            "cons": "двойная матрица ради исторических хостов"
+          }
+        ],
+        "decision": "A — PHP ^8.4, Laravel ^13 только",
+        "rationale": "Прямое указание владельца (M2). Laravel 13 вышел 2026-03-17, поддерживает PHP 8.3–8.5; минимум пакета — 8.4.",
+        "global": true,
+        "evidence": [
+          {
+            "kind": "owner",
+            "ref": "brief M2",
+            "note": "«ориентируемся только под свежий стек, laravel 13, php 8.4»"
+          }
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "owner"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D2",
+        "title": "СУБД: только PostgreSQL ≥16",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Поддерживать одну СУБД или паритет нескольких?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Только PostgreSQL ≥16 (CI 17)",
+            "pros": "EXCLUDE, частичные уникальные индексы, jsonb, транзакционный DDL, проверенные прототипы Grok E1–E8; совпадает с CoreX",
+            "cons": "хосты на MySQL не поддерживаются"
+          },
+          {
+            "id": "B",
+            "text": "PostgreSQL + MySQL 8",
+            "cons": "двойная матрица, теряются EXCLUDE/partial index — инварианты переезжают в код"
+          }
+        ],
+        "decision": "A — Только PostgreSQL ≥16 (CI 17)",
+        "rationale": "Инварианты склада/цен/лимитов опираются на возможности PostgreSQL; свежий стек (M2) и CoreX — PG-only. MySQL — отдельное решение после 0.1 при реальном потребителе.",
+        "global": true,
+        "evidence": [
+          {
+            "kind": "repo",
+            "ref": "audits/grok/ecosystem-alignment.md#2"
+          },
+          {
+            "kind": "repo",
+            "ref": "/home/vostrikov/projects/packages/corex/docs/dev-doctrine.md"
+          }
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D3",
+        "title": "Карта пакетов: ядро + 6 доменных, feature → только ядро",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Как делить Commerz на Composer-пакеты?",
+        "options": [
+          {
+            "id": "A",
+            "text": "core + catalog, inventory, pricing, promotions, shipping, sales (+ full, testkit); feature-пакеты зависят только от ядра, связь — через порты ядра",
+            "pros": "каждый ставится отдельно (склад без каталога, sales в CRM без каталога); параллельная разработка P2–P7",
+            "cons": "порты ядра надо спроектировать заранее"
+          },
+          {
+            "id": "B",
+            "text": "Один пакет с внутренними модулями",
+            "cons": "нельзя поставить подмножество; границы держит только тест"
+          },
+          {
+            "id": "C",
+            "text": "12 пакетов (ChatGPT)",
+            "cons": "stores/support/search/integrations — не домены; накладные расходы"
+          }
+        ],
+        "decision": "A — core + catalog, inventory, pricing, promotions, shipping, sales (+ full, testkit); feature-пакеты зависят только от ядра, связь — через порты ядра",
+        "rationale": "Соответствует списку владельца (доставка — отдельный пакет), критерию «реальная установка без соседа» и модели Chatom (core + независимые пакеты). Магазины — модуль ядра (D4), купоны — модуль promotions (D5).",
+        "global": true,
+        "evidence": [
+          {
+            "kind": "repo",
+            "ref": "audits/grok/architecture.md#2"
+          },
+          {
+            "kind": "owner",
+            "ref": "brief M1",
+            "note": "пакеты: склады, магазины, каталог, доставка, промокоды/маркетинг, оформление заказов"
+          }
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D7",
+        "title": "Идентификаторы: UUIDv7; журналы — bigint identity",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Стратегия первичных ключей?",
+        "options": [
+          {
+            "id": "A",
+            "text": "UUIDv7 из приложения (uuid), журналы bigint identity, ссылки на хост/чужие пакеты — *_ref varchar(191) 'type:id'",
+            "pros": "CoreX ADR-003, Chatom default; ID до INSERT; слияние БД"
+          },
+          {
+            "id": "B",
+            "text": "BIGINT + public_id",
+            "cons": "две колонки, ID только после INSERT"
+          },
+          {
+            "id": "C",
+            "text": "Настраиваемая стратегия",
+            "cons": "тройная матрица DDL/тестов"
+          }
+        ],
+        "decision": "A — UUIDv7 из приложения (uuid), журналы bigint identity, ссылки на хост/чужие пакеты — *_ref varchar(191) 'type:id'",
+        "rationale": "Экосистемный канон; без настройки, чтобы не множить матрицу.",
+        "global": true,
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D8",
+        "title": "Деньги и количества",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Как представлять деньги и количества?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Money = int minor + Currency (brick/math для промежуточных вычислений, явный RoundingMode, MoneyAllocator методом наибольших остатков); количество — int в базовой единице номенклатуры; ставки — basis points",
+            "pros": "без float; точные суммы; совместимо с corex-custom-fields money"
+          },
+          {
+            "id": "B",
+            "text": "DECIMAL(20,6) повсюду",
+            "cons": "сложнее инварианты сумм, неоднозначная точность"
+          }
+        ],
+        "decision": "A — Money = int minor + Currency (brick/math для промежуточных вычислений, явный RoundingMode, MoneyAllocator методом наибольших остатков); количество — int в базовой единице номенклатуры; ставки — basis points",
+        "rationale": "Точность и простота инвариантов; весовые/метражные товары — в г/мм с шагом продажи.",
+        "global": true,
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D12",
+        "title": "Стиль API и хранение внутри пакетов",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Форма публичного API и допустимость Eloquent?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Корневой readonly API-класс на пакет + фасад; доменные контракты; command/query DTO → View/Result; Eloquent только в Internal/Models; без подмены моделей",
+            "pros": "как Chatom; быстрая разработка на Laravel; стабильная поверхность"
+          },
+          {
+            "id": "B",
+            "text": "Только Query Builder + Row (Grok)",
+            "cons": "медленнее разработка без выигрыша для API"
+          }
+        ],
+        "decision": "A — Корневой readonly API-класс на пакет + фасад; доменные контракты; command/query DTO → View/Result; Eloquent только в Internal/Models; без подмены моделей",
+        "rationale": "Чистое API экосистемы (M1) при скорости разработки; модели невидимы снаружи, поэтому их можно заменить позже без BC.",
+        "global": true,
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D16",
+        "title": "Стратегия: rolling wave — P1 сразу, затем проектирование P2–P7 одним проходом по реальному ядру",
+        "date": "2026-10-08",
+        "status": "accepted",
+        "question": "Детализировать все фазы до исполнения или исполнять P1 сразу?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Исполнить P1 сейчас; после закрытия P1 детализировать P2–P7 одним проходом против реального кода ядра; исполнять P2–P7 параллельными lanes; затем детализировать и исполнить P8",
+            "pros": "P2–P7 проектируются против настоящих портов и тестовых заглушек, а не бумажных сигнатур; нет повторной детализации после отклонений P1; результат раньше",
+            "cons": "нет полного детального плана до начала кода"
+          },
+          {
+            "id": "B",
+            "text": "Детализировать P2–P8 сейчас, потом исполнять всё",
+            "cons": "~35 item’ов опираются на непроверенные сигнатуры ядра; любое отклонение P1 требует переписывать контексты нескольких фаз"
+          }
+        ],
+        "decision": "A — Исполнить P1 сейчас; после закрытия P1 детализировать P2–P7 одним проходом против реального кода ядра; исполнять P2–P7 параллельными lanes; затем детализировать и исполнить P8",
+        "rationale": "Входы P2–P7 — это код ядра (порты, QuotePipeline, TableNames, fakes); design-mode: детализировать фазу, когда известны её входы. Архитектура и API всех фаз уже зафиксированы в knowledge, поэтому риск рассогласования низкий, а переделки детализации исключены. Делегирование M3/M4.",
+        "global": true,
+        "evidence": [
+          {
+            "kind": "owner",
+            "ref": "brief M4"
+          },
+          {
+            "kind": "owner",
+            "ref": "brief M3"
+          }
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D20",
+        "title": "Nested operations are atomic savepoints; outbox delivery runs after commit",
+        "date": "2026-10-09",
+        "status": "accepted",
+        "options": [
+          {
+            "id": "A",
+            "text": "Retain ambient joins and require every command to validate before all writes or manage its own savepoint.",
+            "cons": "Validation cannot prevent codec, projection, database or plugin failures after a write; new packages can repeat the same defect."
+          },
+          {
+            "id": "B",
+            "text": "Transactions::run protects each nested operation with a savepoint on the Commerz connection; retain the outer settings and commit boundary.",
+            "pros": "One enforcement point for atomicity across packages and host transactions.",
+            "cons": "An extra savepoint for nested calls; callers still decide whether to retry a whole transaction."
+          }
+        ],
+        "context": "The owner requested a full audit and execution of repairs for P1–P2 and delegated architecture decisions. Regressions against f7c030f demonstrated a retained receipt claim and partial option relabels when the host caught a failed operation. PostgreSQL concurrency-error recovery also needs an explicit rollback to the savepoint; Laravel’s nested deadlock branch only decrements transaction metadata.",
+        "decision": "B. Nested Transactions::run begins a savepoint, commits its transaction metadata on success, explicitly rolls back to the prior level on every error, and rethrows it. The outer transaction retains lock_timeout and final commit; no automatic retry. OutboxRelay refuses an open transaction before claiming rows or invoking consumers.",
+        "rationale": "Strengthens INV-01 and EXT-01 at their owning core boundary without per-package copies or a new abstraction. PostgreSQL savepoints also recover the transaction from 40P01/40001 errors. Explicit owner authorization supersedes the audit command’s original read-only product scope.",
+        "consequences": [
+          "Nested transactionLevel now increases inside the callback; record this behavioral contract change before the first 0.1 release.",
+          "CommittedEvents remains tied to the outer commit and drops rolled-back savepoint events; ordering across nested levels is not promised.",
+          "Use a committed-data test for relay delivery; RefreshDatabase wraps a transaction and cannot represent production delivery.",
+          "No released migration or exported method signature changes."
+        ],
+        "global": true,
+        "evidence": [
+          {
+            "kind": "repo",
+            "ref": "packages/core/tests/Feature/OperationReceiptsTest.php"
+          },
+          {
+            "kind": "repo",
+            "ref": "packages/catalog/tests/Feature/Options/OptionsTest.php"
+          },
+          {
+            "kind": "repo",
+            "ref": "packages/core/tests/Feature/TransactionsTest.php"
+          },
+          {
+            "kind": "repo",
+            "ref": "packages/core/tests/Feature/CommittedEventsTest.php"
+          },
+          {
+            "kind": "repo",
+            "ref": "packages/core/tests/Feature/OutboxTest.php"
+          }
+        ],
+        "actor": {
+          "provider": "codex",
+          "model": "gpt-6.1-sol",
+          "effort": "high"
+        },
+        "answered_by": "agent"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:decision:v1",
+        "id": "D38",
+        "title": "Customer groups: the host directory's groups plus the cart command's",
+        "date": "2026-10-10",
+        "status": "accepted",
+        "question": "Where do the customer groups that price lists and promotions see come from in sales: the host's CustomerDirectory or the caller of SetCartCustomer?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Caller only (status quo): SetCartCustomer groups; the directory supplies email/name/taxExempt. Contradicts docs/architecture (data.md, api.md) and CustomerProfile::$groups, and makes every host pass groups twice."
+          },
+          {
+            "id": "B",
+            "text": "Directory only: groups resolved at quote time from CustomerDirectory. Live, but a host directory call on every quote and no per-cart deal groups."
+          },
+          {
+            "id": "C",
+            "text": "Directory plus command: setCustomer reads the profile once (before its transaction) and stores its groups followed by the command's extra groups; the cart, its quotes and the placed order use that snapshot."
+          }
+        ],
+        "context": "Grok 4.7 review of P8.3 (low): CustomerProfile::$groups is documented as driving prices and promotions and api.md says 'groups come from CustomerDirectory', yet no production code read profile groups; a CRM with a b2b directory group and no SetCartCustomer groups silently got retail prices.",
+        "decision": "C. Carts::setCustomer stores directory groups + command groups (deduplicated, directory first); without a customer, the command groups. The directory is read outside the transaction; the cart snapshot keeps quote and place consistent.",
+        "rationale": "Makes the documented contract true with one directory read per customer change, keeps quotes deterministic between setCustomer calls, and still lets an operator add groups for one cart (a deal).",
+        "applies_to": [
+          "P8",
+          "P8.3",
+          "P7"
+        ],
+        "evidence": [
+          {
+            "kind": "repo",
+            "ref": "phases/P8/P8.3/review/grok-answer.md"
+          },
+          {
+            "kind": "repo",
+            "ref": "packages/sales/tests/Feature/Carts/CartsTest.php 'takes the customer groups from the host directory'"
+          }
+        ],
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high"
+        },
+        "answered_by": "agent"
+      }
+    ],
+    "upstream": [
+      {
+        "id": "P8.2",
+        "title": "Shop end-to-end scenario on all real packages",
+        "status": "done_with_deviations",
+        "summary": "tests/EndToEnd/ShopScenarioTest.php проходит полный путь магазина на реальных пакетах: корзина → quote (акции, купон, налог на дисконтированной базе, доставка) → place с резервом и usage → оплата → fulfillment с consume → доставка → частичный возврат с restock → частичный и полный refund с восстановлением купона; плюс отрицательные пути (нехватка, QuoteChanged) и outbox-последовательность.",
+        "deliverables": [
+          "ShopScenarioTest зелёный на реальных пакетах",
+          "исправленные дефекты с регрессиями и deviation"
+        ],
+        "result": {
+          "notes": "ShopScenarioTest on the 7 real packages: steps 1-10 (hand-derived quote 2450.00/VAT 408.34, reserve/consume/restock, coupon kept on partial and restored on full refund, outbox causal order via relay, shortage and QuoteChanged write nothing). No package defects found. grok-4.7 high review: pass, no findings.",
+          "deviations": [
+            "tests/EndToEnd/Support/CommittedDatabase.php added (payments/refunds/booking/relay refuse transactions; shared with P8.4); keeps cmz_schema_state",
+            "plan vs code: full refund restores promotion usage only with restore_on += refunded (documented default cancelled/expired); the shop opts in"
+          ]
+        }
+      },
+      {
+        "id": "P8.3",
+        "title": "CRM embedding scenarios: core + pricing + sales without catalog/inventory, and a mixed host",
+        "status": "done_with_deviations",
+        "summary": "tests/EndToEnd/CrmScenarioTest.php: CRM-подмножество (Commerz, Pricing, Sales; stock unlimited) с хостовым SellableProvider crm.service и CustomerDirectory проходит черновик → quote с налогом → place → manual-оплата → исполнение услуг → completed без таблиц склада/каталога/доставки/акций; смешанный хост (все пакеты + crm.service рядом с variant) размещает заказ и резервирует только variant-строки.",
+        "deliverables": [
+          "CRM-сценарий без catalog/inventory зелёный",
+          "смешанный хост зелёный"
+        ],
+        "result": {
+          "notes": "CRM subset (Commerz+Pricing+Sales, unlimited stock, host sellable provider crm.service + CustomerDirectory) runs draft -> quote (20% VAT via default_zone, b2b contract price + tariff fallback) -> place -> manual capture -> fulfil -> completed with no shop tables/ports; mixed host routes variant + crm.service in one cart and reserves only the variant. grok-4.7 high: round 1 pass with 2 lows (fixed), round 2 pass.",
+          "deviations": [
+            "mixed host in its own file tests/EndToEnd/CrmMixedHostTest.php (provider set per file)",
+            "defect fixed in sales (D38): Carts::setCustomer takes the customer groups from the host CustomerDirectory plus the command's; regression in sales CartsTest"
+          ]
+        }
+      },
+      {
+        "id": "P8.4",
+        "title": "Cross-package concurrency suite on PostgreSQL with deadlock detection and a positive control",
+        "status": "done_with_deviations",
+        "summary": "tests/EndToEnd/Concurrency/*Test.php покрывают межпакетные пары E1–E7 (оверсейл, лимит купона, обратный порядок строк, резерв vs инвентаризация, cancel vs capture, expire vs fulfillment, refund restore vs consume) на реальных пакетах через Concurrency::run; детектор классифицирует SQLSTATE и проверяет дельту pg_stat_database.deadlocks; позитивный контроль доказывает, что детектор видит 40P01.",
+        "deliverables": [
+          "E1–E7 зелёные на реальных пакетах",
+          "детектор с позитивным контролем",
+          "исправления порядка блокировок (если найдены)"
+        ],
+        "result": {
+          "notes": "E1–E8 green on real packages via Concurrency::run with SQLSTATE detector and positive 40P01 control. grok-4.7/high/500k reviews: round 1 fail (1 high deadlock + 3 test-strength, fixed a658638), round 2 fail (release deadlock + E4 gap, fixed 40f8e3e), round 3 (new owner request, session 01a125bb…) pass with no findings. V1–V5 exit 0 (EndToEnd 24 passed, concurrency 10 passed). Residual: E6 nondeterministic winner; head-start sleeps and exact waiter counts assume an isolated DB.",
+          "deviations": [
+            "Added tests/EndToEnd/Concurrency/Support/Checkout.php beside Outcome.php (Pest global helpers would collide across files).",
+            "E5 records the real contract: an unfulfilled paid order is cancellable, so both interleavings end cancelled with one payment_requires_refund (assembly-design expected cancelled|paid).",
+            "Product fixes in inventory (owner package, with regressions in ReservationConcurrencyTest): consume and release of one sellable lock every level the demand holds in key order (lockDemand); invariants.md updated."
+          ]
+        }
+      },
+      {
+        "id": "P8.5",
+        "title": "API manifest per package and generated API reference (#[Api]/#[Spi] → php-api.json → docs/reference/api)",
+        "status": "done",
+        "summary": "tests/Arch/ApiManifestTest строит детерминированный packages/<pkg>/resources/contracts/php-api.json (schema commerz.php-api/1) для 8 пакетов с кодом; scripts/generate-api-manifest.php и generate-api-reference.php ([--check]) с composer-скриптами api:manifest, api:check, docs:reference; docs/reference/api/<pkg>.md сгенерированы; CI проверяет актуальность.",
+        "deliverables": [
+          "php-api.json для 8 пакетов",
+          "docs/reference/api/*.md",
+          "api:check и docs:reference --check в CI"
+        ],
+        "result": {
+          "notes": "php-api.json (commerz.php-api/1) for 8 packages built by tests/Arch/ApiManifestTest from the arch SourceScanner + reflection (signatures as declared: self via AST, final, asymmetric visibility, defaults, interface parents; platform: providers/config/commands/plugin/tables/kinds); double generation byte-identical; docs/reference/api (9 pages) generated with escaped prose and stable anchors; composer api:manifest/api:check/docs:reference; CI lint job checks both. grok-4.7 high: round 1 fail (6 generator findings, fixed), round 2 pass."
+        }
+      }
+    ],
+    "phase_dependencies": [
+      {
+        "id": "P2",
+        "title": "Catalog package",
+        "goal": "axiomasoft/commerz-catalog: товары, варианты и оси опций (разреженная генерация, уникальность комбинаций), атрибуты (contribution kind attribute_type, JSONB-документ + синхронная проекция cmz_attribute_index для фасетов с семантикой одного варианта), типы товаров (product_kind), категории, публикации по каналам, SellableProvider 'variant', поиск/фильтры через SQL-проекцию.",
+        "deliverables": [
+          "Catalog API (products, variants, options, attributes, productTypes, categories, listings)",
+          "встроенные типы атрибутов и виды товаров",
+          "фасетный фильтр same-variant",
+          "SellableProvider 'variant'",
+          "тесты CAT-01..03 (включая многопроцессный generate)",
+          "docs/architecture синхронизированы"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Sellables (SellableProvider, SellableSnapshot)",
+            "Plugins (PluginRegistrar, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+            "Operations (Transactions, CommittedEvents из P2.1)",
+            "Stores\\Contracts\\Channels",
+            "testkit (Concurrency, PluginContractTests, FakePrices)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-catalog: Catalog root + фасад; модули Attributes, Options, ProductTypes, Products, Variants, Categories, Listings",
+            "SPI attribute_type (10 встроенных) и product_kind (3 встроенных)",
+            "SellableProvider 'variant'",
+            "core: Commerz\\Operations\\Contracts\\CommittedEvents"
+          ],
+          "boundaries": [
+            "каталог пишет только в таблицы существительных product, variant, option, attribute, category, listing",
+            "без FK и записи в таблицы ядра; канал — только через контракт Channels",
+            "без зависимостей на другие feature-пакеты; цен в каталоге нет"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-09T03:50:35Z",
+          "result": "done_with_deviations",
+          "summary": "10 item(s): 4 done, 6 done_with_deviations"
+        }
+      },
+      {
+        "id": "P3",
+        "title": "Inventory package",
+        "goal": "axiomasoft/commerz-inventory: места хранения, складская номенклатура (политики tracked|backorder|untracked) и связи sellable→item с коэффициентом (комплекты), источники каналов с приоритетом и SPI allocation_strategy, уровни (on_hand/reserved/safety) + append-only журнал через единственный StockLedger, резервы по demand (заголовок + строки) с истечением, перемещения, реализация портов StockAvailability/StockReservations/StockReturns, сверка commerz:inventory:reconcile и expire-команда.",
+        "deliverables": [
+          "Inventory API (locations, items, sources, stock, movements, reservations, availability, transfers)",
+          "SPI allocation_strategy с priority и single_location",
+          "реализации StockAvailability, StockReservations, StockReturns; порт ядра расширен (D22)",
+          "конкурентные тесты: последняя единица, комплекты, обратный порядок строк, expire vs consume, один demand × 4",
+          "commerz:inventory:reconcile и commerz:inventory:expire-reservations",
+          "docs/architecture синхронизированы (INV-02..06, API, D21, D22)"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Stock (StockAvailability, StockReservations, StockReturns из P3.1, DTO, InsufficientStock, ReservationNotFound)",
+            "Plugins (PluginRegistrar, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+            "Operations (Transactions, OperationReceipts, Fingerprint, CommittedEvents), Outbox (Outbox, IntegrationEvent)",
+            "Stores\\Contracts\\Channels (find, assertActive)",
+            "Identity (EntityId, SellableRef, ActorRef, IdempotencyKey), Measures\\Unit, Pagination (Page, Cursor)",
+            "testkit (Concurrency, PluginContractTests, PackageTestCase)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-inventory: Inventory root + фасад; модули Locations, Items, Sources, Stock, Movements, Reservations, Availability, Transfers, Allocation",
+            "SPI allocation_strategy (встроенные priority, single_location)",
+            "реализации портов StockAvailability, StockReservations, StockReturns",
+            "core: Ports\\Stock\\Contracts\\StockReturns, ConsumeReservation::$locationCode (D22); testkit FakeStock обновлён",
+            "Artisan: commerz:inventory:expire-reservations, commerz:inventory:reconcile"
+          ],
+          "boundaries": [
+            "inventory пишет только в таблицы существительного stock",
+            "без FK и записи в таблицы ядра; канал — только через контракт Channels; sellable — только SellableRef-строки",
+            "без зависимостей на другие feature-пакеты (каталог не нужен: связи по SellableRef)",
+            "только StockLedger пишет cmz_stock_levels и cmz_stock_movements"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-09T09:34:44Z",
+          "result": "done_with_deviations",
+          "summary": "7 item(s): 2 done, 5 done_with_deviations"
+        }
+      },
+      {
+        "id": "P4",
+        "title": "Pricing & tax package",
+        "goal": "axiomasoft/commerz-pricing: прайс-листы (валюта, каналы, приоритет, TaxInclusion), цены по sellable с группами покупателей, ступенями количества и окнами действия (EXCLUDE, PRC-01), compare-at, детерминированный PriceResolver (приоритет → наименьшая применимая, PRC-02) с explain; налоговые классы, зоны (страна/регион) и ставки с окнами (TAX-01), SPI tax_calculator со встроенным rates, стадия tax после всех скидок с построчным округлением (TAX-02) и golden-тестами.",
+        "deliverables": [
+          "Pricing API (priceLists, prices, taxes) и реализация PriceResolver с explain",
+          "SPI tax_calculator с rates, стадия tax",
+          "PRC-01 и TAX-01 конкурентные тесты; PRC-02 матрица ранжирования",
+          "стадия tax с golden-тестами округления G1–G14",
+          "правка ядра D23 с тестами",
+          "docs/architecture синхронизированы (PRC-01/02, TAX-01/02, API, D23, D24, tax_calculator, суффикс ex)"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Prices (PriceResolver, ResolvePrice, ResolvedPrice, PriceNotFound)",
+            "Quotes (QuoteStage, QuoteState с allocatedOrderAdjustments/deliveryNet из P4.1, TaxLine, AdjustmentTarget, QuoteAnchor, StagePosition, QuotePipeline, QuoteFailed)",
+            "Money (Money::includedPart из P4.1, percentage, Rate, RoundingMode, MoneyAllocator, Currency)",
+            "Plugins (PluginRegistrar::declareKind/contribute/quoteStage, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration::exclude из P4.1, TableNames, ConstraintNames, SchemaOwnership)",
+            "Operations (Transactions, CommittedEvents), Stores\\Contracts\\Channels (find, assertActive)",
+            "Ports\\Customers\\Contracts\\CustomerDirectory (taxExempt), Ports\\Delivery\\Data\\Address",
+            "Identity (EntityId, SellableRef), Context\\CommerceContext, Pagination (Page, Cursor)",
+            "testkit (Concurrency, PluginContractTests, PackageTestCase, FakePrices, FakeCustomers)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-pricing: корень Pricing + фасад; модули PriceLists, Prices, Taxes, Calculation",
+            "реализация порта PriceResolver (DatabasePriceResolver) и Prices::explain",
+            "SPI tax_calculator (встроенный rates) и quote stage tax",
+            "core (D23): QuoteState::allocatedOrderAdjustments(), QuoteState::deliveryNet(), Money::includedPart(), ConstraintNames::exclusion(), CommerzMigration::exclude()",
+            "инварианты PRC-01, PRC-02, TAX-01, TAX-02 в docs/architecture"
+          ],
+          "boundaries": [
+            "pricing пишет только в таблицы существительных price и tax",
+            "без FK и записи в таблицы ядра; канал — только через контракт Channels; sellable — только SellableRef-строки",
+            "без зависимостей на другие feature-пакеты",
+            "стадия tax и калькулятор не пишут в БД и не ходят в сеть"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-09T12:31:46Z",
+          "result": "done_with_deviations",
+          "summary": "7 item(s): 7 done_with_deviations"
+        }
+      },
+      {
+        "id": "P5",
+        "title": "Promotions & coupons package",
+        "goal": "axiomasoft/commerz-promotions: акции с явной стадией (catalog/cart/delivery), условиями и эффектами по стабильным ключам с config_version (fail-closed для неизвестных), активаторы automatic/coupon через публичный SPI (D5), стадии promotions.* с детерминированным stacking (priority DESC, code ASC; stackable/exclusive/stopFurther; последовательное сложение D15), атомарное применение с клампингом, explain с вердиктами, купоны (канонические коды, генерация партий), лимиты total/per-customer/coupon и бюджет с PromotionUsage consume/restore под протоколом блокировок D27 (PRM-01).",
+        "deliverables": [
+          "Promotions API (promotions(): PromotionDefinitions, coupons(): Coupons) и explain",
+          "SPI правил и активаторов, встроенные правила, RuleCodec с fail-closed unsupported",
+          "стадии promotions.* с golden-тестами G1–G22",
+          "PromotionUsage consume/restore с конкурентными тестами C1–C7 и reconcile",
+          "правка ядра D25 с тестами",
+          "docs/architecture синхронизированы (PRM-01..05, API, D25–D27, kinds, данные)"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Promotions (PromotionUsage, ConsumePromotionUsage, RestorePromotionUsage, AppliedPromotion, RestoreReason, UsageLimitReached)",
+            "Quotes (QuoteStage, QuoteState: lineNet/itemsNet/allocatedOrderAdjustments/deliveryNet/withAdjustment/withRejection, Adjustment, Rejection, QuoteInput, QuoteResult с appliedPromotions из P5.1, QuoteAnchor, StagePosition, QuotePipeline, QuoteFailed)",
+            "Money (Money::percentage, MoneyAllocator, Currency, Rate, RoundingMode)",
+            "Plugins (PluginRegistrar::declareKind/contribute/quoteStage, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+            "Operations (Transactions, OperationReceipts, CommittedEvents, Fingerprint), Errors (InvalidCommand, NotFound, IdempotencyConflict, InvalidConfiguration)",
+            "Stores\\Contracts\\Channels (assertActive), Identity (EntityId, SellableRef, CustomerRef, IdempotencyKey), Context\\CommerceContext, Pagination (Page, Cursor)",
+            "testkit (Concurrency, PluginContractTests, PackageTestCase, FakePrices, FakeSellables)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-promotions: корень Promotions + фасад; модули Rules (SPI), Definitions, Coupons, Evaluation (Internal), Usage",
+            "SPI promotion_condition / promotion_effect / promotion_activator со встроенными 5 условиями, 6 эффектами, активаторами automatic и coupon",
+            "quote stages promotions.catalog, promotions.cart, promotions.delivery и Promotions::promotions()->explain",
+            "реализация порта PromotionUsage (DatabasePromotionUsage) и команда commerz:promotions:reconcile",
+            "core (D25): QuoteResult::appliedPromotions()",
+            "инварианты PRM-01..PRM-05 в docs/architecture"
+          ],
+          "boundaries": [
+            "promotions пишет только в таблицы существительных promotion и coupon",
+            "без FK и записи в таблицы ядра; канал — только через контракт Channels; клиент и заказ — Ref-строки",
+            "без зависимостей на другие feature-пакеты (категории и атрибуты — только из SellableSnapshot)",
+            "стадии, условия, эффекты и активаторы не пишут в БД и не ходят в сеть; расход — только PromotionUsage::consume"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-09T17:26:23Z",
+          "result": "done_with_deviations",
+          "summary": "8 item(s): 3 done, 5 done_with_deviations"
+        }
+      },
+      {
+        "id": "P6",
+        "title": "Shipping (delivery) package",
+        "goal": "axiomasoft/commerz-shipping: пересекающиеся зоны доставки (страна / регион ISO 3166-2 / префикс индекса) с рангом специфичности, методы по каналам с LocalizedText-именем и перевозчиком, тарифы на (метод, зона, валюта) через SPI delivery_rate (flat, weight_table) с общими free_above/tax_included/eta_days (D28), fail-closed RateCodec, SPI carrier (manual), DeliveryOptions + ShippingOptions::list/explain и стадия delivery на едином MethodPricer (SHP-01/02), ShipmentBooking на журнале брони с арендой и фенсингом, сеть вне транзакции, unknown → find (D29, SHP-03/04).",
+        "deliverables": [
+          "Shipping API (zones, methods, options с explain, bookings) и фасад",
+          "SPI delivery_rate и carrier, встроенные flat, weight_table, manual, RateCodec",
+          "стадия delivery и DeliveryOptions с golden-тестами G1–G17",
+          "ShipmentBooking с журналом и конкурентными тестами C1–C5",
+          "docs/architecture синхронизированы (SHP-01..06, API, D28–D29, kinds, данные)"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Delivery (DeliveryOptions, ShipmentBooking, DeliveryRequest, DeliveryOption, Address, Parcel, BookShipment, BookedShipment; NoDelivery — заменяемый дефолт)",
+            "Quotes (QuoteStage, QuoteState: itemsNet/adjustments/withDelivery/withRejection, DeliveryCharge, DeliverySelection, QuoteAnchor::Delivery, StagePosition, Rejection, QuoteFailed, AdjustmentTarget, QuotePipeline)",
+            "Money (Money, Currency), Measures (LocalizedText), Identity (EntityId), Context (CommerceContext), Pagination (Page, Cursor)",
+            "Plugins (PluginRegistrar::declareKind/contribute/quoteStage, ContributionKind, Contributions, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership)",
+            "Operations (Transactions::run/inTransaction, CommittedEvents, Fingerprint), Errors (InvalidCommand, NotFound, IdempotencyConflict, InvalidConfiguration, UnsupportedContribution)",
+            "Stores\\Contracts\\Channels (assertActive)",
+            "testkit (PackageTestCase, PluginContractTests, Concurrency, FakeSellables)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-shipping: корень Shipping + фасад; модули Zones, Methods, Options, Bookings; SPI Rates (delivery_rate) и Carriers (carrier)",
+            "встроенные delivery_rate flat, weight_table и carrier manual; RateCodec с fail-closed unsupported",
+            "реализации портов DeliveryOptions (DatabaseShippingOptions) и ShipmentBooking (CarrierShipmentBooking) с журналом shipping_bookings",
+            "quote stage delivery; ShippingOptions::explain с вердиктами",
+            "инварианты SHP-01..SHP-06, D28/D29 и обновлённый реестр kinds (free_over → free_above) в docs/architecture"
+          ],
+          "boundaries": [
+            "shipping пишет только в таблицы существительного shipping",
+            "без FK и записи в таблицы ядра; канал — только через контракт Channels (channel_id uuid без FK)",
+            "без зависимостей на другие feature-пакеты (товары — только SellableRef/SellableSnapshot из квоты и DeliveryRequest)",
+            "стадия delivery и правила delivery_rate не пишут в БД и не ходят в сеть; сеть — только Carrier::book/find из CarrierShipmentBooking вне транзакции",
+            "записи исполнения заказа (fulfillments) — sales (D14, P7)"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-09T19:44:02Z",
+          "result": "done_with_deviations",
+          "summary": "7 item(s): 5 done, 2 done_with_deviations"
+        }
+      },
+      {
+        "id": "P7",
+        "title": "Sales package",
+        "goal": "axiomasoft/commerz-sales: корзины (канал/валюта фиксированы, version, одна строка на sellable) и черновики CRM как корзины kind=draft (D31); квота корзины единым CartQuoter через QuotePipeline; размещение заказа одной транзакцией (receipt → cart FOR UPDATE → снимок → номер (D34) → резерв → расход лимитов → outbox) с ORD-01/02; журнал строк ORD-03 и три производных состояния; отмена, частичная отмена и истечение неоплаченных (D32); платежи через SPI payment_gateway (manual) с журналом попыток, арендой, фенсингом, inbox событий PAY-01 и reconcile PAY-02 (D33); исполнение с consume резерва и бронью через ShipmentBooking вне транзакции (D14, D29/D30); возвраты (приёмка ≠ restock, REF-01) и возвраты денег тем же протоколом журнала.",
+        "deliverables": [
+          "Sales API (carts, checkout, orders, payments, refunds, fulfillments, returns) и фасад",
+          "SPI payment_gateway и order_number_generator, встроенные manual и sequence",
+          "размещение одной транзакцией с ORD-01/02 и конкурентными тестами двойного submit",
+          "платежи с журналом, inbox событий и reconcile, конкурентные тесты двойного webhook и параллельной оплаты",
+          "исполнение, возвраты и refunds с ORD-03 и REF-01",
+          "сценарий CRM на fakes и сценарий магазина",
+          "docs/architecture синхронизированы (Sales API, ORD/PAY/REF/CTX/SAL, D31–D34, данные, kinds)"
+        ],
+        "contract": {
+          "consumes": [
+            "Commerz\\Ports\\Sellables (Sellables::resolve/resolveMany, SellableSnapshot, SellableKind, SellableUnavailable)",
+            "Commerz\\Ports\\Stock (StockReservations::reserve/release/consume с locationCode, StockReturns::restock, ReserveStock, ReleaseReservation, ConsumeReservation, RestockStock, StockLines, InsufficientStock, ReservationNotFound)",
+            "Commerz\\Ports\\Promotions (PromotionUsage::consume/restore, ConsumePromotionUsage, RestorePromotionUsage, RestoreReason, UsageLimitReached)",
+            "Commerz\\Ports\\Delivery (DeliveryOptions::options, ShipmentBooking::book, Address, Parcel, DeliveryRequest, BookShipment, BookedShipment)",
+            "Commerz\\Ports\\Customers (CustomerDirectory::find, CustomerProfile)",
+            "Quotes (QuotePipeline::run, QuoteInput, QuoteLineInput, QuoteResult + appliedPromotions (D25), QuotedLine, Adjustment, TaxLine, DeliveryCharge, DeliverySelection, QuoteTotals, QuoteFailed)",
+            "Money (Money, Currency, MoneyAllocator), Identity (EntityId, SellableRef, CustomerRef, ActorRef, IdempotencyKey, Uuid7), Context (CommerceContext), Pagination (Page, Cursor)",
+            "Operations (Transactions::run/inTransaction, OperationReceipts::once, Fingerprint, CommittedEvents), Outbox (Outbox::record, IntegrationEvent::of)",
+            "Stores (Channels::assertActive, Stores::find, StoreView::orderNumberPrefix, ChannelId, StoreId)",
+            "Plugins (PluginRegistrar::declareKind/contribute/sellableProvider, ContributionKind, Contributions::get, CommerzPlugins::builtIn)",
+            "Schema (CommerzMigration, TableNames, ConstraintNames, SchemaOwnership), Errors (InvalidCommand, NotFound, CommerzException, IdempotencyConflict, InvalidConfiguration, UnsupportedContribution)",
+            "testkit (PackageTestCase, Commerce::fake, FakeStock, FakePromotionUsage, FakeDelivery, FakeSellables, FakeCustomers, Concurrency, PluginContractTests)"
+          ],
+          "produces": [
+            "axiomasoft/commerz-sales: корень Sales + фасад; модули Carts, Checkout, Orders, Payments, Refunds, Fulfillments, Returns; SPI Gateways (payment_gateway) и Numbering (order_number_generator)",
+            "встроенные payment_gateway manual и order_number_generator sequence",
+            "команда commerz:sales:expire-orders",
+            "outbox-события sales.order_placed, order_cancelled, order_completed, payment_state_changed, payment_requires_refund, fulfillment_shipped, return_received, refund_succeeded",
+            "инварианты ORD-01..03, PAY-01/02, REF-01, CTX-01, SAL-01..03, D31–D34 и раздел Sales в docs/architecture"
+          ],
+          "boundaries": [
+            "sales пишет только в таблицы существительных cart, checkout, order, payment, fulfillment, return, refund",
+            "без FK на таблицы ядра и чужих пакетов: channel_id, store_id — uuid без FK; sellable_ref, customer_ref, actor — *_ref без FK",
+            "без зависимостей на другие feature-пакеты: склад, акции, цены, доставка — только через порты ядра",
+            "вызовы PaymentGateway и ShipmentBooking — только вне транзакции БД; квота (Sellables, QuotePipeline) — до транзакции размещения",
+            "резерв и consume/restock — только для строк SellableKind::Physical; StockReturns только из Returns::receive с явным restock",
+            "правки packages/core в фазе нет"
+          ]
+        },
+        "closed": {
+          "at": "2026-10-10T10:14:12Z",
+          "result": "done_with_deviations",
+          "summary": "9 item(s): 9 done_with_deviations"
+        }
+      }
+    ],
+    "reads": [
+      {
+        "ref": "knowledge/assembly-design#docs-site",
+        "why": "дерево, правила, README/LICENSE — ядро item'а",
+        "required": true,
+        "path": "@plan/knowledge/assembly-design.json",
+        "section": "docs-site",
+        "exists": true,
+        "included": "documents"
+      },
+      {
+        "ref": "knowledge/assembly-design#baseline",
+        "why": "команды, plugin ID, порты, факт об отсутствии retry",
+        "required": true,
+        "path": "@plan/knowledge/assembly-design.json",
+        "section": "baseline",
+        "exists": true,
+        "included": "documents"
+      },
+      {
+        "path": "docs/architecture/README.md",
+        "why": "позиционирование и стиль",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "docs/architecture/api.md",
+        "why": "источник API-примеров",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "docs/architecture/extension.md",
+        "why": "kinds и стадии для how-to и reference",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "docs/architecture/data.md",
+        "why": "reference/data-model",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "tests/EndToEnd/ShopScenarioTest.php",
+        "why": "проверенный код для quick-start магазина",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "tests/EndToEnd/CrmScenarioTest.php",
+        "why": "проверенный код для crm-embedding",
+        "required": true,
+        "exists": true
+      },
+      {
+        "path": "packages/*/config/*.php",
+        "why": "ключи конфигурации для reference/configuration",
+        "required": true,
+        "exists": true
+      }
+    ],
+    "lessons": [
+      {
+        "v": 1,
+        "ts": "2026-10-10T09:43:14Z",
+        "type": "deviation",
+        "item": "P8.1",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "high",
+          "session": "81a9103c-9d16-4a97-8639-173ca8d479a5"
+        },
+        "summary": "Defect found by assembly: core CommerzServiceProvider bound PluginCatalog with singleton(), dropping built-in plugins that feature providers registered earlier (provider order mattered; catalog sellable provider lost in reverse order). Fixed to singletonIf + core regression test (PluginsTest)."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T09:43:15Z",
+        "type": "deviation",
+        "item": "P8.1",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "high",
+          "session": "81a9103c-9d16-4a97-8639-173ca8d479a5"
+        },
+        "summary": "composer update --lock fails (root alias dev-main vs 0.1.x-dev from options.versions); used 'composer update axiomasoft/* --no-scripts' instead, which moves the 9 path packages dev-main -> 0.1.x-dev in composer.lock only."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T10:35:58Z",
+        "type": "deviation",
+        "item": "P8.2",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Added tests/EndToEnd/Support/CommittedDatabase.php (outside the listed task file): payments, refunds, carrier booking and the outbox relay refuse to run inside a transaction, so the scenario commits its data (migrate + truncate every cmz_ table before/after). Shared with P8.4 (committed concurrency data)."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T10:35:58Z",
+        "type": "deviation",
+        "item": "P8.2",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Plan vs code: assembly-design step 7 expects a full refund to restore promotion usage, but the documented default promotions.restore_on is [cancelled, expired] (D13, api.md, invariants.md); code is correct. The shop scenario opts in with restore_on += refunded to prove partial (kept) vs full (restored) on the real packages."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T10:40:02Z",
+        "type": "deviation",
+        "item": "P8.3",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Mixed host lives in its own file tests/EndToEnd/CrmMixedHostTest.php (not in CrmScenarioTest.php): Pest applies the provider/plugin set per file, and the CRM subset (Commerz+Pricing+Sales) and the full family + CRM plugin cannot share one file without re-booting the app mid-test."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T10:47:29Z",
+        "type": "deviation",
+        "item": "P8.4",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Added tests/EndToEnd/Concurrency/Support/Checkout.php (cart/place/pay helpers built in the parent) beside the planned Outcome.php: helper functions in Pest files are global and would collide across files; reuses P8.2's CommittedDatabase for migrate/truncate of every cmz_ table."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T10:47:29Z",
+        "type": "deviation",
+        "item": "P8.4",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Plan vs code E5: assembly-design expects 'cancelled + payment_requires_refund OR paid'; the real contract lets an unfulfilled paid order be cancelled (OrderNotCancellable only for completed/fulfilled), so both interleavings end cancelled, captured = total, one payment_requires_refund, stock released, coupon use restored. Code is correct per docs (D32, invariants 'payment event vs cancel'); the test asserts that single end state."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T11:07:09Z",
+        "type": "deviation",
+        "item": "P8.3",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Defect found by the CRM assembly (grok-4.7 P8.3 low #2): sales never read CustomerProfile::$groups although docs say groups come from CustomerDirectory. Fixed in sales (D38): Carts::setCustomer stores directory groups + command groups; regression in packages/sales/tests/Feature/Carts/CartsTest.php (red without the fix); CRM test now passes no groups and gets b2b from the directory."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T11:18:34Z",
+        "type": "deviation",
+        "item": "P8.4",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Defect found by the cross-package suite (grok-4.7 P8.4 high, reproduced 7x40P01): sales Fulfillments::create consumes line by line in one transaction and inventory consume locked only that sellable's levels, so two fulfillments of the same goods in opposite line order deadlocked. Fixed in inventory (owner of the lock order): consume locks every level the demand still holds, in key order, at its first call. Regression in packages/inventory ReservationConcurrencyTest (red without fix: 40P01) + E2E E3 fulfillment test; docs/architecture/invariants.md inventory lock order updated."
+      },
+      {
+        "v": 1,
+        "ts": "2026-10-10T11:51:58Z",
+        "type": "deviation",
+        "item": "P8.4",
+        "phase": "P8",
+        "actor": {
+          "provider": "claude-code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+        },
+        "summary": "Round-2 defect (grok-4.7 high, executed 40P01): inventory release of one sellable locked only its levels, so sales cancelLines (line-by-line release) deadlocked with the demand-wide consume and with an opposite-order partial cancel. Fixed: release and consume share lockDemand (every held level of the demand, key order, first call). Regression mixes consume/release in opposite orders (red without fix). E4 made deterministic (count queues after adjust; stale-count simulation red), E8 requires 8 waiters."
+      }
+    ],
+    "documents": [
+      {
+        "$schema": "urn:swissknifeman:task:plan:document:v1",
+        "id": "api-blueprint",
+        "title": "Commerz — целевой публичный API (blueprint)",
+        "sections": [
+          {
+            "id": "principles",
+            "title": "1. Принципы публичного API",
+            "text": "1. **Корневой API-класс на пакет** (`final readonly`, `#[Api]`), как `Chatom\\Chatom`: только аксессоры доменных контрактов. Фасад пакета — тонкий прокси к нему. DI-вариант: внедрять сам контракт (`StockReservations $reservations`).\n2. **Команда внутрь → иммутабельный результат наружу.** Каждая мутация принимает один `final readonly` command-DTO (валидирует инварианты формы в конструкторе, именованные аргументы, `with*()`), возвращает `*View`/`*Result`. Никогда Eloquent-модель, Builder или Collection моделей.\n3. **Запросы** — `Find*` (один, бросает `*NotFound`) и `List*` (курсорная `Page<T>`), фильтры — типизированные поля DTO, не массивы.\n4. **Контекст явный**: `CommerceContext` в каждой операции расчёта/продажи; `ActorRef` — в мутирующих командах, где важен аудит.\n5. **Идемпотентность**: мутации с внешним риском повтора (`ReceiveStock`, `ReserveStock`, `PlaceOrder`, `RecordPaymentEvent`, `RedeemCoupon`…) принимают `?IdempotencyKey`; повтор с тем же ключом и тем же payload возвращает исходный результат; с другим payload — `IdempotencyConflict`.\n6. **Команда владеет инвариантом.** Нет низкоуровневых операций вроде `incrementReserved()`; `reserve()` сама блокирует, проверяет и пишет журнал (урок Medusa #16569, Vendure 3.7.4).\n7. **Ошибки** — подклассы `CommerzException` со стабильным машинным `code()` (`inventory.insufficient_stock`) и `category()` (`validation|not_found|conflict|limit|unsupported|configuration|integration`), скалярный `context()`; HTTP-рендер — не в ядре.\n8. **Деньги и количества** — только VO (`Money`, `Quantity`), никогда float/строки.\n9. **Расширяемые значения** — по стабильному ключу (`'acme.color_swatch'`), конфиг правила — типизированный DTO плагина, сериализуемый с `config_version`.\n"
+          },
+          {
+            "id": "kernel",
+            "title": "2. Ядро: Commerz",
+            "text": "```php\nuse Commerz\\Facades\\Commerz;\n\n$store   = Commerz::stores()->create(new CreateStore(code: 'main', name: 'Main', defaultCurrency: Currency::of('RUB')));\n$channel = Commerz::channels()->create(new CreateChannel(\n    store: $store->id, code: 'web', name: 'Сайт',\n    currencies: [Currency::of('RUB')], locales: ['ru', 'en'], pricesIncludeTax: true,\n));\n\n$ctx = CommerceContext::for($channel->id, Currency::of('RUB'), locale: 'ru')\n    ->withCustomer(CustomerRef::of('user', '42'));          // группы подтягиваются из CustomerDirectory\n\nCommerz::plugins()->describe();                               // диагностика реестра: ключи, источник, версия\n```\n\n`Commerz\\Commerz`: `stores(): Stores`, `channels(): Channels`, `plugins(): PluginInspector`, `quotes(): QuotePipeline` (низкоуровневый расчёт для своих сценариев), `sellables(): Sellables`.\n"
+          },
+          {
+            "id": "catalog",
+            "title": "3. Каталог: Catalog",
+            "text": "```php\nuse Commerz\\Catalog\\Facades\\Catalog;\n\nCatalog::attributes()->define(new DefineAttribute(\n    code: 'material', type: 'enum', label: LocalizedText::of(['ru' => 'Материал']),\n    options: ['cotton' => ['ru' => 'Хлопок'], 'linen' => ['ru' => 'Лён']],\n    filterable: true,\n));\nCatalog::attributes()->define(new DefineAttribute(code: 'density', type: 'measure', config: ['dimension' => 'areal_density', 'unit' => 'g/m2'], filterable: true));\n\n$type = Catalog::productTypes()->create(new CreateProductType(\n    code: 'apparel', kind: 'physical',\n    productAttributes: ['material', 'density'], variantAxes: ['color', 'size'],\n));\n\n$product = Catalog::products()->create(new CreateProduct(\n    type: $type->id, handle: 'basic-tee', name: LocalizedText::of(['ru' => 'Футболка']),\n    attributes: ['material' => 'cotton', 'density' => Measure::of('180', 'g/m2')],\n));\n\n$variants = Catalog::variants()->generate(new GenerateVariants(\n    product: $product->id,\n    axes: ['color' => ['red', 'blue'], 'size' => ['S', 'M']],\n    skuPattern: 'TEE-{color}-{size}',\n    except: [['color' => 'blue', 'size' => 'S']],                // разреженный набор, не полный декарт\n));\n\nCatalog::listings()->publish(new PublishProduct(product: $product->id, channel: $channel->id));\n\n$page = Catalog::products()->list(new ListProducts(\n    channel: $channel->id,\n    filters: [AttributeFilter::equals('material', 'cotton'), VariantFilter::axes(['color' => 'red', 'size' => 'M'])], // один вариант\n    first: 24,\n));\n```\n\n`Catalog`: `products()`, `variants()`, `attributes()`, `productTypes()`, `categories()`, `listings()`. Каталог регистрирует `SellableProvider` с ключом `variant` → `SellableRef::of('variant', $variantId)` годится в корзину.\n"
+          },
+          {
+            "id": "inventory",
+            "title": "4. Склад: Inventory",
+            "text": "```php\nuse Commerz\\Inventory\\Facades\\Inventory;\n\n$wh   = Inventory::locations()->create(new CreateLocation(code: 'msk-1', name: 'Москва-1', kind: LocationKind::Warehouse));\n$item = Inventory::items()->create(new CreateStockItem(sku: 'TEE-RED-M', unit: 'pcs'));\nInventory::items()->link(new LinkSellable(sellable: SellableRef::of('variant', $v->id), item: $item->id, quantityPerUnit: 1));\nInventory::sources()->assign(new AssignSource(channel: $channel->id, location: $wh->id, priority: 10));\n\nInventory::stock()->receive(new ReceiveStock(item: $item->id, location: $wh->id, quantity: 50,\n    reason: 'purchase', reference: 'po:123', idempotencyKey: IdempotencyKey::of('po:123:line:1')));\nInventory::stock()->adjust(new AdjustStock(item: $item->id, location: $wh->id, delta: -2, reason: 'damage'));\n\n$answer = Inventory::availability()->check(new CheckAvailability($channel->id, [SellableRef::of('variant', $v->id) => 3]));\n\n$r = Inventory::reservations()->reserve(new ReserveStock(\n    demand: 'order:01J…:line:1', channel: $channel->id,\n    sellable: SellableRef::of('variant', $v->id), quantity: 3, expiresAt: null,\n));                                                           // InsufficientStock при нехватке — атомарно\nInventory::reservations()->consume(new ConsumeReservation($r->id, quantity: 3, reference: 'fulfillment:…')); // движение sale\nInventory::transfers()->dispatch(new DispatchTransfer(from: $wh->id, to: $pvz->id, lines: [[$item->id, 5]]));\n```\n\n`Inventory`: `locations()`, `items()`, `sources()`, `stock()` (receive/adjust/count/levels), `reservations()`, `transfers()`, `availability()`, `movements()` (журнал, только чтение).\n"
+          },
+          {
+            "id": "pricing",
+            "title": "5. Цены и налоги: Pricing",
+            "text": "```php\nuse Commerz\\Pricing\\Facades\\Pricing;\n\n$list = Pricing::priceLists()->create(new CreatePriceList(code: 'retail', currency: Currency::of('RUB'), channels: [$channel->id]));\nPricing::prices()->set(new SetPrice(\n    priceList: $list->id, sellable: SellableRef::of('variant', $v->id),\n    amount: Money::of('1990.00', 'RUB'), compareAt: Money::of('2490.00', 'RUB'),\n    minQuantity: 1, customerGroup: null, validFrom: null, validUntil: null,\n));\nPricing::taxes()->defineClass(new DefineTaxClass(code: 'standard'));\nPricing::taxes()->setRate(new SetTaxRate(taxClass: 'standard', zone: 'RU', rateBp: 2000));\n\n$price = Pricing::prices()->resolve(new ResolvePrice(SellableRef::of('variant', $v->id), quantity: 2, context: $ctx)); // ResolvedPrice + причина выбора\n```\n"
+          },
+          {
+            "id": "promotions",
+            "title": "6. Акции и промокоды: Promotions",
+            "text": "```php\nuse Commerz\\Promotions\\Facades\\Promotions;\n\n$promo = Promotions::promotions()->create(new CreatePromotion(\n    code: 'autumn-10', name: 'Осень −10%', channels: [$channel->id],\n    activator: 'coupon', stacking: Stacking::Stackable, priority: 100,\n    conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('3000.00', 'RUB')])],\n    effects:    [new RuleSpec('order.percent_off', ['rateBp' => 1000])],\n    limits: new UsageLimits(total: 1000, perCustomer: 1), budget: Money::of('500000.00', 'RUB'),\n    startsAt: $from, endsAt: $to,\n));\nPromotions::coupons()->generate(new GenerateCoupons(promotion: $promo->id, count: 500, pattern: 'AUT-####-####'));\nPromotions::coupons()->create(new CreateCoupon(promotion: $promo->id, code: 'AUTUMN', usageLimit: 1000));\n\n$explain = Promotions::promotions()->explain(new ExplainPromotions($quoteInput)); // почему применилась / не применилась\n```\n\nКод, введённый в корзину, — это лишь «предъявленный код» в `QuoteInput`; расход лимита происходит только при размещении заказа.\n"
+          },
+          {
+            "id": "shipping",
+            "title": "7. Доставка: Shipping",
+            "text": "```php\nuse Commerz\\Shipping\\Facades\\Shipping;\n\n$zone = Shipping::zones()->create(new CreateZone(code: 'msk', name: 'Москва', match: ZoneMatch::regions(['RU-MOW'])));\nShipping::methods()->create(new CreateMethod(\n    code: 'courier', name: LocalizedText::of(['ru' => 'Курьер']), zones: [$zone->id], channels: [$channel->id],\n    rate: new RuleSpec('weight_table', ['steps' => [[1000, '300.00'], [5000, '500.00']], 'currency' => 'RUB']),\n    carrier: 'manual',\n));\n\n$options = Shipping::options()->list(new DeliveryRequest($ctx, destination: $address, parcel: $parcel)); // list<DeliveryOption>\n```\n"
+          },
+          {
+            "id": "sales",
+            "title": "8. Продажи: Sales",
+            "text": "```php\nuse Commerz\\Sales\\Facades\\Sales;\n\n$cart = Sales::carts()->create(new CreateCart($ctx));\nSales::carts()->addLine(new AddCartLine($cart->id, SellableRef::of('variant', $v->id), quantity: 2));\nSales::carts()->enterCode(new EnterCode($cart->id, 'AUTUMN'));\nSales::carts()->setAddress(new SetCartAddress($cart->id, AddressRole::Shipping, $address));\nSales::carts()->selectDelivery(new SelectDelivery($cart->id, method: 'courier'));\n\n$quote = Sales::carts()->quote($cart->id);           // QuoteResult: строки, корректировки с объяснениями, налоги, итоги\n\n$order = Sales::checkout()->place(new PlaceOrder(\n    cart: $cart->id, idempotencyKey: IdempotencyKey::of($request->header('Idempotency-Key')),\n    expectedTotal: $quote->total,                    // защита от изменения цены между показом и оплатой\n));                                                  // одна транзакция: заказ-снимок + резерв + расход лимитов + outbox\n\n$payment = Sales::payments()->initiate(new InitiatePayment($order->id, gateway: 'yookassa', amount: $order->total)); // после коммита\nSales::payments()->recordEvent(new RecordPaymentEvent(gateway: 'yookassa', externalId: $evt->id, type: PaymentEventType::Captured, amount: …)); // webhook, дедуп\n\nSales::fulfillments()->create(new CreateFulfillment($order->id, lines: [[$lineId, 2]], location: $wh->id)); // consume резерва\nSales::fulfillments()->ship(new ShipFulfillment($fulfillmentId, carrier: 'manual', tracking: 'RB123'));\nSales::orders()->cancel(new CancelOrder($order->id, reason: 'customer'));     // release резервов, возврат лимитов по политике\nSales::returns()->request(new RequestReturn($order->id, lines: [[$lineId, 1]], reason: 'defect'));\nSales::returns()->receive(new ReceiveReturn($returnId, restock: [[$lineId, 0]]));  // приёмка ≠ возврат на сток\nSales::refunds()->issue(new IssueRefund($order->id, amount: Money::of('1990.00', 'RUB'), gateway: 'yookassa'));\n\n// CRM: заказ, созданный менеджером, без корзины покупателя\nSales::orders()->draft(new DraftOrder($ctx, lines: [new DraftLine(SellableRef::of('crm.service', '77'), quantity: 1)]));\n```\n\nСостояния независимы: `OrderState` (`draft → placed → completed | cancelled`), `PaymentState` (`unpaid → authorized → partially_paid → paid → partially_refunded → refunded`), `FulfillmentState` (`unfulfilled → partially_fulfilled → fulfilled → partially_returned → returned`).\n"
+          },
+          {
+            "id": "crm-scenario",
+            "title": "9. Сценарий встраивания в CRM",
+            "text": "CRM ставит `axiomasoft/commerz` + `axiomasoft/commerz-sales` (+ `commerz-promotions` по желанию):\n\n```php\nfinal class CrmServiceSellables implements SellableProvider          // #[Spi(Implement)]\n{\n    public function key(): string { return 'crm.service'; }\n    public function resolve(array $refs, CommerceContext $context): array   // list<SellableSnapshot>\n    { /* читает услуги CRM; basePrice из тарифа; kind Service; requiresShipping false */ }\n}\n\nfinal class CrmPlugin implements CommerzPlugin {\n    public function manifest(): PluginManifest { return new PluginManifest(id: 'flex.crm-commerce', version: '1.0.0'); }\n    public function register(PluginRegistrar $r): void {\n        $r->sellableProvider(CrmServiceSellables::class);\n    }\n}\n// config/commerz.php: 'stock' => 'unlimited', 'customers' => CrmCustomerDirectory::class\n```\n\nБез пакетов catalog/inventory/pricing: цена берётся из `SellableSnapshot::$basePrice` (дефолтный `PriceResolver` ядра), остатки — `UnlimitedStock` (явно выбран в конфиге, не молчаливый дефолт).\n"
+          },
+          {
+            "id": "plugin-example",
+            "title": "10. Пример плагина: эффект акции",
+            "text": "```php\n#[Spi(kind: SpiKind::Implement, since: '0.1')]\ninterface PromotionEffect\n{\n    public function key(): string;                                   // 'acme.every_third_free'\n    public function configVersion(): int;\n    public function decodeConfig(array $raw, int $version): object;  // валидирует и апгрейдит конфиг\n    /** @return list<AdjustmentCandidate> */\n    public function apply(object $config, PromotionTarget $target): array;  // чистая функция\n}\n\nfinal class AcmePlugin implements CommerzPlugin\n{\n    public function manifest(): PluginManifest\n    { return new PluginManifest(id: 'acme.promos', version: '1.2.0', requires: ['commerz.promotions']); }\n\n    public function register(PluginRegistrar $r): void\n    { $r->contribute('promotion_effect', new EveryThirdFree()); }\n}\n```\n"
+          }
+        ],
+        "global": true,
+        "provenance": {
+          "note": "Стиль Chatom (корневой readonly API-класс, контракты, command DTO) + CoreX naming; уроки Medusa/Vendure/Saleor/commercetools (Perplexity deep research 2026-10-08)."
+        }
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:document:v1",
+        "id": "architecture",
+        "title": "Commerz — целевая архитектура (синтез и решения)",
+        "sections": [
+          {
+            "id": "positioning",
+            "title": "1. Что такое Commerz",
+            "text": "**Commerz — headless, transport-agnostic commerce engine для Laravel**: доменное ядро торговли (магазины и каналы, каталог, склад, цены и налоги, акции и промокоды, доставка, корзина → заказ → оплата → исполнение → возврат), поставляемое семейством Composer-пакетов. Это тот же класс продукта, что Chatom для чата: хост-приложение строит на нём свой продукт и владеет своими данными.\n\nФилософия встраивания (главный критерий каждого решения):\n\n| Потребитель | Что ставит | Что даёт хост |\n|---|---|---|\n| Интернет-магазин | `commerz-full` (все пакеты) | витрину, авторизацию, платёжный адаптер |\n| CRM (Flex CRM и др.) | kernel + `commerz-sales` (+ pricing/promotions по желанию) | свои «продаваемые» сущности (услуги, тарифы) через `SellableProvider`, покупателей через `CustomerDirectory` |\n| Склад / учёт (1С-синхронизация) | kernel + `commerz-inventory` | источник номенклатуры, импорт |\n| PIM / витрина-каталог | kernel + `commerz-catalog` (+ pricing) | UI, медиа |\n| POS / B2B-портал | `commerz-full` или подмножество | транспорт, права |\n\nЧто Commerz **не** делает (сознательно): не витрина и не админка (это отдельные пакеты-адаптеры позже: `commerz-http`, `commerz-filament`); не платёжный провайдер и не перевозчик (только SPI и адаптеры); не WMS/ERP (ячейки, партии, серийники, себестоимость — точка роста, не v0); не marketplace-расчёты с продавцами; не налоговый движок юрисдикций (порт); не подписки/рекуррентные платежи; не подарочные сертификаты и бонусы (это платёжные средства, отдельный пакет позже).\n\nПринцип гибкости: **данные — максимально гибкие, конфиг — минимальный и типизированный, поведение — через закрытый набор SPI.** Никакой подмены Eloquent-моделей, хуков «before/after всего», подписок в БД, исполняемого кода в конфиге.\n"
+          },
+          {
+            "id": "synthesis",
+            "title": "2. Синтез исследований: что взято, что отвергнуто",
+            "text": "Входы: `docs/discovery/2026-10-08/*` (Codex: гипотезы, экосистема без CoreX, логическая схема, Unbox, атрибуты), `audits/chatgpt/*` (логическая схема каталога/склада, 12 пакетов, typed EAV, BIGINT+public_id), `audits/grok/*` (ядро + 6 пакетов, PG-only, UUIDv7, `cmz_`, прототипы E1–E8 на PostgreSQL), Perplexity deep research 2026-10-08 (Medusa v2 / Vendure / Saleor / commercetools: композиция модулей, checkout, гонки).\n\nИтоговая позиция — **ближе всего к Grok** (самая конкретная и проверенная прототипами), с четырьмя существенными отличиями и рядом уточнений из Codex/ChatGPT/research:\n\n| Тема | Codex discovery | ChatGPT | Grok | **Решение Commerz** |\n|---|---|---|---|---|\n| Упаковка | A/B/C открыто | 12 пакетов | ядро + 6 (coupons — отдельный плагин-пакет, shipping внутри sales) | **ядро + 6 доменных пакетов: catalog, inventory, pricing, promotions, shipping, sales** (+ full, testkit). Доставка — отдельный пакет (запрос владельца, независимая установка тарифов/перевозчиков); купоны — модуль внутри promotions, построенный через тот же публичный SPI (dogfooding без лишнего пакета) |\n| Зависимости | — | композиция-пакет | feature → только ядро | **feature → только ядро**; композиция — через порты ядра (`Ports`), не через пакет-композицию |\n| Магазины | — | пакет stores | ядро | **модуль `Stores` в ядре** (каналы нужны каждому пакету; 2 таблицы) |\n| Tenancy | 3 кандидата | tenant_id в ключах | без tenant, БД на арендатора | **без tenant-колонок; изоляция соединением** (D6, принято) |\n| СУБД | открыто | любая реляционная | только PostgreSQL | **только PostgreSQL ≥16** (CI 17) |\n| Ключи | открыто | BIGINT + public_id | UUIDv7; журналы bigint | **UUIDv7**; append-only журналы `bigint identity` |\n| Деньги / количество | открыто | DECIMAL | `*_minor bigint`, целые количества | **minor units + brick/math**; количество — целое в базовой единице |\n| Атрибуты | typed EAV vs JSON+проекция | typed EAV | JSONB + синхронная проекция + реляционные опции | **как Grok** (гибрид) |\n| Склад | I-A vs I-B | балансы+движения | levels+movements+reservations, условный UPDATE | **как Grok** (I-A) + строгий порядок блокировок; урок Vendure 3.7.4 / Medusa #16569: публичная команда `reserve()` сама владеет блокировкой, низкоуровневых increment-API нет |\n| Идемпотентность | command_receipts | — | естественные ключи | **оба**: естественный уникальный ключ владельца + единый `OperationReceipts` ядра с fingerprint (повтор с другим payload — ошибка, не replay) |\n| Лимиты акций | claims | — | расход в транзакции заказа | **расход в транзакции размещения**, возврат по политике при отмене/истечении неоплаченного заказа |\n| API | — | — | контракты + DTO, фасад тонкий | **как Chatom**: корневой `final readonly` API-класс пакета → доменные контракты → команды/запросы `final readonly` → иммутабельные View/Result; фасад — тонкая обёртка |\n| Расширение | registry с provenance | — | manifest → compile → freeze, стабильные ключи | **как Grok/Chatom**; закрытый набор видов вкладов (contribution kinds), объявляемых пакетами |\n\nОтвергнуто: event sourcing, микросервисы, generic link-graph как в Medusa (ссылки типизированы и владеются конкретным пакетом), `scope_id` во всех таблицах, per-table name map, подмена моделей, универсальная state machine, поиск глобального оптимума скидок, claim-фаза купонов, асинхронная проекция атрибутов, MySQL/SQLite-паритет.\n"
+          },
+          {
+            "id": "packages",
+            "title": "3. Карта пакетов и границы владения",
+            "text": "Монорепо `packages/<dir>/`, split-публикация как Chatom. Vendor `axiomasoft`, корневой namespace `Commerz\\`.\n\n| Каталог | Composer | Namespace | Владеет (существительные таблиц) | Реализует порты ядра | Зависит |\n|---|---|---|---|---|---|\n| `packages/core` | `axiomasoft/commerz` | `Commerz\\` | `store`, `channel`, `schema`, `operation`, `outbox` | дефолты портов (unlimited stock, snapshot price, guest customers) | `illuminate/*` ^13, `brick/math` |\n| `packages/catalog` | `axiomasoft/commerz-catalog` | `Commerz\\Catalog\\` | `product`, `variant`, `option`, `attribute`, `category`, `listing` | `SellableProvider` (key `variant`) | core |\n| `packages/inventory` | `axiomasoft/commerz-inventory` | `Commerz\\Inventory\\` | `stock` (`cmz_stock_locations`, `_items`, `_item_links`, `_levels`, `_movements`, `_reservations`, `_transfers`, `_sources`) | `StockAvailability`, `StockReservations` | core |\n| `packages/pricing` | `axiomasoft/commerz-pricing` | `Commerz\\Pricing\\` | `price`, `tax` | `PriceResolver`, quote stages `tax` | core |\n| `packages/promotions` | `axiomasoft/commerz-promotions` | `Commerz\\Promotions\\` | `promotion`, `coupon` | `PromotionUsage`, quote stages `promotions.*` | core |\n| `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\\Shipping\\` | `shipping` (`cmz_shipping_zones`, `_methods`, `_rates`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |\n| `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\\Sales\\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` | — (потребитель портов) | core |\n| `packages/full` | `axiomasoft/commerz-full` | — | — | — | все выше (meta) |\n| `packages/testkit` | `axiomasoft/commerz-testkit` | `Commerz\\Testkit\\` | — | in-memory fakes портов, plugin contract tests, concurrency harness | core (dev) |\n\nПравила зависимостей (проверяются архитектурным тестом):\n1. Feature-пакет зависит только от `axiomasoft/commerz`. Никогда от другого feature-пакета. Никогда core → feature.\n2. Межпакетное взаимодействие — только через порты ядра (`Commerz\\Ports\\*`) и события. Импорт чужого `Internal` запрещён.\n3. Пакет пишет только в свои таблицы (по существительному). Межпакетных FK нет; ссылки — типизированные ID/Ref-строки (`sellable_ref`, `customer_ref`, `order_ref`).\n4. Внутри пакета — нормальные FK.\n5. Связь «продаваемое ↔ складская номенклатура» принадлежит inventory (`cmz_stock_item_links`: `sellable_ref` → `stock_item_id`, `quantity_per_unit`) — она нужна инварианту склада.\n6. Все пакеты одной установки работают на одном соединении `commerz.connection` → размещение заказа — одна локальная транзакция (порты-мутации присоединяются к внешней транзакции).\n\nБудущие пакеты (НЕ в этом плане, отдельные планы): `commerz-http` (REST + problem+json), `commerz-filament` (админка), мосты `commerz-corex` (модуль Flex/CoreX, custom-fields, tenancy), `commerz-azguard` (права), `commerz-vaulter` (медиа), `commerz-chatom` (чат по заказу), платёжные адаптеры (`commerz-payment-yookassa`, `-stripe`), перевозчики (`commerz-shipping-cdek`), поисковые адаптеры, `commerz-giftcards`, `commerz-loyalty`, расширенный WMS.\n"
+          },
+          {
+            "id": "module-layout",
+            "title": "4. Раскладка кода, имена, маркеры API",
+            "text": "Канон CoreX STR-002/005/006 + Chatom:\n\n```text\npackages/inventory/\n  composer.json  config/commerz-inventory.php  database/migrations/\n  src/\n    Inventory.php                     # корневой API-класс пакета  #[Api]\n    InventoryServiceProvider.php\n    Facades/Inventory.php\n    Reservations/                     # feature module = один use-case-кластер\n      Contracts/StockReservations.php # #[Api] или #[Spi(Implement|Call)]\n      Data/ReserveStock.php, ReservationView.php, ReservationId.php   # final readonly\n      Enums/ReservationState.php\n      Events/StockReserved.php\n      Exceptions/InsufficientStock.php\n      Internal/ReserveStockHandler.php, ReservationRepository.php, Models/Reservation.php\n  tests/Unit  tests/Feature\n```\n\n- Публичные категории модуля — только `Contracts`, `Data`, `Enums`, `Events`, `Exceptions`. Всё остальное — `Internal/` (закрыт для других модулей и пакетов).\n- Eloquent-модели допустимы только в `Internal/Models` как деталь хранения; в публичных сигнатурах — никогда (наружу идут `*View` DTO).\n- Суффиксы (CoreX naming): `Repository`, `Resolver`, `Registry`, `Handler` (одна операция), `Policy`, `Codec`, `Compiler`, `Provider`, `Gateway`; **без `Service`/`Manager`**. ID-параметры называют владельца (`$orderId`), суммы — с единицей (`$amountMinor`). Enum-кейсы — PascalCase значения.\n- Маркеры (ядро, `Commerz\\Attributes`): `#[Api(since: '0.1')]` — стабильная вызываемая поверхность; `#[Spi(kind: SpiKind::Implement|SpiKind::Call, since: '0.1')]` — точка расширения; всё без маркера вне `Internal` — ошибка arch-гейта.\n- Команды: глагол + существительное (`ReserveStock`, `PlaceOrder`), запросы: `Find*`/`List*`, результаты: `*View`, `*Result`, `Page<T>`.\n- Конфиг: один файл на пакет (`config/commerz.php`, `config/commerz-<pkg>.php`), читается в типизированный `*Config` при загрузке; ошибки конфигурации — исключение с путём ключа.\n"
+          },
+          {
+            "id": "extension-model",
+            "title": "5. Модель расширения",
+            "text": "Пять механизмов, ничего больше:\n\n| Механизм | Что меняет | Пример |\n|---|---|---|\n| Данные | ассортимент, атрибуты, цены, акции, склады, зоны доставки | новый атрибут «плотность ткани» без релиза |\n| Типизированный конфиг | политики-enum | `ReservationTiming::OnOrderPlaced` |\n| Плагины (contribution kinds) | новое поведение по стабильному ключу | эффект акции `acme.loyalty_x2`, тип атрибута `acme.color_swatch`, шлюз `yookassa` |\n| Реализация порта | замена целого модуля | `StockAvailability` → адаптер МойСклад; `SellableProvider` хоста-CRM |\n| События + outbox | реакция на факты | `OrderPlaced` → письмо, CRM, Chatom |\n\n**Плагин** — класс `CommerzPlugin` (`manifest(): PluginManifest` с `id` вида `vendor.name`, `requires`, `optional`; `register(PluginRegistrar $r)`). Пакеты Commerz сами регистрируют свои встроенные вклады тем же API (dogfooding). Реестр компилируется при загрузке (топологический порядок, дубли ключей, неизвестные зависимости, циклы, несовпадение интерфейса → ошибка загрузки) и **замораживается**; переживает `config:cache` и долгоживущие воркеры (никакого состояния запроса в singleton).\n\n**Contribution kinds** — закрытый набор; вид объявляет пакет-владелец SPI через `PluginRegistrar::declareKind()` (ядро не знает о видах feature-пакетов):\n\n| Kind | Владелец SPI | Встроенные ключи |\n|---|---|---|\n| `sellable_provider` | core | `variant` (catalog) |\n| `quote_stage` | core | `base`, `promotions.catalog`, `promotions.cart`, `delivery`, `promotions.delivery`, `tax`, `totals` |\n| `attribute_type` | catalog | `text`, `localized_text`, `integer`, `decimal`, `boolean`, `date`, `enum`, `multi_enum`, `measure`, `reference` |\n| `product_kind` | catalog | `physical`, `digital`, `service` |\n| `allocation_strategy` | inventory | `priority`, `single_location` |\n| `tax_calculator` | pricing | `rates` |\n| `promotion_condition` | promotions | `cart.subtotal_at_least`, `cart.quantity_at_least`, `line.sellable_in`, `line.category_in`, `customer.in_group`, `channel.in` |\n| `promotion_effect` | promotions | `line.percent_off`, `line.fixed_off`, `order.percent_off`, `order.fixed_off`, `delivery.percent_off`, `buy_x_get_y` |\n| `promotion_activator` | promotions | `automatic`, `coupon` |\n| `delivery_rate` | shipping | `flat`, `weight_table`, `free_over` |\n| `carrier` | shipping | `manual` |\n| `payment_gateway` | sales | `manual` (оффлайн/счёт) |\n| `order_number_generator` | sales | `sequence` |\n\nВ данных хранится **стабильный ключ** вклада + `config_version`, никогда FQCN. Отсутствующий плагин → значение/правило помечается `unsupported` (fail-closed): акция не применяется, атрибут читается как сырое значение read-only, диагностика `commerz:doctor`. Плагины — доверенный код процесса; sandbox не обещается.\n\nКонвейер расчёта (`QuotePipeline`, ядро): фиксированные упорядоченные якоря `Base → CatalogPromotions → CartPromotions → Delivery → DeliveryPromotions → Tax → Totals`; плагин-стадия встаёт `before/after` якоря. Стадия — чистая функция `QuoteState → QuoteState`, без записи в БД; каждая корректировка несёт `source` и объяснение. Одинаковый вход → одинаковый выход.\n"
+          },
+          {
+            "id": "data-conventions",
+            "title": "6. Соглашения данных",
+            "text": "- **Таблицы**: префикс `cmz_` (настраиваемый до первой установки, фиксируется fingerprint в `cmz_schema_state`; смена после установки — ошибка загрузки) + существительное пакета (`cmz_stock_levels`, `cmz_promotion_usages`). Сторонние плагины: `cmz_x_<vendor>_*`. Один resolver `TableNames` для миграций, моделей, raw SQL и диагностики. Без per-table map.\n- **Ограничения**: `{table}_{cols}_{uq|ix|fk|ck}`, PK `{table}_pk`; > 63 байт → детерминированное сокращение с hash-суффиксом.\n- **Ключи**: PK сущностей — `uuid` (UUIDv7, генерируется в приложении до INSERT), в PHP — типизированные `final readonly` ID-классы (`ProductId`, `OrderId`). Append-only журналы (`cmz_stock_movements`, `cmz_order_events`, `cmz_outbox_messages`) — `bigint generated always as identity`. Ссылки на хост и на чужие пакеты — `*_ref varchar(191)` вида `type:id` без FK.\n- **Деньги**: `*_minor bigint` + `currency char(3)`; в PHP `Money(int $amountMinor, Currency $currency)`; промежуточная арифметика (проценты, налоги, распределение) — `brick/math` с явным `RoundingMode`; распределение суммы по строкам — метод наибольших остатков, сумма долей строго равна целому. Ставки — `rate_bp int` (базисные пункты, 2000 = 20%).\n- **Количество**: `int` в базовой единице складской номенклатуры (г, мл, мм, шт); `unit` — код единицы у номенклатуры; коэффициент «продаваемое → номенклатура» хранится на связи и фиксируется в снимке операции.\n- **Enum**: `varchar` + `CHECK` в БД, backed enum в PHP.\n- **Время**: `timestamptz`, UTC; бизнес-дата — `date`.\n- **Без soft delete**: явные статусы (`active|archived`), исторические документы не удаляются.\n- **Снимки**: строка заказа хранит название, SKU, опции, единицу, цену, налог, распределённые скидки, рецепт номенклатуры — независимо от живого каталога.\n- **JSONB** — только для документов с владельцем-кодеком (значения атрибутов, конфиг правила с `config_version`, payload outbox), никогда для полей, участвующих в инвариантах.\n"
+          },
+          {
+            "id": "context-tenancy",
+            "title": "7. Контекст операции, магазины, каналы, арендаторы",
+            "text": "| Понятие | Что это | Где |\n|---|---|---|\n| Tenant | граница изоляции данных | **нет колонки**: отдельное соединение/БД (CoreX ADR-004), решает хост; D6 |\n| Store | бизнес-единица: продавец, валюта по умолчанию, нумерация заказов | `cmz_stores` (core) |\n| Channel | точка продаж: сайт, POS, маркетплейс, B2B, CRM-менеджер | `cmz_channels` (core): store, валюты, локали, `prices_include_tax`, статус |\n| Stock location | склад / магазин / ПВЗ | `cmz_stock_locations` (inventory); канал ↔ склады с приоритетом — `cmz_stock_sources` (inventory) |\n| Customer | покупатель хоста | `CustomerRef` + порт `CustomerDirectory` (хост), группы для цен/акций |\n| Actor | кто выполняет команду (оператор, покупатель, система) | `ActorRef` |\n\n`CommerceContext` — `final readonly`: `ChannelId $channel`, `Currency $currency`, `string $locale`, `?CustomerRef $customer`, `list<string> $customerGroups`, `DateTimeImmutable $at`. Передаётся **явно** в каждую операцию расчёта/продажи (не singleton, не global scope). `ContextResolver` (HTTP-хост) лишь помогает собрать его из запроса. Корзина фиксирует канал и валюту при создании; смена канала у корзины запрещена.\n"
+          },
+          {
+            "id": "host-integration",
+            "title": "8. Встраивание в хост",
+            "text": "Хост поставляет: соединение БД (`commerz.connection`, null = default), `CustomerDirectory` (иначе только гости), `SellableProvider` для собственных продаваемых сущностей (CRM-услуги), авторизацию (Laravel Gate/Policy на своём транспорте; ядро не проверяет права — оно проверяет инварианты и контекст), очередь для outbox relay, платёжный/доставочный адаптер.\n\nЯдро не знает HTTP, Filament, Livewire, `Auth::user()`, `request()`. Публичный вход — PHP API (корневые классы + контракты), события после коммита, outbox для интеграций (`commerz:outbox:relay`). Artisan: `commerz:install`, `commerz:doctor`, `commerz:plugins`, `commerz:outbox:relay`, пакетные `commerz:inventory:reconcile`, `commerz:catalog:reindex`, `commerz:sales:expire-unpaid`.\n"
+          },
+          {
+            "id": "quality",
+            "title": "9. Качество и проверки",
+            "text": "- Стек: PHP ^8.4, Laravel ^13 (`illuminate/*` ^13), PostgreSQL ≥16 (CI 17), Pest + Orchestra Testbench (Laravel 13 line), PHPStan max + strict-rules + Larastan, Pint, Rector.\n- Тесты в пакетах: `packages/<pkg>/tests/{Unit,Feature}`; Feature — на реальном PostgreSQL (docker compose `postgres:17`), SQLite не используется для доказательства блокировок.\n- Arch-гейты (`tests/Arch`): направление зависимостей; запрет импорта чужого `Internal`; маркеры `#[Api]/#[Spi]` на публичных типах; миграции пакета создают/меняют только таблицы со своими существительными; Eloquent-модели не в публичных сигнатурах; негативные фикстуры против вакуумного прохождения.\n- Конкурентные тесты (обязательные для склада, лимитов акций, размещения заказа, webhook): N параллельных процессов на PostgreSQL через `Commerz\\Testkit\\Concurrency` (pcntl fork / отдельные соединения).\n- Testkit: in-memory fakes всех портов, `PluginContractTests` (стабильный ключ, повторная регистрация, отключение, неизвестный ключ в данных → unsupported).\n- Валидация item'а: `lint:check`, `analyse`, тесты затронутого пакета; arch-гейт — когда меняется граница. Без ритуальных повторов.\n"
+          },
+          {
+            "id": "roadmap",
+            "title": "10. Фазы и параллельность",
+            "text": "| Фаза | Результат | Зависит |\n|---|---|---|\n| P1 Kernel & monorepo | монорепо, скелеты всех пакетов, ядро: VO, ID, контекст, ошибки, схема/префикс, receipts, outbox, плагины, stores/channels, порты + QuotePipeline, testkit-fakes, arch-гейты, `docs/architecture` | — |\n| P2 Catalog | товары, варианты/опции, атрибуты (типы, JSONB, проекция фасетов), типы товаров, категории, публикации по каналам, `SellableProvider` | P1 |\n| P3 Inventory | склады, номенклатура и связи, уровни + журнал, резервы, перемещения, источники каналов, сверка | P1 |\n| P4 Pricing & Tax | прайс-листы, цены (каналы, группы, ступени, периоды), налоги, `PriceResolver`, стадия `tax` | P1 |\n| P5 Promotions & Coupons | акции, условия/эффекты, стадии, распределение, купоны, лимиты и бюджеты | P1 |\n| P6 Shipping | зоны, методы, тарифы, перевозчики (SPI), `DeliveryOptions`, стадия `delivery` | P1 |\n| P7 Sales | корзины, расчёт, размещение заказа, заказ и состояния, платежи, исполнение, возвраты | P1 |\n| P8 Assembly | `commerz-full`, сквозные сценарии магазина и CRM на реальных пакетах, конкурентный набор, документация, API manifest, релиз 0.1 | P2–P7 |\n\nP2–P7 зависят только от P1 (порты + fakes) и могут идти **параллельно** в разных lanes: у каждого пакета свой каталог, скелеты и регистрация в корневом composer создаются в P1. Каждая фаза — 4–6 крупных item'ов; весь план ≈ 40 item'ов.\n"
+          }
+        ],
+        "global": true,
+        "provenance": {
+          "note": "docs/discovery/2026-10-08, audits/chatgpt, audits/grok, Perplexity deep research 2026-10-08"
+        }
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:document:v1",
+        "id": "assembly-design",
+        "title": "Сборка и релиз 0.1 (P8): EndToEnd-окружение, сценарии магазина и CRM, межпакетная конкурентность, API manifest, документация, релиз",
+        "sections": [
+          {
+            "id": "baseline",
+            "title": "1. Исходное состояние (2026-10-10, после P7)",
+            "text": "Факты, проверенные по коду перед детализацией P8:\n\n- `packages/full` — metapackage `axiomasoft/commerz-full` без кода; требует все 7 пакетов `^0.1@dev`. Все пакеты: `extra.branch-alias dev-main → 0.1.x-dev`; межпакетные требования `^0.1@dev`; корень — `minimum-stability: dev`, path-репозиторий `packages/*` (symlink).\n- Провайдеры обнаруживаются через `extra.laravel.providers`. Ядро ставит дефолты портов `singletonIf` (`CommerzServiceProvider` стр. ~105–125): `PriceResolver`→SnapshotPriceResolver, `PromotionUsage`→NullPromotionUsage, `DeliveryOptions`/`ShipmentBooking`→NoDelivery, stock — unlimited либо `InvalidConfiguration` при `commerz.stock=inventory` без пакета. Feature-провайдеры перекрывают обычным `singleton`: inventory (`StockReservations`, `StockAvailability`, `StockReturns`), pricing (`PriceResolver`), promotions (`PromotionUsage`), shipping (`DeliveryOptions`, `ShipmentBooking`). Catalog регистрирует `SellableProvider` (key `variant`) через `CatalogPlugin`.\n- Plugin IDs: `commerz.core`, `commerz.catalog`, `commerz.inventory`, `commerz.pricing`, `commerz.promotions`, `commerz.shipping`, `commerz.sales`.\n- Artisan: `commerz:install`, `commerz:doctor`, `commerz:plugins`, `commerz:outbox:relay`, `commerz:operations:prune`, `commerz:inventory:reconcile`, `commerz:inventory:expire-reservations`, `commerz:promotions:reconcile`, `commerz:sales:expire-orders`.\n- Тесты: каждый пакет имеет `*ScenarioTest` на fakes/фикстурных стадиях (`packages/<pkg>/tests/Feature/...`); `tests/Integration/SalesShippingQuoteTest.php` — единственная реальная связка (Sales+Shipping). Полного прогона всех пакетов в одном приложении нет. `Commerz\\Testkit\\PackageTestCase` (Testbench, guard `_test`, перемиграция при смене набора провайдеров), `Commerz\\Testkit\\Concurrency::run(N, fn)` (pcntl fork, отдельные соединения, барьер старта; исключение воркера → RuntimeException).\n- `Transactions::run` **не делает retry** (контракт `packages/core/src/Operations/Contracts/Transactions.php`: «There is no retry»). `docs/architecture/invariants.md#global-lock-order` утверждает «retried at most 3 times with jitter» — расхождение docs↔код; исправить docs (код — источник истины, контракт уже #[Api]).\n- В репозитории нет `README.md`, `CHANGELOG.md`, `LICENSE` (composer: MIT), README пакетов, VitePress-сайта; `docs/` = `architecture/` (англ., обязательная архитектура) + `discovery/` (рус., исследовательский корпус).\n- Журнал плана содержит ~124 deviation против `knowledge/api-blueprint`: документация пишется **по коду и docs/architecture**, не по blueprint.\n- CI: `.github/workflows/ci.yml` — lint/analyse/refactor/agent-docs + tests на PG17 (порт 54329). Node 22.11 локально.\n- Отложено в P8 из прежних фаз: README пакетов (P2.10), сквозная квота promotions.delivery + tax + delivery на реальных стадиях (P6.5), полные сценарии магазина/CRM (P3–P7)."
+          },
+          {
+            "id": "assembly",
+            "title": "2. Сборка: EndToEnd-окружение, матрица портов, манифесты (P8.1)",
+            "text": "**Цель.** Доказать, что 7 пакетов собираются в одно приложение без fakes, порты связаны с реальными реализациями, и подготовить общий для P8.2–P8.4 харнесс.\n\n**Харнесс** (`tests/EndToEnd/Support/`, namespace `Commerz\\EndToEnd\\`, autoload-dev в корневом `composer.json`):\n- `EndToEndTestCase extends Commerz\\Testkit\\PackageTestCase`: `commerzProviders()` = все 7 провайдеров (Commerz, Catalog, Inventory, Pricing, Promotions, Shipping, Sales); `commerz.stock = inventory`; без `Commerce::fake()`. Переопределяемый метод для подмножеств (CRM: Commerz+Pricing+Sales, stock `unlimited`).\n- `ShopWorld` — построитель мира магазина **только через публичный API** (корневые классы/фасады пакетов): store+channel RUB (ru), каталог, склад, цены, налоги, акции, доставка. Возвращает иммутабельный объект с id/ref. Используется P8.2 и P8.4. Внутренние классы (`Internal`) не импортируются.\n- Регистрация в `phpunit.xml`: testsuite `EndToEnd` → `tests/EndToEnd`; `tests/Pest.php`: `uses(EndToEndTestCase::class)->in('EndToEnd')` (если Pest.php не подходит — `uses()` в файле, как `tests/Integration`).\n\n**AssemblyTest** (`tests/EndToEnd/AssemblyTest.php`) — матрица:\n| Порт | Ожидаемая реализация при полном наборе |\n|---|---|\n| `Ports\\Stock\\Contracts\\StockReservations/StockAvailability/StockReturns` | классы inventory |\n| `Ports\\Prices\\Contracts\\PriceResolver` | pricing `DatabasePriceResolver` |\n| `Ports\\Promotions\\Contracts\\PromotionUsage` | promotions `DatabasePromotionUsage` |\n| `Ports\\Delivery\\Contracts\\DeliveryOptions` / `ShipmentBooking` | shipping `DatabaseShippingOptions` / `CarrierShipmentBooking` |\n| `Ports\\Sellables\\Contracts\\Sellables` | ядро `SellableRouter`, провайдер `variant` зарегистрирован |\nСравнение — `get_class(app(Port::class))` с FQCN-**строкой** реализации (Internal-классы в тесте не импортируются).\nПлюс: порядок провайдеров не важен (перевернуть список → тот же результат); `commerz:doctor` exit 0; `commerz:plugins` перечисляет 7 ID; все миграции применяются на одном соединении; квота-пайплайн содержит стадии `promotions.*`, `delivery`, `tax` в объявленном порядке (Commerz::quotes()/PluginInspector).\n\n**Пригодность портов (ports-fit).** Если сборка выявляет несоответствие порта реальной реализации (например, стадия, требующая данных, которых порт не даёт), — исправить в ядре аддитивно, записать решение `plan.py add-decision … --by agent` и deviation. Без находок — запись `ports-fit: no changes` в notes item.\n\n**Манифесты релиза** (политика D36):\n- В `packages/*/composer.json` межпакетные требования `^0.1@dev` → `^0.1`; `branch-alias dev-main: 0.1.x-dev` сохранить; поле `version` не добавлять.\n- Корень оставляет `^0.1@dev` и path-репозиторий; добавить `options.versions` для 9 пакетов = `0.1.x-dev`, чтобы разрешение не зависело от git-ветки/тегов (CI, feature-ветки).\n- `composer validate --strict --no-check-lock` в каталоге каждого пакета — exit 0 (покрывает license, authors, description, autoload).\n- Корневые `minimum-stability`/`prefer-stable` в пакетных manifest'ах игнорируются при установке зависимостью; оставить как есть."
+          },
+          {
+            "id": "shop-scenario",
+            "title": "3. Сквозной сценарий магазина на реальных пакетах (P8.2)",
+            "text": "Файл `tests/EndToEnd/ShopScenarioTest.php`, мир — `ShopWorld`. Без fakes; только публичный API; суммы — `Money`, количества — `int`.\n\n**Мир (минимальный, но покрывающий все стадии):**\n- Канал `web` RUB, локаль `ru`, цены с НДС (gross) — как в `PricingScenarioTest`.\n- Catalog: тип товара с осью `size`; товар «Футболка» → 2 варианта (S, M), опубликованы в канале; товар «Кружка» → 1 вариант.\n- Inventory: склад `msk`, источник канала `web`; stock items, связанные с вариантами (`quantity_per_unit` 1); receive: S=5, M=2, кружка=10.\n- Pricing: прайс-лист retail: S/M 1000.00, кружка 500.00; налоговая зона RU, ставка 20% для класса standard (из `PricingScenarioTest`).\n- Promotions: автоматическая акция −10% на заказ (order stage) и купон `SALE100` (−100.00 на заказ, лимит 1 на клиента, общий лимит 5).\n- Shipping: зона RU, метод `courier` (carrier `manual`), flat 300.00, `freeAbove` 5000.00.\n- Sales: шлюз `manual`, нумерация по умолчанию.\n\n**Шаги и проверки:**\n1. Корзина: S×2 + кружка×1, адрес RU; `deliveryOptions` содержит `courier` с ценой 300.00; `selectDelivery`; `enterCode('SALE100')`.\n2. `quote`: строки по ценам pricing; корректировки −10% и −100.00 распределены по строкам (QuoteState::allocatedOrderAdjustments); налог 20% «в т. ч.» считается от **дисконтированной** базы каждой строки и доставки; итог = сумма строк + доставка. Ожидаемые числа вычислить вручную в тесте с комментарием-выводом (порядок стадий — из `docs/architecture/extension.md`).\n3. `place` с `expectedTotal` = quote.total: заказ в состоянии ожидания оплаты; резерв на складе: available S = 3, кружка = 9 (Inventory availability API); usage купона = 1 (Promotions API); снимок строк/налогов/корректировок совпадает с quote.\n4. `deliveryOptions` до place == цена доставки в quote == цена в заказе (регрессия A4 на всех реальных стадиях, не только Sales+Shipping).\n5. Оплата: manual initiate → событие Captured на полную сумму → заказ оплачен.\n6. Fulfillment: create на все строки → резерв consumed, on_hand S = 3; ship через `courier` (manual carrier) → tracking; delivered.\n7. Return: S×1 → receive с `restock: true` → on_hand S = 4; refund на сумму строки (частичный) → usage купона **не** восстанавливается; второй refund на остаток (полный) → usage восстанавливается (D31/P7.8 политика), счётчик купона = 0.\n8. Outbox: последовательность типов событий сценария (по `cmz_outbox` через публичный Outbox/OutboxRelay или `commerz:outbox:relay` с тестовым consumer) содержит события всех пакетов в причинном порядке; дубликатов нет.\n9. Вариант «нехватка»: корзина M×3 → `place` бросает `InsufficientStock` (порт ядра) / доменную ошибку sales; ничего не записано (нет заказа, usage, резерва).\n10. Вариант «квота изменилась»: изменить цену после quote → `place` → `QuoteChanged`.\n\nРасхождения, найденные сценарием (стадии, суммы, события), — исправлять в пакете-владельце с тестом в его suite и `plan.py log --type deviation`."
+          },
+          {
+            "id": "crm-scenario",
+            "title": "4. CRM-встраивание без catalog/inventory (P8.3)",
+            "text": "Файл `tests/EndToEnd/CrmScenarioTest.php` (+ фикстуры `tests/EndToEnd/Fixtures/Crm*`). Доказывает B3: CRM ставит ядро + sales (+ pricing для налогов), без catalog/inventory/shipping/promotions.\n\n- Провайдеры: Commerz, Pricing, Sales; `commerz.stock = unlimited`; **без** `Commerce::fake()`.\n- Хост-плагин `tests.crm` (CommerzPlugin) регистрирует `SellableProvider` с ключом `crm.service`: in-memory каталог услуг хоста (kind Service, requiresShipping false, basePrice, taxClass standard). Цена — из pricing-прайс-листа по `sellable_ref` `crm.service:<id>` (если PriceResolver ищет по ref) или basePrice снимка — выбрать по реальному поведению `DatabasePriceResolver` (прочитать pricing-design#resolution) и зафиксировать в комментарии.\n- Хост-реализация `CustomerDirectory` (класс в фикстурах, `commerz.customers`) — группа `b2b`.\n- Сценарий: черновик (корзина как CRM-сделка) с 2 услугами → quote (налог 20% pricing, без доставки, `DeliveryRequired` не возникает) → place → manual payment Captured → fulfillment услуг (без склада; stock unlimited) → completed.\n- Проверки: в БД нет таблиц `cmz_stock_*`, `cmz_product*`, `cmz_shipping_*`, `cmz_promotion*` (миграции не запускались); `commerz:doctor` exit 0 на этом наборе; порты `PromotionUsage`/`DeliveryOptions` — дефолты ядра.\n- Смешанный хост: второй тест — полный набор провайдеров + `crm.service` рядом с `variant` в одной корзине (SellableRouter маршрутизирует по ключу); place проходит, склад резервирует только variant-строки."
+          },
+          {
+            "id": "concurrency",
+            "title": "5. Межпакетный конкурентный набор на PostgreSQL (P8.4)",
+            "text": "**Инвариантная модель.** Глобальный порядок ресурсов (docs/architecture/invariants.md#global-lock-order, уточнение sales): receipt(key) → cart/order → дочерние документы заказа (fulfillment, return по id) → stock levels (stock_item_id, location_id) → coupons → promotions → customer usages → payments → refunds. Каждый пакет уже доказал свой порядок на fakes соседей; P8.4 доказывает, что **композиция реальных реализаций** не создаёт циклов и не превышает лимиты.\n\n**Enforcement:** `Checkout::place` (OrderPlacement) вызывает `StockReservations::reserve` (inventory: уровни в порядке ключа) затем `PromotionUsage::consume` (promotions: coupon → promotion → customer usage, id ASC) в одной `Transactions::run`. Cancel/expire: order → release → restore. Refund finish: order → restore → payment → refund.\n**Bypass (запрещено, ловится набором):** вызов consume до reserve; блокировка уровня вне порядка; restore без блокировки order; adjust/count склада в обход `StockLedger::lock`.\n**Interfering pairs, покрываемые набором:**\n| # | A | B | Общий ресурс | Ожидание |\n|---|---|---|---|---|\n| E1 | place ×12 (последние 5 единиц S, разные корзины) | — | stock level S | ровно 5 заказов; остальные `InsufficientStock`; reserved = 5; on_hand неизменен |\n| E2 | place ×12 с купоном лимит 5 (склада достаточно) | — | coupon/promotion counters | ровно 5 с купоном; остальные — доменная ошибка лимита при place (или QuoteChanged — по реальному контракту, зафиксировать); `used` = числу redemption-строк |\n| E3 | place корзины [S, кружка] | place корзины [кружка, S] (×8 пар) | два уровня | все успешны; 0 deadlock |\n| E4 | place (резерв S) | inventory `adjust`/`count` по S | stock level | оба завершаются; итог согласован: available = on_hand − reserved ≥ 0 |\n| E5 | cancel неоплаченного заказа | payment event Captured того же заказа | order row | ровно один исход: cancelled + `payment_requires_refund` либо paid; usage/резерв согласованы с исходом |\n| E6 | `commerz:sales:expire-orders` (2 воркера) | fulfillment create того же заказа | order + reservation | ни двойного release, ни consume освобождённого резерва |\n| E7 | refund finish (полный) | place нового заказа с тем же купоном (лимит исчерпан) | coupon counter | restore и consume сериализованы; итог counter = активные redemption |\n\n**Детектор deadlock/lock-timeout.** `Transactions::run` не делает retry, поэтому 40P01/55P03 всплывают в воркере. Воркер ловит **ожидаемые доменные** исключения и возвращает строку-исход (`ok`, `insufficient_stock`, `limit_reached`, …); любое иное исключение сериализуется как `error:<SQLSTATE|class>` (SQLSTATE извлекать по цепочке `getPrevious()` из `PDOException::errorInfo[0]`, не по тексту). Тест падает при любом `error:*`. Дополнительно: дельта `pg_stat_database.deadlocks` для `current_database()` до/после = 0 — читать после завершения воркеров с `pg_stat_clear_snapshot()` и опросом до 2 с (статистика бэкенда сбрасывается при его выходе; выход бэкенда отстаёт от выхода PHP-процесса).\n**Тайминги:** в воркере (новая сессия) `SET deadlock_timeout = '100ms'` (роль `commerz` — суперпользователь в compose/CI; если SET запрещён — тест падает явно, не молча); `lock_timeout` 3 c из `Transactions::run`; дедлайн `Concurrency::run` 30 c. deadlock_timeout ≪ lock_timeout — иначе цикл проявится как 55P03, а не 40P01.\n**Позитивный контроль:** один тест-контроль, где два воркера намеренно берут два уровня в противоположном порядке через сырые `SELECT … FOR UPDATE` в `Transactions::run`, и детектор **обязан** увидеть 40P01 (иначе детектор вакуумен).\n**Данные:** committed (без RefreshDatabase-транзакции; как в существующих `*ConcurrencyTest`: `DatabaseMigrations`/ручная очистка). Мир строится `ShopWorld` в родителе до форка.\n**Финальные инварианты после каждого сценария:** `commerz:inventory:reconcile` и `commerz:promotions:reconcile` без флагов исправления → exit 0 и «clean» (команды сначала делают `check()`); плюс прямые утверждения через публичные read API (availability, usage counters, состояния заказов).\n**Очистка:** как `packages/sales/tests/Feature/Checkout/PlacementConcurrencyTest.php`: `migrate` в beforeEach, `truncate … cascade` всех `cmz_*` таблиц в afterEach (список собрать из `information_schema.tables` по префиксу `cmz_`, кроме `migrations`). In-memory fakes в форк не передаются — мир целиком в БД."
+          },
+          {
+            "id": "api-manifest",
+            "title": "6. API manifest и справочник (P8.5)",
+            "text": "Образец — Chatom (`/home/vostrikov/projects/packages/chatom`: `tests/Arch/ApiManifestTest.php`, `tests/Arch/Support/ApiManifest*.php`, `scripts/generate-api-manifest.php`, `scripts/generate-api-reference.php`). Адаптировать, не копировать платформенные части (routes и т. п. — у Commerz нет HTTP).\n\n**Модель.** Публичная поверхность = типы вне `\\Internal\\` с атрибутом `Commerz\\Attributes\\Api` или `Spi` (Arch-гейт P1.8 уже требует маркер). Для каждого пакета `packages/<pkg>/resources/contracts/php-api.json`:\n```json\n{\"schema\": \"commerz.php-api/1\", \"package\": \"<dir>\", \"composer\": \"axiomasoft/commerz-<x>\",\n \"types\": {\"<FQCN>\": {\"kind\": \"class|interface|enum|trait\", \"layer\": \"api|spi\", \"spiKind\": \"...\", \"since\": \"0.1\",\n   \"modifiers\": [\"final\",\"readonly\",\"abstract\"], \"extends\": \"...\", \"implements\": [...],\n   \"constants\": {\"NAME\": \"<php literal>\"}, \"cases\": {\"Case\": \"<value>\"},\n   \"properties\": {\"name\": \"public readonly <type> $name\"},\n   \"methods\": {\"name\": \"[static ]name(<params>): <return>\"}}},\n \"platform\": {\"providers\": [...], \"config\": \"<config key>\", \"commands\": [\"commerz:...\"], \"plugin\": \"commerz.<x>\",\n   \"tables\": [\"<table noun>\"], \"kinds\": [\"<extension kind>\"]}}\n```\n- Только public-члены; методы, объявленные в самом типе или унаследованные от непубличного родителя; параметры с типами, nullable, default-значениями (`var_export`-литерал), variadic, by-ref; `self`/`static` сохранять как объявлено (см. probe в тесте Chatom).\n- Детерминизм: ключи сортировать (`ksort` рекурсивно для types/methods/constants), JSON `JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE` + `\\n`. Генерация дважды → байт-в-байт.\n- `testkit` и `full`: testkit — свой манифест (Api); full (metapackage, нет src) — манифеста нет.\n**Механика:** `tests/Arch/ApiManifestTest.php` строит манифесты отражением; при `COMMERZ_UPDATE_API_MANIFEST=1` пишет файлы, иначе сравнивает и падает с подсказкой «run composer api:manifest»; сирот-манифестов нет. `scripts/generate-api-manifest.php [--check]` — обёртка (запуск теста дважды + сравнение хэшей). Composer scripts: `api:manifest`, `api:check`. CI lint-job: `composer api:check`.\n**Справочник:** `scripts/generate-api-reference.php [--check]` → `docs/reference/api/<pkg>.md` (заголовок «Generated — do not edit», группировка по namespace-модулю, таблица типов: kind/layer/since, сигнатуры методов в code-блоках, PHPDoc summary первой строкой). `docs/reference/api/index.md` — список пакетов. Composer script `docs:reference`; `--check` в CI.\n**Не входит:** семантический BC-diff между версиями (после 0.1; манифест — его вход)."
+          },
+          {
+            "id": "docs-site",
+            "title": "7. Документация: VitePress-сайт (P8.6)",
+            "text": "**Решение D37.** Сайт — `docs/` как VitePress-корень (английский), структура как у Chatom; `docs/architecture/` остаётся на месте (ссылки из CLAUDE.md/AGENTS.md и планов) и входит в сайт разделом Architecture; `docs/discovery/**` исключён (`srcExclude`) — русский исследовательский корпус, не продуктовая документация. VitePress **1.6.4** (последняя стабильная на 2026-10; 2.0 — alpha, проверено Perplexity 2026-10-10), Node ≥ 22 (локально 22.11).\n\n**Дерево:**\n```text\ndocs/\n  package.json            (@axiomasoft/commerz-docs, private, vitepress 1.6.4 exact; scripts docs:dev/build/preview)\n  package-lock.json       (npm install генерирует; коммитится)\n  .vitepress/config.ts    (title Commerz, nav, sidebar, srcExclude ['discovery/**'], cleanUrls, lastUpdated false, search local)\n  index.md                (hero: embeddable commerce engine for Laravel; features)\n  getting-started/ introduction.md installation.md quick-start-shop.md crm-embedding.md\n  concepts/ stores-and-channels.md money-and-measures.md sellables.md quotes-pipeline.md\n            ports-and-plugins.md operations-and-idempotency.md events-and-outbox.md invariants-and-locking.md\n  packages/ core/ catalog/ inventory/ pricing/ promotions/ shipping/ sales/ testkit/ full/  (index.md каждый)\n  how-to/ configure.md write-a-plugin.md custom-sellable-provider.md payment-gateway.md carrier.md\n          custom-quote-stage.md run-workers.md testing-with-testkit.md\n  operations/ install-and-doctor.md commands.md reconcile.md upgrades.md\n  reference/ api/ (генерируется P8.5) artisan-commands.md configuration.md error-codes.md events.md\n             extension-kinds.md data-model.md semver-policy.md compatibility.md\n  architecture/ (существующие файлы; README.md → index через sidebar link)\n```\n**Правила содержания:** источник истины — код и `docs/architecture/*`, затем `knowledge/*-design#api`; **не** api-blueprint (124 deviation). Каждый пример кода — реальные имена классов/методов (проверять grep'ом). Ссылки относительные; `vitepress build` падает на мёртвых ссылках — это acceptance. Пакетная страница: назначение, установка (`composer require axiomasoft/commerz-<x>`), конфиг (ключи из `config/*.php`), публичный корень/фасад, таблицы, kinds, команды, события, ссылка на reference/api/<pkg>.\n**README:** корневой `README.md` (что это, пакеты-таблица, quick start 15 строк, ссылки на docs, стек PHP 8.4/Laravel 13/PostgreSQL ≥16), `packages/<pkg>/README.md` (кратко + ссылка на страницу сайта). `LICENSE` (MIT, Dmitry Vostrikov, 2026) в корне и в каждом пакете (split-публикация потребует).\n**Исправление docs/architecture:** invariants.md «retried at most 3 times» → «no automatic retry; the caller repeats the whole operation» (контракт Transactions).\n**CI:** job `docs` в ci.yml: setup-node 22, `npm ci --prefix docs`, `npm run docs:build --prefix docs`, `composer docs:reference -- --check`."
+          },
+          {
+            "id": "release",
+            "title": "8. Релиз 0.1.0 (P8.7, P8.8)",
+            "text": "**Решение D36 (версионирование).** Lockstep-релиз монорепо: все пакеты получают одну версию; межпакетные ограничения — диапазон `^0.1` (не `self.version`: патчи внутри 0.1.x совместимы, разные патч-версии пакетов допустимы). Корень разработки — `^0.1@dev` + path `options.versions` 0.1.x-dev. Тег — аннотированный `v0.1.0` в монорепо (стиль Chatom `v0.5.0`), **локально, без push**; split-зеркала и Packagist — вне плана (non_goals).\n**Consumer smoke (проверка формы дистрибутива, без монорепо):** `scripts/test-consumer-install.sh` (образец — Chatom `scripts/test-consumer-install.sh`, упрощённый):\n1. Для каждого `packages/<pkg>` (9 каталогов, включая full и testkit): копия в staging без `vendor`; `tests/` исключаются через `packages/<pkg>/.gitattributes` (`/tests export-ignore`, `/phpunit.xml* export-ignore` — `composer archive` уважает export-ignore, и это же определит будущие split-архивы); в staging-копию composer.json вставить `\"version\": \"0.1.0\"`; `composer archive --format=zip --dir=var/consumer/artifacts --file=<name>-0.1.0`.\n2. `composer create-project laravel/laravel var/consumer/app \"^13.0\" --prefer-dist --no-interaction` (нужна сеть; отдельный COMPOSER_HOME/кэш).\n3. В app/composer.json: repositories = [artifact `var/consumer/artifacts`, composer packagist с `exclude: [\"axiomasoft/*\"]`, `packagist.org: false`].\n4. `composer require axiomasoft/commerz-full:0.1.0 --with-all-dependencies`; проверить в composer.lock 7 пакетов версии 0.1.0 с `dist.type: zip` из artifact.\n5. `.env` → PostgreSQL test DB (`commerz_test`, 54329) — **отдельная схема/БД** `commerz_consumer_test` создаётся скриптом и удаляется; `php artisan package:discover`, `php artisan commerz:install --no-interaction` (или migrate), `php artisan commerz:doctor` exit 0, `php artisan commerz:plugins` → 7 ID.\n6. `php smoke.php` (`tests/Consumer/smoke.php`): bootstrap ядра, провайдеры загружены из `vendor/axiomasoft/*` (не symlink), `app(Commerz\\Commerz::class)`, корни 6 пакетов резолвятся.\n7. Повтор шага 4 для `axiomasoft/commerz` + `axiomasoft/commerz-sales` (CRM-набор, `commerz.stock=unlimited`) — проверка, что sales не требует остальных.\nСкрипт — guard: работает только в `var/consumer/` (в .gitignore), удаляет за собой; падает при отсутствии сети явно.\n**CHANGELOG.md** (Keep a Changelog 1.1.0, SemVer): `## [0.1.0] - <дата>`, Added по пакетам (из docs/architecture/api.md и пакетных docs), «Known limitations» (non_goals плана), ссылка на docs. Пакетные CHANGELOG не нужны (lockstep, один файл).\n**Release gate (P8.7):** полный `composer lint:check`, `analyse`, `refactor:check`, `test` (все suites, включая EndToEnd и Arch), `api:check`, docs build, consumer smoke; `plans/ACTIVE.md` обновлён.\n**Тег (P8.8, owner gate RELEASE-0.1-TAG):** `git tag -a v0.1.0 -m \"Commerz 0.1.0\"` на коммите release gate; push не выполняется. Создание тега требует явного разрешения владельца (CLAUDE.md: release — спросить)."
+          }
+        ],
+        "applies_to": [
+          "P8"
+        ],
+        "provenance": {
+          "note": "Детализация P8 против кода после P7 (2026-10-10): packages/*/composer.json, CommerzServiceProvider (дефолты портов), провайдеры пакетов, Transactions (без retry), testkit (PackageTestCase, Concurrency), tests/Integration, docs/architecture/invariants.md (global/sales lock order, interference), .github/workflows/ci.yml; образец Chatom (/home/vostrikov/projects/packages/chatom: ApiManifestTest, generate-api-manifest.php, docs/.vitepress/config.ts, test-consumer-install.sh, CHANGELOG). Perplexity 2026-10-10: VitePress стабильная 1.6.4, 2.0 — alpha (Node ≥22); Composer monorepo — в пакетах ^0.1, @dev только в корне, path options.versions, проверка дистрибутива через artifact-репозиторий в свежем Laravel-приложении с exclude axiomasoft/* из Packagist; PostgreSQL — deadlock_timeout ≪ lock_timeout, классификация по SQLSTATE (40P01/55P03), не fork с живыми соединениями, позитивный контроль, pg_stat_database.deadlocks сбрасывается при выходе бэкенда (читать с pg_stat_clear_snapshot)."
+        }
+      }
+    ],
+    "units": [
+      {
+        "$schema": "urn:swissknifeman:task:plan:unit:v1",
+        "id": "U1",
+        "item": "P8.6",
+        "title": "Site skeleton, landing, getting started, concepts, root README and LICENSE",
+        "goal": "docs/package.json (vitepress 1.6.4 exact) + lock, .vitepress/config.ts с полным nav/sidebar дерева assembly-design#docs-site, index.md, getting-started/*, concepts/*, README.md, LICENSE и packages/*/LICENSE",
+        "files": [
+          "docs/package.json",
+          "docs/package-lock.json",
+          "docs/.gitignore",
+          "docs/.vitepress/config.ts",
+          "docs/index.md",
+          "docs/getting-started/**",
+          "docs/concepts/**",
+          "README.md",
+          "LICENSE",
+          "packages/*/LICENSE"
+        ],
+        "checks": [
+          {
+            "id": "V1",
+            "cmd": "npm ci --prefix docs",
+            "expect": "exit 0",
+            "kind": "acceptance"
+          },
+          {
+            "id": "V2",
+            "cmd": "test -f docs/.vitepress/config.ts && test -f README.md && test -f LICENSE && ls docs/getting-started/*.md docs/concepts/*.md >/dev/null",
+            "expect": "exit 0",
+            "kind": "acceptance"
+          }
+        ],
+        "route": {
+          "class": "implementation",
+          "effort": "medium"
+        },
+        "mode": "either",
+        "instructions": "Sidebar перечисляет все страницы дерева, включая создаваемые U2/U3 и reference/api; srcExclude [\"discovery/**\"]. Quick start магазина и CRM — по коду tests/EndToEnd/{Shop,Crm}ScenarioTest.php.",
+        "status": "accepted",
+        "outcome": {
+          "agent": {
+            "provider": "anthropic",
+            "model": "sonnet-5.5"
+          },
+          "at": "2026-10-10T12:55:43Z",
+          "notes": "unit work reviewed by the integrator; item checks V1-V5 green"
+        },
+        "updated_at": "2026-10-10T12:55:43Z",
+        "kind": "implementation"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:unit:v1",
+        "id": "U2",
+        "item": "P8.6",
+        "title": "Package pages and package READMEs",
+        "goal": "docs/packages/<pkg>/index.md для core, catalog, inventory, pricing, promotions, shipping, sales, testkit, full и packages/<pkg>/README.md",
+        "files": [
+          "docs/packages/**",
+          "packages/*/README.md"
+        ],
+        "checks": [
+          {
+            "id": "V1",
+            "cmd": "for p in core catalog inventory pricing promotions shipping sales testkit full; do test -f docs/packages/$p/index.md && test -f packages/$p/README.md || exit 1; done",
+            "expect": "exit 0",
+            "kind": "acceptance"
+          }
+        ],
+        "route": {
+          "class": "implementation",
+          "effort": "medium"
+        },
+        "mode": "either",
+        "instructions": "Структура страницы — rules item P8.6; ключи конфига из packages/<pkg>/config/*.php; команды и plugin ID — assembly-design#baseline; ссылка на ../../reference/api/<pkg>.md.",
+        "status": "dispatched",
+        "outcome": {
+          "agent": {
+            "provider": "anthropic",
+            "model": "sonnet-5.5"
+          },
+          "at": "2026-10-10T12:55:43Z"
+        },
+        "updated_at": "2026-10-10T12:55:43Z",
+        "kind": "implementation"
+      },
+      {
+        "$schema": "urn:swissknifeman:task:plan:unit:v1",
+        "id": "U3",
+        "item": "P8.6",
+        "title": "How-to, operations, reference pages, architecture fix and CI docs job",
+        "goal": "docs/how-to/*, docs/operations/*, docs/reference/*.md (кроме api/), правка docs/architecture/invariants.md про retry, job docs в .github/workflows/ci.yml",
+        "files": [
+          "docs/how-to/**",
+          "docs/operations/**",
+          "docs/reference/*.md",
+          "docs/architecture/invariants.md",
+          ".github/workflows/ci.yml"
+        ],
+        "checks": [
+          {
+            "id": "V1",
+            "cmd": "! grep -n \"retried at most\" docs/architecture/invariants.md && ls docs/how-to/*.md docs/operations/*.md docs/reference/*.md >/dev/null",
+            "expect": "exit 0",
+            "kind": "acceptance"
+          }
+        ],
+        "route": {
+          "class": "implementation",
+          "effort": "medium"
+        },
+        "mode": "either",
+        "instructions": "reference/error-codes — собрать коды из исключений пакетов (grep по packages/*/src/**/Exceptions); reference/events — типы outbox/доменных событий из кода; extension-kinds — из docs/architecture/extension.md; artisan-commands — список из assembly-design#baseline с описаниями из классов команд. CI job docs: setup-node 22, npm ci/build в docs, composer docs:reference -- --check.",
+        "status": "todo",
+        "outcome": null,
+        "updated_at": "2026-10-10T09:32:58Z",
+        "kind": "implementation"
+      }
+    ],
+    "orchestration": {
+      "strategy": "dag"
+    },
+    "ready_units": [
+      {
+        "ref": "P8.6/U3",
+        "kind": "implementation",
+        "mode": "either",
+        "route": {
+          "class": "implementation",
+          "effort": "medium"
+        },
+        "files": [
+          "docs/how-to/**",
+          "docs/operations/**",
+          "docs/reference/*.md",
+          "docs/architecture/invariants.md",
+          ".github/workflows/ci.yml"
+        ]
+      }
+    ],
+    "projection": {
+      "mode": "scoped",
+      "note": "reads[].included names the pack key that already holds the source; upstream and phase_dependencies are summaries, read them by ref for the full record"
+    }
+  },
+  "reads": [],
+  "checks": [
+    {
+      "id": "V1",
+      "cmd": "for p in core catalog inventory pricing promotions shipping sales testkit full; do test -f docs/packages/$p/index.md && test -f packages/$p/README.md || exit 1; done",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "rework": ""
+}

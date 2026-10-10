@@ -1,0 +1,39 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:unit:v1",
+  "id": "U3",
+  "item": "P8.6",
+  "title": "How-to, operations, reference pages, architecture fix and CI docs job",
+  "goal": "docs/how-to/*, docs/operations/*, docs/reference/*.md (кроме api/), правка docs/architecture/invariants.md про retry, job docs в .github/workflows/ci.yml",
+  "files": [
+    "docs/how-to/**",
+    "docs/operations/**",
+    "docs/reference/*.md",
+    "docs/architecture/invariants.md",
+    ".github/workflows/ci.yml"
+  ],
+  "checks": [
+    {
+      "id": "V1",
+      "cmd": "! grep -n \"retried at most\" docs/architecture/invariants.md && ls docs/how-to/*.md docs/operations/*.md docs/reference/*.md >/dev/null",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "mode": "either",
+  "instructions": "reference/error-codes — собрать коды из исключений пакетов (grep по packages/*/src/**/Exceptions); reference/events — типы outbox/доменных событий из кода; extension-kinds — из docs/architecture/extension.md; artisan-commands — список из assembly-design#baseline с описаниями из классов команд. CI job docs: setup-node 22, npm ci/build в docs, composer docs:reference -- --check.",
+  "status": "accepted",
+  "outcome": {
+    "agent": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5"
+    },
+    "at": "2026-10-10T12:55:45Z",
+    "notes": "unit work reviewed by the integrator; item checks V1-V5 green"
+  },
+  "updated_at": "2026-10-10T12:55:45Z",
+  "kind": "implementation"
+}

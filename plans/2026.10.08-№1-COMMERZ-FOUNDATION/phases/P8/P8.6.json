@@ -1,0 +1,253 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P8.6",
+  "title": "Documentation: VitePress site, READMEs, LICENSE and architecture doc corrections (D37)",
+  "status": "done",
+  "summary": "docs/ — VitePress 1.6.4 сайт (англ.) со структурой assembly-design#docs-site: getting-started, concepts, packages/*, how-to, operations, reference (+ сгенерированный api), architecture; корневой README.md, README и LICENSE каждого пакета, корневой LICENSE; docs/architecture/invariants.md исправлен про retry; CI-job docs собирает сайт.",
+  "why": "Документация — SemVer-поверхность и вход для встраивания в магазин/CRM; без неё 0.1 не пригоден потребителю. Риски: примеры по api-blueprint (124 deviation) вместо кода; мёртвые ссылки; утверждение docs, противоречащее контракту (retry).",
+  "scope": {
+    "include": [
+      "docs/package.json, docs/package-lock.json, docs/.vitepress/config.ts, docs/index.md",
+      "docs/{getting-started,concepts,packages,how-to,operations}/**, docs/reference/*.md (кроме api/)",
+      "README.md, LICENSE, packages/*/README.md, packages/*/LICENSE",
+      "docs/architecture/invariants.md: global lock order — без автоматического retry",
+      "docs/.gitignore (node_modules, .vitepress/cache, .vitepress/dist); .github/workflows/ci.yml: job docs"
+    ],
+    "exclude": [
+      "docs/reference/api/** (генерируется P8.5)",
+      "docs/discovery/**",
+      "CHANGELOG (P8.7)",
+      "изменение кода пакетов"
+    ]
+  },
+  "depends_on": [
+    "P8.2",
+    "P8.3",
+    "P8.4",
+    "P8.5"
+  ],
+  "decisions": [
+    "D37",
+    "D36"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/assembly-design#docs-site",
+      "why": "дерево, правила, README/LICENSE — ядро item'а",
+      "required": true
+    },
+    {
+      "ref": "knowledge/assembly-design#baseline",
+      "why": "команды, plugin ID, порты, факт об отсутствии retry",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/README.md",
+      "why": "позиционирование и стиль",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "why": "источник API-примеров",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "why": "kinds и стадии для how-to и reference",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/data.md",
+      "why": "reference/data-model",
+      "required": true
+    },
+    {
+      "path": "tests/EndToEnd/ShopScenarioTest.php",
+      "why": "проверенный код для quick-start магазина",
+      "required": true
+    },
+    {
+      "path": "tests/EndToEnd/CrmScenarioTest.php",
+      "why": "проверенный код для crm-embedding",
+      "required": true
+    },
+    {
+      "path": "packages/*/config/*.php",
+      "why": "ключи конфигурации для reference/configuration",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "docs/package.json",
+      "change": "create"
+    },
+    {
+      "path": "docs/package-lock.json",
+      "change": "create"
+    },
+    {
+      "path": "docs/.gitignore",
+      "change": "create"
+    },
+    {
+      "path": "docs/.vitepress/config.ts",
+      "change": "create"
+    },
+    {
+      "path": "docs/index.md",
+      "change": "create"
+    },
+    {
+      "path": "docs/getting-started/**",
+      "change": "create"
+    },
+    {
+      "path": "docs/concepts/**",
+      "change": "create"
+    },
+    {
+      "path": "docs/packages/**",
+      "change": "create"
+    },
+    {
+      "path": "docs/how-to/**",
+      "change": "create"
+    },
+    {
+      "path": "docs/operations/**",
+      "change": "create"
+    },
+    {
+      "path": "docs/reference/*.md",
+      "change": "create"
+    },
+    {
+      "path": "docs/architecture/invariants.md",
+      "change": "modify"
+    },
+    {
+      "path": "README.md",
+      "change": "create"
+    },
+    {
+      "path": "LICENSE",
+      "change": "create"
+    },
+    {
+      "path": "packages/*/README.md",
+      "change": "create"
+    },
+    {
+      "path": "packages/*/LICENSE",
+      "change": "create"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "change": "modify"
+    }
+  ],
+  "rules": [
+    "Источник истины для примеров — код, EndToEnd-тесты и docs/architecture; не api-blueprint. Каждое имя класса/метода в примере проверить grep'ом по packages/*/src.",
+    "Английский язык, стиль docs/architecture; относительные ссылки; без маркетинговых обещаний сверх реализованного (non_goals плана — в разделе limitations).",
+    "VitePress — точная версия 1.6.4; docs/node_modules и .vitepress/{cache,dist} не коммитятся.",
+    "Страница пакета: назначение, установка, конфиг, корень/фасад, таблицы, kinds, команды, события, ссылка на reference/api/<pkg>."
+  ],
+  "guidance": "Units: U1 — каркас сайта и сквозные страницы; U2 — страницы пакетов и README пакетов; U3 — how-to/operations/reference и правка architecture + CI. Sidebar в U1 перечисляет все страницы дерева сразу; сборка (V2) — после всех units. Сохранять docs/architecture файлами как есть; в sidebar раздел Architecture ссылается на /architecture/README и остальные файлы. Внешний образец (вне репозитория, читать по абсолютному пути, необязательно): /home/vostrikov/projects/packages/chatom/docs/.vitepress/config.ts — образец nav/sidebar.",
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "npm ci --prefix docs",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "npm run docs:build --prefix docs",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer docs:reference -- --check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "test -f README.md && test -f LICENSE && for p in packages/*/; do test -f \"$p/README.md\" && test -f \"$p/LICENSE\" || exit 1; done",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "! grep -n 'retried at most' docs/architecture/invariants.md",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "VitePress-сайт собирается без мёртвых ссылок",
+    "README/LICENSE корня и пакетов",
+    "docs/architecture без ложного retry",
+    "CI job docs"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "units": [
+    "U1",
+    "U2",
+    "U3"
+  ],
+  "result": {
+    "started_at": "2026-10-10T12:42:43Z",
+    "finished_at": "2026-10-10T12:55:49Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5",
+      "effort": "medium",
+      "session": "ecb053c1-3eca-47c3-8b66-9f9ae1a8840d"
+    },
+    "notes": "VitePress 1.6.4 site (getting-started, concepts, packages, how-to, operations, reference), root and package README/LICENSE, invariants.md retry fix, CI job docs. Error-codes/events pages generated from package code. Noted: docs/architecture/api.md says SpiKind::Call, code has SpiKind::Consume (out of scope, not changed).",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T12:55:49Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T12:55:49Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T12:55:49Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T12:55:49Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T12:55:49Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-10T12:55:49Z"
+}

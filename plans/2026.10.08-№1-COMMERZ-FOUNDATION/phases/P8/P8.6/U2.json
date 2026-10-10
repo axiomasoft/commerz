@@ -1,0 +1,36 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:unit:v1",
+  "id": "U2",
+  "item": "P8.6",
+  "title": "Package pages and package READMEs",
+  "goal": "docs/packages/<pkg>/index.md для core, catalog, inventory, pricing, promotions, shipping, sales, testkit, full и packages/<pkg>/README.md",
+  "files": [
+    "docs/packages/**",
+    "packages/*/README.md"
+  ],
+  "checks": [
+    {
+      "id": "V1",
+      "cmd": "for p in core catalog inventory pricing promotions shipping sales testkit full; do test -f docs/packages/$p/index.md && test -f packages/$p/README.md || exit 1; done",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "mode": "either",
+  "instructions": "Структура страницы — rules item P8.6; ключи конфига из packages/<pkg>/config/*.php; команды и plugin ID — assembly-design#baseline; ссылка на ../../reference/api/<pkg>.md.",
+  "status": "accepted",
+  "outcome": {
+    "agent": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5"
+    },
+    "at": "2026-10-10T12:55:44Z",
+    "notes": "unit work reviewed by the integrator; item checks V1-V5 green"
+  },
+  "updated_at": "2026-10-10T12:55:44Z",
+  "kind": "implementation"
+}
