@@ -26,6 +26,7 @@ use Commerz\Sales\Common\Internal\OrderLedger;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderStatus;
 use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Data\OrderView;
@@ -80,6 +81,11 @@ function slsPayments(): Payments
     return app(Payments::class);
 }
 
+function slsFulfillments(): Fulfillments
+{
+    return app(Fulfillments::class);
+}
+
 /**
  * Config of `commerz-sales`, applied to the modules resolved from now on.
  *
@@ -91,7 +97,7 @@ function slsConfig(array $sections): void
         config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
     }
 
-    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Sales::class] as $abstract) {
+    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Sales::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }

@@ -7,6 +7,7 @@ namespace Commerz\Sales\Facades;
 use Commerz\Attributes\Api;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Illuminate\Support\Facades\Facade;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Checkout checkout()
  * @method static Orders orders()
  * @method static Payments payments()
+ * @method static Fulfillments fulfillments()
  *
  * @see \Commerz\Sales\Sales
  */

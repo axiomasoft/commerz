@@ -13,6 +13,7 @@ use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
+use Commerz\Sales\Fulfillments\Data\CreateFulfillment;
 use Commerz\Sales\Orders\Data\CancelOrder;
 use Commerz\Sales\Orders\Data\CancelOrderLines;
 use Commerz\Sales\Orders\Data\OrderLineId;
@@ -118,6 +119,28 @@ it('completes a paid order whose units left after a fulfillment are cancelled (O
         ->and(array_map(static fn ($event): string => $event->type, slsOrders()->history($order->id)))
         ->toBe(['placed', 'fulfillment_state_changed', 'payment_state_changed', 'line_cancelled', 'fulfillment_state_changed', 'payment_state_changed', 'completed']);
     Event::assertDispatched(OrderCompleted::class, static fn (OrderCompleted $event): bool => $event->order->equals($order->id));
+});
+
+it('completes a paid order when the rest of a partly fulfilled line is cancelled, and refuses what was shipped (ORD-03)', function (): void {
+    $placed = slsPlace(slsCartWith($this->web, ['fake:a' => 3]));
+    $line = slsLine($placed, 'fake:a');
+    $demand = 'order:'.$placed->id->value;
+    slsOrderPayment($placed, 'captured', 20000, capturedMinor: 20000);
+    slsRefresh($placed);
+    slsFulfillments()->create(new CreateFulfillment($placed->id, [new LineQuantity($line, 2)]));
+
+    expect(fn () => slsOrders()->cancelLines(new CancelOrderLines($placed->id, [new LineQuantity($line, 2)], CancelReason::Customer)))
+        ->toThrow(QuantityExceedsOutstanding::class)
+        ->and(fn () => slsOrders()->cancel(new CancelOrder($placed->id, CancelReason::Customer)))->toThrow(OrderNotCancellable::class, 'fulfilled');
+
+    $order = slsOrders()->cancelLines(new CancelOrderLines($placed->id, [new LineQuantity($line, 1)], CancelReason::OutOfStock));
+
+    // The fulfilled units left the reservation, the cancelled one goes back; nothing is held for the order any more.
+    expect([$order->state, $order->paymentState, $order->fulfillmentState])->toBe([OrderState::Completed, PaymentState::Paid, FulfillmentState::Fulfilled])
+        ->and($order->line($line))->cancelledQuantity->toBe(1)->fulfilledQuantity->toBe(2)
+        ->and($this->commerce->stock->consumed)->toHaveCount(1)
+        ->and($this->commerce->stock->released)->toEqual([new ReleaseReservation($demand, SellableRef::fromString('fake:a'), 1)])
+        ->and($this->commerce->stock->held($demand))->toBe([]);
 });
 
 it('announces the refund of the share a paid order no longer owes', function (): void {
