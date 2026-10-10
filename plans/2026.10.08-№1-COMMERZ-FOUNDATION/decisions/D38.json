@@ -1,0 +1,46 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D38",
+  "title": "Customer groups: the host directory's groups plus the cart command's",
+  "date": "2026-10-10",
+  "status": "accepted",
+  "question": "Where do the customer groups that price lists and promotions see come from in sales: the host's CustomerDirectory or the caller of SetCartCustomer?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Caller only (status quo): SetCartCustomer groups; the directory supplies email/name/taxExempt. Contradicts docs/architecture (data.md, api.md) and CustomerProfile::$groups, and makes every host pass groups twice."
+    },
+    {
+      "id": "B",
+      "text": "Directory only: groups resolved at quote time from CustomerDirectory. Live, but a host directory call on every quote and no per-cart deal groups."
+    },
+    {
+      "id": "C",
+      "text": "Directory plus command: setCustomer reads the profile once (before its transaction) and stores its groups followed by the command's extra groups; the cart, its quotes and the placed order use that snapshot."
+    }
+  ],
+  "context": "Grok 4.7 review of P8.3 (low): CustomerProfile::$groups is documented as driving prices and promotions and api.md says 'groups come from CustomerDirectory', yet no production code read profile groups; a CRM with a b2b directory group and no SetCartCustomer groups silently got retail prices.",
+  "decision": "C. Carts::setCustomer stores directory groups + command groups (deduplicated, directory first); without a customer, the command groups. The directory is read outside the transaction; the cart snapshot keeps quote and place consistent.",
+  "rationale": "Makes the documented contract true with one directory read per customer change, keeps quotes deterministic between setCustomer calls, and still lets an operator add groups for one cart (a deal).",
+  "applies_to": [
+    "P8",
+    "P8.3",
+    "P7"
+  ],
+  "evidence": [
+    {
+      "kind": "repo",
+      "ref": "phases/P8/P8.3/review/grok-answer.md"
+    },
+    {
+      "kind": "repo",
+      "ref": "packages/sales/tests/Feature/Carts/CartsTest.php 'takes the customer groups from the host directory'"
+    }
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}

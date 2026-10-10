@@ -11,6 +11,7 @@ use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Ports\Delivery\Data\Parcel;
@@ -63,6 +64,7 @@ final readonly class DatabaseCarts implements Carts
         private CartRows $rows,
         private CartLines $lines,
         private CartQuoter $quoter,
+        private CustomerDirectory $customers,
     ) {}
 
     public function create(CreateCart $command): CartView
@@ -117,18 +119,24 @@ final readonly class DatabaseCarts implements Carts
 
     public function setCustomer(SetCartCustomer $command): CartView
     {
-        return $this->mutate($command->cart, static function (CartRow $cart) use ($command): ?array {
+        // The host's directory owns the customer's groups (docs/architecture/data.md); the command may add groups for
+        // this cart. Read before the transaction: the directory is the host's and may be slow.
+        $groups = $command->customer === null
+            ? $command->groups
+            : array_values(array_unique([...$this->customers->find($command->customer)->groups ?? [], ...$command->groups]));
+
+        return $this->mutate($command->cart, static function (CartRow $cart) use ($command, $groups): ?array {
             $sameCustomer = $cart->customer === null || $command->customer === null
                 ? $cart->customer === $command->customer
                 : $cart->customer->equals($command->customer);
 
-            if ($sameCustomer && $cart->groups === $command->groups) {
+            if ($sameCustomer && $cart->groups === $groups) {
                 return null;
             }
 
             return [
                 'customer_ref' => $command->customer === null ? null : (string) $command->customer,
-                'customer_groups' => SalesCodec::stringsToJson($command->groups),
+                'customer_groups' => SalesCodec::stringsToJson($groups),
             ];
         });
     }

@@ -7,7 +7,10 @@ use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Pagination\Cursor;
+use Commerz\Ports\Customers\Contracts\CustomerDirectory;
+use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
+use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
 use Commerz\Sales\Carts\Data\ClearDelivery;
@@ -173,6 +176,30 @@ it('keeps trimmed codes without repeats', function (): void {
         ->and($absent->version)->toBe($removed->version)
         ->and(fn () => new EnterCode($cart->id, '  '))->toThrow(InvalidCommand::class)
         ->and(fn () => new EnterCode($cart->id, str_repeat('x', 65)))->toThrow(InvalidCommand::class);
+});
+
+it('takes the customer groups from the host directory and adds those of the command', function (): void {
+    // docs/architecture/data.md: the CustomerDirectory owns the groups that drive prices and promotions.
+    app()->instance(CustomerDirectory::class, new class implements CustomerDirectory
+    {
+        public function find(CustomerRef $customer): ?CustomerProfile
+        {
+            return (string) $customer === 'crm:acme' ? new CustomerProfile($customer, ['b2b', 'vip']) : null;
+        }
+    });
+    app()->forgetInstance(Carts::class);
+    $cart = ctCart($this->web);
+
+    $known = ctCarts()->setCustomer(new SetCartCustomer($cart->id, CustomerRef::of('crm', 'acme')));
+    $added = ctCarts()->setCustomer(new SetCartCustomer($cart->id, CustomerRef::of('crm', 'acme'), ['vip', 'deal-7']));
+    $unknown = ctCarts()->setCustomer(new SetCartCustomer($cart->id, CustomerRef::of('crm', 'nobody'), ['retail']));
+    $guest = ctCarts()->setCustomer(new SetCartCustomer($cart->id, null));
+
+    expect($known->customerGroups)->toBe(['b2b', 'vip'])
+        ->and($added->customerGroups)->toBe(['b2b', 'vip', 'deal-7'])
+        ->and($unknown->customerGroups)->toBe(['retail'])
+        ->and($guest->customerGroups)->toBe([])
+        ->and(ctCarts()->quote($cart->id)->context->customerGroups)->toBe([]);
 });
 
 it('sets and clears the customer, the addresses and the delivery method', function (): void {

@@ -8,7 +8,10 @@ use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 
-/** Sets or clears (`null`) the customer and the customer groups that price lists and promotions see. */
+/**
+ * Sets or clears (`null`) the customer and the customer groups that price lists and promotions see: the groups of the
+ * customer in the host's directory (`commerz.customers`) and `$groups` added for this cart; without a customer, `$groups`.
+ */
 #[Api(since: '0.1')]
 final readonly class SetCartCustomer
 {
