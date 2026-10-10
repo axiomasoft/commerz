@@ -41,8 +41,9 @@ use Throwable;
 /**
  * The only writer of `payments` (D33). A row is one attempt and its lease: `open` writes it `initiating` under the
  * lock of the order, after checking the balance; `lease` hands a reconcile the next attempt; `finish` records the
- * gateway's answer only while the row still carries the attempt it was asked under (and, for an initiate, is still
- * `initiating`), so a process whose lease was taken over never overwrites the new owner. Every change of status is
+ * gateway's answer only while the row still carries the attempt it was asked under, so a process whose lease was taken
+ * over never overwrites the new owner. A provider event that moved the payment meanwhile does not fence the answer
+ * off: `PaymentTransitions` never moves a payment back, and a captured answer must never be lost. Every change of status is
  * journalled on the order, announced after commit and followed by `OrderStatus::refresh`.
  */
 final readonly class PaymentJournal
@@ -190,19 +191,19 @@ final readonly class PaymentJournal
     }
 
     /**
-     * Tx B: records an answer of the gateway when the payment still carries `$attempt` (and is still `initiating`
-     * when `$initiating`); otherwise the lease was taken over and nothing is written.
+     * Tx B: records an answer of the gateway when the payment still carries `$attempt`; otherwise the lease was taken
+     * over and nothing is written. `$write` applies the answer to the payment as it is now, through the transitions.
      *
      * @param  Closure(OrderRow, PaymentRow): PaymentRow  $write  the change, given the locked order and payment
      * @return PaymentRow the payment as it is afterwards
      */
-    public function finish(PaymentRow $claimed, int $attempt, bool $initiating, Closure $write): PaymentRow
+    public function finish(PaymentRow $claimed, int $attempt, Closure $write): PaymentRow
     {
-        return $this->transactions->run(function () use ($claimed, $attempt, $initiating, $write): PaymentRow {
+        return $this->transactions->run(function () use ($claimed, $attempt, $write): PaymentRow {
             $order = $this->locks->lock($claimed->order);
             $current = $this->lock($claimed->id);
 
-            if ($current->attempts !== $attempt || ($initiating && $current->status !== PaymentStatus::Initiating)) {
+            if ($current->attempts !== $attempt) {
                 return $current;
             }
 

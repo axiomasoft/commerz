@@ -17,7 +17,6 @@ use Commerz\Sales\Checkout\Exceptions\DuplicateOrderNumber;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
-use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Schema\ConstraintNames;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelView;
@@ -41,7 +40,8 @@ final readonly class OrderWriter
     ) {}
 
     /**
-     * Writes a placed, unpaid, unfulfilled order whose amount due is its total. A savepoint guards the insert, so a
+     * Writes a placed, unfulfilled order whose amount due is its total: unpaid, or paid when it owes nothing, so a free
+     * order is never expired as unpaid. A savepoint guards the insert, so a
      * taken number fails only this operation, not the host's transaction.
      *
      * @throws DuplicateOrderNumber
@@ -59,6 +59,9 @@ final readonly class OrderWriter
     ): void {
         $now = $at->format('Y-m-d H:i:s.uP');
         $totals = $quote->totals;
+        $total = self::minor($totals->total, $cart);
+        $quantity = array_sum(array_map(static fn (QuotedLine $line): int => $line->quantity, $quote->lines));
+        [, $payment] = OrderStatus::derive(OrderState::Placed, $quantity, 0, 0, 0, $total, 0, 0, 0);
 
         $order = [
             'id' => $id->value,
@@ -68,7 +71,7 @@ final readonly class OrderWriter
             'cart_id' => $cart->id,
             'origin' => $cart->kind->value,
             'state' => OrderState::Placed->value,
-            'payment_state' => PaymentState::Unpaid->value,
+            'payment_state' => $payment->value,
             'fulfillment_state' => FulfillmentState::Unfulfilled->value,
             'currency' => $cart->currency->code,
             'locale' => $cart->locale,
@@ -90,8 +93,8 @@ final readonly class OrderWriter
             'discount_total_minor' => self::minor($totals->discountTotal, $cart),
             'delivery_total_minor' => self::minor($totals->deliveryTotal, $cart),
             'tax_total_minor' => self::minor($totals->taxTotal, $cart),
-            'total_minor' => self::minor($totals->total, $cart),
-            'amount_due_minor' => self::minor($totals->total, $cart),
+            'total_minor' => $total,
+            'amount_due_minor' => $total,
             'quote_fingerprint' => $quote->fingerprint,
             'payment_due_at' => $paymentDueAt?->format('Y-m-d H:i:s.uP'),
             'placed_at' => $now,

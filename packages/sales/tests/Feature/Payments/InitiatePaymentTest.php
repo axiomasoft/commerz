@@ -9,6 +9,7 @@ use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
+use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Orders\Data\CancelOrder;
@@ -16,6 +17,8 @@ use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Payments\Data\ListPayments;
+use Commerz\Sales\Payments\Data\RecordPaymentEvent;
+use Commerz\Sales\Payments\Enums\PaymentEventType;
 use Commerz\Sales\Payments\Enums\PaymentStatus;
 use Commerz\Sales\Payments\Events\PaymentStatusChanged;
 use Commerz\Sales\Payments\Exceptions\OrderNotPayable;
@@ -177,3 +180,15 @@ it('returns the same payment for a repeat with the key, without calling the gate
         ->and(DB::table('cmz_payments')->count())->toBe(1)
         ->and(fn () => slsPay($this->order, 'manual', key: 'pay-1'))->toThrow(IdempotencyConflict::class);
 });
+
+it('keeps the capture the gateway answered after a webhook moved the attempt on', function (PaymentEventType $webhook): void {
+    RecordingGateway::during(static fn (GatewayPaymentRequest $request) => slsPayments()->recordEvent(
+        new RecordPaymentEvent('recording', 'evt-early', $webhook, paymentReference: $request->reference),
+    ));
+
+    $payment = slsPay($this->order, 'recording', meta: ['status' => 'captured']);
+
+    expect([$payment->status, $payment->captured])->toEqual([PaymentStatus::Captured, $this->order->amountDue])
+        ->and(slsOrders()->find($this->order->id)->paymentState)->toBe(PaymentState::Paid)
+        ->and(fn () => slsPay($this->order))->toThrow(PaymentExceedsBalance::class);
+})->with([PaymentEventType::Failed, PaymentEventType::Authorized]);

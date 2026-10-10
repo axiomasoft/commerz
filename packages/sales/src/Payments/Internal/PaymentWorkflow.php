@@ -97,16 +97,16 @@ final readonly class PaymentWorkflow
         try {
             $result = $gateway->initiate($request);
         } catch (PaymentDeclined $e) {
-            $this->journal->finish($payment, 1, true, fn (OrderRow $order, PaymentRow $current): PaymentRow => $this->failed($order, $current, PaymentJournal::error($e)));
+            $this->journal->finish($payment, 1, fn (OrderRow $order, PaymentRow $current): PaymentRow => $this->failed($order, $current, PaymentJournal::error($e)));
 
             throw $e;
         } catch (Throwable $e) {
-            $this->unknown($payment, 1, true, $e);
+            $this->unknown($payment, 1, $e);
 
             throw new PaymentOutcomeUnknown($payment->id->value, $payment->gateway, $e);
         }
 
-        return $this->answered($payment, 1, true, $gateway, $result)->view();
+        return $this->answered($payment, 1, $gateway, $result)->view();
     }
 
     public function reconcile(ReconcilePayment $command): PaymentView
@@ -147,7 +147,7 @@ final readonly class PaymentWorkflow
         try {
             $found = $gateway->find($claimed->reference);
         } catch (Throwable $e) {
-            $this->unknown($claimed, $attempt, false, $e);
+            $this->unknown($claimed, $attempt, $e);
 
             throw new PaymentOutcomeUnknown($claimed->id->value, $claimed->gateway, $e);
         }
@@ -155,7 +155,7 @@ final readonly class PaymentWorkflow
         if ($found === null) {
             // The provider never created an attempt it was not sure to have: it failed, and the order may be paid anew.
             if (in_array($claimed->status, [PaymentStatus::Initiating, PaymentStatus::Unknown], true)) {
-                return $this->journal->finish($claimed, $attempt, false, fn (OrderRow $order, PaymentRow $current): PaymentRow => $this->failed(
+                return $this->journal->finish($claimed, $attempt, fn (OrderRow $order, PaymentRow $current): PaymentRow => $this->failed(
                     $order,
                     $current,
                     PaymentJournal::error('not_found_at_gateway', 'The gateway knows no such payment.'),
@@ -165,21 +165,21 @@ final readonly class PaymentWorkflow
             throw new InvalidGatewayResult($gateway->key(), "payment '{$claimed->reference}' vanished at the gateway");
         }
 
-        return $this->answered($claimed, $attempt, false, $gateway, $found)->view();
+        return $this->answered($claimed, $attempt, $gateway, $found)->view();
     }
 
     /** Validates and records an answer of the gateway; an invalid one leaves an initiating attempt unknown. */
-    private function answered(PaymentRow $payment, int $attempt, bool $initiating, PaymentGateway $gateway, GatewayPaymentResult $result): PaymentRow
+    private function answered(PaymentRow $payment, int $attempt, PaymentGateway $gateway, GatewayPaymentResult $result): PaymentRow
     {
         try {
             $this->validate($payment, $gateway->key(), $result);
         } catch (InvalidGatewayResult $e) {
-            $this->unknown($payment, $attempt, $initiating, $e);
+            $this->unknown($payment, $attempt, $e);
 
             throw $e;
         }
 
-        return $this->journal->finish($payment, $attempt, $initiating, function (OrderRow $order, PaymentRow $current) use ($result): PaymentRow {
+        return $this->journal->finish($payment, $attempt, function (OrderRow $order, PaymentRow $current) use ($result): PaymentRow {
             $amount = match ($result->status) {
                 GatewayPaymentStatus::Captured => $result->captured,
                 GatewayPaymentStatus::Authorized => $result->authorized,
@@ -209,9 +209,9 @@ final readonly class PaymentWorkflow
     }
 
     /** The answer was lost: an initiating attempt becomes unknown with the error; any other status stays. */
-    private function unknown(PaymentRow $payment, int $attempt, bool $initiating, Throwable $error): void
+    private function unknown(PaymentRow $payment, int $attempt, Throwable $error): void
     {
-        $this->journal->finish($payment, $attempt, $initiating, fn (OrderRow $order, PaymentRow $current): PaymentRow => $current->status === PaymentStatus::Initiating
+        $this->journal->finish($payment, $attempt, fn (OrderRow $order, PaymentRow $current): PaymentRow => $current->status === PaymentStatus::Initiating
             ? $this->journal->write($order, $current, $current->with(PaymentStatus::Unknown, $current->authorized, $current->captured, $current->actionUrl), PaymentJournal::error($error))
             : $current);
     }

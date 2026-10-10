@@ -18,6 +18,7 @@ use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
+use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
 use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
@@ -160,4 +161,13 @@ it('keeps an order whose payment was started, until the attempt fails', function
         ->and($report->skipped)->toBe(2)
         ->and(slsOrders()->find($pending->id)->state)->toBe(OrderState::Placed)
         ->and(slsOrders()->find($unknown->id)->state)->toBe(OrderState::Placed);
+});
+
+it('never expires an order that owes nothing, which is paid from its placement', function (): void {
+    $this->commerce->sellables->add(slsSnapshot('fake:free', '0.00', SellableKind::Service));
+    $order = slsPlace(slsCartWith($this->web, ['fake:free' => 1], address: false));
+
+    expect([$order->amountDue->amountMinor, $order->paymentState])->toBe([0, PaymentState::Paid])
+        ->and(slsOrders()->expireDue(new ExpireOrders($this->later)))->expired->toBe([])->skipped->toBe(0)
+        ->and(slsOrders()->find($order->id)->state)->toBe(OrderState::Placed);
 });

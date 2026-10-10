@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Tests\Fixtures;
 
+use Closure;
 use Commerz\Money\Money;
 use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
@@ -20,7 +21,8 @@ use RuntimeException;
  * processes. The request's meta, over the static scenario, steers `initiate`: `sleep_ms`, `fail` (`timeout`,
  * `decline` or `invalid`: an answer in a foreign currency) and `status` (`pending` by default, `requires_action`,
  * `authorized`, `captured`, `failed`, `cancelled`). `find` follows the scenario's `found`: null by default (the
- * provider knows no such payment), `fail` (it throws) or a status.
+ * provider knows no such payment), `fail` (it throws) or a status. `during` runs a callback inside `initiate`, after
+ * the call is logged and before the answer, as a webhook that overtakes the synchronous answer.
  */
 final class RecordingGateway implements PaymentGateway
 {
@@ -28,6 +30,9 @@ final class RecordingGateway implements PaymentGateway
 
     /** @var array<string, scalar|null> set before the processes fork, so each of them sees it */
     private static array $scenario = [];
+
+    /** @var (Closure(GatewayPaymentRequest): void)|null */
+    private static ?Closure $during = null;
 
     public function key(): string
     {
@@ -40,10 +45,20 @@ final class RecordingGateway implements PaymentGateway
         self::$scenario = $scenario;
     }
 
+    /** @param  (Closure(GatewayPaymentRequest): void)|null  $callback */
+    public static function during(?Closure $callback): void
+    {
+        self::$during = $callback;
+    }
+
     public function initiate(GatewayPaymentRequest $request): GatewayPaymentResult
     {
         $meta = $request->meta + self::$scenario;
         self::record('initiate', $request->reference, $meta['sleep_ms'] ?? 0);
+
+        if (self::$during instanceof Closure) {
+            (self::$during)($request);
+        }
 
         return match ($meta['fail'] ?? null) {
             'timeout' => throw new RuntimeException('The gateway timed out.'),
@@ -87,6 +102,7 @@ final class RecordingGateway implements PaymentGateway
     public static function reset(): void
     {
         self::$scenario = [];
+        self::$during = null;
 
         if (is_file(self::log())) {
             unlink(self::log());
