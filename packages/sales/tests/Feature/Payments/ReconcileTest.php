@@ -35,6 +35,17 @@ beforeEach(function (): void {
 
 afterEach(fn () => slsTruncate());
 
+it('learns the customer action of a pending payment during reconciliation', function (): void {
+    $payment = slsPay($this->order, 'recording');
+    RecordingGateway::scenario(['found' => 'requires_action']);
+
+    $reconciled = slsPayments()->reconcile(new ReconcilePayment($payment->id));
+
+    expect($reconciled->status)->toBe(PaymentStatus::RequiresAction)
+        ->and($reconciled->actionUrl)->toBe('https://pay.example/3ds/'.$payment->reference)
+        ->and(slsPayments()->find($payment->id)->actionUrl)->toBe($reconciled->actionUrl);
+});
+
 /** A recording payment whose initiate timed out. */
 function rcUnknown(OrderView $order): PaymentView
 {

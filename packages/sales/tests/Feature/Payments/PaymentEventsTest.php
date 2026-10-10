@@ -39,6 +39,19 @@ beforeEach(function (): void {
 
 afterEach(fn () => slsTruncate());
 
+it('learns an external id from an ignored observation and resolves the later capture by it', function (): void {
+    slsPayments()->recordEvent(new RecordPaymentEvent('manual', 'auth-first', PaymentEventType::Authorized, paymentReference: $this->payment->reference));
+    $event = new RecordPaymentEvent('manual', 'auth-id', PaymentEventType::Authorized, paymentReference: $this->payment->reference, externalPaymentId: 'provider-123');
+    $ignored = slsPayments()->recordEvent($event);
+    $duplicate = slsPayments()->recordEvent($event);
+    $capture = slsPayments()->recordEvent(new RecordPaymentEvent('manual', 'capture-by-id', PaymentEventType::Captured, externalPaymentId: 'provider-123'));
+
+    expect([$ignored->outcome, $duplicate->outcome, $duplicate->duplicate])->toBe([PaymentEventOutcome::Ignored, PaymentEventOutcome::Ignored, true])
+        ->and(slsPayments()->find($this->payment->id)->externalId)->toBe('provider-123')
+        ->and([$capture->outcome, $capture->status])->toBe([PaymentEventOutcome::Applied, PaymentStatus::Captured])
+        ->and(slsOrders()->find($this->order->id)->captured)->toEqual($this->order->amountDue);
+});
+
 function evCaptured(PaymentView $payment, string $id = 'bank-tx-42', ?Money $amount = null, string $gateway = 'manual'): RecordPaymentEvent
 {
     return new RecordPaymentEvent($gateway, $id, PaymentEventType::Captured, paymentReference: $payment->reference, amount: $amount);

@@ -29,7 +29,11 @@ final class PaymentTransitions
             PaymentStatus::Authorized => $rank >= 0 && $rank < 2
                 ? $current->with(PaymentStatus::Authorized, $amount ?? $current->amount, $current->captured, $current->actionUrl)
                 : null,
-            PaymentStatus::Pending, PaymentStatus::RequiresAction => $rank === 0
+            PaymentStatus::Pending => $rank === 0
+                ? $current->with($observed, $current->authorized, $current->captured, $actionUrl)
+                : null,
+            PaymentStatus::RequiresAction => $rank >= 0 && $rank <= 1
+                && ($current->status !== $observed || $current->actionUrl !== $actionUrl)
                 ? $current->with($observed, $current->authorized, $current->captured, $actionUrl)
                 : null,
             PaymentStatus::Failed => $rank >= 0 && $rank <= 1

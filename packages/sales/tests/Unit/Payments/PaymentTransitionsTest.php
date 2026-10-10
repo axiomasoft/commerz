@@ -37,6 +37,7 @@ it('moves a payment forward and ignores what would move it back', function (Paym
     'initiating → requires action' => [ptPayment(S::Initiating), S::RequiresAction, null, [S::RequiresAction, 0, 0]],
     'unknown → pending' => [ptPayment(S::Unknown), S::Pending, null, [S::Pending, 0, 0]],
     'pending again is ignored' => [ptPayment(S::Pending), S::Pending, null, null],
+    'pending → requires action' => [ptPayment(S::Pending), S::RequiresAction, null, [S::RequiresAction, 0, 0]],
     'requires action → pending is ignored' => [ptPayment(S::RequiresAction), S::Pending, null, null],
     'authorized → pending is ignored' => [ptPayment(S::Authorized, 10000), S::Pending, null, null],
     'initiating → authorized in full' => [ptPayment(S::Initiating), S::Authorized, null, [S::Authorized, 10000, 0]],
@@ -68,6 +69,16 @@ it('moves a payment forward and ignores what would move it back', function (Paym
 it('keeps the action url of a payment that requires an action', function (): void {
     expect(PaymentTransitions::apply(ptPayment(S::Initiating), S::RequiresAction, actionUrl: 'https://pay.example/3ds')?->actionUrl)
         ->toBe('https://pay.example/3ds');
+});
+
+it('updates the action url without moving an authorized or captured payment back', function (): void {
+    $action = PaymentTransitions::apply(ptPayment(S::Pending), S::RequiresAction, actionUrl: 'https://pay.example/first');
+    $changed = PaymentTransitions::apply($action, S::RequiresAction, actionUrl: 'https://pay.example/next');
+
+    expect($changed?->actionUrl)->toBe('https://pay.example/next')
+        ->and(PaymentTransitions::apply($changed, S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull()
+        ->and(PaymentTransitions::apply(ptPayment(S::Authorized, 10000), S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull()
+        ->and(PaymentTransitions::apply(ptPayment(S::Captured, 10000, 10000), S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull();
 });
 
 it('never observes the statuses of the protocol itself', function (S $observed): void {

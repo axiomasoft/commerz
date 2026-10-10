@@ -76,13 +76,18 @@ final readonly class DatabasePayments implements Payments
             }
 
             $next = PaymentTransitions::apply($payment, $command->type->status(), $command->amount?->amountMinor);
+            $columns = $command->externalPaymentId !== null && $payment->externalId === null ? ['external_id' => $command->externalPaymentId] : [];
 
-            if ($next === null) {
+            if ($next === null && $columns === []) {
                 return new PaymentEventResult($payment->id, false, PaymentEventOutcome::Ignored, $payment->status);
             }
 
-            $columns = $command->externalPaymentId !== null && $payment->externalId === null ? ['external_id' => $command->externalPaymentId] : [];
-            $written = $this->journal->write($order, $payment, $next, $columns);
+            $written = $this->journal->write($order, $payment, $next ?? $payment, $columns);
+
+            if ($next === null) {
+                return new PaymentEventResult($payment->id, false, PaymentEventOutcome::Ignored, $written->status);
+            }
+
             $this->inbox->applied($command->gateway, $command->externalEventId);
 
             return new PaymentEventResult($payment->id, false, PaymentEventOutcome::Applied, $written->status);

@@ -213,51 +213,45 @@
     "status": "not_needed"
   },
   "result": {
-    "started_at": "2026-10-10T04:39:02Z",
-    "finished_at": "2026-10-10T05:36:21Z",
+    "started_at": "2026-10-10T09:44:21Z",
+    "finished_at": "2026-10-10T10:14:11Z",
     "executor": {
-      "provider": "anthropic",
-      "model": "claude-opus-5-5",
+      "provider": "codex",
+      "model": "gpt-6.1-sol",
       "effort": "high",
-      "session": "5c212dec-712d-4da7-9965-269e31bfe6a1"
+      "session": "01a1251b-257e-77d0-a264-4e860fca8930"
     },
-    "notes": "Payments module: PaymentWorkflow (Tx A balance under order lock → gateway outside tx → attempt-fenced finish; decline → failed, other exception → unknown; reconcile via find with lease), PaymentJournal (sole writer of payments), PaymentTransitions (monotonic, captured strongest), PaymentEventInbox (UNIQUE claim + fingerprint before any transition), DatabasePayments find/list; RecordingGateway fixture; C4/C5/C8, fence and gate tests. Grok 4.7 review of P7.4–P7.5: 2 high findings fixed (2bcd254). Sales 340 passed.",
+    "notes": "A3/A5: pending action progression, URL refresh and ID enrichment even for ignored monetary events. GREEN closure: knowledge/audit-p7-fixes-2026-10-10; Grok 4.7 GREEN. V1/V2/V3 root Composer checks passed; V4/V5 covered by full Composer test (2075 passed/14472 assertions; includes Sales/Arch/Shipping/Integration), isolated commerz_test.",
     "deviations": [
-      "RecordPaymentEvent takes at least one of reference/externalPaymentId",
-      "failed/cancelled final except captured in PaymentTransitions",
-      "PaymentRow internal; refund signal only from OrderStatus::refresh",
-      "reconcile checks the gateway before leasing; explicit non-positive amount is InvalidCommand",
-      "payment tests and ExpiryTest commit data; SalesRootTest extended",
-      "finish fenced by attempts only (review fix 1)",
-      "OrderWriter places a free order paid (review fix 2)"
+      "A3/A5: pending action progression, URL refresh and ID enrichment even for ignored monetary events."
     ],
     "checks": [
       {
         "id": "V1",
         "exit": 0,
-        "at": "2026-10-10T05:36:21Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V2",
         "exit": 0,
-        "at": "2026-10-10T05:36:21Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V3",
         "exit": 0,
-        "at": "2026-10-10T05:36:21Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V4",
         "exit": 0,
-        "at": "2026-10-10T05:36:21Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V5",
         "exit": 0,
-        "at": "2026-10-10T05:36:21Z"
+        "at": "2026-10-10T10:14:11Z"
       }
     ]
   },
-  "updated_at": "2026-10-10T05:36:21Z"
+  "updated_at": "2026-10-10T10:14:11Z"
 }
