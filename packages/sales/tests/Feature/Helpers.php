@@ -33,6 +33,7 @@ use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Payments\Data\InitiatePayment;
 use Commerz\Sales\Payments\Data\PaymentView;
+use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
@@ -84,6 +85,11 @@ function slsPayments(): Payments
 function slsFulfillments(): Fulfillments
 {
     return app(Fulfillments::class);
+}
+
+function slsReturns(): Returns
+{
+    return app(Returns::class);
 }
 
 /**

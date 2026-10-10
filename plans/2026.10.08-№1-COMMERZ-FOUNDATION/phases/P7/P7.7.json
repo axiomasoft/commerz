@@ -1,0 +1,196 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P7.7",
+  "title": "Returns: request, receive with explicit restock, cancel (REF-01)",
+  "status": "done_with_deviations",
+  "summary": "Модуль Returns по sales-design#returns-refunds: request (доступное = fulfilled − returned − открытые возвраты под блокировкой заказа), receive (OrderLedger::returnReceived, явный restock через StockReturns только Physical, FulfillmentState returned/partially_returned), cancel, find/list.",
+  "why": "REF-01: принятый товар не должен молча возвращаться на сток (брак, некомплект); вернуть больше отгруженного нельзя. Риски: restock по умолчанию; двойная приёмка; restock услуг; конкурентные запросы на одну строку.",
+  "scope": {
+    "include": [
+      "Returns/{Contracts/Returns, Data/{ReturnId, RequestReturn, ReceiveReturn, CancelReturn, ReturnView, ReturnLineView, ListReturns}, Enums/ReturnStatus, Events/ReturnReceived, Exceptions/{ReturnNotFound, ReturnNotOpen, ReturnExceedsFulfilled, RestockExceedsReceived}, Internal/{DatabaseReturns, ReturnRows}}",
+      "Sales.php returns(); биндинги провайдера",
+      "тесты: tests/Feature/Returns/ReturnsTest.php (request ≤ доступного с учётом открытых возвратов; cancelled заказ; receive без restock → FakeStock::restocked пуст; с restock → RestockStock('return:{id}', channel, только Physical, locationCode); restock > принятого → RestockExceedsReceived; повтор receive → view без второго restock; cancel requested; receive cancelled → ReturnNotOpen; FulfillmentState partially_returned → returned; completed заказ принимает возврат и остаётся completed; outbox sales.return_received)"
+    ],
+    "exclude": [
+      "возврат денег (P7.8)",
+      "обмены",
+      "решения disposition кроме restock (quarantine/scrap — после 0.1)"
+    ]
+  },
+  "depends_on": [
+    "P7.6"
+  ],
+  "decisions": [
+    "D22"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/sales-design#model",
+      "why": "модель, суммы, производные состояния, порты",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#returns-refunds",
+      "why": "возвраты товара и денег",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#locks",
+      "why": "модель блокировок, обходы, конфликтующие пары",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#api",
+      "why": "публичный API, коды ошибок, события, outbox",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Stock/Contracts/StockReturns.php",
+      "why": "restock идемпотентен по reference",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Stock/Data/RestockStock.php",
+      "why": "форма restock",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/sales/src/Returns/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Sales.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/Facades/Sales.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/SalesServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Returns/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Helpers.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, количества — int.",
+    "Расхождение с knowledge/sales-design, D31–D34, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенном Transactions::run (savepoint), чтобы не отравить транзакцию хоста.",
+    "sales пишет только в свои таблицы (cart*, order*, payment*, refund*, fulfillment*, return*); channel_id/store_id — uuid без FK; ссылки на чужое — *_ref без FK.",
+    "Модуль не импортирует Internal другого модуля: общее — только Common/Internal или публичные контракты (sales-design#layout).",
+    "Любая мутация заказа начинается с OrderLocks::lock (FOR UPDATE заказа) и дальше соблюдает глобальный порядок sales-design#locks: receipt → cart/order → документы заказа → stock → coupons → promotions → customer usages → payments → refunds.",
+    "Резерв, consume и restock — только для строк SellableKind::Physical; услуги и цифровые строки склад не трогают.",
+    "StockReturns::restock вызывается только из Returns::receive и только для явно перечисленных restock-количеств (REF-01).",
+    "returned_quantity меняет только OrderLedger::returnReceived в транзакции приёмки."
+  ],
+  "guidance": "Секции: sales-design#returns-refunds (Returns — ядро item'а), #locks (order → return → stock), #model (FulfillmentState). Доступное к возврату по строке = fulfilled − returned − Σ quantity возвратов status requested; считать под OrderLocks::lock. После приёмки — OrderStatus::refresh.",
+  "examples": [
+    {
+      "path": "packages/sales/src/Fulfillments/Internal/DatabaseFulfillments.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Sales",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Returns API",
+    "явный restock (REF-01)"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "medium"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T06:59:51Z",
+    "finished_at": "2026-10-10T07:05:12Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "session": "6980e2d9-e56b-4ffe-a3a1-75737537027a"
+    },
+    "notes": "Returns module: request/receive/cancel/find/list, explicit Physical-only restock (REF-01), idempotent receive, Sales::returns(); 396 Sales tests green.",
+    "deviations": [
+      "testkit Commerce::fake() now binds StockReturns to FakeStock"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T07:05:12Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T07:05:12Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T07:05:12Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T07:05:12Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T07:05:12Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-10T07:05:12Z"
+}

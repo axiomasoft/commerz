@@ -14,6 +14,7 @@ use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
+use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Testkit\Fakes\FakeCustomers;
 use Commerz\Testkit\Fakes\FakeDelivery;
 use Commerz\Testkit\Fakes\FakePrices;
@@ -49,6 +50,7 @@ final readonly class Commerce
         $container->instance(Sellables::class, new FakeSellableRouter($fakes->sellables));
         $container->instance(StockAvailability::class, $fakes->stock);
         $container->instance(StockReservations::class, $fakes->stock);
+        $container->instance(StockReturns::class, $fakes->stock);
         $container->instance(PriceResolver::class, $fakes->prices);
         $container->instance(PromotionUsage::class, $fakes->promotions);
         $container->instance(DeliveryOptions::class, $fakes->delivery);
