@@ -80,12 +80,12 @@ final readonly class DatabaseRefunds implements Refunds
             }
 
             $observed = $command->succeeded ? RefundStatus::Succeeded : RefundStatus::Failed;
+            $columns = $command->externalRefundId !== null && $refund->externalId === null ? ['external_id' => $command->externalRefundId] : [];
 
-            if (RefundJournal::transition($refund->status, $observed) === null) {
+            if (RefundJournal::transition($refund->status, $observed) === null && $columns === []) {
                 return new RefundEventResult($refund->id, false, PaymentEventOutcome::Ignored, $refund->status);
             }
 
-            $columns = $command->externalRefundId !== null && $refund->externalId === null ? ['external_id' => $command->externalRefundId] : [];
             $columns += $command->succeeded ? [] : ['error_code' => 'refund_failed_at_gateway', 'error_message' => 'The provider reported the refund failed.'];
             $written = $this->journal->write($order, $refund, $observed, $columns);
 

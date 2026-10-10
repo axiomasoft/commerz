@@ -42,6 +42,21 @@ beforeEach(function (): void {
 
 afterEach(fn () => slsTruncate());
 
+it('learns an external id from a repeated success without refunding the payment twice', function (): void {
+    $order = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    $payment = rfCaptured($order, '10.00');
+    $refund = rfIssue($order, '1.00', payment: $payment);
+    $event = new RecordRefundEvent('manual', 'refund-id', true, refundReference: $refund->reference, externalRefundId: 'provider-refund');
+
+    $ignored = slsRefunds()->recordEvent($event);
+    $duplicate = slsRefunds()->recordEvent($event);
+    $byId = slsRefunds()->recordEvent(new RecordRefundEvent('manual', 'refund-by-id', true, externalRefundId: 'provider-refund'));
+
+    expect([$ignored->outcome, $duplicate->duplicate, $byId->outcome])->toBe([PaymentEventOutcome::Ignored, true, PaymentEventOutcome::Ignored])
+        ->and(slsRefunds()->find($refund->id)->externalId)->toBe('provider-refund')
+        ->and(slsPayments()->find($payment->id)->refunded)->toEqual(Money::of('1.00', 'RUB'));
+});
+
 function rfEvent(RefundView $refund, string $id, bool $succeeded = true, bool $byExternalId = false): RecordRefundEvent
 {
     return $byExternalId

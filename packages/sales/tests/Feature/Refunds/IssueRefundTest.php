@@ -16,6 +16,7 @@ use Commerz\Sales\Fulfillments\Data\CreateFulfillment;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Orders\Data\OrderId;
+use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
 use Commerz\Sales\Payments\Data\PaymentId;
@@ -236,6 +237,42 @@ it('gives the promotion usage back as refunded when the order is refunded in ful
         ->and($this->commerce->promotions->restored)->toEqual([new RestorePromotionUsage('order:'.$order->id->value, RestoreReason::Refunded)])
         ->and($this->commerce->promotions->uses('p1'))->toBe(0)
         ->and(slsOrders()->find($order->id)->paymentState)->toBe(PaymentState::Refunded);
+});
+
+it('keeps a fulfilled order payable after refunding a partial payment, then completes it on the remaining capture', function (string $refund): void {
+    rfCaptured($this->order, '10.00');
+    rfIssue($this->order, $refund);
+    slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 2)]));
+    $partial = slsOrders()->find($this->order->id);
+
+    expect($partial->state)->toBe(OrderState::Placed)
+        ->and($partial->captured)->toEqual(Money::of('10.00', 'RUB'))
+        ->and(rfOutbox('sales.order_completed'))->toBe([]);
+
+    rfCaptured($this->order);
+    $completed = slsOrders()->find($this->order->id);
+
+    expect($completed->state)->toBe(OrderState::Completed)
+        ->and($completed->captured)->toEqual($completed->amountDue)
+        ->and($completed->refunded)->toEqual(Money::of($refund, 'RUB'))
+        ->and(rfOutbox('sales.order_completed'))->toHaveCount(1);
+})->with(['1.00', '10.00']);
+
+it('keeps promotion usage after refunding only a partial payment until the entire order was paid and refunded', function (): void {
+    $cart = slsCartWith($this->web, ['fake:a' => 2]);
+    slsCarts()->enterCode(new EnterCode($cart->id, 'promo:p1'));
+    $order = slsPlace($cart);
+    rfCaptured($order, '10.00');
+    rfIssue($order, '10.00');
+
+    expect($this->commerce->promotions->restored)->toBe([])
+        ->and($this->commerce->promotions->uses('p1'))->toBe(1);
+
+    rfCaptured($order);
+    rfIssue($order, '180.00');
+
+    expect($this->commerce->promotions->restored)->toEqual([new RestorePromotionUsage('order:'.$order->id->value, RestoreReason::Refunded)])
+        ->and($this->commerce->promotions->uses('p1'))->toBe(0);
 });
 
 it('never touches the stock', function (): void {

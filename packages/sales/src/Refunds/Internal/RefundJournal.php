@@ -399,15 +399,18 @@ final readonly class RefundJournal
         return $row !== null && Rows::int($row, 'refundable') >= $refund->amount;
     }
 
-    /** Whether the order's succeeded refunds and this one together give back all it captured. */
+    /** Whether the fully paid order's succeeded refunds and this one together give back all it captured. */
     private function refundsOrderFully(OrderRow $order, RefundRow $refund): bool
     {
         $payments = $this->db()->table($this->tables->table('payments'))->where('order_id', $order->id->value)
             ->selectRaw('coalesce(sum(captured_minor), 0)::bigint as captured')
             ->first();
         $captured = $payments === null ? 0 : Rows::int($payments, 'captured');
+        $row = $this->db()->table($this->tables->table('orders'))->where('id', $order->id->value)->first(['amount_due_minor']);
+        $amountDue = Rows::int($row ?? throw new \LogicException('Locked order disappeared.'), 'amount_due_minor');
 
-        return $captured > 0 && $this->succeeded('order_id', $order->id->value) + $refund->amount >= $captured;
+        return $captured > 0 && $captured >= $amountDue
+            && $this->succeeded('order_id', $order->id->value) + $refund->amount >= $captured;
     }
 
     /** The money of the succeeded refunds of one payment or order (`$column` = `payment_id` or `order_id`). */

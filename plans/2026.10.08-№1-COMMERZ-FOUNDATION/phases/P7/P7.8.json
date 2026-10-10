@@ -184,49 +184,45 @@
     "status": "not_needed"
   },
   "result": {
-    "started_at": "2026-10-10T07:07:50Z",
-    "finished_at": "2026-10-10T08:07:44Z",
+    "started_at": "2026-10-10T09:59:13Z",
+    "finished_at": "2026-10-10T10:14:12Z",
     "executor": {
-      "provider": "claude-code",
-      "model": "claude-opus-5-5",
+      "provider": "codex",
+      "model": "gpt-6.1-sol",
       "effort": "high",
-      "session": "8795a0e5-5d2a-4f84-ac59-86e080ece371"
+      "session": "01a1251b-257e-77d0-a264-4e860fca8930"
     },
-    "notes": "Refunds module: issue/recordEvent/reconcile/find/list, payment journal protocol, promotion restore(Refunded) on full refund before the payment lock, REF-01 gate, C7 green; grok-4.7 review fail→1 high finding confirmed and fixed; 448 Sales tests green.",
+    "notes": "A5 symmetry and A1-related promotion regression: only fully covered and fully refunded order restores usage. GREEN closure: knowledge/audit-p7-fixes-2026-10-10; Grok 4.7 GREEN. V1/V2/V3 root Composer checks passed; V4/V5 covered by full Composer test (2075 passed/14472 assertions; includes Sales/Arch/Shipping/Integration), isolated commerz_test.",
     "deviations": [
-      "payments.refunded_minor written by RefundJournal; PaymentGatesTest extended",
-      "RefundEventResult instead of PaymentEventResult",
-      "finish fenced by attempts only",
-      "event lock order order → claim → restore → payment → refund",
-      "failed takes a later success (review fix); over-refund journals refund_over_refunded"
+      "A5 symmetry and A1-related promotion regression: only fully covered and fully refunded order restores usage."
     ],
     "checks": [
       {
         "id": "V1",
         "exit": 0,
-        "at": "2026-10-10T08:07:44Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V2",
         "exit": 0,
-        "at": "2026-10-10T08:07:44Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V3",
         "exit": 0,
-        "at": "2026-10-10T08:07:44Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V4",
         "exit": 0,
-        "at": "2026-10-10T08:07:44Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V5",
         "exit": 0,
-        "at": "2026-10-10T08:07:44Z"
+        "at": "2026-10-10T10:14:12Z"
       }
     ]
   },
-  "updated_at": "2026-10-10T08:07:44Z"
+  "updated_at": "2026-10-10T10:14:12Z"
 }
