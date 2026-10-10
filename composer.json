@@ -72,7 +72,10 @@
         "refactor": "rector",
         "refactor:check": "rector --dry-run",
         "test": "pest",
-        "test:arch": "pest --testsuite=Arch"
+        "test:arch": "pest --testsuite=Arch",
+        "api:manifest": "@php scripts/generate-api-manifest.php",
+        "api:check": "@php scripts/generate-api-manifest.php --check",
+        "docs:reference": "@php scripts/generate-api-reference.php"
     },
     "config": {
         "sort-packages": true,

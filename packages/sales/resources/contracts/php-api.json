@@ -1,0 +1,2514 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "sales",
+    "composer": "axiomasoft/commerz-sales",
+    "types": {
+        "Commerz\\Sales\\Carts\\Contracts\\Carts": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "addLine": "addLine(\\Commerz\\Sales\\Carts\\Data\\AddCartLine $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "clearDelivery": "clearDelivery(\\Commerz\\Sales\\Carts\\Data\\ClearDelivery $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "create": "create(\\Commerz\\Sales\\Carts\\Data\\CreateCart $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "deliveryOptions": "deliveryOptions(\\Commerz\\Sales\\Carts\\Data\\CartId $id): array",
+                "enterCode": "enterCode(\\Commerz\\Sales\\Carts\\Data\\EnterCode $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "find": "find(\\Commerz\\Sales\\Carts\\Data\\CartId $id): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "list": "list(\\Commerz\\Sales\\Carts\\Data\\ListCarts $query): \\Commerz\\Pagination\\Page",
+                "quote": "quote(\\Commerz\\Sales\\Carts\\Data\\CartId $id): \\Commerz\\Quotes\\Data\\QuoteResult",
+                "removeCode": "removeCode(\\Commerz\\Sales\\Carts\\Data\\RemoveCode $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "removeLine": "removeLine(\\Commerz\\Sales\\Carts\\Data\\RemoveCartLine $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "selectDelivery": "selectDelivery(\\Commerz\\Sales\\Carts\\Data\\SelectDelivery $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "setAddress": "setAddress(\\Commerz\\Sales\\Carts\\Data\\SetCartAddress $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "setCustomer": "setCustomer(\\Commerz\\Sales\\Carts\\Data\\SetCartCustomer $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "setLineQuantity": "setLineQuantity(\\Commerz\\Sales\\Carts\\Data\\SetCartLineQuantity $command): \\Commerz\\Sales\\Carts\\Data\\CartView"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\AddCartLine": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "quantity": "public readonly int $quantity",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, \\Commerz\\Identity\\SellableRef $sellable, int $quantity)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\CartId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Carts\\Data\\CartLineView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly string $id",
+                "quantity": "public readonly int $quantity",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(string $id, \\Commerz\\Identity\\SellableRef $sellable, int $quantity)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\CartView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "billingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress",
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "codes": "public readonly array $codes",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "createdBy": "public readonly ?\\Commerz\\Identity\\ActorRef $createdBy",
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "customerGroups": "public readonly array $customerGroups",
+                "deliveryMethod": "public readonly ?string $deliveryMethod",
+                "id": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $id",
+                "kind": "public readonly \\Commerz\\Sales\\Carts\\Enums\\CartKind $kind",
+                "lines": "public readonly array $lines",
+                "locale": "public readonly string $locale",
+                "shippingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress",
+                "state": "public readonly \\Commerz\\Sales\\Carts\\Enums\\CartState $state",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "version": "public readonly int $version"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $id, \\Commerz\\Sales\\Carts\\Enums\\CartKind $kind, \\Commerz\\Sales\\Carts\\Enums\\CartState $state, \\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Money\\Currency $currency, string $locale, ?\\Commerz\\Identity\\CustomerRef $customer, array $customerGroups, array $lines, array $codes, ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress, ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress, ?string $deliveryMethod, int $version, ?\\Commerz\\Identity\\ActorRef $createdBy, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\ClearDelivery": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\CreateCart": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "context": "public readonly \\Commerz\\Context\\CommerceContext $context"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Context\\CommerceContext $context, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\EnterCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "code": "public readonly string $code"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, string $code)",
+                "normalize": "static normalize(string $code): string"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\ListCarts": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "kind": "public readonly ?\\Commerz\\Sales\\Carts\\Enums\\CartKind $kind",
+                "limit": "public readonly int $limit",
+                "state": "public readonly ?\\Commerz\\Sales\\Carts\\Enums\\CartState $state"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Sales\\Carts\\Enums\\CartKind $kind = null, ?\\Commerz\\Sales\\Carts\\Enums\\CartState $state = null, ?\\Commerz\\Identity\\CustomerRef $customer = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\RemoveCartLine": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "lineId": "public readonly string $lineId"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, string $lineId)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\RemoveCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "code": "public readonly string $code"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, string $code)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\SelectDelivery": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "methodCode": "public readonly string $methodCode"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, string $methodCode)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\SetCartAddress": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "address": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $address",
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "role": "public readonly \\Commerz\\Sales\\Carts\\Enums\\AddressRole $role"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, \\Commerz\\Sales\\Carts\\Enums\\AddressRole $role, ?\\Commerz\\Ports\\Delivery\\Data\\Address $address)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\SetCartCustomer": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "groups": "public readonly array $groups"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, ?\\Commerz\\Identity\\CustomerRef $customer, array $groups = [])"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Data\\SetCartLineQuantity": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "lineId": "public readonly string $lineId",
+                "quantity": "public readonly int $quantity"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, string $lineId, int $quantity)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Enums\\AddressRole": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Shipping": "shipping",
+                "Billing": "billing"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Enums\\CartKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Cart": "cart",
+                "Draft": "draft"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Enums\\CartState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Open": "open",
+                "Converted": "converted"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\CartLineNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\CartNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\CartNotOpen": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "cart": "public readonly string $cart",
+                "state": "public readonly string $state"
+            },
+            "methods": {
+                "__construct": "__construct(string $cart, string $state)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\SellableNotPurchasable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reason": "public readonly ?string $reason",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, ?string $reason = null)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\ShippingAddressRequired": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\InvalidCommand",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct()"
+            }
+        },
+        "Commerz\\Sales\\Carts\\Exceptions\\TooManyCartLines": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\InvalidCommand",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "max": "public readonly int $max"
+            },
+            "methods": {
+                "__construct": "__construct(int $max)"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Contracts\\Checkout": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "place": "place(\\Commerz\\Sales\\Checkout\\Data\\PlaceOrder $command): \\Commerz\\Sales\\Orders\\Data\\OrderView"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Data\\PlaceOrder": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "expectedTotal": "public readonly \\Commerz\\Money\\Money $expectedTotal",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Carts\\Data\\CartId $cart, \\Commerz\\Money\\Money $expectedTotal, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\CartAlreadyPlaced": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "cart": "public readonly string $cart",
+                "order": "public readonly ?string $order"
+            },
+            "methods": {
+                "__construct": "__construct(string $cart, ?string $order)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\CartChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "actualVersion": "public readonly int $actualVersion",
+                "cart": "public readonly string $cart",
+                "expectedVersion": "public readonly int $expectedVersion"
+            },
+            "methods": {
+                "__construct": "__construct(string $cart, int $expectedVersion, int $actualVersion)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\CartEmpty": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "cart": "public readonly string $cart"
+            },
+            "methods": {
+                "__construct": "__construct(string $cart)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\DeliveryRequired": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "cart": "public readonly string $cart"
+            },
+            "methods": {
+                "__construct": "__construct(string $cart)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\DuplicateOrderNumber": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "number": "public readonly string $number",
+                "store": "public readonly string $store"
+            },
+            "methods": {
+                "__construct": "__construct(string $store, string $number)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Checkout\\Exceptions\\QuoteChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "actual": "public readonly \\Commerz\\Money\\Money $actual",
+                "expected": "public readonly \\Commerz\\Money\\Money $expected"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Money\\Money $expected, \\Commerz\\Money\\Money $actual)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Common\\Data\\LineQuantity": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "lineId": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderLineId $lineId",
+                "quantity": "public readonly int $quantity"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderLineId $lineId, int $quantity)"
+            }
+        },
+        "Commerz\\Sales\\Common\\Exceptions\\LineNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Common\\Exceptions\\OperationInsideTransaction": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "operation": "public readonly string $operation"
+            },
+            "methods": {
+                "__construct": "__construct(string $operation)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Common\\Exceptions\\QuantityExceedsOutstanding": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "available": "public readonly int $available",
+                "lineId": "public readonly string $lineId",
+                "requested": "public readonly int $requested"
+            },
+            "methods": {
+                "__construct": "__construct(string $lineId, int $requested, int $available)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Facades\\Sales": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Sales\\Fulfillments\\Contracts\\Fulfillments": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "book": "book(\\Commerz\\Sales\\Fulfillments\\Data\\BookFulfillment $command): \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView",
+                "create": "create(\\Commerz\\Sales\\Fulfillments\\Data\\CreateFulfillment $command): \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView",
+                "find": "find(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $id): \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView",
+                "list": "list(\\Commerz\\Sales\\Fulfillments\\Data\\ListFulfillments $query): \\Commerz\\Pagination\\Page",
+                "markDelivered": "markDelivered(\\Commerz\\Sales\\Fulfillments\\Data\\MarkFulfillmentDelivered $command): \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView",
+                "ship": "ship(\\Commerz\\Sales\\Fulfillments\\Data\\ShipFulfillment $command): \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\BookFulfillment": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "fulfillment": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment",
+                "heightMm": "public readonly ?int $heightMm",
+                "lengthMm": "public readonly ?int $lengthMm",
+                "meta": "public readonly array $meta",
+                "widthMm": "public readonly ?int $widthMm"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment, ?int $lengthMm = null, ?int $widthMm = null, ?int $heightMm = null, array $meta = [], ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\CreateFulfillment": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "lines": "public readonly array $lines",
+                "locationCode": "public readonly ?string $locationCode",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, array $lines, ?string $locationCode = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\FulfillmentView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "carrier": "public readonly ?string $carrier",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "deliveredAt": "public readonly ?\\DateTimeImmutable $deliveredAt",
+                "id": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $id",
+                "labelRef": "public readonly ?string $labelRef",
+                "lines": "public readonly array $lines",
+                "locationCode": "public readonly ?string $locationCode",
+                "methodCode": "public readonly ?string $methodCode",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "shippedAt": "public readonly ?\\DateTimeImmutable $shippedAt",
+                "status": "public readonly \\Commerz\\Sales\\Fulfillments\\Enums\\FulfillmentStatus $status",
+                "tracking": "public readonly ?string $tracking"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $id, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Fulfillments\\Enums\\FulfillmentStatus $status, array $lines, ?string $locationCode, ?string $carrier, ?string $methodCode, ?string $tracking, ?string $labelRef, ?\\DateTimeImmutable $shippedAt, ?\\DateTimeImmutable $deliveredAt, \\DateTimeImmutable $createdAt)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\ListFulfillments": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "limit": "public readonly int $limit",
+                "order": "public readonly ?\\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "status": "public readonly ?\\Commerz\\Sales\\Fulfillments\\Enums\\FulfillmentStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Sales\\Orders\\Data\\OrderId $order = null, ?\\Commerz\\Sales\\Fulfillments\\Enums\\FulfillmentStatus $status = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\MarkFulfillmentDelivered": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "fulfillment": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Data\\ShipFulfillment": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "carrier": "public readonly ?string $carrier",
+                "fulfillment": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment",
+                "tracking": "public readonly ?string $tracking"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment, ?string $carrier = null, ?string $tracking = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Enums\\FulfillmentStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Created": "created",
+                "Shipped": "shipped",
+                "Delivered": "delivered"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Events\\FulfillmentCreated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "fulfillment": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment, \\Commerz\\Sales\\Orders\\Data\\OrderId $order)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Events\\FulfillmentShipped": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "fulfillment": "public readonly \\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "tracking": "public readonly ?string $tracking"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Fulfillments\\Data\\FulfillmentId $fulfillment, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, ?string $tracking)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Exceptions\\FulfillmentAlreadyShipped": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "booking": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\BookedShipment $booking",
+                "carrier": "public readonly ?string $carrier",
+                "fulfillment": "public readonly string $fulfillment",
+                "tracking": "public readonly ?string $tracking"
+            },
+            "methods": {
+                "__construct": "__construct(string $fulfillment, ?string $carrier, ?string $tracking, ?\\Commerz\\Ports\\Delivery\\Data\\BookedShipment $booking = null)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Exceptions\\FulfillmentNotBookable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "fulfillment": "public readonly string $fulfillment",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $fulfillment, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Exceptions\\FulfillmentNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Exceptions\\FulfillmentNotShipped": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "fulfillment": "public readonly string $fulfillment"
+            },
+            "methods": {
+                "__construct": "__construct(string $fulfillment)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Fulfillments\\Exceptions\\OrderNotFulfillable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "order": "public readonly string $order",
+                "state": "public readonly string $state"
+            },
+            "methods": {
+                "__construct": "__construct(string $order, string $state)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Contracts\\PaymentGateway": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'payment_gateway'"
+            },
+            "methods": {
+                "find": "find(string $reference): ?\\Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult",
+                "findRefund": "findRefund(string $reference): ?\\Commerz\\Sales\\Gateways\\Data\\GatewayRefundResult",
+                "initiate": "initiate(\\Commerz\\Sales\\Gateways\\Data\\GatewayPaymentRequest $request): \\Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult",
+                "key": "key(): string",
+                "refund": "refund(\\Commerz\\Sales\\Gateways\\Data\\GatewayRefundRequest $request): \\Commerz\\Sales\\Gateways\\Data\\GatewayRefundResult"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "customerEmail": "public readonly ?string $customerEmail",
+                "meta": "public readonly array $meta",
+                "orderNumber": "public readonly string $orderNumber",
+                "orderRef": "public readonly string $orderRef",
+                "reference": "public readonly string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference, string $orderRef, string $orderNumber, \\Commerz\\Money\\Money $amount, ?\\Commerz\\Identity\\CustomerRef $customer = null, ?string $customerEmail = null, array $meta = [])"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actionUrl": "public readonly ?string $actionUrl",
+                "authorized": "public readonly ?\\Commerz\\Money\\Money $authorized",
+                "captured": "public readonly ?\\Commerz\\Money\\Money $captured",
+                "externalId": "public readonly ?string $externalId",
+                "meta": "public readonly array $meta",
+                "status": "public readonly \\Commerz\\Sales\\Gateways\\Enums\\GatewayPaymentStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Gateways\\Enums\\GatewayPaymentStatus $status, ?string $externalId = null, ?\\Commerz\\Money\\Money $authorized = null, ?\\Commerz\\Money\\Money $captured = null, ?string $actionUrl = null, array $meta = [])"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayRefundRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "paymentExternalId": "public readonly ?string $paymentExternalId",
+                "paymentReference": "public readonly string $paymentReference",
+                "reason": "public readonly ?string $reason",
+                "reference": "public readonly string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference, string $paymentReference, ?string $paymentExternalId, \\Commerz\\Money\\Money $amount, ?string $reason = null)"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayRefundResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "externalId": "public readonly ?string $externalId",
+                "meta": "public readonly array $meta",
+                "status": "public readonly \\Commerz\\Sales\\Gateways\\Enums\\GatewayRefundStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Gateways\\Enums\\GatewayRefundStatus $status, ?string $externalId = null, array $meta = [])"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Enums\\GatewayPaymentStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Pending": "pending",
+                "RequiresAction": "requires_action",
+                "Authorized": "authorized",
+                "Captured": "captured",
+                "Failed": "failed",
+                "Cancelled": "cancelled"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Enums\\GatewayRefundStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Pending": "pending",
+                "Succeeded": "succeeded",
+                "Failed": "failed"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Exceptions\\InvalidGatewayResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "gateway": "public readonly string $gateway",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $gateway, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Gateways\\Exceptions\\PaymentDeclined": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "gateway": "public readonly string $gateway",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $gateway, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Numbering\\Contracts\\OrderNumberGenerator": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'order_number_generator'"
+            },
+            "methods": {
+                "key": "key(): string",
+                "next": "next(\\Commerz\\Sales\\Numbering\\Data\\OrderNumbering $numbering): string"
+            }
+        },
+        "Commerz\\Sales\\Numbering\\Data\\OrderNumbering": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "at": "public readonly \\DateTimeImmutable $at",
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "orderId": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $orderId",
+                "store": "public readonly \\Commerz\\Stores\\Data\\StoreView $store"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Stores\\Data\\StoreView $store, \\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Sales\\Orders\\Data\\OrderId $orderId, \\DateTimeImmutable $at)"
+            }
+        },
+        "Commerz\\Sales\\Numbering\\Exceptions\\InvalidOrderNumber": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "generator": "public readonly string $generator",
+                "number": "public readonly string $number"
+            },
+            "methods": {
+                "__construct": "__construct(string $generator, string $number)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Contracts\\Orders": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "cancel": "cancel(\\Commerz\\Sales\\Orders\\Data\\CancelOrder $command): \\Commerz\\Sales\\Orders\\Data\\OrderView",
+                "cancelLines": "cancelLines(\\Commerz\\Sales\\Orders\\Data\\CancelOrderLines $command): \\Commerz\\Sales\\Orders\\Data\\OrderView",
+                "draft": "draft(\\Commerz\\Sales\\Orders\\Data\\DraftOrder $command): \\Commerz\\Sales\\Carts\\Data\\CartView",
+                "expireDue": "expireDue(\\Commerz\\Sales\\Orders\\Data\\ExpireOrders $command): \\Commerz\\Sales\\Orders\\Data\\ExpireReport",
+                "find": "find(\\Commerz\\Sales\\Orders\\Data\\OrderId $id): \\Commerz\\Sales\\Orders\\Data\\OrderView",
+                "findByNumber": "findByNumber(\\Commerz\\Stores\\Data\\StoreId $store, string $number): \\Commerz\\Sales\\Orders\\Data\\OrderView",
+                "history": "history(\\Commerz\\Sales\\Orders\\Data\\OrderId $id): array",
+                "list": "list(\\Commerz\\Sales\\Orders\\Data\\ListOrders $query): \\Commerz\\Pagination\\Page"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\CancelOrder": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reason": "public readonly \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\CancelOrderLines": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "lines": "public readonly array $lines",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reason": "public readonly \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, array $lines, \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\DraftLine": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "quantity": "public readonly int $quantity",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, int $quantity)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\DraftOrder": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "billingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress",
+                "codes": "public readonly array $codes",
+                "context": "public readonly \\Commerz\\Context\\CommerceContext $context",
+                "deliveryMethod": "public readonly ?string $deliveryMethod",
+                "lines": "public readonly array $lines",
+                "shippingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Context\\CommerceContext $context, array $lines, ?\\Commerz\\Identity\\ActorRef $actor = null, array $codes = [], ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress = null, ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress = null, ?string $deliveryMethod = null)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\ExpireOrders": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "at": "public readonly ?\\DateTimeImmutable $at",
+                "limit": "public readonly ?int $limit"
+            },
+            "methods": {
+                "__construct": "__construct(?\\DateTimeImmutable $at = null, ?int $limit = null)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\ExpireReport": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "expired": "public readonly array $expired",
+                "skipped": "public readonly int $skipped"
+            },
+            "methods": {
+                "__construct": "__construct(array $expired, int $skipped)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\ListOrders": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "channel": "public readonly ?\\Commerz\\Stores\\Data\\ChannelId $channel",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "fulfillmentState": "public readonly ?\\Commerz\\Sales\\Orders\\Enums\\FulfillmentState $fulfillmentState",
+                "limit": "public readonly int $limit",
+                "paymentState": "public readonly ?\\Commerz\\Sales\\Orders\\Enums\\PaymentState $paymentState",
+                "state": "public readonly ?\\Commerz\\Sales\\Orders\\Enums\\OrderState $state"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Stores\\Data\\ChannelId $channel = null, ?\\Commerz\\Identity\\CustomerRef $customer = null, ?\\Commerz\\Sales\\Orders\\Enums\\OrderState $state = null, ?\\Commerz\\Sales\\Orders\\Enums\\PaymentState $paymentState = null, ?\\Commerz\\Sales\\Orders\\Enums\\FulfillmentState $fulfillmentState = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\OrderEventView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "data": "public readonly array $data",
+                "id": "public readonly int $id",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "type": "public readonly string $type"
+            },
+            "methods": {
+                "__construct": "__construct(int $id, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, string $type, ?\\Commerz\\Identity\\ActorRef $actor, array $data, \\DateTimeImmutable $createdAt)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\OrderId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Orders\\Data\\OrderLineId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Orders\\Data\\OrderLineView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "adjustments": "public readonly array $adjustments",
+                "cancelledQuantity": "public readonly int $cancelledQuantity",
+                "compareAt": "public readonly ?\\Commerz\\Money\\Money $compareAt",
+                "fulfilledQuantity": "public readonly int $fulfilledQuantity",
+                "id": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderLineId $id",
+                "kind": "public readonly \\Commerz\\Ports\\Sellables\\Enums\\SellableKind $kind",
+                "name": "public readonly string $name",
+                "options": "public readonly array $options",
+                "priceSource": "public readonly string $priceSource",
+                "quantity": "public readonly int $quantity",
+                "requiresShipping": "public readonly bool $requiresShipping",
+                "returnedQuantity": "public readonly int $returnedQuantity",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "sku": "public readonly string $sku",
+                "subtotal": "public readonly \\Commerz\\Money\\Money $subtotal",
+                "taxClass": "public readonly ?string $taxClass",
+                "taxIncluded": "public readonly bool $taxIncluded",
+                "taxLines": "public readonly array $taxLines",
+                "total": "public readonly \\Commerz\\Money\\Money $total",
+                "unitPrice": "public readonly \\Commerz\\Money\\Money $unitPrice",
+                "weightGrams": "public readonly ?int $weightGrams"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderLineId $id, \\Commerz\\Identity\\SellableRef $sellable, string $sku, string $name, \\Commerz\\Ports\\Sellables\\Enums\\SellableKind $kind, bool $requiresShipping, array $options, ?string $taxClass, ?int $weightGrams, int $quantity, \\Commerz\\Money\\Money $unitPrice, ?\\Commerz\\Money\\Money $compareAt, bool $taxIncluded, string $priceSource, \\Commerz\\Money\\Money $subtotal, array $adjustments, array $taxLines, \\Commerz\\Money\\Money $total, int $cancelledQuantity, int $fulfilledQuantity, int $returnedQuantity)",
+                "outstanding": "outstanding(): int"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Data\\OrderView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amountDue": "public readonly \\Commerz\\Money\\Money $amountDue",
+                "authorized": "public readonly \\Commerz\\Money\\Money $authorized",
+                "billingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress",
+                "cancelReason": "public readonly ?\\Commerz\\Sales\\Orders\\Enums\\CancelReason $cancelReason",
+                "cancelledAt": "public readonly ?\\DateTimeImmutable $cancelledAt",
+                "captured": "public readonly \\Commerz\\Money\\Money $captured",
+                "cart": "public readonly \\Commerz\\Sales\\Carts\\Data\\CartId $cart",
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "codes": "public readonly array $codes",
+                "completedAt": "public readonly ?\\DateTimeImmutable $completedAt",
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "customer": "public readonly ?\\Commerz\\Identity\\CustomerRef $customer",
+                "customerEmail": "public readonly ?string $customerEmail",
+                "customerGroups": "public readonly array $customerGroups",
+                "customerName": "public readonly ?string $customerName",
+                "delivery": "public readonly ?\\Commerz\\Quotes\\Data\\DeliveryCharge $delivery",
+                "deliveryAdjustments": "public readonly array $deliveryAdjustments",
+                "deliveryTaxLines": "public readonly array $deliveryTaxLines",
+                "fulfillmentState": "public readonly \\Commerz\\Sales\\Orders\\Enums\\FulfillmentState $fulfillmentState",
+                "id": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $id",
+                "lines": "public readonly array $lines",
+                "locale": "public readonly string $locale",
+                "number": "public readonly string $number",
+                "orderAdjustments": "public readonly array $orderAdjustments",
+                "origin": "public readonly \\Commerz\\Sales\\Carts\\Enums\\CartKind $origin",
+                "paymentDueAt": "public readonly ?\\DateTimeImmutable $paymentDueAt",
+                "paymentState": "public readonly \\Commerz\\Sales\\Orders\\Enums\\PaymentState $paymentState",
+                "placedAt": "public readonly \\DateTimeImmutable $placedAt",
+                "quoteFingerprint": "public readonly string $quoteFingerprint",
+                "refunded": "public readonly \\Commerz\\Money\\Money $refunded",
+                "shippingAddress": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress",
+                "state": "public readonly \\Commerz\\Sales\\Orders\\Enums\\OrderState $state",
+                "store": "public readonly \\Commerz\\Stores\\Data\\StoreId $store",
+                "total": "public readonly \\Commerz\\Money\\Money $total",
+                "totals": "public readonly \\Commerz\\Quotes\\Data\\QuoteTotals $totals"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $id, string $number, \\Commerz\\Stores\\Data\\StoreId $store, \\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Sales\\Carts\\Data\\CartId $cart, \\Commerz\\Sales\\Carts\\Enums\\CartKind $origin, \\Commerz\\Sales\\Orders\\Enums\\OrderState $state, \\Commerz\\Sales\\Orders\\Enums\\PaymentState $paymentState, \\Commerz\\Sales\\Orders\\Enums\\FulfillmentState $fulfillmentState, ?\\Commerz\\Sales\\Orders\\Enums\\CancelReason $cancelReason, \\Commerz\\Money\\Currency $currency, string $locale, ?\\Commerz\\Identity\\CustomerRef $customer, array $customerGroups, ?string $customerEmail, ?string $customerName, array $lines, array $orderAdjustments, ?\\Commerz\\Quotes\\Data\\DeliveryCharge $delivery, array $deliveryAdjustments, array $deliveryTaxLines, \\Commerz\\Quotes\\Data\\QuoteTotals $totals, \\Commerz\\Money\\Money $amountDue, \\Commerz\\Money\\Money $authorized, \\Commerz\\Money\\Money $captured, \\Commerz\\Money\\Money $refunded, array $codes, ?\\Commerz\\Ports\\Delivery\\Data\\Address $shippingAddress, ?\\Commerz\\Ports\\Delivery\\Data\\Address $billingAddress, string $quoteFingerprint, ?\\DateTimeImmutable $paymentDueAt, \\DateTimeImmutable $placedAt, ?\\DateTimeImmutable $completedAt, ?\\DateTimeImmutable $cancelledAt)",
+                "line": "line(\\Commerz\\Sales\\Orders\\Data\\OrderLineId $id): ?\\Commerz\\Sales\\Orders\\Data\\OrderLineView"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Enums\\CancelReason": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Customer": "customer",
+                "Operator": "operator",
+                "Expired": "expired",
+                "OutOfStock": "out_of_stock",
+                "Fraud": "fraud",
+                "Other": "other"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Enums\\FulfillmentState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Unfulfilled": "unfulfilled",
+                "PartiallyFulfilled": "partially_fulfilled",
+                "Fulfilled": "fulfilled",
+                "PartiallyReturned": "partially_returned",
+                "Returned": "returned"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Enums\\OrderState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Placed": "placed",
+                "Completed": "completed",
+                "Cancelled": "cancelled"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Enums\\PaymentState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Unpaid": "unpaid",
+                "Authorized": "authorized",
+                "PartiallyPaid": "partially_paid",
+                "Paid": "paid",
+                "PartiallyRefunded": "partially_refunded",
+                "Refunded": "refunded"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Events\\OrderCancelled": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reason": "public readonly \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Orders\\Enums\\CancelReason $reason)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Events\\OrderCompleted": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Events\\OrderPaymentStateChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "from": "public readonly \\Commerz\\Sales\\Orders\\Enums\\PaymentState $from",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "to": "public readonly \\Commerz\\Sales\\Orders\\Enums\\PaymentState $to"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Orders\\Enums\\PaymentState $from, \\Commerz\\Sales\\Orders\\Enums\\PaymentState $to)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Events\\OrderPlaced": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "number": "public readonly string $number",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, string $number)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Events\\PaymentRequiresRefund": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Money\\Money $amount)"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Exceptions\\OrderNotCancellable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "order": "public readonly string $order",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $order, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Orders\\Exceptions\\OrderNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Contracts\\Payments": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "find": "find(\\Commerz\\Sales\\Payments\\Data\\PaymentId $id): \\Commerz\\Sales\\Payments\\Data\\PaymentView",
+                "initiate": "initiate(\\Commerz\\Sales\\Payments\\Data\\InitiatePayment $command): \\Commerz\\Sales\\Payments\\Data\\PaymentView",
+                "list": "list(\\Commerz\\Sales\\Payments\\Data\\ListPayments $query): \\Commerz\\Pagination\\Page",
+                "reconcile": "reconcile(\\Commerz\\Sales\\Payments\\Data\\ReconcilePayment $command): \\Commerz\\Sales\\Payments\\Data\\PaymentView",
+                "recordEvent": "recordEvent(\\Commerz\\Sales\\Payments\\Data\\RecordPaymentEvent $command): \\Commerz\\Sales\\Payments\\Data\\PaymentEventResult"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\InitiatePayment": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "amount": "public readonly ?\\Commerz\\Money\\Money $amount",
+                "gateway": "public readonly string $gateway",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "meta": "public readonly array $meta",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, string $gateway, ?\\Commerz\\Money\\Money $amount = null, array $meta = [], ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\ListPayments": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "limit": "public readonly int $limit",
+                "order": "public readonly ?\\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "status": "public readonly ?\\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Sales\\Orders\\Data\\OrderId $order = null, ?\\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentEventResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "duplicate": "public readonly bool $duplicate",
+                "outcome": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome $outcome",
+                "payment": "public readonly \\Commerz\\Sales\\Payments\\Data\\PaymentId $payment",
+                "status": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Payments\\Data\\PaymentId $payment, bool $duplicate, \\Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome $outcome, \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actionUrl": "public readonly ?string $actionUrl",
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "attempts": "public readonly int $attempts",
+                "authorized": "public readonly \\Commerz\\Money\\Money $authorized",
+                "captured": "public readonly \\Commerz\\Money\\Money $captured",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "errorCode": "public readonly ?string $errorCode",
+                "errorMessage": "public readonly ?string $errorMessage",
+                "externalId": "public readonly ?string $externalId",
+                "gateway": "public readonly string $gateway",
+                "id": "public readonly \\Commerz\\Sales\\Payments\\Data\\PaymentId $id",
+                "meta": "public readonly array $meta",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reference": "public readonly string $reference",
+                "refunded": "public readonly \\Commerz\\Money\\Money $refunded",
+                "status": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Payments\\Data\\PaymentId $id, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, string $gateway, string $reference, ?string $externalId, \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status, \\Commerz\\Money\\Money $amount, \\Commerz\\Money\\Money $authorized, \\Commerz\\Money\\Money $captured, \\Commerz\\Money\\Money $refunded, ?string $actionUrl, array $meta, int $attempts, ?string $errorCode, ?string $errorMessage, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\ReconcilePayment": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "payment": "public readonly \\Commerz\\Sales\\Payments\\Data\\PaymentId $payment"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Payments\\Data\\PaymentId $payment)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Data\\RecordPaymentEvent": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly ?\\Commerz\\Money\\Money $amount",
+                "externalEventId": "public readonly string $externalEventId",
+                "externalPaymentId": "public readonly ?string $externalPaymentId",
+                "gateway": "public readonly string $gateway",
+                "occurredAt": "public readonly ?\\DateTimeImmutable $occurredAt",
+                "payload": "public readonly array $payload",
+                "paymentReference": "public readonly ?string $paymentReference",
+                "type": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentEventType $type"
+            },
+            "methods": {
+                "__construct": "__construct(string $gateway, string $externalEventId, \\Commerz\\Sales\\Payments\\Enums\\PaymentEventType $type, ?string $paymentReference = null, ?string $externalPaymentId = null, ?\\Commerz\\Money\\Money $amount = null, ?\\DateTimeImmutable $occurredAt = null, array $payload = [])"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Applied": "applied",
+                "Ignored": "ignored"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentEventType": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Authorized": "authorized",
+                "Captured": "captured",
+                "Failed": "failed",
+                "Cancelled": "cancelled"
+            },
+            "methods": {
+                "status": "status(): \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Initiating": "initiating",
+                "Pending": "pending",
+                "RequiresAction": "requires_action",
+                "Authorized": "authorized",
+                "Captured": "captured",
+                "Failed": "failed",
+                "Cancelled": "cancelled",
+                "Unknown": "unknown"
+            },
+            "methods": {
+                "isFinal": "isFinal(): bool"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Events\\PaymentStatusChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "payment": "public readonly \\Commerz\\Sales\\Payments\\Data\\PaymentId $payment",
+                "status": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Payments\\Data\\PaymentId $payment, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Payments\\Enums\\PaymentStatus $status)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\InvalidPaymentEvent": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\InvalidCommand",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $field, string $reason)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\OrderNotPayable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "order": "public readonly string $order",
+                "state": "public readonly string $state"
+            },
+            "methods": {
+                "__construct": "__construct(string $order, string $state)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentExceedsBalance": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "balance": "public readonly \\Commerz\\Money\\Money $balance",
+                "order": "public readonly string $order",
+                "requested": "public readonly \\Commerz\\Money\\Money $requested"
+            },
+            "methods": {
+                "__construct": "__construct(string $order, \\Commerz\\Money\\Money $requested, \\Commerz\\Money\\Money $balance)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentInProgress": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "payment": "public readonly string $payment"
+            },
+            "methods": {
+                "__construct": "__construct(string $payment)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentOutcomeUnknown": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "gateway": "public readonly string $gateway",
+                "payment": "public readonly string $payment"
+            },
+            "methods": {
+                "__construct": "__construct(string $payment, string $gateway, ?\\Throwable $previous = null)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Contracts\\Refunds": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "find": "find(\\Commerz\\Sales\\Refunds\\Data\\RefundId $id): \\Commerz\\Sales\\Refunds\\Data\\RefundView",
+                "issue": "issue(\\Commerz\\Sales\\Refunds\\Data\\IssueRefund $command): \\Commerz\\Sales\\Refunds\\Data\\RefundView",
+                "list": "list(\\Commerz\\Sales\\Refunds\\Data\\ListRefunds $query): \\Commerz\\Pagination\\Page",
+                "reconcile": "reconcile(\\Commerz\\Sales\\Refunds\\Data\\ReconcileRefund $command): \\Commerz\\Sales\\Refunds\\Data\\RefundView",
+                "recordEvent": "recordEvent(\\Commerz\\Sales\\Refunds\\Data\\RecordRefundEvent $command): \\Commerz\\Sales\\Refunds\\Data\\RefundEventResult"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\IssueRefund": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "payment": "public readonly ?\\Commerz\\Sales\\Payments\\Data\\PaymentId $payment",
+                "reason": "public readonly ?string $reason",
+                "return": "public readonly ?\\Commerz\\Sales\\Returns\\Data\\ReturnId $return"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Money\\Money $amount, ?\\Commerz\\Sales\\Payments\\Data\\PaymentId $payment = null, ?\\Commerz\\Sales\\Returns\\Data\\ReturnId $return = null, ?string $reason = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\ListRefunds": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "limit": "public readonly int $limit",
+                "order": "public readonly ?\\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "status": "public readonly ?\\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Sales\\Orders\\Data\\OrderId $order = null, ?\\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\ReconcileRefund": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "refund": "public readonly \\Commerz\\Sales\\Refunds\\Data\\RefundId $refund"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Refunds\\Data\\RefundId $refund)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\RecordRefundEvent": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "externalEventId": "public readonly string $externalEventId",
+                "externalRefundId": "public readonly ?string $externalRefundId",
+                "gateway": "public readonly string $gateway",
+                "occurredAt": "public readonly ?\\DateTimeImmutable $occurredAt",
+                "payload": "public readonly array $payload",
+                "refundReference": "public readonly ?string $refundReference",
+                "succeeded": "public readonly bool $succeeded"
+            },
+            "methods": {
+                "__construct": "__construct(string $gateway, string $externalEventId, bool $succeeded, ?string $refundReference = null, ?string $externalRefundId = null, ?\\DateTimeImmutable $occurredAt = null, array $payload = [])",
+                "type": "type(): string"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\RefundEventResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "duplicate": "public readonly bool $duplicate",
+                "outcome": "public readonly \\Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome $outcome",
+                "refund": "public readonly \\Commerz\\Sales\\Refunds\\Data\\RefundId $refund",
+                "status": "public readonly \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Refunds\\Data\\RefundId $refund, bool $duplicate, \\Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome $outcome, \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Data\\RefundId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Refunds\\Data\\RefundView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "attempts": "public readonly int $attempts",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "errorCode": "public readonly ?string $errorCode",
+                "errorMessage": "public readonly ?string $errorMessage",
+                "externalId": "public readonly ?string $externalId",
+                "gateway": "public readonly string $gateway",
+                "id": "public readonly \\Commerz\\Sales\\Refunds\\Data\\RefundId $id",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "payment": "public readonly \\Commerz\\Sales\\Payments\\Data\\PaymentId $payment",
+                "reason": "public readonly ?string $reason",
+                "reference": "public readonly string $reference",
+                "return": "public readonly ?\\Commerz\\Sales\\Returns\\Data\\ReturnId $return",
+                "status": "public readonly \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Refunds\\Data\\RefundId $id, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Payments\\Data\\PaymentId $payment, ?\\Commerz\\Sales\\Returns\\Data\\ReturnId $return, string $gateway, string $reference, ?string $externalId, \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status, \\Commerz\\Money\\Money $amount, ?string $reason, int $attempts, ?string $errorCode, ?string $errorMessage, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Enums\\RefundStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Initiating": "initiating",
+                "Pending": "pending",
+                "Succeeded": "succeeded",
+                "Failed": "failed",
+                "Unknown": "unknown"
+            },
+            "methods": {
+                "isFinal": "isFinal(): bool"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Events\\RefundStatusChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "refund": "public readonly \\Commerz\\Sales\\Refunds\\Data\\RefundId $refund",
+                "status": "public readonly \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Refunds\\Data\\RefundId $refund, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Refunds\\Enums\\RefundStatus $status)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Exceptions\\RefundExceedsBalance": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "order": "public readonly string $order",
+                "refundable": "public readonly \\Commerz\\Money\\Money $refundable",
+                "requested": "public readonly \\Commerz\\Money\\Money $requested"
+            },
+            "methods": {
+                "__construct": "__construct(string $order, \\Commerz\\Money\\Money $requested, \\Commerz\\Money\\Money $refundable)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Exceptions\\RefundInProgress": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "refund": "public readonly string $refund"
+            },
+            "methods": {
+                "__construct": "__construct(string $refund)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Exceptions\\RefundNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Refunds\\Exceptions\\RefundOutcomeUnknown": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "gateway": "public readonly string $gateway",
+                "refund": "public readonly string $refund"
+            },
+            "methods": {
+                "__construct": "__construct(string $refund, string $gateway, ?\\Throwable $previous = null)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Contracts\\Returns": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "cancel": "cancel(\\Commerz\\Sales\\Returns\\Data\\CancelReturn $command): \\Commerz\\Sales\\Returns\\Data\\ReturnView",
+                "find": "find(\\Commerz\\Sales\\Returns\\Data\\ReturnId $id): \\Commerz\\Sales\\Returns\\Data\\ReturnView",
+                "list": "list(\\Commerz\\Sales\\Returns\\Data\\ListReturns $query): \\Commerz\\Pagination\\Page",
+                "receive": "receive(\\Commerz\\Sales\\Returns\\Data\\ReceiveReturn $command): \\Commerz\\Sales\\Returns\\Data\\ReturnView",
+                "request": "request(\\Commerz\\Sales\\Returns\\Data\\RequestReturn $command): \\Commerz\\Sales\\Returns\\Data\\ReturnView"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\CancelReturn": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "return": "public readonly \\Commerz\\Sales\\Returns\\Data\\ReturnId $return"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Returns\\Data\\ReturnId $return, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\ListReturns": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "limit": "public readonly int $limit",
+                "order": "public readonly ?\\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "status": "public readonly ?\\Commerz\\Sales\\Returns\\Enums\\ReturnStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Sales\\Orders\\Data\\OrderId $order = null, ?\\Commerz\\Sales\\Returns\\Enums\\ReturnStatus $status = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\ReceiveReturn": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "locationCode": "public readonly ?string $locationCode",
+                "restock": "public readonly array $restock",
+                "return": "public readonly \\Commerz\\Sales\\Returns\\Data\\ReturnId $return"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Returns\\Data\\ReturnId $return, array $restock = [], ?string $locationCode = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\RequestReturn": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "lines": "public readonly array $lines",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reason": "public readonly ?string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderId $order, array $lines, ?string $reason = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null, ?\\Commerz\\Identity\\ActorRef $actor = null)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\ReturnId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Sales\\Returns\\Data\\ReturnLineView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "lineId": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderLineId $lineId",
+                "quantity": "public readonly int $quantity",
+                "restocked": "public readonly int $restocked"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Orders\\Data\\OrderLineId $lineId, int $quantity, int $restocked)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Data\\ReturnView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Sales\\Returns\\Data\\ReturnId $id",
+                "lines": "public readonly array $lines",
+                "locationCode": "public readonly ?string $locationCode",
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "reason": "public readonly ?string $reason",
+                "receivedAt": "public readonly ?\\DateTimeImmutable $receivedAt",
+                "status": "public readonly \\Commerz\\Sales\\Returns\\Enums\\ReturnStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Returns\\Data\\ReturnId $id, \\Commerz\\Sales\\Orders\\Data\\OrderId $order, \\Commerz\\Sales\\Returns\\Enums\\ReturnStatus $status, array $lines, ?string $reason, ?string $locationCode, ?\\DateTimeImmutable $receivedAt, \\DateTimeImmutable $createdAt)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Enums\\ReturnStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Requested": "requested",
+                "Received": "received",
+                "Cancelled": "cancelled"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Events\\ReturnReceived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "order": "public readonly \\Commerz\\Sales\\Orders\\Data\\OrderId $order",
+                "return": "public readonly \\Commerz\\Sales\\Returns\\Data\\ReturnId $return"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Sales\\Returns\\Data\\ReturnId $return, \\Commerz\\Sales\\Orders\\Data\\OrderId $order)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Exceptions\\RestockExceedsReceived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "lineId": "public readonly string $lineId",
+                "received": "public readonly int $received",
+                "restock": "public readonly int $restock"
+            },
+            "methods": {
+                "__construct": "__construct(string $lineId, int $restock, int $received)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Exceptions\\ReturnExceedsFulfilled": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "available": "public readonly int $available",
+                "lineId": "public readonly string $lineId",
+                "requested": "public readonly int $requested"
+            },
+            "methods": {
+                "__construct": "__construct(string $lineId, int $requested, int $available)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Exceptions\\ReturnNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Sales\\Returns\\Exceptions\\ReturnNotOpen": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "return": "public readonly string $return",
+                "status": "public readonly string $status"
+            },
+            "methods": {
+                "__construct": "__construct(string $return, string $status)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Sales\\Sales": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Illuminate\\Contracts\\Container\\Container $container)",
+                "carts": "carts(): \\Commerz\\Sales\\Carts\\Contracts\\Carts",
+                "checkout": "checkout(): \\Commerz\\Sales\\Checkout\\Contracts\\Checkout",
+                "fulfillments": "fulfillments(): \\Commerz\\Sales\\Fulfillments\\Contracts\\Fulfillments",
+                "orders": "orders(): \\Commerz\\Sales\\Orders\\Contracts\\Orders",
+                "payments": "payments(): \\Commerz\\Sales\\Payments\\Contracts\\Payments",
+                "refunds": "refunds(): \\Commerz\\Sales\\Refunds\\Contracts\\Refunds",
+                "returns": "returns(): \\Commerz\\Sales\\Returns\\Contracts\\Returns"
+            }
+        },
+        "Commerz\\Sales\\SalesServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        }
+    },
+    "platform": {
+        "commands": [
+            "commerz:sales:expire-orders"
+        ],
+        "config": "commerz-sales",
+        "kinds": [
+            "order_number_generator",
+            "payment_gateway"
+        ],
+        "plugin": "commerz.sales",
+        "providers": [
+            "Commerz\\Sales\\SalesServiceProvider"
+        ],
+        "tables": [
+            "cart",
+            "checkout",
+            "order",
+            "payment",
+            "fulfillment",
+            "return",
+            "refund"
+        ]
+    }
+}

@@ -1,0 +1,1595 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "inventory",
+    "composer": "axiomasoft/commerz-inventory",
+    "types": {
+        "Commerz\\Inventory\\Allocation\\Contracts\\AllocationStrategy": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'allocation_strategy'"
+            },
+            "methods": {
+                "allocate": "allocate(\\Commerz\\Inventory\\Allocation\\Data\\AllocationRequest $request): \\Commerz\\Inventory\\Allocation\\Data\\AllocationPlan",
+                "capacity": "capacity(\\Commerz\\Inventory\\Allocation\\Data\\AllocationNeed $need, array $sources): ?int",
+                "key": "key(): string"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\AllocationNeed": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "components": "public readonly array $components",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "units": "public readonly int $units"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, int $units, array $components)"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\AllocationPlan": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "allocations": "public readonly array $allocations"
+            },
+            "methods": {
+                "__construct": "__construct(array $allocations = [])"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\AllocationRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "needs": "public readonly array $needs",
+                "sources": "public readonly array $sources"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Stores\\Data\\ChannelId $channel, array $needs, array $sources)"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\NeedComponent": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "backorder": "public readonly bool $backorder",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "quantityPerUnit": "public readonly int $quantityPerUnit"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, int $quantityPerUnit, bool $backorder = false)"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\PlannedAllocation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "units": "public readonly int $units"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $units)"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Data\\SourceStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "free": "public readonly array $free",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "locationCode": "public readonly string $locationCode",
+                "priority": "public readonly int $priority"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $location, string $locationCode, int $priority, array $free)"
+            }
+        },
+        "Commerz\\Inventory\\Allocation\\Exceptions\\InvalidAllocationPlan": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Common\\Data\\InventoryCodes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "code": "static code(string $field, string $value): string",
+                "reason": "static reason(string $value, string $field = 'reason'): string",
+                "reference": "static reference(string $value, string $field = 'reference'): string",
+                "sku": "static sku(string $value): string"
+            }
+        },
+        "Commerz\\Inventory\\Common\\Enums\\UnlinkedSellables": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Unavailable": "unavailable",
+                "Unlimited": "unlimited"
+            }
+        },
+        "Commerz\\Inventory\\Common\\Exceptions\\DuplicateCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "duplicate": "public readonly string $duplicate",
+                "entity": "public readonly string $entity"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $duplicate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Facades\\Inventory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Inventory\\Inventory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Contracts\\Locations $locations, \\Commerz\\Inventory\\Items\\Contracts\\StockItems $items, \\Commerz\\Inventory\\Sources\\Contracts\\StockSources $sources, \\Commerz\\Inventory\\Stock\\Contracts\\StockLevels $stock, \\Commerz\\Inventory\\Movements\\Contracts\\Movements $movements, \\Commerz\\Inventory\\Reservations\\Contracts\\Reservations $reservations, \\Commerz\\Ports\\Stock\\Contracts\\StockAvailability $availability, \\Commerz\\Inventory\\Transfers\\Contracts\\Transfers $transfers)",
+                "availability": "availability(): \\Commerz\\Ports\\Stock\\Contracts\\StockAvailability",
+                "items": "items(): \\Commerz\\Inventory\\Items\\Contracts\\StockItems",
+                "locations": "locations(): \\Commerz\\Inventory\\Locations\\Contracts\\Locations",
+                "movements": "movements(): \\Commerz\\Inventory\\Movements\\Contracts\\Movements",
+                "reservations": "reservations(): \\Commerz\\Inventory\\Reservations\\Contracts\\Reservations",
+                "sources": "sources(): \\Commerz\\Inventory\\Sources\\Contracts\\StockSources",
+                "stock": "stock(): \\Commerz\\Inventory\\Stock\\Contracts\\StockLevels",
+                "transfers": "transfers(): \\Commerz\\Inventory\\Transfers\\Contracts\\Transfers"
+            }
+        },
+        "Commerz\\Inventory\\InventoryServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['stock']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Contracts\\StockItems": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Inventory\\Items\\Data\\ArchiveStockItem $command): \\Commerz\\Inventory\\Items\\Data\\StockItemView",
+                "create": "create(\\Commerz\\Inventory\\Items\\Data\\CreateStockItem $command): \\Commerz\\Inventory\\Items\\Data\\StockItemView",
+                "find": "find(\\Commerz\\Inventory\\Items\\Data\\StockItemId $id): \\Commerz\\Inventory\\Items\\Data\\StockItemView",
+                "findBySku": "findBySku(string $sku): \\Commerz\\Inventory\\Items\\Data\\StockItemView",
+                "link": "link(\\Commerz\\Inventory\\Items\\Data\\LinkSellable $command): \\Commerz\\Inventory\\Items\\Data\\StockLinkView",
+                "links": "links(\\Commerz\\Inventory\\Items\\Data\\ListLinks $query): \\Commerz\\Pagination\\Page",
+                "list": "list(\\Commerz\\Inventory\\Items\\Data\\ListStockItems $query): \\Commerz\\Pagination\\Page",
+                "restore": "restore(\\Commerz\\Inventory\\Items\\Data\\RestoreStockItem $command): \\Commerz\\Inventory\\Items\\Data\\StockItemView",
+                "unlink": "unlink(\\Commerz\\Inventory\\Items\\Data\\UnlinkSellable $command): void",
+                "update": "update(\\Commerz\\Inventory\\Items\\Data\\UpdateStockItem $command): \\Commerz\\Inventory\\Items\\Data\\StockItemView"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\ArchiveStockItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\CreateStockItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "name": "public readonly ?string $name",
+                "policy": "public readonly \\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy",
+                "sku": "public readonly string $sku",
+                "unit": "public readonly string $unit"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku, ?string $name = null, string $unit = 'pcs', \\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy = Commerz\\Inventory\\Items\\Enums\\StockPolicy::Tracked)",
+                "assertName": "static assertName(?string $name): void"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\LinkSellable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "quantityPerUnit": "public readonly int $quantityPerUnit",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Inventory\\Items\\Data\\StockItemId $item, int $quantityPerUnit = 1)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\ListLinks": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "item": "public readonly ?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "sellable": "public readonly ?\\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Identity\\SellableRef $sellable = null, ?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\ListStockItems": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "status": "public readonly ?\\Commerz\\Inventory\\Items\\Enums\\StockItemStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Inventory\\Items\\Enums\\StockItemStatus $status = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\RestoreStockItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\StockItemId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Inventory\\Items\\Data\\StockItemView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $id",
+                "name": "public readonly ?string $name",
+                "policy": "public readonly \\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy",
+                "sku": "public readonly string $sku",
+                "status": "public readonly \\Commerz\\Inventory\\Items\\Enums\\StockItemStatus $status",
+                "unit": "public readonly string $unit",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $id, string $sku, ?string $name, string $unit, \\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy, \\Commerz\\Inventory\\Items\\Enums\\StockItemStatus $status, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\StockLinkView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly string $id",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "quantityPerUnit": "public readonly int $quantityPerUnit",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $id, \\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Inventory\\Items\\Data\\StockItemId $item, string $sku, int $quantityPerUnit)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\UnlinkSellable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Inventory\\Items\\Data\\StockItemId $item)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Data\\UpdateStockItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "name": "public readonly ?string $name",
+                "policy": "public readonly ?\\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, ?string $name = null, ?\\Commerz\\Inventory\\Items\\Enums\\StockPolicy $policy = null)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Enums\\StockItemStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Enums\\StockPolicy": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Tracked": "tracked",
+                "Backorder": "backorder",
+                "Untracked": "untracked"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Exceptions\\StockItemArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Exceptions\\StockItemNotEmpty": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Exceptions\\StockItemNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Exceptions\\TooManyComponents": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "constants": {
+                "MAX": "20"
+            },
+            "properties": {
+                "sellable": "public readonly string $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(string $sellable)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Items\\Exceptions\\UntrackedStockItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku, ?string $message = null)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array",
+                "keepsNoLevels": "static keepsNoLevels(string $sku): self"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Contracts\\Locations": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Inventory\\Locations\\Data\\ArchiveLocation $command): \\Commerz\\Inventory\\Locations\\Data\\LocationView",
+                "create": "create(\\Commerz\\Inventory\\Locations\\Data\\CreateLocation $command): \\Commerz\\Inventory\\Locations\\Data\\LocationView",
+                "find": "find(\\Commerz\\Inventory\\Locations\\Data\\LocationId $id): \\Commerz\\Inventory\\Locations\\Data\\LocationView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Inventory\\Locations\\Data\\LocationView",
+                "list": "list(\\Commerz\\Inventory\\Locations\\Data\\ListLocations $query): \\Commerz\\Pagination\\Page",
+                "restore": "restore(\\Commerz\\Inventory\\Locations\\Data\\RestoreLocation $command): \\Commerz\\Inventory\\Locations\\Data\\LocationView",
+                "update": "update(\\Commerz\\Inventory\\Locations\\Data\\UpdateLocation $command): \\Commerz\\Inventory\\Locations\\Data\\LocationView"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\ArchiveLocation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $location)"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\CreateLocation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "kind": "public readonly \\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name, \\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind = Commerz\\Inventory\\Locations\\Enums\\LocationKind::Warehouse)",
+                "assertName": "static assertName(string $name): void"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\ListLocations": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "status": "public readonly ?\\Commerz\\Inventory\\Locations\\Enums\\LocationStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Inventory\\Locations\\Enums\\LocationStatus $status = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\LocationId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Inventory\\Locations\\Data\\LocationView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $id",
+                "kind": "public readonly \\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind",
+                "name": "public readonly string $name",
+                "status": "public readonly \\Commerz\\Inventory\\Locations\\Enums\\LocationStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $id, string $code, string $name, \\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind, \\Commerz\\Inventory\\Locations\\Enums\\LocationStatus $status, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\RestoreLocation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $location)"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Data\\UpdateLocation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "kind": "public readonly ?\\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "name": "public readonly ?string $name"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $location, ?string $name = null, ?\\Commerz\\Inventory\\Locations\\Enums\\LocationKind $kind = null)"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Enums\\LocationKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Warehouse": "warehouse",
+                "Store": "store",
+                "PickupPoint": "pickup_point"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Enums\\LocationStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Exceptions\\LocationArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "location": "public readonly string $location"
+            },
+            "methods": {
+                "__construct": "__construct(string $location)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Exceptions\\LocationNotEmpty": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "location": "public readonly string $location"
+            },
+            "methods": {
+                "__construct": "__construct(string $location)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Locations\\Exceptions\\LocationNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Inventory\\Movements\\Contracts\\Movements": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "list": "list(\\Commerz\\Inventory\\Movements\\Data\\ListMovements $query): \\Commerz\\Pagination\\Page"
+            }
+        },
+        "Commerz\\Inventory\\Movements\\Data\\ListMovements": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "item": "public readonly ?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item = null, ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location = null, ?string $reference = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Movements\\Data\\MovementView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "balanceAfter": "public readonly int $balanceAfter",
+                "delta": "public readonly int $delta",
+                "id": "public readonly int $id",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "kind": "public readonly \\Commerz\\Inventory\\Stock\\Enums\\MovementKind $kind",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "locationCode": "public readonly string $locationCode",
+                "occurredAt": "public readonly \\DateTimeImmutable $occurredAt",
+                "reason": "public readonly ?string $reason",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(int $id, \\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, string $locationCode, \\Commerz\\Inventory\\Stock\\Enums\\MovementKind $kind, int $delta, int $balanceAfter, ?string $reference, ?string $reason, ?\\Commerz\\Identity\\ActorRef $actor, \\DateTimeImmutable $occurredAt)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Contracts\\Reservations": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "extends": [
+                "Commerz\\Ports\\Stock\\Contracts\\StockReservations"
+            ],
+            "methods": {
+                "consume": "consume(\\Commerz\\Ports\\Stock\\Data\\ConsumeReservation $command): void",
+                "expire": "expire(\\Commerz\\Inventory\\Reservations\\Data\\ExpireReservations $command): int",
+                "find": "find(string $demand): \\Commerz\\Inventory\\Reservations\\Data\\ReservationView",
+                "reserve": "reserve(\\Commerz\\Ports\\Stock\\Data\\ReserveStock $command): \\Commerz\\Ports\\Stock\\Data\\ReservationResult"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Data\\ExpireReservations": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "limit": "public readonly ?int $limit"
+            },
+            "methods": {
+                "__construct": "__construct(?int $limit = null)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Data\\ReservationId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Inventory\\Reservations\\Data\\ReservationLineView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "consumed": "public readonly int $consumed",
+                "expired": "public readonly int $expired",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "locationCode": "public readonly string $locationCode",
+                "outstanding": "public readonly int $outstanding",
+                "quantityPerUnit": "public readonly int $quantityPerUnit",
+                "released": "public readonly int $released",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "sku": "public readonly string $sku",
+                "units": "public readonly int $units"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Inventory\\Items\\Data\\StockItemId $item, string $sku, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, string $locationCode, int $quantityPerUnit, int $units, int $consumed, int $released, int $expired, int $outstanding)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Data\\ReservationView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "demand": "public readonly string $demand",
+                "expiresAt": "public readonly ?\\DateTimeImmutable $expiresAt",
+                "generation": "public readonly int $generation",
+                "id": "public readonly \\Commerz\\Inventory\\Reservations\\Data\\ReservationId $id",
+                "lines": "public readonly array $lines",
+                "state": "public readonly \\Commerz\\Inventory\\Reservations\\Enums\\ReservationState $state"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Reservations\\Data\\ReservationId $id, string $demand, \\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Inventory\\Reservations\\Enums\\ReservationState $state, int $generation, ?\\DateTimeImmutable $expiresAt, array $lines)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Enums\\ReleaseCause": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Released": "released",
+                "Expired": "expired"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Enums\\ReservationState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Closed": "closed"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Events\\StockConsumed": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "allocations": "public readonly array $allocations",
+                "demand": "public readonly string $demand",
+                "quantity": "public readonly int $quantity",
+                "reference": "public readonly string $reference",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(string $demand, \\Commerz\\Identity\\SellableRef $sellable, int $quantity, string $reference, array $allocations)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Events\\StockReleased": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "cause": "public readonly \\Commerz\\Inventory\\Reservations\\Enums\\ReleaseCause $cause",
+                "demand": "public readonly string $demand",
+                "units": "public readonly array $units"
+            },
+            "methods": {
+                "__construct": "__construct(string $demand, \\Commerz\\Inventory\\Reservations\\Enums\\ReleaseCause $cause, array $units)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Events\\StockReserved": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "reservation": "public readonly \\Commerz\\Inventory\\Reservations\\Data\\ReservationView $reservation"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Reservations\\Data\\ReservationView $reservation)"
+            }
+        },
+        "Commerz\\Inventory\\Reservations\\Exceptions\\ReservationConflict": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "channel": "public readonly string $channel",
+                "demand": "public readonly string $demand"
+            },
+            "methods": {
+                "__construct": "__construct(string $demand, string $channel)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Sources\\Contracts\\StockSources": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "assign": "assign(\\Commerz\\Inventory\\Sources\\Data\\AssignSource $command): \\Commerz\\Inventory\\Sources\\Data\\StockSourceView",
+                "list": "list(\\Commerz\\Stores\\Data\\ChannelId $channel): array",
+                "unassign": "unassign(\\Commerz\\Inventory\\Sources\\Data\\UnassignSource $command): void"
+            }
+        },
+        "Commerz\\Inventory\\Sources\\Data\\AssignSource": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_PRIORITY": "1000000"
+            },
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "priority": "public readonly int $priority"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $priority = 100)"
+            }
+        },
+        "Commerz\\Inventory\\Sources\\Data\\StockSourceView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "locationCode": "public readonly string $locationCode",
+                "priority": "public readonly int $priority"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, string $locationCode, int $priority)"
+            }
+        },
+        "Commerz\\Inventory\\Sources\\Data\\UnassignSource": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Contracts\\StockLevels": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "adjust": "adjust(\\Commerz\\Inventory\\Stock\\Data\\AdjustStock $command): \\Commerz\\Inventory\\Stock\\Data\\StockLevelView",
+                "count": "count(\\Commerz\\Inventory\\Stock\\Data\\CountStock $command): \\Commerz\\Inventory\\Stock\\Data\\StockLevelView",
+                "level": "level(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location): \\Commerz\\Inventory\\Stock\\Data\\StockLevelView",
+                "list": "list(\\Commerz\\Inventory\\Stock\\Data\\ListStockLevels $query): \\Commerz\\Pagination\\Page",
+                "receive": "receive(\\Commerz\\Inventory\\Stock\\Data\\ReceiveStock $command): \\Commerz\\Inventory\\Stock\\Data\\StockLevelView",
+                "setSafetyStock": "setSafetyStock(\\Commerz\\Inventory\\Stock\\Data\\SetSafetyStock $command): \\Commerz\\Inventory\\Stock\\Data\\StockLevelView"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\AdjustStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "delta": "public readonly int $delta",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "reason": "public readonly string $reason",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $delta, string $reason, ?string $reference = null, ?\\Commerz\\Identity\\ActorRef $actor = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\CountStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "counted": "public readonly int $counted",
+                "expectedOnHand": "public readonly ?int $expectedOnHand",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "reason": "public readonly ?string $reason",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $counted, ?int $expectedOnHand = null, ?string $reason = null, ?string $reference = null, ?\\Commerz\\Identity\\ActorRef $actor = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\ListStockLevels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "item": "public readonly ?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Inventory\\Items\\Data\\StockItemId $item = null, ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\ReceiveStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "actor": "public readonly ?\\Commerz\\Identity\\ActorRef $actor",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "quantity": "public readonly int $quantity",
+                "reason": "public readonly ?string $reason",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $quantity, ?string $reference = null, ?string $reason = null, ?\\Commerz\\Identity\\ActorRef $actor = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\SetSafetyStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "quantity": "public readonly int $quantity"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, int $quantity)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Data\\StockLevelView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "available": "public readonly int $available",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "location": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "locationCode": "public readonly string $locationCode",
+                "onHand": "public readonly int $onHand",
+                "reserved": "public readonly int $reserved",
+                "safetyStock": "public readonly int $safetyStock",
+                "sku": "public readonly string $sku",
+                "updatedAt": "public readonly ?\\DateTimeImmutable $updatedAt",
+                "version": "public readonly int $version"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, string $sku, \\Commerz\\Inventory\\Locations\\Data\\LocationId $location, string $locationCode, int $onHand, int $reserved, int $safetyStock, int $version, ?\\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Enums\\MovementKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Receipt": "receipt",
+                "Adjustment": "adjustment",
+                "Count": "count",
+                "Sale": "sale",
+                "TransferOut": "transfer_out",
+                "TransferIn": "transfer_in",
+                "Return": "return"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Events\\StockLevelChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "delta": "public readonly int $delta",
+                "kind": "public readonly ?\\Commerz\\Inventory\\Stock\\Enums\\MovementKind $kind",
+                "level": "public readonly \\Commerz\\Inventory\\Stock\\Data\\StockLevelView $level",
+                "reference": "public readonly ?string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Stock\\Data\\StockLevelView $level, ?\\Commerz\\Inventory\\Stock\\Enums\\MovementKind $kind, int $delta, ?string $reference)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Events\\StockShortfall": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "level": "public readonly \\Commerz\\Inventory\\Stock\\Data\\StockLevelView $level",
+                "shortfall": "public readonly int $shortfall"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Stock\\Data\\StockLevelView $level, int $shortfall)"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Exceptions\\NegativeStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "delta": "public readonly int $delta",
+                "location": "public readonly string $location",
+                "onHand": "public readonly int $onHand",
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku, string $location, int $onHand, int $delta)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Exceptions\\StaleStockCount": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "actual": "public readonly int $actual",
+                "expected": "public readonly int $expected",
+                "location": "public readonly string $location",
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(string $sku, string $location, int $expected, int $actual)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Stock\\Exceptions\\StockLinkMissing": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $sellable)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Contracts\\Transfers": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "cancel": "cancel(\\Commerz\\Inventory\\Transfers\\Data\\CancelTransfer $command): \\Commerz\\Inventory\\Transfers\\Data\\TransferView",
+                "create": "create(\\Commerz\\Inventory\\Transfers\\Data\\CreateTransfer $command): \\Commerz\\Inventory\\Transfers\\Data\\TransferView",
+                "dispatch": "dispatch(\\Commerz\\Inventory\\Transfers\\Data\\DispatchTransfer $command): \\Commerz\\Inventory\\Transfers\\Data\\TransferView",
+                "find": "find(\\Commerz\\Inventory\\Transfers\\Data\\TransferId $id): \\Commerz\\Inventory\\Transfers\\Data\\TransferView",
+                "list": "list(\\Commerz\\Inventory\\Transfers\\Data\\ListTransfers $query): \\Commerz\\Pagination\\Page",
+                "receive": "receive(\\Commerz\\Inventory\\Transfers\\Data\\ReceiveTransfer $command): \\Commerz\\Inventory\\Transfers\\Data\\TransferView"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\CancelTransfer": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "transfer": "public readonly \\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\CreateTransfer": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_LINES": "500"
+            },
+            "properties": {
+                "from": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $from",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "lines": "public readonly array $lines",
+                "reference": "public readonly ?string $reference",
+                "to": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $to"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Locations\\Data\\LocationId $from, \\Commerz\\Inventory\\Locations\\Data\\LocationId $to, array $lines, ?string $reference = null, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\DispatchTransfer": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "transfer": "public readonly \\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\ListTransfers": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "location": "public readonly ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location",
+                "state": "public readonly ?\\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state = null, ?\\Commerz\\Inventory\\Locations\\Data\\LocationId $location = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\ReceiveTransfer": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "lines": "public readonly array $lines",
+                "transfer": "public readonly \\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Transfers\\Data\\TransferId $transfer, array $lines, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\TransferId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\TransferLine": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "quantity": "public readonly int $quantity"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, int $quantity)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\TransferLineView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "inTransit": "public readonly int $inTransit",
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "lost": "public readonly int $lost",
+                "quantity": "public readonly int $quantity",
+                "received": "public readonly int $received",
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, string $sku, int $quantity, int $received, int $lost, int $inTransit)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\TransferReceipt": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "item": "public readonly \\Commerz\\Inventory\\Items\\Data\\StockItemId $item",
+                "lost": "public readonly int $lost",
+                "received": "public readonly int $received"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Items\\Data\\StockItemId $item, int $received, int $lost = 0)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Data\\TransferView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "completedAt": "public readonly ?\\DateTimeImmutable $completedAt",
+                "dispatchedAt": "public readonly ?\\DateTimeImmutable $dispatchedAt",
+                "from": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $from",
+                "fromCode": "public readonly string $fromCode",
+                "id": "public readonly \\Commerz\\Inventory\\Transfers\\Data\\TransferId $id",
+                "lines": "public readonly array $lines",
+                "reference": "public readonly ?string $reference",
+                "state": "public readonly \\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state",
+                "to": "public readonly \\Commerz\\Inventory\\Locations\\Data\\LocationId $to",
+                "toCode": "public readonly string $toCode"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Transfers\\Data\\TransferId $id, \\Commerz\\Inventory\\Locations\\Data\\LocationId $from, string $fromCode, \\Commerz\\Inventory\\Locations\\Data\\LocationId $to, string $toCode, \\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state, ?string $reference, array $lines, ?\\DateTimeImmutable $dispatchedAt, ?\\DateTimeImmutable $completedAt)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Enums\\TransferState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Draft": "draft",
+                "InTransit": "in_transit",
+                "Completed": "completed",
+                "Cancelled": "cancelled"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Events\\TransferUpdated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "transfer": "public readonly \\Commerz\\Inventory\\Transfers\\Data\\TransferView $transfer"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Inventory\\Transfers\\Data\\TransferView $transfer)"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Exceptions\\InvalidTransferState": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "action": "public readonly string $action",
+                "state": "public readonly \\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state",
+                "transfer": "public readonly string $transfer"
+            },
+            "methods": {
+                "__construct": "__construct(string $transfer, \\Commerz\\Inventory\\Transfers\\Enums\\TransferState $state, string $action)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Inventory\\Transfers\\Exceptions\\TransferNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        }
+    },
+    "platform": {
+        "commands": [
+            "commerz:inventory:expire-reservations",
+            "commerz:inventory:reconcile"
+        ],
+        "config": "commerz-inventory",
+        "kinds": [
+            "allocation_strategy"
+        ],
+        "plugin": "commerz.inventory",
+        "providers": [
+            "Commerz\\Inventory\\InventoryServiceProvider"
+        ],
+        "tables": [
+            "stock"
+        ]
+    }
+}

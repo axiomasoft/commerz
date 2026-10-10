@@ -1,0 +1,1090 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "pricing",
+    "composer": "axiomasoft/commerz-pricing",
+    "types": {
+        "Commerz\\Pricing\\Calculation\\Contracts\\TaxCalculator": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'tax_calculator'"
+            },
+            "methods": {
+                "calculate": "calculate(\\Commerz\\Pricing\\Calculation\\Data\\TaxRequest $request): \\Commerz\\Pricing\\Calculation\\Data\\TaxResult",
+                "key": "key(): string"
+            }
+        },
+        "Commerz\\Pricing\\Calculation\\Data\\TaxAmount": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "code": "public readonly string $code",
+                "lineId": "public readonly ?string $lineId",
+                "rate": "public readonly \\Commerz\\Money\\Rate $rate",
+                "target": "public readonly \\Commerz\\Quotes\\Enums\\AdjustmentTarget $target"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Quotes\\Enums\\AdjustmentTarget $target, ?string $lineId, string $code, \\Commerz\\Money\\Rate $rate, \\Commerz\\Money\\Money $amount)",
+                "itemKey": "itemKey(): string"
+            }
+        },
+        "Commerz\\Pricing\\Calculation\\Data\\TaxRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "context": "public readonly \\Commerz\\Context\\CommerceContext $context",
+                "destination": "public readonly ?\\Commerz\\Ports\\Delivery\\Data\\Address $destination",
+                "items": "public readonly array $items"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Context\\CommerceContext $context, ?\\Commerz\\Ports\\Delivery\\Data\\Address $destination, array $items)"
+            }
+        },
+        "Commerz\\Pricing\\Calculation\\Data\\TaxResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amounts": "public readonly array $amounts"
+            },
+            "methods": {
+                "__construct": "__construct(array $amounts)"
+            }
+        },
+        "Commerz\\Pricing\\Calculation\\Data\\TaxableItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "base": "public readonly \\Commerz\\Money\\Money $base",
+                "included": "public readonly bool $included",
+                "lineId": "public readonly ?string $lineId",
+                "quantity": "public readonly int $quantity",
+                "sellable": "public readonly ?\\Commerz\\Identity\\SellableRef $sellable",
+                "target": "public readonly \\Commerz\\Quotes\\Enums\\AdjustmentTarget $target",
+                "taxClass": "public readonly string $taxClass"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Quotes\\Enums\\AdjustmentTarget $target, ?string $lineId, ?\\Commerz\\Identity\\SellableRef $sellable, string $taxClass, int $quantity, \\Commerz\\Money\\Money $base, bool $included)",
+                "key": "key(): string"
+            }
+        },
+        "Commerz\\Pricing\\Calculation\\Exceptions\\InvalidTaxResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "calculator": "public readonly string $calculator",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $calculator, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\Common\\Data\\PricingCodes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "code": "static code(string $field, string $value): string",
+                "group": "static group(string $field, string $value): string",
+                "taxCode": "static taxCode(string $field, string $value): string"
+            }
+        },
+        "Commerz\\Pricing\\Common\\Exceptions\\DuplicateCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "duplicate": "public readonly string $duplicate",
+                "entity": "public readonly string $entity"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $duplicate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\Facades\\Pricing": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Pricing\\PriceLists\\Contracts\\PriceLists": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Pricing\\PriceLists\\Data\\ArchivePriceList $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "assignChannels": "assignChannels(\\Commerz\\Pricing\\PriceLists\\Data\\AssignPriceListChannels $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "create": "create(\\Commerz\\Pricing\\PriceLists\\Data\\CreatePriceList $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "find": "find(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $id): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "list": "list(\\Commerz\\Pricing\\PriceLists\\Data\\ListPriceLists $query): \\Commerz\\Pagination\\Page",
+                "restore": "restore(\\Commerz\\Pricing\\PriceLists\\Data\\RestorePriceList $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "unassignChannels": "unassignChannels(\\Commerz\\Pricing\\PriceLists\\Data\\UnassignPriceListChannels $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView",
+                "update": "update(\\Commerz\\Pricing\\PriceLists\\Data\\UpdatePriceList $command): \\Commerz\\Pricing\\PriceLists\\Data\\PriceListView"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\ArchivePriceList": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\AssignPriceListChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, array $channels)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\CreatePriceList": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "name": "public readonly string $name",
+                "priority": "public readonly int $priority",
+                "taxInclusion": "public readonly \\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name, \\Commerz\\Money\\Currency $currency, array $channels = [], int $priority = 0, \\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion = Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion::AsChannel)",
+                "assertName": "static assertName(string $name): void",
+                "assertPriority": "static assertPriority(int $priority): void"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\ListPriceLists": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "channel": "public readonly ?\\Commerz\\Stores\\Data\\ChannelId $channel",
+                "currency": "public readonly ?\\Commerz\\Money\\Currency $currency",
+                "first": "public readonly int $first",
+                "status": "public readonly ?\\Commerz\\Pricing\\PriceLists\\Enums\\PriceListStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Pricing\\PriceLists\\Enums\\PriceListStatus $status = null, ?\\Commerz\\Stores\\Data\\ChannelId $channel = null, ?\\Commerz\\Money\\Currency $currency = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\PriceListId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\PriceListView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "id": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $id",
+                "name": "public readonly string $name",
+                "priority": "public readonly int $priority",
+                "status": "public readonly \\Commerz\\Pricing\\PriceLists\\Enums\\PriceListStatus $status",
+                "taxInclusion": "public readonly \\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $id, string $code, string $name, \\Commerz\\Money\\Currency $currency, int $priority, \\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion, \\Commerz\\Pricing\\PriceLists\\Enums\\PriceListStatus $status, array $channels, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\RestorePriceList": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\UnassignPriceListChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, array $channels)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Data\\UpdatePriceList": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "name": "public readonly ?string $name",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "priority": "public readonly ?int $priority",
+                "taxInclusion": "public readonly ?\\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, ?string $name = null, ?int $priority = null, ?\\Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion $taxInclusion = null)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Enums\\PriceListStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Enums\\TaxInclusion": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Included": "included",
+                "Excluded": "excluded",
+                "AsChannel": "as_channel"
+            },
+            "methods": {
+                "fromColumn": "static fromColumn(?bool $value): self",
+                "toColumn": "toColumn(): ?bool"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Events\\PriceListChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList)"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Exceptions\\PriceListArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "priceList": "public readonly string $priceList"
+            },
+            "methods": {
+                "__construct": "__construct(string $priceList)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\PriceLists\\Exceptions\\PriceListNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Contracts\\Prices": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "explain": "explain(\\Commerz\\Pricing\\Prices\\Data\\ExplainPrice $query): \\Commerz\\Pricing\\Prices\\Data\\PriceExplanation",
+                "list": "list(\\Commerz\\Pricing\\Prices\\Data\\ListPrices $query): \\Commerz\\Pagination\\Page",
+                "remove": "remove(\\Commerz\\Pricing\\Prices\\Data\\RemovePrice $command): void",
+                "reschedule": "reschedule(\\Commerz\\Pricing\\Prices\\Data\\ReschedulePrice $command): \\Commerz\\Pricing\\Prices\\Data\\PriceView",
+                "resolveMany": "resolveMany(array $requests, \\Commerz\\Context\\CommerceContext $context): array",
+                "set": "set(\\Commerz\\Pricing\\Prices\\Data\\SetPrice $command): \\Commerz\\Pricing\\Prices\\Data\\PriceView",
+                "setMany": "setMany(\\Commerz\\Pricing\\Prices\\Data\\SetPrices $command): array"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\ExplainPrice": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "context": "public readonly \\Commerz\\Context\\CommerceContext $context",
+                "fallback": "public readonly ?\\Commerz\\Money\\Money $fallback",
+                "quantity": "public readonly int $quantity",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Identity\\SellableRef $sellable, int $quantity, \\Commerz\\Context\\CommerceContext $context, ?\\Commerz\\Money\\Money $fallback = null)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\ListPrices": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "sellable": "public readonly ?\\Commerz\\Identity\\SellableRef $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, ?\\Commerz\\Identity\\SellableRef $sellable = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\PriceCandidate": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "compareAt": "public readonly ?\\Commerz\\Money\\Money $compareAt",
+                "customerGroup": "public readonly ?string $customerGroup",
+                "minQuantity": "public readonly int $minQuantity",
+                "price": "public readonly \\Commerz\\Pricing\\Prices\\Data\\PriceId $price",
+                "priceList": "public readonly string $priceList",
+                "priority": "public readonly int $priority",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil",
+                "verdict": "public readonly \\Commerz\\Pricing\\Prices\\Enums\\CandidateVerdict $verdict"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Prices\\Data\\PriceId $price, string $priceList, int $priority, ?string $customerGroup, int $minQuantity, \\Commerz\\Money\\Money $amount, ?\\Commerz\\Money\\Money $compareAt, ?\\DateTimeImmutable $validFrom, ?\\DateTimeImmutable $validUntil, \\Commerz\\Pricing\\Prices\\Enums\\CandidateVerdict $verdict)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\PriceExplanation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "candidates": "public readonly array $candidates",
+                "fallbackUsed": "public readonly bool $fallbackUsed",
+                "price": "public readonly ?\\Commerz\\Ports\\Prices\\Data\\ResolvedPrice $price"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Ports\\Prices\\Data\\ResolvedPrice $price, array $candidates, bool $fallbackUsed)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\PriceId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Pricing\\Prices\\Data\\PriceView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "compareAt": "public readonly ?\\Commerz\\Money\\Money $compareAt",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "customerGroup": "public readonly ?string $customerGroup",
+                "id": "public readonly \\Commerz\\Pricing\\Prices\\Data\\PriceId $id",
+                "minQuantity": "public readonly int $minQuantity",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Prices\\Data\\PriceId $id, \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, \\Commerz\\Identity\\SellableRef $sellable, ?string $customerGroup, int $minQuantity, \\Commerz\\Money\\Money $amount, ?\\Commerz\\Money\\Money $compareAt, ?\\DateTimeImmutable $validFrom, ?\\DateTimeImmutable $validUntil, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\RemovePrice": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "price": "public readonly \\Commerz\\Pricing\\Prices\\Data\\PriceId $price"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Prices\\Data\\PriceId $price)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\ReschedulePrice": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "price": "public readonly \\Commerz\\Pricing\\Prices\\Data\\PriceId $price",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Prices\\Data\\PriceId $price, ?\\DateTimeImmutable $validFrom = null, ?\\DateTimeImmutable $validUntil = null)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\SetPrice": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "compareAt": "public readonly ?\\Commerz\\Money\\Money $compareAt",
+                "customerGroup": "public readonly ?string $customerGroup",
+                "minQuantity": "public readonly int $minQuantity",
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, \\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Money\\Money $amount, ?\\Commerz\\Money\\Money $compareAt = null, int $minQuantity = 1, ?string $customerGroup = null, ?\\DateTimeImmutable $validFrom = null, ?\\DateTimeImmutable $validUntil = null)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Data\\SetPrices": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX": "1000"
+            },
+            "properties": {
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "prices": "public readonly array $prices"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, array $prices)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Enums\\CandidateVerdict": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Selected": "selected",
+                "Outranked": "outranked",
+                "GroupMismatch": "group_mismatch",
+                "BelowMinQuantity": "below_min_quantity",
+                "OutsideWindow": "outside_window"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Events\\PricesChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "priceList": "public readonly \\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList",
+                "sellables": "public readonly array $sellables"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Data\\PriceListId $priceList, array $sellables)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Exceptions\\PriceNotFoundById": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Pricing\\Prices\\Exceptions\\PriceWindowOverlap": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "conflictingPrice": "public readonly ?string $conflictingPrice",
+                "priceList": "public readonly string $priceList",
+                "sellable": "public readonly string $sellable"
+            },
+            "methods": {
+                "__construct": "__construct(string $sellable, string $priceList, ?string $conflictingPrice)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\Pricing": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\PriceLists\\Contracts\\PriceLists $priceLists, \\Commerz\\Pricing\\Prices\\Contracts\\Prices $prices, \\Commerz\\Pricing\\Taxes\\Contracts\\Taxes $taxes)",
+                "priceLists": "priceLists(): \\Commerz\\Pricing\\PriceLists\\Contracts\\PriceLists",
+                "prices": "prices(): \\Commerz\\Pricing\\Prices\\Contracts\\Prices",
+                "taxes": "taxes(): \\Commerz\\Pricing\\Taxes\\Contracts\\Taxes"
+            }
+        },
+        "Commerz\\Pricing\\PricingServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['price', 'tax']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Contracts\\Taxes": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "defineClass": "defineClass(\\Commerz\\Pricing\\Taxes\\Data\\DefineTaxClass $command): \\Commerz\\Pricing\\Taxes\\Data\\TaxClassView",
+                "defineZone": "defineZone(\\Commerz\\Pricing\\Taxes\\Data\\DefineTaxZone $command): \\Commerz\\Pricing\\Taxes\\Data\\TaxZoneView",
+                "listClasses": "listClasses(): array",
+                "listRates": "listRates(\\Commerz\\Pricing\\Taxes\\Data\\ListTaxRates $query): array",
+                "listZones": "listZones(): array",
+                "removeRate": "removeRate(\\Commerz\\Pricing\\Taxes\\Data\\RemoveTaxRate $command): void",
+                "rescheduleRate": "rescheduleRate(\\Commerz\\Pricing\\Taxes\\Data\\RescheduleTaxRate $command): \\Commerz\\Pricing\\Taxes\\Data\\TaxRateView",
+                "setRate": "setRate(\\Commerz\\Pricing\\Taxes\\Data\\SetTaxRate $command): \\Commerz\\Pricing\\Taxes\\Data\\TaxRateView",
+                "setZoneMembers": "setZoneMembers(\\Commerz\\Pricing\\Taxes\\Data\\SetTaxZoneMembers $command): \\Commerz\\Pricing\\Taxes\\Data\\TaxZoneView",
+                "zoneFor": "zoneFor(\\Commerz\\Ports\\Delivery\\Data\\Address $address): ?\\Commerz\\Pricing\\Taxes\\Data\\TaxZoneView"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\DefineTaxClass": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\DefineTaxZone": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "members": "public readonly array $members",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name, array $members = [])"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\ListTaxRates": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "at": "public readonly ?\\DateTimeImmutable $at",
+                "taxClass": "public readonly ?string $taxClass",
+                "zone": "public readonly ?string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(?string $zone = null, ?string $taxClass = null, ?\\DateTimeImmutable $at = null)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\RemoveTaxRate": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "rate": "public readonly \\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $rate"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $rate)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\RescheduleTaxRate": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "rate": "public readonly \\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $rate",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $rate, ?\\DateTimeImmutable $validFrom = null, ?\\DateTimeImmutable $validUntil = null)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\SetTaxRate": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "rateBp": "public readonly int $rateBp",
+                "taxClass": "public readonly string $taxClass",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil",
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(string $taxClass, string $zone, int $rateBp, string $code = 'vat', ?\\DateTimeImmutable $validFrom = null, ?\\DateTimeImmutable $validUntil = null)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\SetTaxZoneMembers": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "members": "public readonly array $members",
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(string $zone, array $members)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxClassId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxClassView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Pricing\\Taxes\\Data\\TaxClassId $id",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Taxes\\Data\\TaxClassId $id, string $code, string $name)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxRateId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxRateView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $id",
+                "rate": "public readonly \\Commerz\\Money\\Rate $rate",
+                "taxClass": "public readonly string $taxClass",
+                "validFrom": "public readonly ?\\DateTimeImmutable $validFrom",
+                "validUntil": "public readonly ?\\DateTimeImmutable $validUntil",
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Taxes\\Data\\TaxRateId $id, string $taxClass, string $zone, string $code, \\Commerz\\Money\\Rate $rate, ?\\DateTimeImmutable $validFrom, ?\\DateTimeImmutable $validUntil)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxZoneId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxZoneMember": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "country": "public readonly string $country",
+                "region": "public readonly ?string $region"
+            },
+            "methods": {
+                "__construct": "__construct(string $country, ?string $region = null)",
+                "normalize": "static normalize(array $members): array"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Data\\TaxZoneView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Pricing\\Taxes\\Data\\TaxZoneId $id",
+                "members": "public readonly array $members",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Pricing\\Taxes\\Data\\TaxZoneId $id, string $code, string $name, array $members)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Events\\TaxRatesChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "taxClass": "public readonly string $taxClass",
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(string $taxClass, string $zone)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Exceptions\\TaxClassNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $code)"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Exceptions\\TaxRateNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array",
+                "forClass": "static forClass(string $taxClass, string $zone, string $at): self",
+                "forId": "static forId(string $id): self"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Exceptions\\TaxRateOverlap": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "conflictingRate": "public readonly ?string $conflictingRate",
+                "taxClass": "public readonly string $taxClass",
+                "taxCode": "public readonly string $taxCode",
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(string $taxClass, string $zone, string $taxCode, ?string $conflictingRate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Exceptions\\TaxZoneMemberTaken": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "country": "public readonly string $country",
+                "otherZone": "public readonly ?string $otherZone",
+                "region": "public readonly ?string $region"
+            },
+            "methods": {
+                "__construct": "__construct(string $country, ?string $region, ?string $otherZone)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Pricing\\Taxes\\Exceptions\\TaxZoneNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $code)"
+            }
+        }
+    },
+    "platform": {
+        "config": "commerz-pricing",
+        "kinds": [
+            "tax_calculator"
+        ],
+        "plugin": "commerz.pricing",
+        "providers": [
+            "Commerz\\Pricing\\PricingServiceProvider"
+        ],
+        "tables": [
+            "price",
+            "tax"
+        ]
+    }
+}

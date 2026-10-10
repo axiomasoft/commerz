@@ -1,0 +1,224 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "testkit",
+    "composer": "axiomasoft/commerz-testkit",
+    "types": {
+        "Commerz\\Testkit\\Commerce": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "customers": "public readonly \\Commerz\\Testkit\\Fakes\\FakeCustomers $customers",
+                "delivery": "public readonly \\Commerz\\Testkit\\Fakes\\FakeDelivery $delivery",
+                "prices": "public readonly \\Commerz\\Testkit\\Fakes\\FakePrices $prices",
+                "promotions": "public readonly \\Commerz\\Testkit\\Fakes\\FakePromotionUsage $promotions",
+                "sellables": "public readonly \\Commerz\\Testkit\\Fakes\\FakeSellables $sellables",
+                "stock": "public readonly \\Commerz\\Testkit\\Fakes\\FakeStock $stock"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Testkit\\Fakes\\FakeSellables $sellables, \\Commerz\\Testkit\\Fakes\\FakeStock $stock, \\Commerz\\Testkit\\Fakes\\FakePrices $prices, \\Commerz\\Testkit\\Fakes\\FakePromotionUsage $promotions, \\Commerz\\Testkit\\Fakes\\FakeDelivery $delivery, \\Commerz\\Testkit\\Fakes\\FakeCustomers $customers)",
+                "fake": "static fake(?\\Illuminate\\Container\\Container $container = null): self"
+            }
+        },
+        "Commerz\\Testkit\\Concurrency": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "run": "static run(int $workers, \\Closure $work, int $timeoutSeconds = 30): array"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakeCustomers": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Customers\\Contracts\\CustomerDirectory"
+            ],
+            "methods": {
+                "add": "add(\\Commerz\\Ports\\Customers\\Data\\CustomerProfile ...$profiles): self",
+                "find": "find(\\Commerz\\Identity\\CustomerRef $customer): ?\\Commerz\\Ports\\Customers\\Data\\CustomerProfile"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakeDelivery": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Delivery\\Contracts\\DeliveryOptions",
+                "Commerz\\Ports\\Delivery\\Contracts\\ShipmentBooking"
+            ],
+            "properties": {
+                "bookings": "public private(set) array $bookings = []",
+                "requests": "public private(set) array $requests = []"
+            },
+            "methods": {
+                "book": "book(\\Commerz\\Ports\\Delivery\\Data\\BookShipment $command): \\Commerz\\Ports\\Delivery\\Data\\BookedShipment",
+                "offer": "offer(\\Commerz\\Ports\\Delivery\\Data\\DeliveryOption ...$options): self",
+                "options": "options(\\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request): array"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakePrices": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Prices\\Contracts\\PriceResolver"
+            ],
+            "properties": {
+                "requests": "public private(set) array $requests = []",
+                "taxIncluded": "public bool $taxIncluded"
+            },
+            "methods": {
+                "__construct": "__construct(bool $taxIncluded = false)",
+                "resolveMany": "resolveMany(array $requests, \\Commerz\\Context\\CommerceContext $context): array",
+                "set": "set(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Money\\Money $unit, ?\\Commerz\\Money\\Money $compareAt = null): self"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakePromotionUsage": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Promotions\\Contracts\\PromotionUsage"
+            ],
+            "properties": {
+                "consumed": "public private(set) array $consumed = []",
+                "restored": "public private(set) array $restored = []"
+            },
+            "methods": {
+                "consume": "consume(\\Commerz\\Ports\\Promotions\\Data\\ConsumePromotionUsage $command): void",
+                "limit": "limit(string $promotionId, int $total): self",
+                "restore": "restore(\\Commerz\\Ports\\Promotions\\Data\\RestorePromotionUsage $command): void",
+                "uses": "uses(string $promotionId): int"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakeSellableRouter": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Sellables\\Contracts\\Sellables"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Testkit\\Fakes\\FakeSellables $sellables)",
+                "resolve": "resolve(\\Commerz\\Identity\\SellableRef $ref, \\Commerz\\Context\\CommerceContext $context): \\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                "resolveMany": "resolveMany(array $refs, \\Commerz\\Context\\CommerceContext $context): array"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakeSellables": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Sellables\\Contracts\\SellableProvider"
+            ],
+            "methods": {
+                "__construct": "__construct(string $key = 'fake')",
+                "add": "add(\\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot ...$snapshots): self",
+                "find": "find(\\Commerz\\Identity\\SellableRef $ref): ?\\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                "forget": "forget(\\Commerz\\Identity\\SellableRef $ref): self",
+                "key": "key(): string",
+                "resolve": "resolve(array $refs, \\Commerz\\Context\\CommerceContext $context): array",
+                "snapshot": "static snapshot(\\Commerz\\Identity\\SellableRef|string $ref, ?\\Commerz\\Money\\Money $basePrice = null, \\Commerz\\Ports\\Sellables\\Enums\\SellableKind $kind = Commerz\\Ports\\Sellables\\Enums\\SellableKind::Physical, ?string $name = null): \\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot"
+            }
+        },
+        "Commerz\\Testkit\\Fakes\\FakeStock": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "implements": [
+                "Commerz\\Ports\\Stock\\Contracts\\StockAvailability",
+                "Commerz\\Ports\\Stock\\Contracts\\StockReservations",
+                "Commerz\\Ports\\Stock\\Contracts\\StockReturns"
+            ],
+            "constants": {
+                "LOCATION": "'fake'"
+            },
+            "properties": {
+                "consumed": "public private(set) array $consumed = []",
+                "released": "public private(set) array $released = []",
+                "reserved": "public private(set) array $reserved = []",
+                "restocked": "public private(set) array $restocked = []"
+            },
+            "methods": {
+                "available": "available(\\Commerz\\Identity\\SellableRef $sellable): ?int",
+                "check": "check(\\Commerz\\Ports\\Stock\\Data\\CheckAvailability $query): \\Commerz\\Ports\\Stock\\Data\\AvailabilityAnswer",
+                "consume": "consume(\\Commerz\\Ports\\Stock\\Data\\ConsumeReservation $command): void",
+                "held": "held(string $demand): array",
+                "limit": "limit(\\Commerz\\Identity\\SellableRef $sellable, int $onHand): self",
+                "onHand": "onHand(\\Commerz\\Identity\\SellableRef $sellable): ?int",
+                "release": "release(\\Commerz\\Ports\\Stock\\Data\\ReleaseReservation $command): void",
+                "reserve": "reserve(\\Commerz\\Ports\\Stock\\Data\\ReserveStock $command): \\Commerz\\Ports\\Stock\\Data\\ReservationResult",
+                "restock": "restock(\\Commerz\\Ports\\Stock\\Data\\RestockStock $command): void"
+            }
+        },
+        "Commerz\\Testkit\\PackageTestCase": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "abstract"
+            ],
+            "extends": "Orchestra\\Testbench\\TestCase",
+            "implements": [
+                "Countable",
+                "Orchestra\\Testbench\\Contracts\\TestCase",
+                "PHPUnit\\Framework\\Reorderable",
+                "PHPUnit\\Framework\\SelfDescribing",
+                "PHPUnit\\Framework\\Test"
+            ],
+            "methods": {
+                "commerzProviders": "protected abstract commerzProviders(): array",
+                "databaseConnection": "protected databaseConnection(): array",
+                "defineEnvironment": "protected defineEnvironment($app): void",
+                "getPackageProviders": "protected getPackageProviders($app): array",
+                "setUpTraits": "protected setUpTraits()"
+            }
+        },
+        "Commerz\\Testkit\\PluginContractTests": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "aPluginThatIsNotRegisteredLeavesNoContributions": "aPluginThatIsNotRegisteredLeavesNoContributions(): void",
+                "anUnknownKeyIsUnsupported": "anUnknownKeyIsUnsupported(): void",
+                "contributionKeysAreStable": "contributionKeysAreStable(): void",
+                "expectedContributions": "protected expectedContributions(): array",
+                "pluginClass": "protected abstract pluginClass(): string",
+                "pluginDependencies": "protected pluginDependencies(): array",
+                "registeringThePluginTwiceFails": "registeringThePluginTwiceFails(): void"
+            }
+        }
+    },
+    "platform": {}
+}

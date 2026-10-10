@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+
+use Commerz\Arch\ApiManifest;
+use Commerz\Arch\ApiSurface;
+
+// The SemVer snapshot of 0.1: every package's public PHP surface in packages/<pkg>/resources/contracts/php-api.json.
+// `COMMERZ_UPDATE_API_MANIFEST=1` writes the manifests (composer api:manifest); otherwise a stale one fails here.
+
+final class ApiManifestProbe
+{
+    public const array LEVELS = ['low' => 1, 'high' => [2, 3]];
+
+    public static function implicit(): self
+    {
+        return new self;
+    }
+
+    public static function explicit(): ApiManifestProbe
+    {
+        return new self;
+    }
+
+    /** @param  int|list<string>|null  $value */
+    public function shapes(?int $value = null, int|string ...$rest): ?static
+    {
+        return null;
+    }
+}
+
+interface ApiManifestParentProbe {}
+
+interface ApiManifestChildProbe extends ApiManifestParentProbe {}
+
+abstract class ApiManifestOpenProbe
+{
+    public private(set) array $log = [];
+
+    public protected(set) int $count = 0;
+
+    final public function sealed(int $max = PHP_INT_MAX): void {}
+
+    public function same(self $other, ?self $maybe = null): bool
+    {
+        return true;
+    }
+}
+
+it('writes signatures as declared, whatever the PHP version resolves', function (): void {
+    $manifest = new ApiManifest(ApiSurface::fromRoot(dirname(__DIR__, 2)));
+
+    expect($manifest->signature(new ReflectionMethod(ApiManifestProbe::class, 'implicit')))->toBe('static implicit(): self')
+        ->and($manifest->signature(new ReflectionMethod(ApiManifestProbe::class, 'explicit')))->toBe('static explicit(): \\ApiManifestProbe')
+        ->and($manifest->signature(new ReflectionMethod(ApiManifestProbe::class, 'shapes')))->toBe('shapes(?int $value = null, string|int ...$rest): ?static')
+        ->and(ApiManifest::literal(ApiManifestProbe::LEVELS))->toBe("['low' => 1, 'high' => [2, 3]]")
+        // `final`, a global constant default, and `self` in parameters as written (PHP 8.5 reflection resolves it).
+        ->and($manifest->signature(new ReflectionMethod(ApiManifestOpenProbe::class, 'sealed')))->toBe('final sealed(int $max = \\PHP_INT_MAX): void')
+        ->and($manifest->signature(new ReflectionMethod(ApiManifestOpenProbe::class, 'same')))->toBe('same(self $other, ?self $maybe = null): bool');
+});
+
+it('records asymmetric visibility, property defaults and the parents of an interface', function (): void {
+    $manifest = new ApiManifest(ApiSurface::fromRoot(dirname(__DIR__, 2)));
+
+    expect($manifest->members(new ReflectionClass(ApiManifestOpenProbe::class))['properties'])->toBe([
+        'count' => 'public protected(set) int $count = 0',
+        'log' => 'public private(set) array $log = []',
+    ])
+        ->and($manifest->members(new ReflectionClass(ApiManifestChildProbe::class))['extends'])->toBe([ApiManifestParentProbe::class]);
+});
+
+it('refuses a type without a marker', function (): void {
+    (new ApiManifest(ApiSurface::fromRoot(dirname(__DIR__, 2))))->type(new ReflectionClass(ApiManifestProbe::class));
+})->throws(RuntimeException::class, 'ApiManifestProbe has neither #[Api] nor #[Spi].');
+
+it('keeps every php-api.json manifest in sync with the code', function (): void {
+    $root = dirname(__DIR__, 2);
+    $manifests = (new ApiManifest(ApiSurface::fromRoot($root)))->build();
+    $update = getenv('COMMERZ_UPDATE_API_MANIFEST') === '1';
+
+    foreach ($manifests as $package => $manifest) {
+        $path = ApiManifest::path($root, $package);
+        $encoded = ApiManifest::encode($manifest);
+
+        if ($update) {
+            if (! is_dir(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
+
+            file_put_contents($path, $encoded);
+
+            continue;
+        }
+
+        expect(is_file($path))->toBeTrue("Missing {$path}: run composer api:manifest")
+            ->and((string) file_get_contents($path))->toBe($encoded, "Stale {$path}: run composer api:manifest");
+    }
+
+    // No orphan manifest for a package that has no code any more.
+    $expected = array_map(static fn (string $package): string => ApiManifest::path($root, $package), array_keys($manifests));
+
+    expect(array_keys($manifests))->toBe(['catalog', 'core', 'inventory', 'pricing', 'promotions', 'sales', 'shipping', 'testkit'])
+        ->and(array_values(array_diff(glob($root.'/packages/*/resources/contracts/php-api.json') ?: [], $expected)))->toBe([]);
+});

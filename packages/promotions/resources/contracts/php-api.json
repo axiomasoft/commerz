@@ -1,0 +1,1144 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "promotions",
+    "composer": "axiomasoft/commerz-promotions",
+    "types": {
+        "Commerz\\Promotions\\Common\\Data\\PromotionCodes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "code": "static code(string $field, string $value): string",
+                "couponCode": "static couponCode(string $field, string $value): string",
+                "group": "static group(string $field, string $value): string"
+            }
+        },
+        "Commerz\\Promotions\\Common\\Exceptions\\DuplicateCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "duplicate": "public readonly string $duplicate",
+                "entity": "public readonly string $entity"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $duplicate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Contracts\\Coupons": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "create": "create(\\Commerz\\Promotions\\Coupons\\Data\\CreateCoupon $command): \\Commerz\\Promotions\\Coupons\\Data\\CouponView",
+                "disable": "disable(\\Commerz\\Promotions\\Coupons\\Data\\DisableCoupon $command): \\Commerz\\Promotions\\Coupons\\Data\\CouponView",
+                "enable": "enable(\\Commerz\\Promotions\\Coupons\\Data\\EnableCoupon $command): \\Commerz\\Promotions\\Coupons\\Data\\CouponView",
+                "find": "find(\\Commerz\\Promotions\\Coupons\\Data\\CouponId $id): \\Commerz\\Promotions\\Coupons\\Data\\CouponView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Promotions\\Coupons\\Data\\CouponView",
+                "generate": "generate(\\Commerz\\Promotions\\Coupons\\Data\\GenerateCoupons $command): \\Commerz\\Promotions\\Coupons\\Data\\CouponBatchView",
+                "list": "list(\\Commerz\\Promotions\\Coupons\\Data\\ListCoupons $query): \\Commerz\\Pagination\\Page",
+                "setLimit": "setLimit(\\Commerz\\Promotions\\Coupons\\Data\\SetCouponLimit $command): \\Commerz\\Promotions\\Coupons\\Data\\CouponView"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\CouponBatchId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\CouponBatchView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "count": "public readonly int $count",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $id",
+                "pattern": "public readonly string $pattern",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "usageLimit": "public readonly ?int $usageLimit"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $id, \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, string $pattern, int $count, ?int $usageLimit, \\DateTimeImmutable $createdAt)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\CouponId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\CouponView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "batch": "public readonly ?\\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch",
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponId $id",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "status": "public readonly \\Commerz\\Promotions\\Coupons\\Enums\\CouponStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "usageLimit": "public readonly ?int $usageLimit",
+                "used": "public readonly int $used"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Coupons\\Data\\CouponId $id, \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, ?\\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch, string $code, \\Commerz\\Promotions\\Coupons\\Enums\\CouponStatus $status, ?int $usageLimit, int $used, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\CreateCoupon": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "usageLimit": "public readonly ?int $usageLimit"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, string $code, ?int $usageLimit = null)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\DisableCoupon": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "coupon": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\EnableCoupon": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "coupon": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\GenerateCoupons": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "count": "public readonly int $count",
+                "idempotencyKey": "public readonly ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey",
+                "pattern": "public readonly string $pattern",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "usageLimit": "public readonly ?int $usageLimit"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, int $count, string $pattern, ?int $usageLimit = 1, ?\\Commerz\\Identity\\IdempotencyKey $idempotencyKey = null)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\ListCoupons": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "batch": "public readonly ?\\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch",
+                "first": "public readonly int $first",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "status": "public readonly ?\\Commerz\\Promotions\\Coupons\\Enums\\CouponStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, ?\\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch = null, ?\\Commerz\\Promotions\\Coupons\\Enums\\CouponStatus $status = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Data\\SetCouponLimit": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "coupon": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon",
+                "usageLimit": "public readonly ?int $usageLimit"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Coupons\\Data\\CouponId $coupon, ?int $usageLimit)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Enums\\CouponStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Disabled": "disabled"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Events\\CouponsGenerated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "batch": "public readonly \\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch",
+                "count": "public readonly int $count",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, \\Commerz\\Promotions\\Coupons\\Data\\CouponBatchId $batch, int $count)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Exceptions\\CodeSpaceExhausted": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "missing": "public readonly int $missing",
+                "pattern": "public readonly string $pattern"
+            },
+            "methods": {
+                "__construct": "__construct(string $pattern, int $missing)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Exceptions\\CouponNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Promotions\\Coupons\\Exceptions\\NotACouponPromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "activator": "public readonly string $activator",
+                "promotion": "public readonly string $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(string $promotion, string $activator)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Contracts\\PromotionDefinitions": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Promotions\\Definitions\\Data\\ArchivePromotion $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "assignChannels": "assignChannels(\\Commerz\\Promotions\\Definitions\\Data\\AssignPromotionChannels $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "create": "create(\\Commerz\\Promotions\\Definitions\\Data\\CreatePromotion $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "explain": "explain(\\Commerz\\Promotions\\Definitions\\Data\\ExplainPromotions $query): \\Commerz\\Promotions\\Definitions\\Data\\PromotionExplanation",
+                "find": "find(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $id): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "list": "list(\\Commerz\\Promotions\\Definitions\\Data\\ListPromotions $query): \\Commerz\\Pagination\\Page",
+                "pause": "pause(\\Commerz\\Promotions\\Definitions\\Data\\PausePromotion $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "resume": "resume(\\Commerz\\Promotions\\Definitions\\Data\\ResumePromotion $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "unassignChannels": "unassignChannels(\\Commerz\\Promotions\\Definitions\\Data\\UnassignPromotionChannels $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView",
+                "update": "update(\\Commerz\\Promotions\\Definitions\\Data\\UpdatePromotion $command): \\Commerz\\Promotions\\Definitions\\Data\\PromotionView"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\ArchivePromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\AssignPromotionChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, array $channels)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\CreatePromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "activator": "public readonly string $activator",
+                "budget": "public readonly ?\\Commerz\\Money\\Money $budget",
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "conditions": "public readonly array $conditions",
+                "currency": "public readonly ?\\Commerz\\Money\\Currency $currency",
+                "effects": "public readonly array $effects",
+                "endsAt": "public readonly ?\\DateTimeImmutable $endsAt",
+                "limits": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits",
+                "name": "public readonly string $name",
+                "priority": "public readonly int $priority",
+                "stacking": "public readonly \\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking",
+                "stage": "public readonly \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage",
+                "startsAt": "public readonly ?\\DateTimeImmutable $startsAt",
+                "status": "public readonly \\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status",
+                "stopFurther": "public readonly bool $stopFurther"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name, \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage, string $activator, array $channels, array $effects, array $conditions = [], \\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking = Commerz\\Promotions\\Definitions\\Enums\\Stacking::Stackable, bool $stopFurther = false, int $priority = 0, ?\\Commerz\\Money\\Currency $currency = null, \\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits = new \\Commerz\\Promotions\\Definitions\\Data\\UsageLimits, ?\\Commerz\\Money\\Money $budget = null, ?\\DateTimeImmutable $startsAt = null, ?\\DateTimeImmutable $endsAt = null, \\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status = Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus::Active)",
+                "assertBudget": "static assertBudget(?\\Commerz\\Money\\Money $budget): void",
+                "assertName": "static assertName(string $name): void",
+                "assertPriority": "static assertPriority(int $priority): void"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\ExplainPromotions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "input": "public readonly \\Commerz\\Quotes\\Data\\QuoteInput $input"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Quotes\\Data\\QuoteInput $input)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\ListPromotions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "channel": "public readonly ?\\Commerz\\Stores\\Data\\ChannelId $channel",
+                "first": "public readonly int $first",
+                "stage": "public readonly ?\\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage",
+                "status": "public readonly ?\\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status = null, ?\\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage = null, ?\\Commerz\\Stores\\Data\\ChannelId $channel = null, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PausePromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionExplanation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "codeRejections": "public readonly array $codeRejections",
+                "failure": "public readonly ?string $failure",
+                "quote": "public readonly ?\\Commerz\\Quotes\\Data\\QuoteResult $quote",
+                "verdicts": "public readonly array $verdicts"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Quotes\\Data\\QuoteResult $quote, ?string $failure, array $verdicts, array $codeRejections)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionUsageSummary": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "discounts": "public readonly array $discounts",
+                "orders": "public readonly int $orders"
+            },
+            "methods": {
+                "__construct": "__construct(int $orders, array $discounts)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionVerdict": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "couponCode": "public readonly ?string $couponCode",
+                "discount": "public readonly ?\\Commerz\\Money\\Money $discount",
+                "kind": "public readonly \\Commerz\\Promotions\\Definitions\\Enums\\VerdictKind $kind",
+                "name": "public readonly string $name",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "reason": "public readonly ?string $reason",
+                "stage": "public readonly \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, string $code, string $name, \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage, ?string $couponCode, \\Commerz\\Promotions\\Definitions\\Enums\\VerdictKind $kind, ?string $reason, ?\\Commerz\\Money\\Money $discount)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "activator": "public readonly string $activator",
+                "budget": "public readonly ?\\Commerz\\Money\\Money $budget",
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "conditions": "public readonly array $conditions",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "currency": "public readonly ?\\Commerz\\Money\\Currency $currency",
+                "effects": "public readonly array $effects",
+                "endsAt": "public readonly ?\\DateTimeImmutable $endsAt",
+                "id": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $id",
+                "limits": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits",
+                "name": "public readonly string $name",
+                "priority": "public readonly int $priority",
+                "revision": "public readonly int $revision",
+                "stacking": "public readonly \\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking",
+                "stage": "public readonly \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage",
+                "startsAt": "public readonly ?\\DateTimeImmutable $startsAt",
+                "status": "public readonly \\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status",
+                "stopFurther": "public readonly bool $stopFurther",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "usage": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionUsageSummary $usage"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $id, string $code, string $name, \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage, string $activator, \\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking, bool $stopFurther, int $priority, ?\\Commerz\\Money\\Currency $currency, \\Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus $status, ?\\DateTimeImmutable $startsAt, ?\\DateTimeImmutable $endsAt, array $channels, array $conditions, array $effects, \\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits, ?\\Commerz\\Money\\Money $budget, int $revision, \\Commerz\\Promotions\\Definitions\\Data\\PromotionUsageSummary $usage, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\PromotionWindow": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "endsAt": "public readonly ?\\DateTimeImmutable $endsAt",
+                "startsAt": "public readonly ?\\DateTimeImmutable $startsAt"
+            },
+            "methods": {
+                "__construct": "__construct(?\\DateTimeImmutable $startsAt = null, ?\\DateTimeImmutable $endsAt = null)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\ResumePromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\UnassignPromotionChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, array $channels)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\UpdatePromotion": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "budget": "public readonly ?\\Commerz\\Money\\Money $budget",
+                "clearBudget": "public readonly bool $clearBudget",
+                "conditions": "public readonly ?array $conditions",
+                "effects": "public readonly ?array $effects",
+                "limits": "public readonly ?\\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits",
+                "name": "public readonly ?string $name",
+                "priority": "public readonly ?int $priority",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "stacking": "public readonly ?\\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking",
+                "stopFurther": "public readonly ?bool $stopFurther",
+                "window": "public readonly ?\\Commerz\\Promotions\\Definitions\\Data\\PromotionWindow $window"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, ?string $name = null, ?int $priority = null, ?\\Commerz\\Promotions\\Definitions\\Enums\\Stacking $stacking = null, ?bool $stopFurther = null, ?array $conditions = null, ?array $effects = null, ?\\Commerz\\Promotions\\Definitions\\Data\\UsageLimits $limits = null, ?\\Commerz\\Money\\Money $budget = null, bool $clearBudget = false, ?\\Commerz\\Promotions\\Definitions\\Data\\PromotionWindow $window = null)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Data\\UsageLimits": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "perCustomer": "public readonly ?int $perCustomer",
+                "total": "public readonly ?int $total"
+            },
+            "methods": {
+                "__construct": "__construct(?int $total = null, ?int $perCustomer = null)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Enums\\PromotionStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Paused": "paused",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Enums\\Stacking": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Stackable": "stackable",
+                "Exclusive": "exclusive"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Enums\\VerdictKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Applied": "applied",
+                "Rejected": "rejected",
+                "Skipped": "skipped"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Events\\PromotionChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion)"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Exceptions\\PromotionArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "promotion": "public readonly string $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(string $promotion)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Definitions\\Exceptions\\PromotionNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Promotions\\Facades\\Promotions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Promotions\\Promotions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Contracts\\PromotionDefinitions $promotions, \\Commerz\\Promotions\\Coupons\\Contracts\\Coupons $coupons)",
+                "coupons": "coupons(): \\Commerz\\Promotions\\Coupons\\Contracts\\Coupons",
+                "promotions": "promotions(): \\Commerz\\Promotions\\Definitions\\Contracts\\PromotionDefinitions"
+            }
+        },
+        "Commerz\\Promotions\\PromotionsServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['promotion', 'coupon']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Contracts\\PromotionActivator": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'promotion_activator'"
+            },
+            "methods": {
+                "activate": "activate(\\Commerz\\Promotions\\Rules\\Data\\ActivationRequest $request): \\Commerz\\Promotions\\Rules\\Data\\ActivationResult",
+                "key": "key(): string"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Contracts\\PromotionCondition": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'promotion_condition'"
+            },
+            "methods": {
+                "evaluate": "evaluate(\\Commerz\\Promotions\\Rules\\Data\\ConditionInput $input): \\Commerz\\Promotions\\Rules\\Data\\ConditionOutcome",
+                "key": "key(): string",
+                "normalize": "normalize(\\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, \\Commerz\\Promotions\\Rules\\Data\\RuleScope $scope): \\Commerz\\Promotions\\Rules\\Data\\RuleParams",
+                "role": "role(): \\Commerz\\Promotions\\Rules\\Enums\\ConditionRole",
+                "stages": "stages(): array",
+                "upgrade": "upgrade(\\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, int $fromVersion): \\Commerz\\Promotions\\Rules\\Data\\RuleParams",
+                "version": "version(): int"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Contracts\\PromotionEffect": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'promotion_effect'"
+            },
+            "methods": {
+                "apply": "apply(\\Commerz\\Promotions\\Rules\\Data\\EffectInput $input): array",
+                "key": "key(): string",
+                "normalize": "normalize(\\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, \\Commerz\\Promotions\\Rules\\Data\\RuleScope $scope): \\Commerz\\Promotions\\Rules\\Data\\RuleParams",
+                "stages": "stages(): array",
+                "upgrade": "upgrade(\\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, int $fromVersion): \\Commerz\\Promotions\\Rules\\Data\\RuleParams",
+                "version": "version(): int"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\Activation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "couponCode": "public readonly ?string $couponCode",
+                "presentedCode": "public readonly ?string $presentedCode",
+                "promotion": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion, ?string $couponCode = null, ?string $presentedCode = null)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\ActivationRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "codes": "public readonly array $codes",
+                "context": "public readonly \\Commerz\\Context\\CommerceContext $context",
+                "promotions": "public readonly array $promotions"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Context\\CommerceContext $context, array $codes, array $promotions)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\ActivationResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "activations": "public readonly array $activations",
+                "rejections": "public readonly array $rejections"
+            },
+            "methods": {
+                "__construct": "__construct(array $activations = [], array $rejections = [])"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\CodeRejection": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "message": "public readonly string $message",
+                "promotion": "public readonly ?\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $reason, string $message, ?\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $promotion = null)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\ConditionInput": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "lines": "public readonly array $lines",
+                "params": "public readonly \\Commerz\\Promotions\\Rules\\Data\\RuleParams $params",
+                "promotion": "public readonly \\Commerz\\Promotions\\Rules\\Data\\PromotionSummary $promotion",
+                "state": "public readonly \\Commerz\\Quotes\\Data\\QuoteState $state"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Quotes\\Data\\QuoteState $state, \\Commerz\\Promotions\\Rules\\Data\\PromotionSummary $promotion, \\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, array $lines)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\ConditionOutcome": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "lines": "public readonly ?array $lines",
+                "message": "public readonly ?string $message",
+                "passed": "public readonly bool $passed",
+                "reason": "public readonly ?string $reason"
+            },
+            "methods": {
+                "fail": "static fail(string $reason, string $message): self",
+                "pass": "static pass(?array $lines = null): self"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\Discount": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly \\Commerz\\Money\\Money $amount",
+                "lineId": "public readonly ?string $lineId",
+                "target": "public readonly \\Commerz\\Quotes\\Enums\\AdjustmentTarget $target"
+            },
+            "methods": {
+                "delivery": "static delivery(\\Commerz\\Money\\Money $amount): self",
+                "line": "static line(string $lineId, \\Commerz\\Money\\Money $amount): self",
+                "order": "static order(\\Commerz\\Money\\Money $amount): self"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\EffectInput": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "lines": "public readonly array $lines",
+                "params": "public readonly \\Commerz\\Promotions\\Rules\\Data\\RuleParams $params",
+                "promotion": "public readonly \\Commerz\\Promotions\\Rules\\Data\\PromotionSummary $promotion",
+                "rounding": "public readonly \\Commerz\\Money\\RoundingMode $rounding",
+                "state": "public readonly \\Commerz\\Quotes\\Data\\QuoteState $state"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Quotes\\Data\\QuoteState $state, \\Commerz\\Promotions\\Rules\\Data\\PromotionSummary $promotion, \\Commerz\\Promotions\\Rules\\Data\\RuleParams $params, array $lines, \\Commerz\\Money\\RoundingMode $rounding)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\PromotionSummary": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "activator": "public readonly string $activator",
+                "code": "public readonly string $code",
+                "currency": "public readonly ?\\Commerz\\Money\\Currency $currency",
+                "id": "public readonly \\Commerz\\Promotions\\Definitions\\Data\\PromotionId $id",
+                "name": "public readonly string $name",
+                "priority": "public readonly int $priority",
+                "stage": "public readonly \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Definitions\\Data\\PromotionId $id, string $code, string $name, \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage, string $activator, int $priority, ?\\Commerz\\Money\\Currency $currency)"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\RuleParams": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "choice": "choice(string $key, array $allowed, ?string $default = null): string",
+                "currencies": "currencies(): array",
+                "fromInput": "static fromInput(array $input): self",
+                "int": "int(string $key, int $min = \\PHP_INT_MIN, int $max = \\PHP_INT_MAX): int",
+                "money": "money(string $key, \\Commerz\\Money\\Currency $currency): \\Commerz\\Money\\Money",
+                "nullableInt": "nullableInt(string $key, int $min = \\PHP_INT_MIN, int $max = \\PHP_INT_MAX): ?int",
+                "only": "only(array $keys): self",
+                "string": "string(string $key, ?string $pattern = null): string",
+                "stringList": "stringList(string $key, int $min, int $max, ?string $pattern = null): array",
+                "toArray": "toArray(): array"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\RuleScope": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "currency": "public readonly ?\\Commerz\\Money\\Currency $currency",
+                "stage": "public readonly \\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Promotions\\Rules\\Enums\\PromotionStage $stage, ?\\Commerz\\Money\\Currency $currency)",
+                "currencyFor": "currencyFor(string $field): \\Commerz\\Money\\Currency"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Data\\RuleSpec": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "key": "public readonly string $key",
+                "params": "public readonly array $params"
+            },
+            "methods": {
+                "__construct": "__construct(string $key, array $params = [])"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Enums\\ConditionRole": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "LineFilter": "line_filter",
+                "Qualifier": "qualifier"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Enums\\PromotionStage": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Catalog": "catalog",
+                "Cart": "cart",
+                "Delivery": "delivery"
+            },
+            "methods": {
+                "anchor": "anchor(): \\Commerz\\Quotes\\Enums\\QuoteAnchor",
+                "stageKey": "stageKey(): string"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Exceptions\\InvalidRuleConfig": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "field": "public readonly string $field",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $field, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Rules\\Exceptions\\InvalidRuleResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reason": "public readonly string $reason",
+                "rule": "public readonly string $rule"
+            },
+            "methods": {
+                "__construct": "__construct(string $rule, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Promotions\\Usage\\Exceptions\\PromotionUnavailable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "constants": {
+                "COUPON_DISABLED": "'coupon_disabled'",
+                "COUPON_NOT_FOUND": "'coupon_not_found'",
+                "PROMOTION_NOT_ACTIVE": "'promotion_not_active'",
+                "PROMOTION_NOT_FOUND": "'promotion_not_found'"
+            },
+            "properties": {
+                "couponCode": "public readonly ?string $couponCode",
+                "promotionId": "public readonly string $promotionId",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $promotionId, ?string $couponCode, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        }
+    },
+    "platform": {
+        "commands": [
+            "commerz:promotions:reconcile"
+        ],
+        "config": "commerz-promotions",
+        "kinds": [
+            "promotion_activator",
+            "promotion_condition",
+            "promotion_effect"
+        ],
+        "plugin": "commerz.promotions",
+        "providers": [
+            "Commerz\\Promotions\\PromotionsServiceProvider"
+        ],
+        "tables": [
+            "promotion",
+            "coupon"
+        ]
+    }
+}

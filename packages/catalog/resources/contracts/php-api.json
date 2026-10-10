@@ -1,0 +1,1928 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "catalog",
+    "composer": "axiomasoft/commerz-catalog",
+    "types": {
+        "Commerz\\Catalog\\Attributes\\Contracts\\AttributeType": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'attribute_type'"
+            },
+            "methods": {
+                "config": "config(array $config): array",
+                "configVersion": "configVersion(): int",
+                "index": "index(array|string|int|bool $value, \\Commerz\\Catalog\\Attributes\\Data\\AttributeDefinition $definition): array",
+                "key": "key(): string",
+                "normalize": "normalize(mixed $input, \\Commerz\\Catalog\\Attributes\\Data\\AttributeDefinition $definition): array|string|int|bool",
+                "operators": "operators(): array",
+                "usesChoices": "usesChoices(): bool"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Contracts\\Attributes": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "addChoices": "addChoices(\\Commerz\\Catalog\\Attributes\\Data\\AddAttributeChoices $command): \\Commerz\\Catalog\\Attributes\\Data\\AttributeView",
+                "define": "define(\\Commerz\\Catalog\\Attributes\\Data\\DefineAttribute $command): \\Commerz\\Catalog\\Attributes\\Data\\AttributeView",
+                "find": "find(\\Commerz\\Catalog\\Attributes\\Data\\AttributeId $id): \\Commerz\\Catalog\\Attributes\\Data\\AttributeView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Catalog\\Attributes\\Data\\AttributeView",
+                "list": "list(\\Commerz\\Catalog\\Attributes\\Data\\ListAttributes $query): \\Commerz\\Pagination\\Page",
+                "update": "update(\\Commerz\\Catalog\\Attributes\\Data\\UpdateAttribute $command): \\Commerz\\Catalog\\Attributes\\Data\\AttributeView"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AddAttributeChoices": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attribute": "public readonly \\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute",
+                "choices": "public readonly array $choices"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute, array $choices)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId $id",
+                "label": "public readonly \\Commerz\\Measures\\LocalizedText $label",
+                "position": "public readonly int $position"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId $id, string $code, \\Commerz\\Measures\\LocalizedText $label, int $position)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AttributeDefinition": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "choices": "public readonly array $choices",
+                "code": "public readonly string $code",
+                "config": "public readonly array $config"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, array $config, array $choices = [])",
+                "choice": "choice(string $code): ?\\Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceView"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AttributeId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\AttributeView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "choices": "public readonly array $choices",
+                "code": "public readonly string $code",
+                "config": "public readonly array $config",
+                "configVersion": "public readonly int $configVersion",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "filterable": "public readonly bool $filterable",
+                "id": "public readonly \\Commerz\\Catalog\\Attributes\\Data\\AttributeId $id",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "status": "public readonly \\Commerz\\Catalog\\Attributes\\Enums\\AttributeStatus $status",
+                "supported": "public readonly bool $supported",
+                "type": "public readonly string $type",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Attributes\\Data\\AttributeId $id, string $code, string $type, \\Commerz\\Measures\\LocalizedText $name, array $config, int $configVersion, bool $filterable, \\Commerz\\Catalog\\Attributes\\Enums\\AttributeStatus $status, bool $supported, array $choices, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\DefineAttribute": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "choices": "public readonly array $choices",
+                "code": "public readonly string $code",
+                "config": "public readonly array $config",
+                "filterable": "public readonly bool $filterable",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "type": "public readonly string $type"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $type, \\Commerz\\Measures\\LocalizedText $name, array $config = [], array $choices = [], bool $filterable = false)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\IndexFact": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "choice": "public readonly ?\\Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId $choice",
+                "day": "public readonly ?string $day",
+                "flag": "public readonly ?bool $flag",
+                "number": "public readonly ?string $number",
+                "term": "public readonly ?string $term"
+            },
+            "methods": {
+                "choice": "static choice(\\Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId $id): self",
+                "day": "static day(string $ymd): self",
+                "flag": "static flag(bool $value): self",
+                "number": "static number(string $decimal): self",
+                "term": "static term(string $text): self"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\ListAttributes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "includeRetired": "public readonly bool $includeRetired",
+                "type": "public readonly ?string $type"
+            },
+            "methods": {
+                "__construct": "__construct(?string $type = null, bool $includeRetired = false, int $first = 50, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Data\\UpdateAttribute": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attribute": "public readonly \\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute",
+                "choiceLabels": "public readonly array $choiceLabels",
+                "filterable": "public readonly ?bool $filterable",
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "status": "public readonly ?\\Commerz\\Catalog\\Attributes\\Enums\\AttributeStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute, ?\\Commerz\\Measures\\LocalizedText $name = null, ?bool $filterable = null, ?\\Commerz\\Catalog\\Attributes\\Enums\\AttributeStatus $status = null, array $choiceLabels = [])"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Enums\\AttributeStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Deprecated": "deprecated",
+                "Retired": "retired"
+            },
+            "methods": {
+                "canBecome": "canBecome(self $next): bool"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Enums\\FilterOperator": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Equals": "equals",
+                "In": "in",
+                "Range": "range"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\AttributeNotAllowed": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "attribute": "public readonly string $attribute",
+                "level": "public readonly \\Commerz\\Catalog\\ProductTypes\\Enums\\AttributeLevel $level"
+            },
+            "methods": {
+                "__construct": "__construct(string $attribute, \\Commerz\\Catalog\\ProductTypes\\Enums\\AttributeLevel $level)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\AttributeNotFilterable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "attribute": "public readonly string $attribute"
+            },
+            "methods": {
+                "__construct": "__construct(string $attribute)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\AttributeNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\AttributeNotWritable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "attribute": "public readonly string $attribute",
+                "status": "public readonly string $status"
+            },
+            "methods": {
+                "__construct": "__construct(string $attribute, string $status)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\InvalidAttributeConfig": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "attribute": "public readonly string $attribute",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $attribute, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\InvalidAttributeValue": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "attribute": "public readonly string $attribute",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $attribute, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\InvalidStatusTransition": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "entity": "public readonly string $entity",
+                "from": "public readonly string $from",
+                "to": "public readonly string $to"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $from, string $to)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Attributes\\Exceptions\\MissingRequiredAttributes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "codes": "public readonly array $codes"
+            },
+            "methods": {
+                "__construct": "__construct(array $codes)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Catalog": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Options\\Contracts\\Options $options, \\Commerz\\Catalog\\Attributes\\Contracts\\Attributes $attributes, \\Commerz\\Catalog\\ProductTypes\\Contracts\\ProductTypes $productTypes, \\Commerz\\Catalog\\Products\\Contracts\\Products $products, \\Commerz\\Catalog\\Variants\\Contracts\\Variants $variants, \\Commerz\\Catalog\\Categories\\Contracts\\Categories $categories, \\Commerz\\Catalog\\Listings\\Contracts\\Listings $listings)",
+                "attributes": "attributes(): \\Commerz\\Catalog\\Attributes\\Contracts\\Attributes",
+                "categories": "categories(): \\Commerz\\Catalog\\Categories\\Contracts\\Categories",
+                "listings": "listings(): \\Commerz\\Catalog\\Listings\\Contracts\\Listings",
+                "options": "options(): \\Commerz\\Catalog\\Options\\Contracts\\Options",
+                "productTypes": "productTypes(): \\Commerz\\Catalog\\ProductTypes\\Contracts\\ProductTypes",
+                "products": "products(): \\Commerz\\Catalog\\Products\\Contracts\\Products",
+                "variants": "variants(): \\Commerz\\Catalog\\Variants\\Contracts\\Variants"
+            }
+        },
+        "Commerz\\Catalog\\CatalogServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['product', 'variant', 'option', 'attribute', 'category', 'listing']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Contracts\\Categories": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Catalog\\Categories\\Data\\ArchiveCategory $command): \\Commerz\\Catalog\\Categories\\Data\\CategoryView",
+                "assign": "assign(\\Commerz\\Catalog\\Categories\\Data\\AssignProductCategories $command): array",
+                "create": "create(\\Commerz\\Catalog\\Categories\\Data\\CreateCategory $command): \\Commerz\\Catalog\\Categories\\Data\\CategoryView",
+                "find": "find(\\Commerz\\Catalog\\Categories\\Data\\CategoryId $id): \\Commerz\\Catalog\\Categories\\Data\\CategoryView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Catalog\\Categories\\Data\\CategoryView",
+                "list": "list(\\Commerz\\Catalog\\Categories\\Data\\ListCategories $query): \\Commerz\\Pagination\\Page",
+                "move": "move(\\Commerz\\Catalog\\Categories\\Data\\MoveCategory $command): \\Commerz\\Catalog\\Categories\\Data\\CategoryView",
+                "ofProduct": "ofProduct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product): array",
+                "update": "update(\\Commerz\\Catalog\\Categories\\Data\\UpdateCategory $command): \\Commerz\\Catalog\\Categories\\Data\\CategoryView"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\ArchiveCategory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "category": "public readonly \\Commerz\\Catalog\\Categories\\Data\\CategoryId $category"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Categories\\Data\\CategoryId $category)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\AssignProductCategories": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "categories": "public readonly array $categories",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, array $categories)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\CategoryId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Categories\\Data\\CategoryView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Catalog\\Categories\\Data\\CategoryId $id",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "parent": "public readonly ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent",
+                "position": "public readonly int $position",
+                "status": "public readonly \\Commerz\\Catalog\\Categories\\Enums\\CategoryStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Categories\\Data\\CategoryId $id, ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent, string $code, \\Commerz\\Measures\\LocalizedText $name, int $position, \\Commerz\\Catalog\\Categories\\Enums\\CategoryStatus $status, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\CreateCategory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "parent": "public readonly ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent",
+                "position": "public readonly int $position"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, \\Commerz\\Measures\\LocalizedText $name, ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent = null, int $position = 0)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\ListCategories": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "includeArchived": "public readonly bool $includeArchived",
+                "parent": "public readonly ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent",
+                "roots": "public readonly bool $roots"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent = null, bool $roots = false, bool $includeArchived = false, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\MoveCategory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "category": "public readonly \\Commerz\\Catalog\\Categories\\Data\\CategoryId $category",
+                "parent": "public readonly ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Categories\\Data\\CategoryId $category, ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $parent)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Data\\UpdateCategory": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "category": "public readonly \\Commerz\\Catalog\\Categories\\Data\\CategoryId $category",
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "position": "public readonly ?int $position"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Categories\\Data\\CategoryId $category, ?\\Commerz\\Measures\\LocalizedText $name = null, ?int $position = null)"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Enums\\CategoryStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Exceptions\\CategoryArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "category": "public readonly string $category"
+            },
+            "methods": {
+                "__construct": "__construct(string $category)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Exceptions\\CategoryCycle": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "category": "public readonly string $category",
+                "parent": "public readonly string $parent"
+            },
+            "methods": {
+                "__construct": "__construct(string $category, string $parent)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Exceptions\\CategoryHasChildren": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "category": "public readonly string $category"
+            },
+            "methods": {
+                "__construct": "__construct(string $category)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Categories\\Exceptions\\CategoryNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Catalog\\Common\\Data\\CatalogCodes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "barcode": "static barcode(string $value): string",
+                "code": "static code(string $field, string $value): string",
+                "combination": "static combination(string $field, array $axes): array",
+                "handle": "static handle(string $value): string",
+                "sku": "static sku(string $value): string"
+            }
+        },
+        "Commerz\\Catalog\\Common\\Exceptions\\DuplicateCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "duplicate": "public readonly string $duplicate",
+                "entity": "public readonly string $entity"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $duplicate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Facades\\Catalog": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Catalog\\Listings\\Contracts\\Listings": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "find": "find(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, \\Commerz\\Stores\\Data\\ChannelId $channel): \\Commerz\\Catalog\\Listings\\Data\\ListingView",
+                "ofProduct": "ofProduct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product): array",
+                "publish": "publish(\\Commerz\\Catalog\\Listings\\Data\\PublishProduct $command): \\Commerz\\Catalog\\Listings\\Data\\ListingView",
+                "unpublish": "unpublish(\\Commerz\\Catalog\\Listings\\Data\\UnpublishProduct $command): \\Commerz\\Catalog\\Listings\\Data\\ListingView"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Data\\ListingView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "availableFrom": "public readonly ?\\DateTimeImmutable $availableFrom",
+                "availableUntil": "public readonly ?\\DateTimeImmutable $availableUntil",
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "status": "public readonly \\Commerz\\Catalog\\Listings\\Enums\\ListingStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, \\Commerz\\Stores\\Data\\ChannelId $channel, \\Commerz\\Catalog\\Listings\\Enums\\ListingStatus $status, ?\\DateTimeImmutable $availableFrom, ?\\DateTimeImmutable $availableUntil, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)",
+                "isAvailableAt": "isAvailableAt(\\DateTimeImmutable $at): bool"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Data\\PublishProduct": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "availableFrom": "public readonly ?\\DateTimeImmutable $availableFrom",
+                "availableUntil": "public readonly ?\\DateTimeImmutable $availableUntil",
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, \\Commerz\\Stores\\Data\\ChannelId $channel, ?\\DateTimeImmutable $availableFrom = null, ?\\DateTimeImmutable $availableUntil = null)"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Data\\UnpublishProduct": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channel": "public readonly \\Commerz\\Stores\\Data\\ChannelId $channel",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, \\Commerz\\Stores\\Data\\ChannelId $channel)"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Enums\\ListingStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Published": "published",
+                "Unpublished": "unpublished"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Events\\ProductPublished": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "listing": "public readonly \\Commerz\\Catalog\\Listings\\Data\\ListingView $listing"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Listings\\Data\\ListingView $listing)"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Events\\ProductUnpublished": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "listing": "public readonly \\Commerz\\Catalog\\Listings\\Data\\ListingView $listing"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Listings\\Data\\ListingView $listing)"
+            }
+        },
+        "Commerz\\Catalog\\Listings\\Exceptions\\ListingNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $product, string $channel)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Contracts\\Options": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "addValues": "addValues(\\Commerz\\Catalog\\Options\\Data\\AddOptionValues $command): \\Commerz\\Catalog\\Options\\Data\\OptionView",
+                "define": "define(\\Commerz\\Catalog\\Options\\Data\\DefineOption $command): \\Commerz\\Catalog\\Options\\Data\\OptionView",
+                "find": "find(\\Commerz\\Catalog\\Options\\Data\\OptionId $id): \\Commerz\\Catalog\\Options\\Data\\OptionView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Catalog\\Options\\Data\\OptionView",
+                "list": "list(\\Commerz\\Catalog\\Options\\Data\\ListOptions $query): \\Commerz\\Pagination\\Page",
+                "update": "update(\\Commerz\\Catalog\\Options\\Data\\UpdateOption $command): \\Commerz\\Catalog\\Options\\Data\\OptionView"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\AddOptionValues": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "option": "public readonly \\Commerz\\Catalog\\Options\\Data\\OptionId $option",
+                "values": "public readonly array $values"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Options\\Data\\OptionId $option, array $values)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\DefineOption": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "values": "public readonly array $values"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, \\Commerz\\Measures\\LocalizedText $name, array $values)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\ListOptions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first"
+            },
+            "methods": {
+                "__construct": "__construct(int $first = 50, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\OptionId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Options\\Data\\OptionValueId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Options\\Data\\OptionValueView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Catalog\\Options\\Data\\OptionValueId $id",
+                "label": "public readonly \\Commerz\\Measures\\LocalizedText $label",
+                "position": "public readonly int $position"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Options\\Data\\OptionValueId $id, string $code, \\Commerz\\Measures\\LocalizedText $label, int $position)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\OptionView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Catalog\\Options\\Data\\OptionId $id",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "values": "public readonly array $values"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Options\\Data\\OptionId $id, string $code, \\Commerz\\Measures\\LocalizedText $name, array $values, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Data\\UpdateOption": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "option": "public readonly \\Commerz\\Catalog\\Options\\Data\\OptionId $option",
+                "valueLabels": "public readonly array $valueLabels"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Options\\Data\\OptionId $option, ?\\Commerz\\Measures\\LocalizedText $name = null, array $valueLabels = [])"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Exceptions\\OptionNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Catalog\\Options\\Exceptions\\UnknownOptionValue": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "option": "public readonly string $option",
+                "value": "public readonly string $value"
+            },
+            "methods": {
+                "__construct": "__construct(string $option, string $value)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Contracts\\ProductKind": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'product_kind'"
+            },
+            "methods": {
+                "key": "key(): string",
+                "requiresShipping": "requiresShipping(): bool",
+                "sellableKind": "sellableKind(): \\Commerz\\Ports\\Sellables\\Enums\\SellableKind"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Contracts\\ProductTypes": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Catalog\\ProductTypes\\Data\\ArchiveProductType $command): \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView",
+                "create": "create(\\Commerz\\Catalog\\ProductTypes\\Data\\CreateProductType $command): \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView",
+                "find": "find(\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $id): \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView",
+                "list": "list(\\Commerz\\Catalog\\ProductTypes\\Data\\ListProductTypes $query): \\Commerz\\Pagination\\Page",
+                "update": "update(\\Commerz\\Catalog\\ProductTypes\\Data\\UpdateProductType $command): \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\ArchiveProductType": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "type": "public readonly \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type)"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\AttributeSlotView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attribute": "public readonly \\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute",
+                "code": "public readonly string $code",
+                "level": "public readonly \\Commerz\\Catalog\\ProductTypes\\Enums\\AttributeLevel $level",
+                "position": "public readonly int $position",
+                "required": "public readonly bool $required"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Attributes\\Data\\AttributeId $attribute, string $code, \\Commerz\\Catalog\\ProductTypes\\Enums\\AttributeLevel $level, bool $required, int $position)"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\CreateProductType": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_AXES": "8"
+            },
+            "properties": {
+                "code": "public readonly string $code",
+                "kind": "public readonly string $kind",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "productAttributes": "public readonly array $productAttributes",
+                "required": "public readonly array $required",
+                "variantAttributes": "public readonly array $variantAttributes",
+                "variantAxes": "public readonly array $variantAxes"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, \\Commerz\\Measures\\LocalizedText $name, string $kind = 'physical', array $productAttributes = [], array $variantAttributes = [], array $variantAxes = [], array $required = [])"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\ListProductTypes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "includeArchived": "public readonly bool $includeArchived"
+            },
+            "methods": {
+                "__construct": "__construct(bool $includeArchived = false, int $first = 50, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "axes": "public readonly array $axes",
+                "code": "public readonly string $code",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "id": "public readonly \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $id",
+                "kind": "public readonly string $kind",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "slots": "public readonly array $slots",
+                "status": "public readonly \\Commerz\\Catalog\\ProductTypes\\Enums\\ProductTypeStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $id, string $code, \\Commerz\\Measures\\LocalizedText $name, string $kind, \\Commerz\\Catalog\\ProductTypes\\Enums\\ProductTypeStatus $status, array $slots, array $axes, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Data\\UpdateProductType": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "addProductAttributes": "public readonly array $addProductAttributes",
+                "addVariantAttributes": "public readonly array $addVariantAttributes",
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "type": "public readonly \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type, ?\\Commerz\\Measures\\LocalizedText $name = null, array $addProductAttributes = [], array $addVariantAttributes = [])"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Enums\\AttributeLevel": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Product": "product",
+                "Variant": "variant"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Enums\\ProductTypeStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Exceptions\\InvalidProductType": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Exceptions\\ProductTypeArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "type": "public readonly string $type"
+            },
+            "methods": {
+                "__construct": "__construct(string $type)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\ProductTypes\\Exceptions\\ProductTypeNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Contracts\\Products": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Catalog\\Products\\Data\\ArchiveProduct $command): \\Commerz\\Catalog\\Products\\Data\\ProductView",
+                "create": "create(\\Commerz\\Catalog\\Products\\Data\\CreateProduct $command): \\Commerz\\Catalog\\Products\\Data\\ProductView",
+                "find": "find(\\Commerz\\Catalog\\Products\\Data\\ProductId $id): \\Commerz\\Catalog\\Products\\Data\\ProductView",
+                "findByHandle": "findByHandle(string $handle): \\Commerz\\Catalog\\Products\\Data\\ProductView",
+                "list": "list(\\Commerz\\Catalog\\Products\\Data\\ListProducts $query): \\Commerz\\Pagination\\Page",
+                "setAttributes": "setAttributes(\\Commerz\\Catalog\\Products\\Data\\SetProductAttributes $command): \\Commerz\\Catalog\\Products\\Data\\ProductView",
+                "update": "update(\\Commerz\\Catalog\\Products\\Data\\UpdateProduct $command): \\Commerz\\Catalog\\Products\\Data\\ProductView"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\ArchiveProduct": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\AttributeFilter": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_VALUES": "100"
+            },
+            "properties": {
+                "attribute": "public readonly string $attribute",
+                "operator": "public readonly \\Commerz\\Catalog\\Attributes\\Enums\\FilterOperator $operator",
+                "values": "public readonly array $values"
+            },
+            "methods": {
+                "between": "static between(string $attribute, mixed $min = null, mixed $max = null): self",
+                "equals": "static equals(string $attribute, mixed $value): self",
+                "in": "static in(string $attribute, array $values): self"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\CreateProduct": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attributes": "public readonly array $attributes",
+                "description": "public readonly ?\\Commerz\\Measures\\LocalizedText $description",
+                "handle": "public readonly string $handle",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "status": "public readonly \\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status",
+                "type": "public readonly \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type, string $handle, \\Commerz\\Measures\\LocalizedText $name, ?\\Commerz\\Measures\\LocalizedText $description = null, array $attributes = [], \\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status = Commerz\\Catalog\\Products\\Enums\\ProductStatus::Active)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\ListProducts": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_FILTERS": "20"
+            },
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "at": "public readonly ?\\DateTimeImmutable $at",
+                "category": "public readonly ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $category",
+                "channel": "public readonly ?\\Commerz\\Stores\\Data\\ChannelId $channel",
+                "filters": "public readonly array $filters",
+                "first": "public readonly int $first",
+                "status": "public readonly ?\\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status",
+                "type": "public readonly ?\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Stores\\Data\\ChannelId $channel = null, ?\\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type = null, ?\\Commerz\\Catalog\\Categories\\Data\\CategoryId $category = null, ?\\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status = null, array $filters = [], ?\\DateTimeImmutable $at = null, int $first = 24, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\ProductId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Products\\Data\\ProductView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attributes": "public readonly array $attributes",
+                "axes": "public readonly array $axes",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "description": "public readonly ?\\Commerz\\Measures\\LocalizedText $description",
+                "handle": "public readonly string $handle",
+                "id": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $id",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "status": "public readonly \\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status",
+                "type": "public readonly \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $id, \\Commerz\\Catalog\\ProductTypes\\Data\\ProductTypeId $type, string $handle, \\Commerz\\Measures\\LocalizedText $name, ?\\Commerz\\Measures\\LocalizedText $description, \\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status, array $attributes, array $axes, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\SetProductAttributes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "remove": "public readonly array $remove",
+                "values": "public readonly array $values"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, array $values = [], array $remove = [])"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\UpdateProduct": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "description": "public readonly ?\\Commerz\\Measures\\LocalizedText $description",
+                "handle": "public readonly ?string $handle",
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "status": "public readonly ?\\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, ?string $handle = null, ?\\Commerz\\Measures\\LocalizedText $name = null, ?\\Commerz\\Measures\\LocalizedText $description = null, ?\\Commerz\\Catalog\\Products\\Enums\\ProductStatus $status = null)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Data\\VariantFilter": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "axes": "public readonly array $axes"
+            },
+            "methods": {
+                "axes": "static axes(array $axes): self"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Enums\\ProductStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Draft": "draft",
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Events\\ProductCreated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductView $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductView $product)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Events\\ProductUpdated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductView $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductView $product)"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Exceptions\\ProductArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "product": "public readonly string $product"
+            },
+            "methods": {
+                "__construct": "__construct(string $product)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Products\\Exceptions\\ProductNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Contracts\\Variants": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Catalog\\Variants\\Data\\ArchiveVariant $command): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "create": "create(\\Commerz\\Catalog\\Variants\\Data\\CreateVariant $command): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "find": "find(\\Commerz\\Catalog\\Variants\\Data\\VariantId $id): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "findBySku": "findBySku(string $sku): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "generate": "generate(\\Commerz\\Catalog\\Variants\\Data\\GenerateVariants $command): \\Commerz\\Catalog\\Variants\\Data\\GeneratedVariants",
+                "list": "list(\\Commerz\\Catalog\\Variants\\Data\\ListVariants $query): \\Commerz\\Pagination\\Page",
+                "restore": "restore(\\Commerz\\Catalog\\Variants\\Data\\RestoreVariant $command): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "setAttributes": "setAttributes(\\Commerz\\Catalog\\Variants\\Data\\SetVariantAttributes $command): \\Commerz\\Catalog\\Variants\\Data\\VariantView",
+                "update": "update(\\Commerz\\Catalog\\Variants\\Data\\UpdateVariant $command): \\Commerz\\Catalog\\Variants\\Data\\VariantView"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\ArchiveVariant": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantId $variant"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantId $variant)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\CreateVariant": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attributes": "public readonly array $attributes",
+                "axes": "public readonly array $axes",
+                "barcode": "public readonly ?string $barcode",
+                "dimensions": "public readonly ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions",
+                "position": "public readonly ?int $position",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "sku": "public readonly string $sku",
+                "taxClass": "public readonly ?string $taxClass",
+                "weightGrams": "public readonly ?int $weightGrams"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, string $sku, array $axes = [], ?string $barcode = null, array $attributes = [], ?string $taxClass = null, ?int $weightGrams = null, ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions = null, ?int $position = null)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\Dimensions": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "heightMm": "public readonly int $heightMm",
+                "lengthMm": "public readonly int $lengthMm",
+                "widthMm": "public readonly int $widthMm"
+            },
+            "methods": {
+                "__construct": "__construct(int $lengthMm, int $widthMm, int $heightMm)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\GenerateVariants": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "axes": "public readonly array $axes",
+                "dryRun": "public readonly bool $dryRun",
+                "except": "public readonly array $except",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "skuPattern": "public readonly string $skuPattern"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, array $axes, string $skuPattern, array $except = [], bool $dryRun = false)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\GeneratedVariants": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "created": "public readonly array $created",
+                "dryRun": "public readonly bool $dryRun",
+                "planned": "public readonly array $planned",
+                "skipped": "public readonly array $skipped"
+            },
+            "methods": {
+                "__construct": "__construct(array $planned, array $created, array $skipped, bool $dryRun)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\ListVariants": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "first": "public readonly int $first",
+                "includeArchived": "public readonly bool $includeArchived",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Products\\Data\\ProductId $product, bool $includeArchived = false, int $first = 100, ?\\Commerz\\Pagination\\Cursor $after = null)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\PlannedVariant": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "axes": "public readonly array $axes",
+                "sku": "public readonly string $sku"
+            },
+            "methods": {
+                "__construct": "__construct(array $axes, string $sku)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\RestoreVariant": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantId $variant"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantId $variant)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\SetVariantAttributes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "remove": "public readonly array $remove",
+                "values": "public readonly array $values",
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantId $variant"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantId $variant, array $values = [], array $remove = [])"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\UpdateVariant": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "CLEARABLE": "['barcode', 'taxClass', 'weightGrams', 'dimensions']"
+            },
+            "properties": {
+                "barcode": "public readonly ?string $barcode",
+                "clear": "public readonly array $clear",
+                "dimensions": "public readonly ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions",
+                "position": "public readonly ?int $position",
+                "sku": "public readonly ?string $sku",
+                "taxClass": "public readonly ?string $taxClass",
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantId $variant",
+                "weightGrams": "public readonly ?int $weightGrams"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantId $variant, ?string $sku = null, ?string $barcode = null, ?string $taxClass = null, ?int $weightGrams = null, ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions = null, ?int $position = null, array $clear = [])"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Data\\VariantId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Catalog\\Variants\\Data\\VariantView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attributes": "public readonly array $attributes",
+                "axes": "public readonly array $axes",
+                "barcode": "public readonly ?string $barcode",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "dimensions": "public readonly ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions",
+                "id": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantId $id",
+                "position": "public readonly int $position",
+                "product": "public readonly \\Commerz\\Catalog\\Products\\Data\\ProductId $product",
+                "sellable": "public readonly \\Commerz\\Identity\\SellableRef $sellable",
+                "sku": "public readonly string $sku",
+                "status": "public readonly \\Commerz\\Catalog\\Variants\\Enums\\VariantStatus $status",
+                "taxClass": "public readonly ?string $taxClass",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt",
+                "weightGrams": "public readonly ?int $weightGrams"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantId $id, \\Commerz\\Catalog\\Products\\Data\\ProductId $product, string $sku, ?string $barcode, array $axes, \\Commerz\\Catalog\\Variants\\Enums\\VariantStatus $status, int $position, array $attributes, ?string $taxClass, ?int $weightGrams, ?\\Commerz\\Catalog\\Variants\\Data\\Dimensions $dimensions, \\Commerz\\Identity\\SellableRef $sellable, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Enums\\VariantStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Events\\VariantCreated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantView $variant"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantView $variant)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Events\\VariantUpdated": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "variant": "public readonly \\Commerz\\Catalog\\Variants\\Data\\VariantView $variant"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Catalog\\Variants\\Data\\VariantView $variant)"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Exceptions\\DuplicateCombination": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "axes": "public readonly array $axes"
+            },
+            "methods": {
+                "__construct": "__construct(array $axes)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Exceptions\\InvalidAxes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Exceptions\\TooManyVariants": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "limit": "public readonly int $limit",
+                "requested": "public readonly int $requested"
+            },
+            "methods": {
+                "__construct": "__construct(int $requested, int $limit)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Catalog\\Variants\\Exceptions\\VariantNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        }
+    },
+    "platform": {
+        "config": "commerz-catalog",
+        "kinds": [
+            "attribute_type",
+            "product_kind"
+        ],
+        "plugin": "commerz.catalog",
+        "providers": [
+            "Commerz\\Catalog\\CatalogServiceProvider"
+        ],
+        "tables": [
+            "product",
+            "variant",
+            "option",
+            "attribute",
+            "category",
+            "listing"
+        ]
+    }
+}

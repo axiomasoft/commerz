@@ -1,0 +1,1160 @@
+{
+    "schema": "commerz.php-api/1",
+    "package": "shipping",
+    "composer": "axiomasoft/commerz-shipping",
+    "types": {
+        "Commerz\\Shipping\\Bookings\\Contracts\\Bookings": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "find": "find(string $reference): \\Commerz\\Shipping\\Bookings\\Data\\BookingView",
+                "list": "list(\\Commerz\\Shipping\\Bookings\\Data\\ListBookings $query): \\Commerz\\Pagination\\Page"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Data\\BookingId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Shipping\\Bookings\\Data\\BookingView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attempts": "public readonly int $attempts",
+                "bookedAt": "public readonly ?\\DateTimeImmutable $bookedAt",
+                "carrier": "public readonly string $carrier",
+                "createdAt": "public readonly \\DateTimeImmutable $createdAt",
+                "errorCode": "public readonly ?string $errorCode",
+                "errorMessage": "public readonly ?string $errorMessage",
+                "id": "public readonly \\Commerz\\Shipping\\Bookings\\Data\\BookingId $id",
+                "labelRef": "public readonly ?string $labelRef",
+                "meta": "public readonly array $meta",
+                "methodCode": "public readonly string $methodCode",
+                "reference": "public readonly string $reference",
+                "state": "public readonly \\Commerz\\Shipping\\Bookings\\Enums\\BookingState $state",
+                "tracking": "public readonly ?string $tracking",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Bookings\\Data\\BookingId $id, string $reference, string $carrier, string $methodCode, \\Commerz\\Shipping\\Bookings\\Enums\\BookingState $state, int $attempts, ?string $tracking, ?string $labelRef, array $meta, ?string $errorCode, ?string $errorMessage, \\DateTimeImmutable $createdAt, \\DateTimeImmutable $updatedAt, ?\\DateTimeImmutable $bookedAt)"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Data\\ListBookings": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "limit": "public readonly int $limit",
+                "state": "public readonly ?\\Commerz\\Shipping\\Bookings\\Enums\\BookingState $state"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Shipping\\Bookings\\Enums\\BookingState $state = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Enums\\BookingState": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Pending": "pending",
+                "Booked": "booked",
+                "Rejected": "rejected",
+                "Unknown": "unknown"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Events\\ShipmentBooked": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "reference": "public readonly string $reference",
+                "tracking": "public readonly string $tracking"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference, string $carrier, string $tracking)"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Exceptions\\BookingInProgress": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reference": "public readonly string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Exceptions\\BookingInsideTransaction": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "reference": "public readonly string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Exceptions\\BookingNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $reference)"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Exceptions\\BookingOutcomeUnknown": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "reference": "public readonly string $reference"
+            },
+            "methods": {
+                "__construct": "__construct(string $reference, string $carrier, \\Throwable $previous)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Bookings\\Exceptions\\CarrierMismatch": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\InvalidCommand",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "expected": "public readonly string $expected",
+                "given": "public readonly string $given",
+                "method": "public readonly string $method"
+            },
+            "methods": {
+                "__construct": "__construct(string $method, string $expected, string $given)",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Carriers\\Contracts\\Carrier": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'carrier'"
+            },
+            "methods": {
+                "book": "book(\\Commerz\\Shipping\\Carriers\\Data\\CarrierBooking $booking): \\Commerz\\Ports\\Delivery\\Data\\BookedShipment",
+                "find": "find(\\Commerz\\Shipping\\Carriers\\Data\\CarrierBooking $booking): ?\\Commerz\\Ports\\Delivery\\Data\\BookedShipment",
+                "key": "key(): string"
+            }
+        },
+        "Commerz\\Shipping\\Carriers\\Data\\CarrierBooking": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "attempt": "public readonly int $attempt",
+                "shipment": "public readonly \\Commerz\\Ports\\Delivery\\Data\\BookShipment $shipment"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Ports\\Delivery\\Data\\BookShipment $shipment, int $attempt)"
+            }
+        },
+        "Commerz\\Shipping\\Carriers\\Exceptions\\CarrierRejected": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "detail": "public readonly string $detail",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $carrier, string $reason, string $detail)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Carriers\\Exceptions\\InvalidCarrierResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $carrier, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Common\\Data\\PostalCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "normalize": "static normalize(?string $postalCode): ?string"
+            }
+        },
+        "Commerz\\Shipping\\Common\\Data\\ShippingCodes": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "methods": {
+                "carrierKey": "static carrierKey(string $field, string $value): string",
+                "code": "static code(string $field, string $value): string"
+            }
+        },
+        "Commerz\\Shipping\\Common\\Exceptions\\DuplicateCode": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "duplicate": "public readonly string $duplicate",
+                "entity": "public readonly string $entity"
+            },
+            "methods": {
+                "__construct": "__construct(string $entity, string $duplicate)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Facades\\Shipping": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\Facades\\Facade"
+        },
+        "Commerz\\Shipping\\Methods\\Contracts\\Methods": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Shipping\\Methods\\Data\\ArchiveMethod $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "assignChannels": "assignChannels(\\Commerz\\Shipping\\Methods\\Data\\AssignMethodChannels $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "create": "create(\\Commerz\\Shipping\\Methods\\Data\\CreateMethod $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "disable": "disable(\\Commerz\\Shipping\\Methods\\Data\\DisableMethod $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "enable": "enable(\\Commerz\\Shipping\\Methods\\Data\\EnableMethod $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "find": "find(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "findByCode": "findByCode(string $code): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "list": "list(\\Commerz\\Shipping\\Methods\\Data\\ListMethods $query): \\Commerz\\Pagination\\Page",
+                "setRates": "setRates(\\Commerz\\Shipping\\Methods\\Data\\SetMethodRates $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "unassignChannels": "unassignChannels(\\Commerz\\Shipping\\Methods\\Data\\UnassignMethodChannels $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView",
+                "update": "update(\\Commerz\\Shipping\\Methods\\Data\\UpdateMethod $command): \\Commerz\\Shipping\\Methods\\Data\\MethodView"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\ArchiveMethod": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\AssignMethodChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id, array $channels)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\CreateMethod": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "position": "public readonly int $position",
+                "rates": "public readonly array $rates",
+                "status": "public readonly \\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, \\Commerz\\Measures\\LocalizedText $name, string $carrier, array $channels = [], array $rates = [], int $position = 0, \\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status = Commerz\\Shipping\\Methods\\Enums\\MethodStatus::Active)",
+                "assertName": "static assertName(\\Commerz\\Measures\\LocalizedText $name): void",
+                "assertPosition": "static assertPosition(int $position): void"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\DisableMethod": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\EnableMethod": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\ListMethods": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "channel": "public readonly ?\\Commerz\\Stores\\Data\\ChannelId $channel",
+                "limit": "public readonly int $limit",
+                "status": "public readonly ?\\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status",
+                "zone": "public readonly ?\\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status = null, ?\\Commerz\\Stores\\Data\\ChannelId $channel = null, ?\\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\MethodId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Shipping\\Methods\\Data\\MethodView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "carrier": "public readonly string $carrier",
+                "channels": "public readonly array $channels",
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id",
+                "name": "public readonly \\Commerz\\Measures\\LocalizedText $name",
+                "position": "public readonly int $position",
+                "rates": "public readonly array $rates",
+                "status": "public readonly \\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id, string $code, \\Commerz\\Measures\\LocalizedText $name, string $carrier, \\Commerz\\Shipping\\Methods\\Enums\\MethodStatus $status, int $position, array $channels, array $rates, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\RateView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "etaDays": "public readonly ?int $etaDays",
+                "freeAbove": "public readonly ?\\Commerz\\Money\\Money $freeAbove",
+                "rate": "public readonly \\Commerz\\Shipping\\Rates\\Data\\RateSpec $rate",
+                "taxIncluded": "public readonly bool $taxIncluded",
+                "unsupported": "public readonly ?string $unsupported",
+                "zone": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone",
+                "zoneCode": "public readonly string $zoneCode"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone, string $zoneCode, \\Commerz\\Money\\Currency $currency, \\Commerz\\Shipping\\Rates\\Data\\RateSpec $rate, ?\\Commerz\\Money\\Money $freeAbove, bool $taxIncluded, ?int $etaDays, ?string $unsupported)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\SetMethodRates": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id",
+                "rates": "public readonly array $rates"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id, array $rates)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\UnassignMethodChannels": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "channels": "public readonly array $channels",
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id, array $channels)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\UpdateMethod": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "carrier": "public readonly ?string $carrier",
+                "id": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $id",
+                "name": "public readonly ?\\Commerz\\Measures\\LocalizedText $name",
+                "position": "public readonly ?int $position"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $id, ?\\Commerz\\Measures\\LocalizedText $name = null, ?string $carrier = null, ?int $position = null)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Data\\ZoneRate": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "MAX_PER_METHOD": "500"
+            },
+            "properties": {
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "etaDays": "public readonly ?int $etaDays",
+                "freeAbove": "public readonly ?\\Commerz\\Money\\Money $freeAbove",
+                "rate": "public readonly \\Commerz\\Shipping\\Rates\\Data\\RateSpec $rate",
+                "taxIncluded": "public readonly ?bool $taxIncluded",
+                "zone": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone, \\Commerz\\Money\\Currency $currency, \\Commerz\\Shipping\\Rates\\Data\\RateSpec $rate, ?\\Commerz\\Money\\Money $freeAbove = null, ?bool $taxIncluded = null, ?int $etaDays = null)",
+                "assertValid": "static assertValid(array $rates): array"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Enums\\MethodStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Disabled": "disabled",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Events\\MethodChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "method": "public readonly \\Commerz\\Shipping\\Methods\\Data\\MethodId $method"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Methods\\Data\\MethodId $method)"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Exceptions\\MethodArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "method": "public readonly string $method"
+            },
+            "methods": {
+                "__construct": "__construct(string $method)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Methods\\Exceptions\\MethodNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        },
+        "Commerz\\Shipping\\Options\\Contracts\\ShippingOptions": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "explain": "explain(\\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request): \\Commerz\\Shipping\\Options\\Data\\OptionsExplanation",
+                "list": "list(\\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request): array"
+            }
+        },
+        "Commerz\\Shipping\\Options\\Data\\MethodVerdict": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "constants": {
+                "AVAILABLE": "'available'"
+            },
+            "properties": {
+                "message": "public readonly string $message",
+                "methodCode": "public readonly string $methodCode",
+                "price": "public readonly ?\\Commerz\\Money\\Money $price",
+                "verdict": "public readonly string $verdict",
+                "zoneCode": "public readonly ?string $zoneCode"
+            },
+            "methods": {
+                "__construct": "__construct(string $methodCode, string $verdict, string $message, ?string $zoneCode = null, ?\\Commerz\\Money\\Money $price = null)",
+                "isAvailable": "isAvailable(): bool"
+            }
+        },
+        "Commerz\\Shipping\\Options\\Data\\OptionsExplanation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "methods": "public readonly array $methods"
+            },
+            "methods": {
+                "__construct": "__construct(array $methods)",
+                "method": "method(string $methodCode): ?\\Commerz\\Shipping\\Options\\Data\\MethodVerdict"
+            }
+        },
+        "Commerz\\Shipping\\Options\\Exceptions\\DeliveryUnavailable": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "method": "public readonly string $method",
+                "reason": "public readonly string $reason",
+                "verdict": "public readonly string $verdict"
+            },
+            "methods": {
+                "__construct": "__construct(string $method, string $verdict, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Contracts\\DeliveryRate": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "spiKind": "implement",
+            "constants": {
+                "KIND": "'delivery_rate'"
+            },
+            "methods": {
+                "key": "key(): string",
+                "normalize": "normalize(\\Commerz\\Shipping\\Rates\\Data\\RateParams $params, \\Commerz\\Shipping\\Rates\\Data\\RateScope $scope): \\Commerz\\Shipping\\Rates\\Data\\RateParams",
+                "price": "price(\\Commerz\\Shipping\\Rates\\Data\\RateInput $input): \\Commerz\\Shipping\\Rates\\Data\\RatePrice",
+                "upgrade": "upgrade(\\Commerz\\Shipping\\Rates\\Data\\RateParams $params, int $fromVersion): \\Commerz\\Shipping\\Rates\\Data\\RateParams",
+                "version": "version(): int"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Data\\RateInput": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency",
+                "params": "public readonly \\Commerz\\Shipping\\Rates\\Data\\RateParams $params",
+                "request": "public readonly \\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request",
+                "zoneCode": "public readonly string $zoneCode"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request, \\Commerz\\Shipping\\Rates\\Data\\RateParams $params, \\Commerz\\Money\\Currency $currency, string $zoneCode)"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Data\\RateParams": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "fromInput": "static fromInput(array $input): self",
+                "fromStored": "static fromStored(array $stored): self",
+                "int": "int(string $key, int $min = \\PHP_INT_MIN, int $max = \\PHP_INT_MAX): int",
+                "list": "list(string $key, int $min, int $max): array",
+                "money": "money(string $key, \\Commerz\\Money\\Currency $currency): \\Commerz\\Money\\Money",
+                "nullableInt": "nullableInt(string $key, int $min = \\PHP_INT_MIN, int $max = \\PHP_INT_MAX): ?int",
+                "only": "only(array $keys): self",
+                "toArray": "toArray(): array"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Data\\RatePrice": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "amount": "public readonly ?\\Commerz\\Money\\Money $amount",
+                "message": "public readonly ?string $message",
+                "reason": "public readonly ?string $reason"
+            },
+            "methods": {
+                "isAvailable": "isAvailable(): bool",
+                "of": "static of(\\Commerz\\Money\\Money $amount): self",
+                "unavailable": "static unavailable(string $reason, string $message): self"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Data\\RateScope": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "currency": "public readonly \\Commerz\\Money\\Currency $currency"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Money\\Currency $currency)"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Data\\RateSpec": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "key": "public readonly string $key",
+                "params": "public readonly array $params"
+            },
+            "methods": {
+                "__construct": "__construct(string $key, array $params = [])"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Exceptions\\InvalidRateConfig": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "field": "public readonly string $field",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $field, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Rates\\Exceptions\\InvalidRateResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "rate": "public readonly string $rate",
+                "reason": "public readonly string $reason"
+            },
+            "methods": {
+                "__construct": "__construct(string $rate, string $reason)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Shipping": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Contracts\\Zones $zones, \\Commerz\\Shipping\\Methods\\Contracts\\Methods $methods, \\Commerz\\Shipping\\Options\\Contracts\\ShippingOptions $options, \\Commerz\\Shipping\\Bookings\\Contracts\\Bookings $bookings)",
+                "bookings": "bookings(): \\Commerz\\Shipping\\Bookings\\Contracts\\Bookings",
+                "methods": "methods(): \\Commerz\\Shipping\\Methods\\Contracts\\Methods",
+                "options": "options(): \\Commerz\\Shipping\\Options\\Contracts\\ShippingOptions",
+                "zones": "zones(): \\Commerz\\Shipping\\Zones\\Contracts\\Zones"
+            }
+        },
+        "Commerz\\Shipping\\ShippingServiceProvider": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Illuminate\\Support\\ServiceProvider",
+            "constants": {
+                "NOUNS": "['shipping']"
+            },
+            "methods": {
+                "boot": "boot(): void",
+                "register": "register(): void"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Contracts\\Zones": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "methods": {
+                "archive": "archive(\\Commerz\\Shipping\\Zones\\Data\\ArchiveZone $command): \\Commerz\\Shipping\\Zones\\Data\\ZoneView",
+                "create": "create(\\Commerz\\Shipping\\Zones\\Data\\CreateZone $command): \\Commerz\\Shipping\\Zones\\Data\\ZoneView",
+                "find": "find(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id): \\Commerz\\Shipping\\Zones\\Data\\ZoneView",
+                "list": "list(\\Commerz\\Shipping\\Zones\\Data\\ListZones $query): \\Commerz\\Pagination\\Page",
+                "restore": "restore(\\Commerz\\Shipping\\Zones\\Data\\RestoreZone $command): \\Commerz\\Shipping\\Zones\\Data\\ZoneView",
+                "setMembers": "setMembers(\\Commerz\\Shipping\\Zones\\Data\\SetZoneMembers $command): \\Commerz\\Shipping\\Zones\\Data\\ZoneView",
+                "update": "update(\\Commerz\\Shipping\\Zones\\Data\\UpdateZone $command): \\Commerz\\Shipping\\Zones\\Data\\ZoneView"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\ArchiveZone": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\CreateZone": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "members": "public readonly array $members",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(string $code, string $name, array $members = [])",
+                "assertName": "static assertName(string $name): void"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\ListZones": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "after": "public readonly ?\\Commerz\\Pagination\\Cursor $after",
+                "country": "public readonly ?string $country",
+                "limit": "public readonly int $limit",
+                "status": "public readonly ?\\Commerz\\Shipping\\Zones\\Enums\\ZoneStatus $status"
+            },
+            "methods": {
+                "__construct": "__construct(?\\Commerz\\Shipping\\Zones\\Enums\\ZoneStatus $status = null, ?string $country = null, ?\\Commerz\\Pagination\\Cursor $after = null, int $limit = 50)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\RestoreZone": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $id"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\SetZoneMembers": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $id",
+                "members": "public readonly array $members"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id, array $members)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\UpdateZone": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "id": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $id",
+                "name": "public readonly string $name"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id, string $name)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\ZoneId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "extends": "Commerz\\Identity\\EntityId",
+            "implements": [
+                "Stringable"
+            ]
+        },
+        "Commerz\\Shipping\\Zones\\Data\\ZoneMember": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "country": "public readonly string $country",
+                "postalPrefix": "public readonly ?string $postalPrefix",
+                "region": "public readonly ?string $region"
+            },
+            "methods": {
+                "assertUnique": "static assertUnique(array $members): array",
+                "country": "static country(string $country): self",
+                "kind": "kind(): \\Commerz\\Shipping\\Zones\\Enums\\MemberKind",
+                "postalPrefix": "static postalPrefix(string $country, string $postalPrefix): self",
+                "region": "static region(string $region): self"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Data\\ZoneView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "code": "public readonly string $code",
+                "id": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $id",
+                "members": "public readonly array $members",
+                "name": "public readonly string $name",
+                "status": "public readonly \\Commerz\\Shipping\\Zones\\Enums\\ZoneStatus $status",
+                "updatedAt": "public readonly \\DateTimeImmutable $updatedAt"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $id, string $code, string $name, \\Commerz\\Shipping\\Zones\\Enums\\ZoneStatus $status, array $members, \\DateTimeImmutable $updatedAt)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Enums\\MemberKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Country": "country",
+                "Region": "region",
+                "PostalPrefix": "postal_prefix"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Enums\\ZoneStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "cases": {
+                "Active": "active",
+                "Archived": "archived"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Events\\ZoneChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final",
+                "readonly"
+            ],
+            "properties": {
+                "zone": "public readonly \\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone"
+            },
+            "methods": {
+                "__construct": "__construct(\\Commerz\\Shipping\\Zones\\Data\\ZoneId $zone)"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Exceptions\\ZoneArchived": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\CommerzException",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "properties": {
+                "zone": "public readonly string $zone"
+            },
+            "methods": {
+                "__construct": "__construct(string $zone)",
+                "category": "category(): \\Commerz\\Errors\\ErrorCategory",
+                "code": "code(): string",
+                "context": "context(): array"
+            }
+        },
+        "Commerz\\Shipping\\Zones\\Exceptions\\ZoneNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "modifiers": [
+                "final"
+            ],
+            "extends": "Commerz\\Errors\\NotFound",
+            "implements": [
+                "Stringable",
+                "Throwable"
+            ],
+            "methods": {
+                "__construct": "__construct(string $id)"
+            }
+        }
+    },
+    "platform": {
+        "config": "commerz-shipping",
+        "kinds": [
+            "carrier",
+            "delivery_rate"
+        ],
+        "plugin": "commerz.shipping",
+        "providers": [
+            "Commerz\\Shipping\\ShippingServiceProvider"
+        ],
+        "tables": [
+            "shipping"
+        ]
+    }
+}

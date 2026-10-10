@@ -40,6 +40,8 @@ jobs:
       - run: composer lint:check
       - run: composer analyse
       - run: composer refactor:check
+      - run: composer api:check
+      - run: composer docs:reference -- --check
       - run: bash scripts/build-agent-docs.sh --check
 
   tests:
