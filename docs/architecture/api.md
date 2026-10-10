@@ -63,7 +63,7 @@ $channel = Commerz::channels()->create(new CreateChannel(
 ));
 
 $ctx = CommerceContext::for($channel->id, Currency::of('RUB'), locale: 'ru')
-    ->withCustomer(CustomerRef::of('user', '42'));   // groups come from CustomerDirectory
+    ->withCustomer(CustomerRef::of('user', '42'), ['b2b']); // explicit groups; Sales::carts()->setCustomer() adds the CustomerDirectory's (D38)
 
 Commerz::plugins()->describe();                       // registry diagnostics: keys, source, version
 ```

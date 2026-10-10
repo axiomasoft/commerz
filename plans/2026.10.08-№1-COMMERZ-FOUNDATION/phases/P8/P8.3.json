@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P8.3",
   "title": "CRM embedding scenarios: core + pricing + sales without catalog/inventory, and a mixed host",
-  "status": "in_progress",
+  "status": "done_with_deviations",
   "summary": "tests/EndToEnd/CrmScenarioTest.php: CRM-подмножество (Commerz, Pricing, Sales; stock unlimited) с хостовым SellableProvider crm.service и CustomerDirectory проходит черновик → quote с налогом → place → manual-оплата → исполнение услуг → completed без таблиц склада/каталога/доставки/акций; смешанный хост (все пакеты + crm.service рядом с variant) размещает заказ и резервирует только variant-строки.",
   "why": "Требование B3: Commerz встраивается в CRM без лишних пакетов. До сих пор CRM проверялся только на Commerce::fake. Риски: sales неявно требует shipping/promotions; SellableRouter не маршрутизирует смешанную корзину; pricing не находит цену для чужого sellable_ref.",
   "scope": {
@@ -142,12 +142,45 @@
   },
   "result": {
     "started_at": "2026-10-10T10:30:58Z",
+    "finished_at": "2026-10-10T11:24:01Z",
     "executor": {
       "provider": "claude-code",
       "model": "claude-opus-5-5",
       "effort": "high",
       "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
-    }
+    },
+    "notes": "CRM subset (Commerz+Pricing+Sales, unlimited stock, host sellable provider crm.service + CustomerDirectory) runs draft -> quote (20% VAT via default_zone, b2b contract price + tariff fallback) -> place -> manual capture -> fulfil -> completed with no shop tables/ports; mixed host routes variant + crm.service in one cart and reserves only the variant. grok-4.7 high: round 1 pass with 2 lows (fixed), round 2 pass.",
+    "deviations": [
+      "mixed host in its own file tests/EndToEnd/CrmMixedHostTest.php (provider set per file)",
+      "defect fixed in sales (D38): Carts::setCustomer takes the customer groups from the host CustomerDirectory plus the command's; regression in sales CartsTest"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T11:24:01Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T11:24:01Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T11:24:01Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T11:24:01Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T11:24:01Z"
+      }
+    ]
   },
-  "updated_at": "2026-10-10T10:30:58Z"
+  "updated_at": "2026-10-10T11:24:01Z"
 }
