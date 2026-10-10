@@ -1,0 +1,161 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P8.2",
+  "title": "Shop end-to-end scenario on all real packages",
+  "status": "in_progress",
+  "summary": "tests/EndToEnd/ShopScenarioTest.php проходит полный путь магазина на реальных пакетах: корзина → quote (акции, купон, налог на дисконтированной базе, доставка) → place с резервом и usage → оплата → fulfillment с consume → доставка → частичный возврат с restock → частичный и полный refund с восстановлением купона; плюс отрицательные пути (нехватка, QuoteChanged) и outbox-последовательность.",
+  "why": "Главное доказательство B1/B3 для интернет-магазина: модули складываются в продукт только через порты. Риск: стадии promotions/delivery/tax на реальных реализациях расходятся в суммах (до сих пор проверялись фикстурными стадиями), restore купона на refund и restock возвратов не встречались с реальным inventory/promotions.",
+  "scope": {
+    "include": [
+      "tests/EndToEnd/ShopScenarioTest.php — шаги 1–10 assembly-design#shop-scenario",
+      "ожидаемые суммы — вычислены вручную в тесте с комментарием-выводом",
+      "исправления дефектов в пакетах-владельцах с регрессиями в их suite"
+    ],
+    "exclude": [
+      "изменение ShopWorld (P8.1) — дополнительные данные создаются в тесте",
+      "конкурентность (P8.4)",
+      "CRM (P8.3)"
+    ]
+  },
+  "depends_on": [
+    "P8.1"
+  ],
+  "decisions": [
+    "D23",
+    "D24",
+    "D26",
+    "D27",
+    "D28",
+    "D31",
+    "D32",
+    "D33",
+    "D35",
+    "D22"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/assembly-design#shop-scenario",
+      "why": "шаги и проверки — ядро item'а",
+      "required": true
+    },
+    {
+      "path": "tests/EndToEnd/Support/ShopWorld.php",
+      "why": "мир и его id",
+      "required": true
+    },
+    {
+      "path": "packages/sales/tests/Feature/ShopScenarioTest.php",
+      "why": "API sales для шагов 1,3,5–7 (на fakes — заменить реальными пакетами)",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/extension.md",
+      "why": "порядок стадий для расчёта ожидаемых сумм",
+      "required": true
+    },
+    {
+      "path": "docs/architecture/api.md",
+      "section": "Sales, Promotions, Pricing",
+      "why": "контракты команд и ошибок",
+      "required": true
+    },
+    {
+      "ref": "knowledge/pricing-design#tax",
+      "why": "налог на дисконтированной базе, доставка, округление",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#returns-refunds",
+      "why": "restock и restore на полном refund",
+      "required": true
+    },
+    {
+      "ref": "knowledge/promotions-design#engine",
+      "why": "распределение корректировок и стадии",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "tests/EndToEnd/ShopScenarioTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Все PHP/Composer-команды — через scripts/php84 (локальный php по умолчанию 8.3).",
+    "EndToEnd-тесты используют только публичный API (корни/фасады пакетов, контракты Commerz\\Ports\\*, Commerz\\Testkit); Internal не импортируется.",
+    "Дефект, найденный сборкой, чинится в пакете-владельце с регрессионным тестом в его suite и записью plan.py log PLAN1 <item> --type deviation; правка контракта ядра — только аддитивно и с решением plan.py add-decision --by agent.",
+    "Тесты с записью в БД — только на изолированной commerz_test (PackageTestCase guard); перед запуском: docker compose up -d postgres и pg_isready.",
+    "Числа — Money::of('…','RUB'); вывод каждой ожидаемой суммы — комментарий в тесте (строки, распределение, налог, доставка).",
+    "Если реальное поведение расходится с assembly-design#shop-scenario и поведение кода корректно по docs/architecture — тест следует коду, расхождение плана записывается в notes; если код неверен — чинить код."
+  ],
+  "guidance": "Outbox-проверка: прочитать записанные типы событий через публичный read API outbox, если он есть, иначе через commerz:outbox:relay с тестовым OutboxConsumer, регистрируемым в тесте; сравнивать типы в порядке, без привязки к id. Платёж: manual gateway, событие Captured через Payments::recordEvent (как в packages/sales/tests/Feature/ShopScenarioTest.php). Доставка: manual carrier в shipping возвращает tracking синхронно.",
+  "examples": [
+    {
+      "path": "packages/sales/tests/Feature/ShopScenarioTest.php"
+    },
+    {
+      "path": "tests/Integration/SalesShippingQuoteTest.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest tests/EndToEnd/ShopScenarioTest.php",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=EndToEnd",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "ShopScenarioTest зелёный на реальных пакетах",
+    "исправленные дефекты с регрессиями и deviation"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T10:30:58Z",
+    "executor": {
+      "provider": "claude-code",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "ff40ef03-159e-4c19-8d0d-ec8fb23e7711"
+    }
+  },
+  "updated_at": "2026-10-10T10:30:58Z"
+}
