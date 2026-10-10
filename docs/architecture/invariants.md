@@ -100,7 +100,10 @@ transfer row → reservation header of the demand
 `FOR NO KEY UPDATE`, not `FOR UPDATE`: movement and reservation rows reference
 the level by foreign key and take `FOR KEY SHARE` on it at `INSERT`. A command
 locks every level it needs in one statement; a second lock call can deadlock
-against another command. Lazy expiry and the sweeper take foreign headers only
+against another command. A caller may still consume one demand line by line in
+one transaction (a fulfillment of several lines), so `consume` locks every
+level the demand still holds at its first call, not only the consumed
+sellable's; the later calls find their levels already held. Lazy expiry and the sweeper take foreign headers only
 with `SKIP LOCKED` and only lines on levels already locked, so they never wait
 for another demand.
 Transfer creation guards the items and locations before inserting its new

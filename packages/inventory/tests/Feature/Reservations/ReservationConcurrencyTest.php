@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Identity\SellableRef;
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Reservations\Data\ExpireReservations;
+use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Ports\Stock\Data\StockAllocation;
@@ -111,6 +112,35 @@ it('does not deadlock carts that list the same items in reverse order', function
 
     expect(rsvLevel($tee, $main)->reserved + rsvLevel($tee, $backup)->reserved)->toBe(0)
         ->and(rsvLevel($cap, $main)->reserved + rsvLevel($cap, $backup)->reserved)->toBe(0);
+})->group('concurrency');
+
+it('does not deadlock documents that consume the same items in opposite line order', function (): void {
+    $channel = rsvChannel();
+    $main = rsvSource($channel, 'main');
+    $tee = rsvItem('tee', ['tee' => 1]);
+    $cap = rsvItem('cap', ['cap' => 1]);
+    rsvReceive($tee, $main, 50);
+    rsvReceive($cap, $main, 50);
+
+    foreach (range(0, 7) as $worker) {
+        rsvReserve($channel, "order:{$worker}", ['tee' => 1, 'cap' => 1]);
+    }
+
+    // A fulfillment consumes its lines one call at a time inside its own transaction (sales); the first call must take
+    // every level the demand holds in key order, or two documents in opposite line order deadlock (40P01).
+    Concurrency::run(8, function (int $worker): void {
+        $lines = $worker % 2 === 0 ? ['tee', 'cap'] : ['cap', 'tee'];
+
+        app(Transactions::class)->run(function () use ($worker, $lines): void {
+            foreach ($lines as $sku) {
+                Inventory::reservations()->consume(new ConsumeReservation("order:{$worker}", SellableRef::of('variant', $sku), 1, "fulfillment:{$worker}"));
+                usleep(100_000);
+            }
+        });
+    }, timeoutSeconds: 60);
+
+    expect([rsvLevel($tee, $main)->onHand, rsvLevel($tee, $main)->reserved])->toBe([42, 0])
+        ->and([rsvLevel($cap, $main)->onHand, rsvLevel($cap, $main)->reserved])->toBe([42, 0]);
 })->group('concurrency');
 
 it('lets either the consume or the expiry of one demand win, never both (INV-04)', function (): void {

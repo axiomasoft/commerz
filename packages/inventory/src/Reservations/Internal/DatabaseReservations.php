@@ -152,7 +152,11 @@ final readonly class DatabaseReservations implements Reservations
                 throw $missing;
             }
 
-            $levels = $this->ledger->lock(self::pairs($taking));
+            // Every level the demand still holds is locked now, in the global key order, not only this sellable's: a
+            // document that ships several lines consumes them one call at a time in one transaction, and taking each
+            // line's levels as it comes would lock them in line order — two orders of the same goods in opposite line
+            // orders would deadlock (P8.4). Later calls of the transaction find their levels already held.
+            $levels = $this->ledger->lock(self::pairs([...$this->store->lines($id, outstanding: true), ...$taking]));
             $groups = self::groups($this->store->lockLines(self::ids($taking)));
             $remaining = $command->quantity;
             $take = [];
