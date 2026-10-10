@@ -15,7 +15,7 @@ packages may depend on each other.
 | `packages/pricing` | `axiomasoft/commerz-pricing` | `Commerz\Pricing\` | `price`, `tax` | `PriceResolver`, quote stage `tax` | core |
 | `packages/promotions` | `axiomasoft/commerz-promotions` | `Commerz\Promotions\` | `promotion`, `coupon` | `PromotionUsage`, quote stages `promotions.*` | core |
 | `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\Shipping\` | `shipping` (`cmz_shipping_zones`, `_zone_members`, `_methods`, `_method_channels`, `_rates`, `_bookings`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |
-| `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\Sales\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` | none (consumer of ports) | core |
+| `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\Sales\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` (`cmz_carts`, `_cart_lines`, `_orders`, `_order_lines`, `_order_events`, `_payments`, `_payment_events`, `_refunds`, `_fulfillments`, `_fulfillment_lines`, `_returns`, `_return_lines`, sequence `cmz_order_number_seq`) | none (consumer of ports; contributes SPIs `payment_gateway`, `order_number_generator`) | core |
 | `packages/full` | `axiomasoft/commerz-full` | — | — | — | all of the above (metapackage) |
 | `packages/testkit` | `axiomasoft/commerz-testkit` | `Commerz\Testkit\` | — | in-memory fakes of all ports, plugin contract tests, concurrency harness | core (dev use) |
 

@@ -397,31 +397,72 @@ $booking = Shipping::bookings()->find('fulfillment:'.$id);   // BookingView; lis
 ## Sales: `Sales`
 
 `carts()`, `checkout()`, `orders()`, `payments()`, `fulfillments()`,
-`returns()`, `refunds()`.
+`returns()`, `refunds()`. The root resolves a module when it is asked for, so
+`carts()` needs no stock port.
 
 ```php
 $cart = Sales::carts()->create(new CreateCart($ctx));
-Sales::carts()->addLine(new AddCartLine($cart->id, SellableRef::of('variant', $v->id), quantity: 2));
+$cart = Sales::carts()->addLine(new AddCartLine($cart->id, SellableRef::of('variant', $v), quantity: 2));
 Sales::carts()->enterCode(new EnterCode($cart->id, 'AUTUMN'));
-$quote = Sales::carts()->quote($cart->id);           // lines, explained adjustments, taxes, totals
+Sales::carts()->setAddress(new SetCartAddress($cart->id, AddressRole::Shipping, $address));
+$options = Sales::carts()->deliveryOptions($cart->id);        // list<DeliveryOption>
+Sales::carts()->selectDelivery(new SelectDelivery($cart->id, 'courier'));
+$quote = Sales::carts()->quote($cart->id);                    // lines, explained adjustments, taxes, totals
 
 $order = Sales::checkout()->place(new PlaceOrder(
-    cart: $cart->id, idempotencyKey: IdempotencyKey::of($key),
-    expectedTotal: $quote->total,                    // guards against price changes between display and submit
-));                                                  // one transaction: snapshot + reserve + usage + outbox
+    $cart->id, expectedTotal: $quote->total,                  // guards against price changes between display and submit
+    idempotencyKey: IdempotencyKey::of($key),
+));                                                           // one transaction: snapshot + reserve + usage + outbox
 
-Sales::payments()->initiate(new InitiatePayment($order->id, gateway: 'manual', amount: $order->total)); // after commit
-Sales::fulfillments()->create(new CreateFulfillment($order->id, lines: [[$lineId, 2]], location: $wh->id));
-Sales::returns()->receive(new ReceiveReturn($returnId, restock: [[$lineId, 0]])); // receiving ≠ restocking
+$payment = Sales::payments()->initiate(new InitiatePayment($order->id, gateway: 'manual')); // outside a transaction
+Sales::payments()->recordEvent(new RecordPaymentEvent('manual', 'bank-tx-42', PaymentEventType::Captured, paymentReference: $payment->reference));
+Sales::payments()->reconcile(new ReconcilePayment($payment->id));   // settles an unknown outcome through the gateway
 
-// CRM: an order drafted by a manager without a customer cart
-Sales::orders()->draft(new DraftOrder($ctx, lines: [new DraftLine(SellableRef::of('crm.service', '77'), quantity: 1)]));
+$f = Sales::fulfillments()->create(new CreateFulfillment($order->id, [new LineQuantity($lineId, 2)], locationCode: 'main'));
+Sales::fulfillments()->ship(new ShipFulfillment($f->id, 'manual', 'RB123'));   // or book(new BookFulfillment($f->id))
+Sales::fulfillments()->markDelivered(new MarkFulfillmentDelivered($f->id));
+Sales::orders()->cancel(new CancelOrder($order->id, CancelReason::Customer));
+$r = Sales::returns()->request(new RequestReturn($order->id, [new LineQuantity($lineId, 1)], reason: 'defect'));
+Sales::returns()->receive(new ReceiveReturn($r->id, restock: []));             // receiving ≠ restocking
+Sales::refunds()->issue(new IssueRefund($order->id, Money::of('1990.00', 'RUB')));
+
+// CRM: a draft is a cart of kind `draft`, edited with the Carts commands and placed the same way
+$draft = Sales::orders()->draft(new DraftOrder($ctx, [new DraftLine(SellableRef::of('crm.service', '77'), 1)], actor: $manager));
+$order = Sales::checkout()->place(new PlaceOrder($draft->id, expectedTotal: Sales::carts()->quote($draft->id)->total));
 ```
 
-States are independent enums: `OrderState` (`draft → placed → completed |
-cancelled`), `PaymentState` (`unpaid → authorized → partially_paid → paid →
+`Orders` also offers `find`, `findByNumber(StoreId, string)`, `list(ListOrders)`
+(keyset `placed_at DESC, id DESC`), `history(OrderId)`, `cancelLines` and
+`expireDue` (the `commerz:sales:expire-orders` command). `Refunds` offers
+`recordEvent`, `reconcile`, `find` and `list`.
+
+States are independent enums: `OrderState` (`placed → completed | cancelled`),
+`PaymentState` (`unpaid → authorized → partially_paid → paid →
 partially_refunded → refunded`), `FulfillmentState` (`unfulfilled →
-partially_fulfilled → fulfilled → partially_returned → returned`).
+partially_fulfilled → fulfilled → partially_returned → returned`). The payment
+and fulfillment states are derived from the amounts and the line ledger.
+
+Errors are `CommerzException` subclasses with stable `sales.*` codes
+(`sales.cart_changed`, `sales.quote_changed`, `sales.payment_exceeds_balance`,
+`sales.refund_exceeds_balance`, `sales.quantity_exceeds_outstanding`,
+`sales.operation_inside_transaction`, `sales.payment_outcome_unknown`, …).
+
+Domain events (after commit): `OrderPlaced`, `OrderCancelled`, `OrderCompleted`,
+`OrderPaymentStateChanged`, `PaymentStatusChanged`, `PaymentRequiresRefund`,
+`RefundStatusChanged`, `FulfillmentCreated`, `FulfillmentShipped`,
+`ReturnReceived`. Outbox types (version 1, same transaction, scalar payloads):
+`sales.order_placed`, `sales.order_cancelled`, `sales.order_completed`,
+`sales.payment_state_changed`, `sales.payment_requires_refund`,
+`sales.fulfillment_shipped`, `sales.return_received`, `sales.refund_succeeded`.
+
+Differences from the early api-blueprint, all deliberate: a draft is a cart of
+kind `draft`, there is no `OrderState::Draft` (D31); `CreateFulfillment` takes
+`list<LineQuantity>` and a `locationCode`; `ReceiveReturn::$restock` is a
+`list<LineQuantity>`; `IssueRefund` has an optional `payment` instead of
+`gateway` (the gateway belongs to the payment); `RecordPaymentEvent` carries
+`paymentReference` or `externalPaymentId`; added `deliveryOptions`, `reconcile`,
+`book`, `markDelivered`, `cancelLines`, `expireDue`, `history` and
+`refunds()->recordEvent`.
 
 ## CRM embedding
 

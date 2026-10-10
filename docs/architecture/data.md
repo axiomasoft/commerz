@@ -154,6 +154,29 @@ package; `channel_id` is a uuid checked through `Channels::assertActive`.
 
 Lock order: *Shipping lock order* in `invariants.md`.
 
+## Sales tables
+
+Owned by `commerz-sales`. Foreign keys only inside the package; `channel_id` and
+`store_id` are uuids without a foreign key (checked through `Channels::assertActive`),
+references to other packages are `*_ref` strings (`sellable_ref`, `customer_ref`).
+Only sales writes to these tables (single writers: `CartRows`, `OrderWriter`,
+`OrderLedger`, `PaymentEventInbox`, `PaymentJournal`, `RefundJournal`).
+
+| Table | Holds | Notes |
+|---|---|---|
+| `cmz_carts`, `cmz_cart_lines` | cart of kind `cart` or `draft`, state `open \| converted`, `version`, channel, currency, locale, customer, codes, addresses, delivery method | `UNIQUE (cart_id, sellable_ref)`; channel and currency are never updated (CTX-01) |
+| `cmz_orders` | the snapshot header: number, `origin`, `state`, `payment_state`, `fulfillment_state`, cancel reason, totals, `amount_due`, `authorized`, `captured`, `refunded`, `quote_fingerprint`, `payment_due_at` | `UNIQUE (cart_id)` (ORD-01), `UNIQUE (store_id, number)`; `CHECK`s tie `cancelled_at` and `completed_at` to the state and keep `refunded ≤ captured` |
+| `cmz_order_lines` | the snapshot of a quoted line (sellable, sku, name, kind, unit price, adjustments, taxes, totals) and the ledger `cancelled`, `fulfilled`, `returned` quantities | `id` = the cart line id; `CHECK cancelled + fulfilled ≤ quantity`, `returned ≤ fulfilled` (ORD-03) |
+| `cmz_order_events` | append-only history of an order | read through `Orders::history` |
+| `cmz_payments` | a payment attempt: `reference` (unique), `gateway`, `status`, amounts, `fingerprint`, `attempts`, `claimed_at` (lease), `external_id` | `UNIQUE (gateway, external_id)`; `CHECK` captured/authorized within amount, `refunded ≤ captured` |
+| `cmz_payment_events` | the provider-event inbox: `external_event_id`, `fingerprint`, `outcome` (`applied \| ignored`), target payment or refund | `UNIQUE (gateway, external_event_id)` (PAY-01); exactly one target |
+| `cmz_refunds` | a refund attempt of a payment, same journal fields as payments, optional return | `UNIQUE (reference)`, `UNIQUE (gateway, external_id)` |
+| `cmz_fulfillments`, `cmz_fulfillment_lines` | shipped units per location, status `created \| shipped \| delivered`, carrier, tracking | |
+| `cmz_returns`, `cmz_return_lines` | a return: requested, received (with the `restocked` count per line), cancelled | |
+| `cmz_order_number_seq` | the sequence of the built-in numbering (starts at 1001) | gaps are fine; not an invoice number (D34) |
+
+Lock order: *Sales lock order* in `invariants.md`.
+
 ## Catalog projection precision and text equality
 
 `attribute_index.num` is unconstrained PostgreSQL `numeric` after migration

@@ -32,13 +32,16 @@ one enforcement point; adding a write path that skips it is a defect.
 | SHP-04 | A carrier call never runs inside a database transaction | `CarrierShipmentBooking` refuses an ambient transaction (`shipping.booking_inside_transaction`) | booking from a host `Transactions::run` that later rolls back | booking inside a transaction |
 | SHP-05 | A tariff with an unknown or outdated rule, or an unknown carrier, is not offered (fail-closed) but stays visible to the admin | `RateCodec::decode` → unsupported; verdicts `unsupported_rate`, `unsupported_carrier`; `RateView::$unsupported` | applying a tariff with a broken config | unsupported rate (G9) |
 | SHP-06 | Zone choice is deterministic: specificity rank, then `zone.code` | `MethodPricer` zone step | database row order | zone ranking (G4, G4b) |
-| ORD-01 | Retrying `PlaceOrder` never creates a second order | sales: `UNIQUE(cart_id)` on orders + `OperationReceipts` | client timeout and retry | concurrent double submit |
+| ORD-01 | Retrying `PlaceOrder` never creates a second order | sales: `UNIQUE(cart_id)` on orders + cart `FOR UPDATE` + `OperationReceipts`; `OrderWriter` is the only writer of `orders` | client timeout and retry; a second insertion path | concurrent double submit (C1, C2) |
 | ORD-02 | An order keeps the accepted amounts and snapshots; repricing live data never changes it | sales: snapshot lines, no FK to catalog | refreshing an order from the catalog | change the price after placement |
-| ORD-03 | Per line `ordered = cancelled + fulfilled + outstanding` | sales `OrderLineLedger` | shipping more than ordered | partial shipment + cancel |
-| PAY-01 | A provider event applies at most once | sales: `UNIQUE(gateway, external_event_id)` | repeated webhook | double webhook |
-| PAY-02 | A provider network call never runs inside a database transaction; an unknown outcome is `pending_reconciliation`, not `failed` | sales payment workflow | calling a gateway inside `Transactions::run` | timeout after authorization |
-| REF-01 | Refunding money never returns goods to stock automatically | sales return receipt with explicit `restock` | `available += returned` on refund | refund without receiving |
+| ORD-03 | Per line `ordered = cancelled + fulfilled + outstanding`, `returned ≤ fulfilled` | sales `OrderLedger` (conditional `UPDATE`) + `CHECK` | shipping more than ordered; returning more than shipped | partial shipment + cancel (C6) |
+| PAY-01 | A provider event applies at most once | sales: `UNIQUE(gateway, external_event_id)` in `PaymentEventInbox::claim` under the order lock | repeated webhook | double webhook |
+| PAY-02 | A provider network call never runs inside a database transaction; an unknown outcome is `unknown` and is settled by `find(reference)`, not guessed as `failed` | `PaymentWorkflow` / `RefundWorkflow` (`sales.operation_inside_transaction`); the only callers of the SPI | calling a gateway inside `Transactions::run` | timeout after authorization |
+| REF-01 | Refunding money never returns goods to stock automatically; receiving a return is not restocking | sales: stock is touched only by `ReceiveReturn::$restock` | `available += returned` on refund | refund without receiving |
 | CTX-01 | A cart or order never changes channel or currency; references from another channel are rejected | sales + `Sellables` (`purchasable` in the channel); the catalog's `variant` provider reports `not_listed` / `not_available_yet` / `no_longer_available` per channel and `context.at` | changing `channel_id`; adding an unpublished, archived or out-of-window variant | adding an unpublished variant; every reason in `VariantSellablesTest` |
+| SAL-01 | A payment never exceeds the amount due and a refund never exceeds what the payment captured | balance under the order lock (initiate); refundable under order + payment locks (issue); `CHECK refunded ≤ captured` | two parallel `initiate` / `issue` | C5, C7 |
+| SAL-02 | An order with a payment attempt never expires; a capture after cancellation is not lost | expiry re-checks under `FOR UPDATE SKIP LOCKED`; `sales.payment_requires_refund` (D32) | expiry during 3-D Secure | expiry and capture race (C8) |
+| SAL-03 | Only the owner of a network lease writes its result | `attempts` fencing of `finish`; `reconcile` takes the lease | a stale process overwriting a reconciled result | `PaymentJournalFenceTest` |
 | EXT-01 | A plugin failure never leaves half a mutation | quoting is pure stages outside writes; mutations are one transaction | a plugin with side effects in `apply()` | a stage that throws |
 
 ## Order placement transaction
@@ -67,14 +70,16 @@ separate idempotent commands with reconciliation (D11, PAY-02).
 
 Every multi-resource operation locks in this order:
 
-**cart/order → stock levels (by `stock_item_id`, `location_id`) → coupons →
-promotions → customer usages → payments**
+**cart/order → child documents of the order → stock levels (by `stock_item_id`,
+`location_id`) → coupons → promotions → customer usages → payments → refunds**
 
 Any new operation must follow it; a violation is a defect. `lock_timeout` is
 3 s. On `LockNotAvailable` or deadlock, only the whole transaction is retried,
 at most 3 times with jitter.
 
-Cancelling or expiring an unpaid order runs in one `Transactions::run`: order
+Cancelling or expiring an unpaid order (D32: expiry is a sales command over
+`payment_due_at`; an order with a payment attempt is skipped) runs in one
+`Transactions::run`: order
 `FOR UPDATE` → `StockReservations::release('order:{id}')` →
 `PromotionUsage::restore(orderRef, Cancelled|Expired)` per the
 `promotions.restore_on` policy (default: expired and cancelled before payment)
@@ -237,6 +242,31 @@ missing carrier leaves the outcome unknown and retryable. Stored-rate plugin
 failures in version, upgrade or normalization mark that tariff unsupported
 without aborting healthy options or admin reads (SHP-05).
 
+## Sales lock order
+
+Inside sales the global order is refined to **receipt (by key) → cart/order →
+child documents of the order (fulfillment, return, by id) → stock levels →
+coupons → promotions → customer usages → payments → refunds**. Ports are called
+inside a transaction only where listed.
+
+| Operation | Locks | Ports inside the transaction |
+|---|---|---|
+| `Carts::*` | cart `FOR UPDATE` | — (sellables resolve before) |
+| `Checkout::place` | receipt → cart → insert order → stock levels → usages | `reserve`, `consume` |
+| `cancel`, `cancelLines`, `expireDue` | order (`SKIP LOCKED` for expiry) → stock → coupons/promotions | `release`, `restore` |
+| `initiate` Tx A / finish | receipt → order → insert payment / payment `UPDATE` | — |
+| `recordEvent`, `reconcile` | order → payment → inbox insert | — |
+| `Fulfillments::create` | receipt → order → insert fulfillment → stock levels | `consume` |
+| `ship`, `book` (Tx), `markDelivered` | order → fulfillment | — (the carrier call is outside) |
+| `Returns::*` | receipt → order → return → stock levels | `restock` |
+| `Refunds::issue` Tx A | receipt → order → payment → insert refund | — |
+| refund finish | order → promotions (`restore(Refunded)` on a full refund) → payment → refund `UPDATE` | `restore` |
+
+`order_events` and `payment_events` are inserts that never wait on anything but
+the same key held by the order owner. `finish` writes only if `attempts` still
+matches (SAL-03), so a stale lease owner never overwrites a newer result.
+Refund events lock order → claim → restore → payment → refund.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
@@ -256,7 +286,17 @@ without aborting healthy options or admin reads (SHP-05).
 | consume usage | update promotion (limit change) / pause / archive / disable coupon | promotion / coupon row | `KEY SHARE` vs `FOR UPDATE`; the recount sees every committed usage, a paused promotion gives `PromotionUnavailable` |
 | restore usage | consume usage | redemption header | idempotent by `orderRef`; sales serializes the order before calling the port |
 | generate coupons | archive promotion | promotion row | `KEY SHARE` vs `FOR UPDATE` |
-| place order | cart edit | cart row | `FOR UPDATE` + version |
+| place order | cart edit | cart row | `FOR UPDATE` + version → `CartChanged` |
+| place (same cart, same key) | place | receipt | the second waits and returns the same order (C1) |
+| place (no key) | place | cart | `FOR UPDATE` → `CartAlreadyPlaced` (C2) |
+| initiate | initiate (same order) | order | `FOR UPDATE` + balance → `PaymentExceedsBalance` (C5) |
+| record event | record event (same event id) | order + inbox | `ON CONFLICT` → duplicate (C4) |
+| record event (captured) | expire / cancel | order | expiry skipped when a payment exists; a capture after cancel → `payment_requires_refund` (C8) |
+| reconcile | initiate finish | payment | lease + `attempts` fencing |
+| create fulfillment | create fulfillment / cancel lines | order + ledger | `FOR UPDATE` + conditional `UPDATE` → `QuantityExceedsOutstanding` (C6) |
+| issue refund | issue refund | order + payment | `FOR UPDATE` + refundable → `RefundExceedsBalance` (C7) |
+| refund finish | payment event | order → payment | one lock order |
+| expire (worker 1) | expire (worker 2) | order | `SKIP LOCKED` + re-check |
 | payment event | cancel order | order row | order `FOR UPDATE`; a paid cancelled order becomes a refund task, never a silent loss |
 | change attribute type or config | write value | attribute definition | not possible: `type` and `config` are immutable after `define` (D17) |
 | generate / create variant | generate / create variant (one product) | product row | `FOR NO KEY UPDATE`; `UNIQUE` and `ON CONFLICT DO NOTHING` as the backstop |
