@@ -40,6 +40,7 @@
 <!-- swissknifeman:registry sha=f6eed7ea5379 skills=217 -->
 <!-- Full index: `skiller status` or generate-hub.sh --target <dir> --full-index. -->
 <!-- swissknifeman:hub:end -->
+
 <!-- maind:healthcheck hash=4a1d4d3fa345 (managed by maind — do not edit manually) -->
 ## mAInd — temporary project context and graph
 

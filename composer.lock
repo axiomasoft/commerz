@@ -12,10 +12,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "5411b9306999d2675a66a6b2a5abe8e1dc475c08"
+                "reference": "3ddda705b87e07a71c6f87321486f14f94a689d5"
             },
             "require": {
                 "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
+                "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -154,10 +155,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "70cff97eb0c4e501becbc0d2aff032abf8c7fda7"
+                "reference": "68e37be4a0842ac004fcd9b61b056147590fb747"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -256,10 +258,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "3b4ba47b41803daeabdbc65d561dae1cc8062421"
+                "reference": "13880c6f56d2fe7f90ccad12d9d91eb169578128"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -307,10 +310,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "080b2041105fc7e4df9f48f09e8b67b56f750140"
+                "reference": "3cdfb1c2fd5d9dc67a383341715764021aec6804"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
