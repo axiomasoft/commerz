@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Commerz\CommerzServiceProvider;
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Errors\InvalidConfiguration;
 use Commerz\Errors\UnsupportedContribution;
@@ -381,6 +382,14 @@ it('builds the registry lazily, once, and freezes the catalog', function (): voi
         ->and($registry->keys('greeter'))->toBe(['test.hello'])
         ->and(array_map(fn ($p): array => [$p->id, $p->source], $registry->describe()))->toBe([['commerz.core', PluginSource::BuiltIn], ['test.owner', PluginSource::BuiltIn]])
         ->and(fn () => CommerzPlugins::builtIn(PlgExtension::class))->toThrow(LogicException::class, 'already compiled');
+});
+
+it('keeps the built-in plugins of a provider that registered before the core', function (): void {
+    CommerzPlugins::builtIn(PlgOwner::class);
+
+    new CommerzServiceProvider(app())->register();
+
+    expect(app(Contributions::class)->keys('greeter'))->toBe(['test.hello']);
 });
 
 it('merges built-in and configured plugins, built-in first', function (): void {

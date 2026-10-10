@@ -11,13 +11,13 @@
     ],
     "require": {
         "php": "^8.4",
-        "axiomasoft/commerz": "^0.1@dev",
-        "axiomasoft/commerz-catalog": "^0.1@dev",
-        "axiomasoft/commerz-inventory": "^0.1@dev",
-        "axiomasoft/commerz-pricing": "^0.1@dev",
-        "axiomasoft/commerz-promotions": "^0.1@dev",
-        "axiomasoft/commerz-shipping": "^0.1@dev",
-        "axiomasoft/commerz-sales": "^0.1@dev"
+        "axiomasoft/commerz": "^0.1",
+        "axiomasoft/commerz-catalog": "^0.1",
+        "axiomasoft/commerz-inventory": "^0.1",
+        "axiomasoft/commerz-pricing": "^0.1",
+        "axiomasoft/commerz-promotions": "^0.1",
+        "axiomasoft/commerz-shipping": "^0.1",
+        "axiomasoft/commerz-sales": "^0.1"
     },
     "extra": {
         "branch-alias": {

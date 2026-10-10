@@ -13,7 +13,7 @@
         "php": "^8.4",
         "illuminate/contracts": "^13.0",
         "illuminate/support": "^13.0",
-        "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz": "^0.1",
         "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
         "illuminate/database": "^13.0"
     },

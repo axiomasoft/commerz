@@ -14,7 +14,18 @@
             "type": "path",
             "url": "packages/*",
             "options": {
-                "symlink": true
+                "symlink": true,
+                "versions": {
+                    "axiomasoft/commerz-catalog": "0.1.x-dev",
+                    "axiomasoft/commerz": "0.1.x-dev",
+                    "axiomasoft/commerz-full": "0.1.x-dev",
+                    "axiomasoft/commerz-inventory": "0.1.x-dev",
+                    "axiomasoft/commerz-pricing": "0.1.x-dev",
+                    "axiomasoft/commerz-promotions": "0.1.x-dev",
+                    "axiomasoft/commerz-sales": "0.1.x-dev",
+                    "axiomasoft/commerz-shipping": "0.1.x-dev",
+                    "axiomasoft/commerz-testkit": "0.1.x-dev"
+                }
             }
         }
     ],
@@ -50,7 +61,8 @@
             "Commerz\\Promotions\\Tests\\": "packages/promotions/tests/",
             "Commerz\\Shipping\\Tests\\": "packages/shipping/tests/",
             "Commerz\\Sales\\Tests\\": "packages/sales/tests/",
-            "Commerz\\Arch\\": "tests/Arch/Support/"
+            "Commerz\\Arch\\": "tests/Arch/Support/",
+            "Commerz\\EndToEnd\\": "tests/EndToEnd/"
         }
     },
     "scripts": {

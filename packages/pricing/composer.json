@@ -13,7 +13,7 @@
         "php": "^8.4",
         "illuminate/contracts": "^13.0",
         "illuminate/support": "^13.0",
-        "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz": "^0.1",
         "illuminate/database": "^13.0"
     },
     "autoload": {

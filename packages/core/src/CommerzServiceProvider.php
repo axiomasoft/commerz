@@ -80,7 +80,8 @@ final class CommerzServiceProvider extends ServiceProvider
         $this->app->singleton(Outbox::class, DatabaseOutbox::class);
         $this->app->singleton(OutboxRelay::class);
 
-        $this->app->singleton(PluginCatalog::class);
+        // Feature providers add their built-in plugins in their own register(), possibly before this one runs.
+        $this->app->singletonIf(PluginCatalog::class);
         $this->app->singleton(Contributions::class, static fn (Application $app): Contributions => $app->make(PluginGraphCompiler::class)->compile(
             $app->make(PluginCatalog::class)->seal()->entries($app->make(CommerzConfig::class)),
         ));

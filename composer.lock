@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e1bbb9d71c2fe8a4159e5d4393a4896",
+    "content-hash": "a8d0652bbeaf90df0729eeabaa3bbd0e",
     "packages": [
         {
             "name": "axiomasoft/commerz",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "c14c47402f01a250d6fc14831b6919e0b5ee3d56"
+                "reference": "5411b9306999d2675a66a6b2a5abe8e1dc475c08"
             },
             "require": {
                 "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
@@ -59,14 +59,15 @@
         },
         {
             "name": "axiomasoft/commerz-catalog",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "bad6eb5fccfeb18ee63cd9f1bf17c6aa6baac1b3"
+                "reference": "fe67ba8d845fce01de6825cb4047a51cfb3f362f"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
+                "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -110,20 +111,20 @@
         },
         {
             "name": "axiomasoft/commerz-full",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/full",
-                "reference": "5918ba6c0dfaf82d74c8686af45f680cdb4fbf4c"
+                "reference": "7cd844da7702b89e724998e284520354adfe3840"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
-                "axiomasoft/commerz-catalog": "^0.1@dev",
-                "axiomasoft/commerz-inventory": "^0.1@dev",
-                "axiomasoft/commerz-pricing": "^0.1@dev",
-                "axiomasoft/commerz-promotions": "^0.1@dev",
-                "axiomasoft/commerz-sales": "^0.1@dev",
-                "axiomasoft/commerz-shipping": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
+                "axiomasoft/commerz-catalog": "^0.1",
+                "axiomasoft/commerz-inventory": "^0.1",
+                "axiomasoft/commerz-pricing": "^0.1",
+                "axiomasoft/commerz-promotions": "^0.1",
+                "axiomasoft/commerz-sales": "^0.1",
+                "axiomasoft/commerz-shipping": "^0.1",
                 "php": "^8.4"
             },
             "type": "metapackage",
@@ -149,14 +150,14 @@
         },
         {
             "name": "axiomasoft/commerz-inventory",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "5da6d5139aeca57251e8f1774a8046d05b08c6a1"
+                "reference": "70cff97eb0c4e501becbc0d2aff032abf8c7fda7"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -200,14 +201,14 @@
         },
         {
             "name": "axiomasoft/commerz-pricing",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "9e50bbe53deb04afdad3857c317e55288b4425f1"
+                "reference": "b71fdaf1c063fcef9dc4b122793686a0468ea7b6"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -251,14 +252,14 @@
         },
         {
             "name": "axiomasoft/commerz-promotions",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "91325b14b158a13f0f636bb00aa5131965ce4893"
+                "reference": "3b4ba47b41803daeabdbc65d561dae1cc8062421"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -302,14 +303,14 @@
         },
         {
             "name": "axiomasoft/commerz-sales",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "717b96ebe2e6908e6dfe26154ddffd4da90d30ab"
+                "reference": "080b2041105fc7e4df9f48f09e8b67b56f750140"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -353,14 +354,14 @@
         },
         {
             "name": "axiomasoft/commerz-shipping",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "c01b1640d59c4000169cac2fc320a1cb4b799af4"
+                "reference": "8b1b9dfd0a7f6fc78b096b477689295ed9d10362"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -6235,14 +6236,14 @@
     "packages-dev": [
         {
             "name": "axiomasoft/commerz-testkit",
-            "version": "dev-main",
+            "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "83e90b7f82a4f503606f38b40da7f15d0969ecfa"
+                "reference": "feea1e619fdc6a17ef2022215355d21224ce5826"
             },
             "require": {
-                "axiomasoft/commerz": "^0.1@dev",
+                "axiomasoft/commerz": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
