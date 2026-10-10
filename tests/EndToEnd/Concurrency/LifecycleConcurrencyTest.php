@@ -58,13 +58,15 @@ it('reserves a size while the warehouse adjusts and counts it (E4)', function ()
     $before = Outcome::deadlocks();
 
     // Worker 0 holds the level so that everyone else queues on it together; workers 1–4 place one S each, worker 5
-    // receives three found units, worker 6 counts eight on the shelf.
+    // receives three found units, worker 6 counts eight on the shelf. The count queues last (lock waits are granted in
+    // order), so under the level lock it sees the adjusted 8 and changes nothing; a count that read the level without
+    // the lock would add 8 − 5 on top of the adjustment.
     $outcomes = Concurrency::run(7, static fn (int $worker): string => Outcome::of(static function () use ($world, $carts, $worker, $levels, $level): string {
         if ($worker === 0) {
             return Outcome::gate($levels, $level);
         }
 
-        usleep(Outcome::CONTENDER_DELAY_US);
+        usleep($worker === 6 ? 2 * Outcome::CONTENDER_DELAY_US : Outcome::CONTENDER_DELAY_US);
         match ($worker) {
             5 => Inventory::stock()->adjust(new AdjustStock($world->smallItem, $world->location, 3, 'found')),
             6 => Inventory::stock()->count(new CountStock($world->smallItem, $world->location, 8)),
@@ -95,7 +97,7 @@ it('reserves a size while the warehouse adjusts and counts it (E4)', function ()
     expect(array_slice($outcomes, 1))->toBe(array_fill(0, 6, 'ok'))
         ->and(Outcome::waiting($outcomes))->toBe(6)
         ->and($after->onHand)->toBe($balance)
-        ->and($after->onHand)->toBeIn([8, 11])
+        ->and($after->onHand)->toBe(8)
         ->and($after->reserved)->toBe(4)
         ->and($after->available)->toBe($after->onHand - $after->reserved);
 })->group('concurrency');
@@ -302,7 +304,10 @@ it('serializes a placement spending a coupon with the cancellation giving one ba
     $new = count(array_keys(array_slice($outcomes, 5), 'ok', true));
     $level = Inventory::stock()->level($world->smallItem, $world->location);
 
-    expect(Outcome::waiting($outcomes))->toBeGreaterThanOrEqual(2)
+    // All eight queue behind the gate: one holder of the S level on the promotion row, the rest on the level. A
+    // placement that consumed before it reserved would then wait on the promotion while holding nothing, take it, and
+    // deadlock with the cancellation that holds the level.
+    expect(Outcome::waiting($outcomes))->toBe(8)
         ->and(array_slice($outcomes, 1, 4))->toBe(array_fill(0, 4, 'cancelled'))
         ->and(array_diff(array_slice($outcomes, 5), ['ok', 'limit_reached', 'quote_changed']))->toBe([])
         ->and($new)->toBeGreaterThanOrEqual(1)

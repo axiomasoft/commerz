@@ -114,7 +114,7 @@ it('does not deadlock carts that list the same items in reverse order', function
         ->and(rsvLevel($cap, $main)->reserved + rsvLevel($cap, $backup)->reserved)->toBe(0);
 })->group('concurrency');
 
-it('does not deadlock documents that consume the same items in opposite line order', function (): void {
+it('does not deadlock documents that consume or release the same items line by line in opposite orders', function (): void {
     $channel = rsvChannel();
     $main = rsvSource($channel, 'main');
     $tee = rsvItem('tee', ['tee' => 1]);
@@ -126,21 +126,25 @@ it('does not deadlock documents that consume the same items in opposite line ord
         rsvReserve($channel, "order:{$worker}", ['tee' => 1, 'cap' => 1]);
     }
 
-    // A fulfillment consumes its lines one call at a time inside its own transaction (sales); the first call must take
-    // every level the demand holds in key order, or two documents in opposite line order deadlock (40P01).
+    // A fulfillment consumes its lines and a partial cancellation releases them one call at a time inside one
+    // transaction (sales); the first call must take every level the demand holds in key order, or two documents in
+    // opposite line order deadlock (40P01). Workers 0–3 consume, 4–7 release; even workers go tee → cap, odd cap → tee.
     Concurrency::run(8, function (int $worker): void {
         $lines = $worker % 2 === 0 ? ['tee', 'cap'] : ['cap', 'tee'];
 
         app(Transactions::class)->run(function () use ($worker, $lines): void {
             foreach ($lines as $sku) {
-                Inventory::reservations()->consume(new ConsumeReservation("order:{$worker}", SellableRef::of('variant', $sku), 1, "fulfillment:{$worker}"));
+                $sellable = SellableRef::of('variant', $sku);
+                $worker < 4
+                    ? Inventory::reservations()->consume(new ConsumeReservation("order:{$worker}", $sellable, 1, "fulfillment:{$worker}"))
+                    : Inventory::reservations()->release(new ReleaseReservation("order:{$worker}", $sellable, 1));
                 usleep(100_000);
             }
         });
     }, timeoutSeconds: 60);
 
-    expect([rsvLevel($tee, $main)->onHand, rsvLevel($tee, $main)->reserved])->toBe([42, 0])
-        ->and([rsvLevel($cap, $main)->onHand, rsvLevel($cap, $main)->reserved])->toBe([42, 0]);
+    expect([rsvLevel($tee, $main)->onHand, rsvLevel($tee, $main)->reserved])->toBe([46, 0])
+        ->and([rsvLevel($cap, $main)->onHand, rsvLevel($cap, $main)->reserved])->toBe([46, 0]);
 })->group('concurrency');
 
 it('lets either the consume or the expiry of one demand win, never both (INV-04)', function (): void {

@@ -82,7 +82,7 @@ final readonly class DatabaseReservations implements Reservations
             $lines = $this->store->lines($id, $command->sellable, outstanding: true);
 
             if ($lines !== []) {
-                $levels = $this->ledger->lock(self::pairs($lines));
+                $levels = $this->lockDemand($id, $lines);
                 $locked = $this->store->lockLines(self::ids($lines));
                 $remaining = $command->quantity ?? PHP_INT_MAX;
                 $changes = [];
@@ -152,11 +152,7 @@ final readonly class DatabaseReservations implements Reservations
                 throw $missing;
             }
 
-            // Every level the demand still holds is locked now, in the global key order, not only this sellable's: a
-            // document that ships several lines consumes them one call at a time in one transaction, and taking each
-            // line's levels as it comes would lock them in line order — two orders of the same goods in opposite line
-            // orders would deadlock (P8.4). Later calls of the transaction find their levels already held.
-            $levels = $this->ledger->lock(self::pairs([...$this->store->lines($id, outstanding: true), ...$taking]));
+            $levels = $this->lockDemand($id, $taking);
             $groups = self::groups($this->store->lockLines(self::ids($taking)));
             $remaining = $command->quantity;
             $take = [];
@@ -591,6 +587,20 @@ final readonly class DatabaseReservations implements Reservations
         }
 
         return $keyed;
+    }
+
+    /**
+     * Locks every level the demand still holds, with those of `$lines`, in the global key order — not only the levels
+     * of the sellable at hand. A caller may consume or release a demand line by line in one transaction (a fulfillment,
+     * a partial cancellation); taking each line's levels as it comes would lock them in line order, and two documents
+     * of the same goods in opposite line orders would deadlock (P8.4). Later calls find their levels already held.
+     *
+     * @param  list<LineRow>  $lines
+     * @return array<string, LevelRow>
+     */
+    private function lockDemand(string $id, array $lines): array
+    {
+        return $this->ledger->lock(self::pairs([...$this->store->lines($id, outstanding: true), ...$lines]));
     }
 
     /**
