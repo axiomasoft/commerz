@@ -1,0 +1,4 @@
+{"reviewer":"grok/grok-4.7/500k/high","session":"01a124b1-8fc6-7973-b989-ce87864263d2","scope":"P7.8 working tree before executor commit","verdict":"fail",
+"findings":[{"severity":"high","file":"packages/sales/src/Refunds/Internal/RefundJournal.php","line":278,"summary":"failed is final, so a success answer after a racing failure event is dropped and the freed amount is refunded again","reproduction":"throwaway Pest with RecordingGateway::duringRefund recording refund_failed: two gateway refund calls","executor":"confirmed"}],
+"questions":[{"topic":"restore(Refunded) when refunds cover a partial capture while the order is still payable","disposition":"intended: same formula as PaymentState refunded (refunded >= captured), sales-design#returns-refunds"}],
+"residual":[{"topic":"lease shorter than the gateway HTTP call lets reconcile fail an in-flight refund","disposition":"shared lease rule (config comment), not changed"}]}
