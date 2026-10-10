@@ -1,0 +1,251 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P7.2",
+  "title": "Carts: commands, single CartQuoter, delivery options, list, root Sales and facade (CTX-01)",
+  "status": "done_with_deviations",
+  "summary": "Модуль Carts по sales-design#carts: create/addLine/setLineQuantity/removeLine/enterCode/removeCode/setCustomer/setAddress/selectDelivery/clearDelivery/find/list/quote/deliveryOptions; Common/Internal CartRows, CartLines, CartQuoter (единственный путь квоты корзины), QuotedCart; корень Sales с carts() и фасад; биндинги провайдера.",
+  "why": "CartQuoter — единственный источник total, который потом проверяет PlaceOrder (expectedTotal); второй путь квоты даст расхождение показанного и принятого. Риски: смена канала/валюты (CTX-01), непокупаемый sellable в корзине, две строки на один sellable (ломает ReserveStock), гонка правок без FOR UPDATE и version.",
+  "scope": {
+    "include": [
+      "Carts/Contracts/Carts, Carts/Data/{CartId, CreateCart, AddCartLine, SetCartLineQuantity, RemoveCartLine, EnterCode, RemoveCode, SetCartCustomer, SetCartAddress, SelectDelivery, ClearDelivery, ListCarts, CartView, CartLineView}, Carts/Enums/{CartKind, CartState, AddressRole}, Carts/Exceptions/{CartNotFound, CartNotOpen, CartLineNotFound, TooManyCartLines, SellableNotPurchasable, ShippingAddressRequired}, Carts/Internal/DatabaseCarts",
+      "Common/Internal/{CartRows, CartLines, CartQuoter, QuotedCart} по sales-design#carts",
+      "Sales.php (корень #[Api] с carts()), Facades/Sales.php, биндинги Carts → DatabaseCarts и Sales в провайдере",
+      "тесты: tests/Feature/Carts/CartsTest.php (create с assertActive: архивный канал, чужая валюта; addLine слияние, лимиты max_lines/max_quantity, непокупаемый → SellableNotPurchasable, неизвестный → SellableUnavailable; setLineQuantity 0 удаляет; коды trim/без дублей; setCustomer, setAddress, selectDelivery/clearDelivery; version растёт; CartNotOpen после converted (UPDATE в тесте); list по kind/state keyset), tests/Feature/Carts/CartQuoteTest.php (Commerce::fake + FakePrices: итоги, порядок строк, контекст с группами покупателя; метод выбран без адреса → ShippingAddressRequired; метод выбран без пакета shipping → QuoteFailed), tests/Feature/Carts/DeliveryOptionsTest.php (FakeDelivery: вес Σ weight×qty только requiresShipping, value = товары после скидок, без адреса → ShippingAddressRequired, без shipping-строк → []), tests/Feature/SalesRootTest.php (фасад и корень отдают Carts)"
+    ],
+    "exclude": [
+      "Orders::draft (P7.3)",
+      "размещение (P7.3)",
+      "чистка брошенных корзин"
+    ]
+  },
+  "depends_on": [
+    "P7.1"
+  ],
+  "decisions": [
+    "D31"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/sales-design#model",
+      "why": "модель, суммы, производные состояния, порты",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#layout",
+      "why": "раскладка пакета, конфиг, провайдер",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#carts",
+      "why": "корзины, CartQuoter, черновики",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#api",
+      "why": "публичный API, коды ошибок, события, outbox",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Sellables/Contracts/Sellables.php",
+      "why": "resolve/resolveMany и исключения",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Sellables/Data/SellableSnapshot.php",
+      "why": "purchasable, weightGrams, requiresShipping",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteInput.php",
+      "why": "форма входа квоты",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/QuoteResult.php",
+      "why": "итоги и строки квоты",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Quotes/Data/DeliverySelection.php",
+      "why": "выбор доставки",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Delivery/Contracts/DeliveryOptions.php",
+      "why": "порт вариантов",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Stores/Contracts/Channels.php",
+      "why": "assertActive",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/src/Options/Internal/DeliveryStage.php",
+      "why": "стадия подставляет стоимость товаров в Parcel",
+      "required": false
+    },
+    {
+      "path": "packages/testkit/src/Commerce.php",
+      "why": "fakes портов в тестах",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/src/Zones/Internal/DatabaseZones.php",
+      "why": "образец Database*-модуля и keyset-списка",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/sales/src/Carts/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/CartRows.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/CartLines.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/CartQuoter.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/QuotedCart.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Sales.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Facades/Sales.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/SalesServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Carts/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/SalesRootTest.php",
+      "change": "create"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, количества — int.",
+    "Расхождение с knowledge/sales-design, D31–D34, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенном Transactions::run (savepoint), чтобы не отравить транзакцию хоста.",
+    "sales пишет только в свои таблицы (cart*, order*, payment*, refund*, fulfillment*, return*); channel_id/store_id — uuid без FK; ссылки на чужое — *_ref без FK.",
+    "Модуль не импортирует Internal другого модуля: общее — только Common/Internal или публичные контракты (sales-design#layout).",
+    "Канал, валюта и локаль корзины пишутся только при создании; ни один UPDATE их не меняет (CTX-01).",
+    "Мутация корзины: Transactions::run → cart FOR UPDATE → state open → изменение → version + 1; Sellables читаются до транзакции.",
+    "Квота корзины считается только CartQuoter::quoteCart (Carts::quote, deliveryOptions и позже Checkout); второго построения QuoteInput нет.",
+    "Одна строка на sellable_ref (UNIQUE(cart_id, sellable_ref)); повторный addLine увеличивает количество."
+  ],
+  "guidance": "Секция sales-design#carts — сигнатуры, проверки, алгоритм CartQuoter и deliveryOptions. CommerceContext корзины: channel/currency/locale/customer/groups из строки, at = now (UTC). Parcel для DeliverySelection: вес Σ (weightGrams ?? 0) × qty по requiresShipping, value — Money::zero(currency) (стадия delivery заменяет её стоимостью товаров). deliveryOptions: квота без доставки, value = Σ(subtotal + Σ adjustments.amount) строк requiresShipping. Тесты — Commerce::fake() (FakeSellables::snapshot, FakePrices, FakeDelivery::offer); канал и магазин создаются через Commerz::stores()/channels() как в packages/shipping/tests.",
+  "examples": [
+    {
+      "path": "packages/shipping/src/Methods/Internal/DatabaseMethods.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Sales",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Carts API",
+    "CartQuoter",
+    "корень Sales и фасад"
+  ],
+  "route": {
+    "class": "implementation",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T03:17:37Z",
+    "finished_at": "2026-10-10T03:25:13Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "sonnet-5.5",
+      "effort": "high",
+      "session": "1de6cb92-47d3-4035-b259-fcb7b1ff3616"
+    },
+    "notes": "Carts (14 команд/запросов), CartQuoter как единственный путь квоты, корень Sales и фасад, биндинги провайдера; 139 тестов Sales зелёные.",
+    "deviations": [
+      "CartQuoter бросает QuoteFailed(delivery, method_unpriced) сам: у ядра нет стадии доставки, без shipping выбор метода молча терялся бы; CartRow/CartLineRow добавлены в Common/Internal"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T03:25:13Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T03:25:13Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T03:25:13Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T03:25:13Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T03:25:13Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-10T03:25:13Z"
+}
