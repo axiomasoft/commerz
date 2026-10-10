@@ -10,3 +10,11 @@ Raw verdict: fail — 1 Medium, 1 Low. Answer: `grok-answer.md`.
 
 Residual risks accepted from the reviewer: testkit is archived but never installed; the fixed consumer DB name does not tolerate two overlapping runs.
 Checks after the correction: V1–V5, V7, V8 exit 0 (2106 tests).
+
+# Round 2 (re-review of 0555c1d, session 01a12720-9822-7c31-802f-08762e2c6c63, grok-4.7 high, 33 turns)
+
+Verdict: pass, no findings. Both round-1 findings closed (archive check bites on a stripped catalog zip, exit 1; smoke migration
+check not vacuous; illuminate/console required wherever Console classes ship). Artifacts: `grok-brief-round2.md`,
+`grok-answer-round2.md`, `grok-stream-round2.ndjson.gz`.
+Residual risk accepted: the archive glob is top-level only (a nested `src/**` omission would pass; the smoke boots providers
+and root classes); testkit is archived but not installed; fixed consumer DB name.
