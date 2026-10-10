@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P8.7",
   "title": "Release 0.1.0 preparation: consumer install smoke from artifacts, CHANGELOG and full release gate",
-  "status": "in_progress",
+  "status": "done",
   "summary": "scripts/test-consumer-install.sh собирает composer-архивы 9 пакетов версии 0.1.0 и ставит axiomasoft/commerz-full:0.1.0 (и CRM-набор commerz+sales) в свежий Laravel 13 из artifact-репозитория без монорепо; install/doctor/plugins/smoke проходят; CHANGELOG.md [0.1.0]; .gitattributes пакетов; полный release gate зелёный; plans/ACTIVE.md обновлён.",
   "why": "Установка в монорепо (path + symlink + корневой autoload) не доказывает, что опубликованные пакеты резолвятся и загружаются у потребителя (D36). Риски: недостающая зависимость в composer.json пакета, файлы вне архива, провайдер не обнаружен, миграции не запускаются без монорепо.",
   "scope": {
@@ -148,12 +148,56 @@
   },
   "result": {
     "started_at": "2026-10-10T18:01:50Z",
+    "finished_at": "2026-10-10T18:58:00Z",
     "executor": {
       "provider": "claude-code",
       "model": "claude-sonnet-5-5",
       "effort": "high",
       "session": "d9404bc1-79b5-4acf-9d1e-fcd3e1e7a931"
-    }
+    },
+    "notes": "Consumer install smoke from 9 composer archives (full + CRM sets) green; CHANGELOG [0.1.0]; .gitattributes; release gate green (2106 tests). grok-4.7 review: round 1 fail (migrations unproven, illuminate/console missing) fixed in 0555c1d; round 2 pass.",
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V6",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V7",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      },
+      {
+        "id": "V8",
+        "exit": 0,
+        "at": "2026-10-10T18:58:00Z"
+      }
+    ]
   },
-  "updated_at": "2026-10-10T18:01:50Z"
+  "updated_at": "2026-10-10T18:58:00Z"
 }
