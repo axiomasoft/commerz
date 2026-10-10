@@ -11,10 +11,11 @@
       "проверка outbox: полный набор типов событий сценария магазина в порядке",
       "docs/architecture/api.md (раздел Sales по sales-design#api), invariants.md (ORD-01..03, PAY-01/02, REF-01, CTX-01, SAL-01..03, порядок блокировок sales), decisions.md (D31–D34), data.md (таблицы sales), extension.md (payment_gateway, order_number_generator), packages.md (если нужно)",
       "plan.py log PLAN1 P7.9 --type deviation для каждого отличия от api-blueprint#sales (список в sales-design#api)",
-      "обновить docs/architecture/invariants.md шаг 4 placement (fingerprint cart, version, expected_total — уже так) и описание отмены/истечения по D32"
+      "обновить docs/architecture/invariants.md шаг 4 placement (fingerprint cart, version, expected_total — уже так) и описание отмены/истечения по D32",
+      "Post-audit boundary regression: tests/Integration/SalesShippingQuoteTest.php via root Integration suite; real Sales+Shipping only to prove A4 correction. Full shop/CRM package integration remains P8."
     ],
     "exclude": [
-      "сценарии с реальными catalog/inventory/pricing/promotions/shipping (P8)",
+      "полные сценарии со всеми реальными commerce packages (P8); Sales+Shipping boundary regression A4 allowed",
       "правки packages/core"
     ]
   },
@@ -27,7 +28,8 @@
     "D33",
     "D34",
     "D11",
-    "D14"
+    "D14",
+    "D35"
   ],
   "reads": [
     {
@@ -138,6 +140,18 @@
     {
       "path": "docs/architecture/packages.md",
       "change": "modify"
+    },
+    {
+      "path": "phpunit.xml",
+      "change": "modify"
+    },
+    {
+      "path": "tests/Integration/SalesShippingQuoteTest.php",
+      "change": "create"
+    },
+    {
+      "path": "plans/ACTIVE.md",
+      "change": "modify"
     }
   ],
   "rules": [
@@ -208,45 +222,45 @@
     "status": "not_needed"
   },
   "result": {
-    "started_at": "2026-10-10T08:10:39Z",
-    "finished_at": "2026-10-10T08:15:12Z",
+    "started_at": "2026-10-10T09:44:21Z",
+    "finished_at": "2026-10-10T10:14:12Z",
     "executor": {
-      "provider": "anthropic",
-      "model": "claude-sonnet-5-5",
-      "effort": "medium",
-      "session": "8078b8f8-cde2-48b9-993d-f3559ec9659e"
+      "provider": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "session": "01a1251b-257e-77d0-a264-4e860fca8930"
     },
-    "notes": "CRM and shop scenarios on fakes (outbox order pinned); docs/architecture synced: Sales API, SAL-01..03, Sales lock order and pairs, D31–D34, sales tables, payment_gateway/order_number_generator kinds; 450 Sales tests green.",
+    "notes": "Corrected design contracts, D31/D33/D35 and real Sales+Shipping regression; full phase GREEN without deferred findings. GREEN closure: knowledge/audit-p7-fixes-2026-10-10; Grok 4.7 GREEN. V1/V2/V3 root Composer checks passed; V4/V5 covered by full Composer test (2075 passed/14472 assertions; includes Sales/Arch/Shipping/Integration), isolated commerz_test.",
     "deviations": [
-      "api-blueprint#sales differences logged; scenario tests in packages/sales/tests/Feature and committed (no RefreshDatabase)"
+      "Corrected design contracts, D31/D33/D35 and real Sales+Shipping regression; full phase GREEN without deferred findings."
     ],
     "checks": [
       {
         "id": "V1",
         "exit": 0,
-        "at": "2026-10-10T08:15:12Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V2",
         "exit": 0,
-        "at": "2026-10-10T08:15:12Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V3",
         "exit": 0,
-        "at": "2026-10-10T08:15:12Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V4",
         "exit": 0,
-        "at": "2026-10-10T08:15:12Z"
+        "at": "2026-10-10T10:14:12Z"
       },
       {
         "id": "V5",
         "exit": 0,
-        "at": "2026-10-10T08:15:12Z"
+        "at": "2026-10-10T10:14:12Z"
       }
     ]
   },
-  "updated_at": "2026-10-10T08:15:12Z"
+  "updated_at": "2026-10-10T10:14:12Z"
 }

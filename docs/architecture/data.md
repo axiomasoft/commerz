@@ -171,7 +171,7 @@ Only sales writes to these tables (single writers: `CartRows`, `OrderWriter`,
 | `cmz_payments` | a payment attempt: `reference` (unique), `gateway`, `status`, amounts, `fingerprint`, `attempts`, `claimed_at` (lease), `external_id` | `UNIQUE (gateway, external_id)`; `CHECK` captured/authorized within amount, `refunded ≤ captured` |
 | `cmz_payment_events` | the provider-event inbox: `external_event_id`, `fingerprint`, `outcome` (`applied \| ignored`), target payment or refund | `UNIQUE (gateway, external_event_id)` (PAY-01); exactly one target |
 | `cmz_refunds` | a refund attempt of a payment, same journal fields as payments, optional return | `UNIQUE (reference)`, `UNIQUE (gateway, external_id)` |
-| `cmz_fulfillments`, `cmz_fulfillment_lines` | shipped units per location, status `created \| shipped \| delivered`, carrier, tracking | |
+| `cmz_fulfillments`, `cmz_fulfillment_lines` | shipped units per location, status `created \| shipped \| delivered`, carrier, tracking, `booking_requested` (durable intent, default false) | booking intent is added by a separate migration; existing rows retain their shipment data |
 | `cmz_returns`, `cmz_return_lines` | a return: requested, received (with the `restocked` count per line), cancelled | |
 | `cmz_order_number_seq` | the sequence of the built-in numbering (starts at 1001) | gaps are fine; not an invoice number (D34) |
 

@@ -442,6 +442,38 @@ partially_refunded → refunded`), `FulfillmentState` (`unfulfilled →
 partially_fulfilled → fulfilled → partially_returned → returned`). The payment
 and fulfillment states are derived from the amounts and the line ledger.
 
+Completion requires no outstanding units, at least one fulfilled unit and
+gross captures covering `amountDue`. Refund states alone do not establish
+full payment: refunding a partial payment leaves the balance payable.
+`restore(Refunded)` releases promotion usage only after gross captures cover
+`amountDue` and all captured money has been refunded.
+
+`deliveryOptions` rates the whole cart's net value after line and allocated
+order adjustments, matching the Shipping quote stage; parcel weight and
+sellable restrictions use only lines requiring shipping. Shipment booking's
+declared value remains the fulfilled share of shipping lines.
+
+`expireDue` filters orders with active payment attempts or fulfilled units
+before applying its limit and advances past locked candidates. The limit
+bounds successful expirations; `skipped` counts eligible candidates lost to
+a lock or concurrent change, excluding already ineligible orders.
+
+Reconciliation accepts `pending → requires_action` and refreshed action URLs
+until authorization or capture. An ignored monetary event can still fill a
+previously missing provider ID; its outcome stays `ignored` and no monetary
+event is emitted.
+
+`Fulfillments::book` commits `booking_requested` before calling the delivery
+port. A retry with the same dimensions and metadata recovers the same
+`fulfillment:{id}` reference even if a manual shipment overtook the call.
+Matching carrier/tracking attaches the booked method and label without a
+second shipment event. Conflicting tracking keeps the manual shipment and
+raises `sales.fulfillment_already_shipped` with optional `$booking` and scalar
+context keys `booking_reference`, `booking_carrier`, `booking_tracking`,
+`booking_label_ref`. The host can recover or void the purchased shipment
+using these details. A purely manual shipment with no booking intent still
+returns its current view.
+
 Errors are `CommerzException` subclasses with stable `sales.*` codes
 (`sales.cart_changed`, `sales.quote_changed`, `sales.payment_exceeds_balance`,
 `sales.refund_exceeds_balance`, `sales.quantity_exceeds_outstanding`,

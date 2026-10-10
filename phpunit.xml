@@ -15,6 +15,7 @@
         <testsuite name="Shipping"><directory>packages/shipping/tests</directory></testsuite>
         <testsuite name="Sales"><directory>packages/sales/tests</directory></testsuite>
         <testsuite name="Testkit"><directory>packages/testkit/tests</directory></testsuite>
+        <testsuite name="Integration"><directory>tests/Integration</directory></testsuite>
         <testsuite name="Arch"><directory>tests/Arch</directory></testsuite>
     </testsuites>
     <php>

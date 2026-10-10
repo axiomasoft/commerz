@@ -267,6 +267,19 @@ the same key held by the order owner. `finish` writes only if `attempts` still
 matches (SAL-03), so a stale lease owner never overwrites a newer result.
 Refund events lock order → claim → restore → payment → refund.
 
+Order completion checks gross captured money against the accepted amount due,
+independently of the refund state. Promotion restoration for a full refund
+uses the same coverage condition and requires all captured money returned.
+Expiry excludes known active-payment and fulfilled orders before its limit,
+then advances by `(payment_due_at, id)` after skipped candidates while
+rechecking eligibility under each order lock.
+
+Fulfillment booking commits its intent under order → fulfillment locks before
+the port call. A manual shipment that overtakes this intent does not suppress
+recovery by the same reference: matching tracking attaches the booking details,
+and conflicting tracking returns those details in a conflict error. The
+Shipping journal remains the owner of carrier deduplication and recovery.
+
 ## Interfering operations
 
 | Operation A | Operation B | Shared resource | Protection |
