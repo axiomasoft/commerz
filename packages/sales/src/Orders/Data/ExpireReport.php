@@ -12,7 +12,7 @@ final readonly class ExpireReport
 {
     /**
      * @param  list<OrderId>  $expired  cancelled with the reason `expired`, in deadline order
-     * @param  int  $skipped  candidates left as they are: taken by another process, paid, fulfilled or with a payment under way
+     * @param  int  $skipped  eligible candidates skipped due to locks or a concurrent state change; known ineligible orders are excluded
      */
     public function __construct(public array $expired, public int $skipped) {}
 }

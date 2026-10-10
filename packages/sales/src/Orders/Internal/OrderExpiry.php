@@ -7,6 +7,7 @@ namespace Commerz\Sales\Orders\Internal;
 use Commerz\Configuration\CommerzConfig;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Internal\OrderLocks;
+use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Common\Internal\SalesConfig;
 use Commerz\Sales\Orders\Data\ExpireOrders;
 use Commerz\Sales\Orders\Data\ExpireReport;
@@ -19,7 +20,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
-use LogicException;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Expiry of unpaid orders (D32): sales owns the payment deadline, the stock holds the reservation until then. Each
@@ -45,31 +46,65 @@ final readonly class OrderExpiry
     {
         $at = $command->at ?? new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        // Candidates are read without a lock; the lock of each order decides.
-        $candidates = $this->db()->table($this->tables->table('orders'))
-            ->where('state', OrderState::Placed->value)
-            ->where('payment_state', PaymentState::Unpaid->value)
-            ->where('payment_due_at', '<=', $at->format('Y-m-d H:i:s.uP'))
-            ->orderBy('payment_due_at')
-            ->orderBy('id')
-            ->limit($command->limit ?? $this->sales->expireBatch)
-            ->pluck('id')
-            ->all();
-
+        $limit = $command->limit ?? $this->sales->expireBatch;
         $expired = [];
         $skipped = 0;
+        $position = null;
 
-        foreach ($candidates as $id) {
-            $order = new OrderId(is_string($id) ? $id : throw new LogicException('An order id is not a string.'));
+        // Known non-expiring orders do not occupy the LIMIT. A keyset advances past rows that race or are locked,
+        // so another worker holding the earliest candidate cannot starve every order behind it.
+        while (count($expired) < $limit) {
+            $candidates = $this->candidates($at, $limit - count($expired), $position);
 
-            if ($this->transactions->run(fn (): bool => $this->expire($order, $at))) {
-                $expired[] = $order;
-            } else {
-                $skipped++;
+            if ($candidates === []) {
+                break;
+            }
+
+            foreach ($candidates as $candidate) {
+                $order = new OrderId(Rows::string($candidate, 'id'));
+                $position = [Rows::string($candidate, 'due_position'), $order->value];
+
+                if ($this->transactions->run(fn (): bool => $this->expire($order, $at))) {
+                    $expired[] = $order;
+                } else {
+                    $skipped++;
+                }
             }
         }
 
         return new ExpireReport($expired, $skipped);
+    }
+
+    /**
+     * Candidates are advisory; every condition is checked again under the order lock.
+     *
+     * @param  array{string, string}|null  $position  the last scanned (payment_due_at, id)
+     * @return list<object>
+     */
+    private function candidates(DateTimeImmutable $at, int $limit, ?array $position): array
+    {
+        $orders = $this->tables->table('orders');
+        $query = $this->db()->table($orders)
+            ->select('id')
+            ->selectRaw('payment_due_at::text as due_position')
+            ->where('state', OrderState::Placed->value)
+            ->where('payment_state', PaymentState::Unpaid->value)
+            ->where('payment_due_at', '<=', $at->format('Y-m-d H:i:s.uP'))
+            ->whereNotExists(function (Builder $query) use ($orders): void {
+                $query->selectRaw('1')->from($this->tables->table('payments').' as p')
+                    ->whereColumn('p.order_id', $orders.'.id')->whereIn('p.status', self::PAYMENTS_UNDER_WAY);
+            })
+            ->whereNotExists(function (Builder $query) use ($orders): void {
+                $query->selectRaw('1')->from($this->tables->table('order_lines').' as l')
+                    ->whereColumn('l.order_id', $orders.'.id')->where('l.fulfilled_quantity', '>', 0);
+            })
+            ->orderBy('payment_due_at')->orderBy('id')->limit($limit);
+
+        if ($position !== null) {
+            $query->whereRaw('(payment_due_at, id) > (?::timestamptz, ?::uuid)', $position);
+        }
+
+        return array_values($query->get()->all());
     }
 
     private function expire(OrderId $id, DateTimeImmutable $at): bool

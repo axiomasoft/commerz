@@ -91,7 +91,7 @@ it('keeps an order with a payment that may still bring money', function (string 
     $report = slsOrders()->expireDue(new ExpireOrders($this->later));
 
     expect($report->expired)->toBe([])
-        ->and($report->skipped)->toBe(1)
+        ->and($report->skipped)->toBe(0)
         ->and(slsOrders()->find($order->id)->state)->toBe(OrderState::Placed)
         ->and($this->commerce->stock->released)->toBe([]);
 })->with(['initiating', 'pending', 'requires_action', 'unknown', 'authorized']);
@@ -108,7 +108,7 @@ it('keeps an order with fulfilled units', function (): void {
     $order = slsPlace(slsCartWith($this->web, ['fake:a' => 2]));
     slsLedger()->fulfill($order->id, new LineQuantity(slsLine($order, 'fake:a'), 1));
 
-    expect(slsOrders()->expireDue(new ExpireOrders($this->later)))->expired->toBe([])->skipped->toBe(1)
+    expect(slsOrders()->expireDue(new ExpireOrders($this->later)))->expired->toBe([])->skipped->toBe(0)
         ->and(slsOrders()->find($order->id)->state)->toBe(OrderState::Placed);
 });
 
@@ -158,9 +158,52 @@ it('keeps an order whose payment was started, until the attempt fails', function
     $report = slsOrders()->expireDue(new ExpireOrders($this->later));
 
     expect(expIds($report->expired))->toBe(expIds([$declined]))
-        ->and($report->skipped)->toBe(2)
+        ->and($report->skipped)->toBe(0)
         ->and(slsOrders()->find($pending->id)->state)->toBe(OrderState::Placed)
         ->and(slsOrders()->find($unknown->id)->state)->toBe(OrderState::Placed);
+});
+
+it('expires eligible orders beyond an older non-expiring prefix with a one-order limit', function (bool $payment): void {
+    $blocked = slsPlace(slsCartWith($this->web, ['fake:a' => 2]));
+    $first = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    $second = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    expDue($blocked, '-3 hours');
+    expDue($first, '-2 hours');
+    expDue($second, '-1 hour');
+
+    if ($payment) {
+        slsPay($blocked);
+    } else {
+        slsLedger()->fulfill($blocked->id, new LineQuantity(slsLine($blocked, 'fake:a'), 1));
+        slsRefresh($blocked);
+    }
+
+    expect(expIds(slsOrders()->expireDue(new ExpireOrders(limit: 1))->expired))->toBe(expIds([$first]))
+        ->and(expIds(slsOrders()->expireDue(new ExpireOrders(limit: 1))->expired))->toBe(expIds([$second]))
+        ->and(slsOrders()->find($blocked->id)->state)->toBe(OrderState::Placed);
+})->with(['payment under way' => true, 'partly fulfilled' => false]);
+
+it('fills the expiry limit past an order locked by another connection', function (): void {
+    $blocked = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    $eligible = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    expDue($blocked, '-2 hours');
+    expDue($eligible, '-1 hour');
+    config(['database.connections.expiry-lock' => config('database.connections.testing')]);
+    $lock = DB::connection('expiry-lock');
+    expect($lock->getDatabaseName())->toBe(DB::connection()->getDatabaseName());
+    $lock->beginTransaction();
+
+    try {
+        $lock->table('cmz_orders')->where('id', $blocked->id->value)->lockForUpdate()->first();
+        $report = slsOrders()->expireDue(new ExpireOrders(limit: 1));
+
+        expect(expIds($report->expired))->toBe(expIds([$eligible]))
+            ->and($report->skipped)->toBe(1)
+            ->and(slsOrders()->find($blocked->id)->state)->toBe(OrderState::Placed);
+    } finally {
+        $lock->rollBack();
+        DB::purge('expiry-lock');
+    }
 });
 
 it('never expires an order that owes nothing, which is paid from its placement', function (): void {

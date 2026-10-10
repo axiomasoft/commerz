@@ -161,8 +161,8 @@ final readonly class OrderStatus
         $state = match (true) {
             $current !== OrderState::Placed => $current,
             $cancels => OrderState::Cancelled,
-            $outstanding === 0 && $fulfilled > 0
-                && in_array($payment, [PaymentState::Paid, PaymentState::PartiallyRefunded, PaymentState::Refunded], true) => OrderState::Completed,
+            // A refund describes money given back, not proof that the accepted amount was ever paid.
+            $outstanding === 0 && $fulfilled > 0 && $captured >= $amountDue => OrderState::Completed,
             default => OrderState::Placed,
         };
 

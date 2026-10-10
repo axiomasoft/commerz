@@ -215,47 +215,45 @@
     "status": "not_needed"
   },
   "result": {
-    "started_at": "2026-10-10T04:24:17Z",
-    "finished_at": "2026-10-10T04:37:35Z",
+    "started_at": "2026-10-10T09:44:21Z",
+    "finished_at": "2026-10-10T10:14:11Z",
     "executor": {
-      "provider": "anthropic",
-      "model": "claude-opus-5-5",
+      "provider": "codex",
+      "model": "gpt-6.1-sol",
       "effort": "high",
-      "session": "5a02f4f7-db17-401c-9381-dfbe88549a06"
+      "session": "01a1251b-257e-77d0-a264-4e860fca8930"
     },
-    "notes": "OrderLocks (lock/lockSkip), OrderLedger (conditional updates, sole writer, grep gate), OrderStatus (derive/cancelledValue/refresh with journal, outbox, events); Orders cancel/cancelLines/expireDue via OrderCancellation/OrderExpiry; commerz:sales:expire-orders; Sales suite 242 passed incl. concurrent cancel and parallel expiry.",
+    "notes": "A1/A2: gross coverage completion and expiry eligibility/keyset refill; skipped counts raced/locked candidates. GREEN closure: knowledge/audit-p7-fixes-2026-10-10; Grok 4.7 GREEN. V1/V2/V3 root Composer checks passed; V4/V5 covered by full Composer test (2075 passed/14472 assertions; includes Sales/Arch/Shipping/Integration), isolated commerz_test.",
     "deviations": [
-      "Cancelled order owes nothing: amount_due 0, cancelled unpaid stays unpaid",
-      "payment_requires_refund published by OrderStatus::refresh on growth of money held over amount due; order-level event (OrderId, Money amount)",
-      "Common/Internal OrderRow, OrderLineRow, OrderStatusChange added; OrderPlacement unchanged"
+      "A1/A2: gross coverage completion and expiry eligibility/keyset refill; skipped counts raced/locked candidates."
     ],
     "checks": [
       {
         "id": "V1",
         "exit": 0,
-        "at": "2026-10-10T04:37:35Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V2",
         "exit": 0,
-        "at": "2026-10-10T04:37:35Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V3",
         "exit": 0,
-        "at": "2026-10-10T04:37:35Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V4",
         "exit": 0,
-        "at": "2026-10-10T04:37:35Z"
+        "at": "2026-10-10T10:14:11Z"
       },
       {
         "id": "V5",
         "exit": 0,
-        "at": "2026-10-10T04:37:35Z"
+        "at": "2026-10-10T10:14:11Z"
       }
     ]
   },
-  "updated_at": "2026-10-10T04:37:35Z"
+  "updated_at": "2026-10-10T10:14:11Z"
 }
