@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P7.8",
   "title": "Refunds: issue through the gateway journal, refund events, reconciliation, promotion restore on full refund (REF-01, SAL-01)",
-  "status": "in_progress",
+  "status": "done_with_deviations",
   "summary": "Модуль Refunds по sales-design#returns-refunds: issue (refundable под блокировкой заказа и платежа → шлюз вне транзакции → fenced finish; при полном возврате restore(Refunded) до блокировки payments), recordEvent через PaymentEventInbox, reconcile через findRefund, find/list; REF-01 статической проверкой; конкурентный C7.",
   "why": "Вернуть больше пойманного или дважды — прямые потери; возврат денег не должен трогать склад. Риски: refundable без FOR UPDATE платежа; таймаут → failed и повторный возврат; restore после блокировки payments (нарушение глобального порядка); refund-событие, применённое дважды.",
   "scope": {
@@ -185,12 +185,48 @@
   },
   "result": {
     "started_at": "2026-10-10T07:07:50Z",
+    "finished_at": "2026-10-10T08:07:44Z",
     "executor": {
       "provider": "claude-code",
       "model": "claude-opus-5-5",
       "effort": "high",
       "session": "8795a0e5-5d2a-4f84-ac59-86e080ece371"
-    }
+    },
+    "notes": "Refunds module: issue/recordEvent/reconcile/find/list, payment journal protocol, promotion restore(Refunded) on full refund before the payment lock, REF-01 gate, C7 green; grok-4.7 review fail→1 high finding confirmed and fixed; 448 Sales tests green.",
+    "deviations": [
+      "payments.refunded_minor written by RefundJournal; PaymentGatesTest extended",
+      "RefundEventResult instead of PaymentEventResult",
+      "finish fenced by attempts only",
+      "event lock order order → claim → restore → payment → refund",
+      "failed takes a later success (review fix); over-refund journals refund_over_refunded"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T08:07:44Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T08:07:44Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T08:07:44Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T08:07:44Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T08:07:44Z"
+      }
+    ]
   },
-  "updated_at": "2026-10-10T07:07:50Z"
+  "updated_at": "2026-10-10T08:07:44Z"
 }

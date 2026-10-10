@@ -33,6 +33,7 @@ use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Payments\Data\InitiatePayment;
 use Commerz\Sales\Payments\Data\PaymentView;
+use Commerz\Sales\Refunds\Contracts\Refunds;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
@@ -92,6 +93,11 @@ function slsReturns(): Returns
     return app(Returns::class);
 }
 
+function slsRefunds(): Refunds
+{
+    return app(Refunds::class);
+}
+
 /**
  * Config of `commerz-sales`, applied to the modules resolved from now on.
  *
@@ -103,7 +109,7 @@ function slsConfig(array $sections): void
         config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
     }
 
-    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Sales::class] as $abstract) {
+    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }

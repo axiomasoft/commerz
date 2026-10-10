@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 // The closed bypasses of sales-design#locks: the payments are written only by PaymentJournal (fenced, under the lock
-// of the order), the gateway is called only by PaymentWorkflow (outside any transaction, PAY-02), and an event moves a
-// payment only after its claim in the inbox (PAY-01).
+// of the order) and their refunded sum only by RefundJournal, the gateway is called only by PaymentWorkflow and
+// RefundWorkflow (outside any transaction, PAY-02), and an event moves a payment only after its claim in the inbox (PAY-01).
 
 /** @return array<string, string> path under src => code */
 function pgSources(): array
@@ -33,10 +33,14 @@ function pgWritesPayments(string $code): bool
     );
 }
 
-it('leaves the writes of the payments to PaymentJournal', function (): void {
+it('leaves the writes of the payments to PaymentJournal and of their refunded sum to RefundJournal', function (): void {
     $writers = array_keys(array_filter(pgSources(), pgWritesPayments(...)));
+    $refundWrites = array_values(array_filter(explode(';', pgSources()['Refunds/Internal/RefundJournal.php']), pgWritesPayments(...)));
 
-    expect($writers)->toBe(['Payments/Internal/PaymentJournal.php']);
+    expect($writers)->toBe(['Payments/Internal/PaymentJournal.php', 'Refunds/Internal/RefundJournal.php'])
+        ->and($refundWrites)->toHaveCount(1)
+        ->and(preg_match_all("/'(\\w+)' =>/", $refundWrites[0], $columns))->toBe(2)
+        ->and($columns[1])->toBe(['refunded_minor', 'updated_at']);
 });
 
 it('recognises a write of the payments however it is made', function (string $code, bool $writes): void {
@@ -48,7 +52,7 @@ it('recognises a write of the payments however it is made', function (string $co
     'read' => ["\$db->table(\$this->tables->table('payments'))->where('order_id', \$id)->exists();", false],
 ]);
 
-it('lets only PaymentWorkflow call the gateway of a payment', function (): void {
+it('lets only PaymentWorkflow and RefundWorkflow call the gateway', function (): void {
     $users = array_keys(array_filter(
         pgSources(),
         static fn (string $code, string $path): bool => ! str_starts_with($path, 'Gateways/')
@@ -56,7 +60,7 @@ it('lets only PaymentWorkflow call the gateway of a payment', function (): void 
         ARRAY_FILTER_USE_BOTH,
     ));
 
-    expect($users)->toBe(['Internal/SalesPlugin.php', 'Payments/Internal/PaymentWorkflow.php']);
+    expect($users)->toBe(['Internal/SalesPlugin.php', 'Payments/Internal/PaymentWorkflow.php', 'Refunds/Internal/RefundWorkflow.php']);
 });
 
 it('moves a payment on an event only after its claim in the inbox', function (): void {

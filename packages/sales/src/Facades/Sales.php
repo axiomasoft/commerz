@@ -10,6 +10,7 @@ use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
+use Commerz\Sales\Refunds\Contracts\Refunds;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Illuminate\Support\Facades\Facade;
 
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static Payments payments()
  * @method static Fulfillments fulfillments()
  * @method static Returns returns()
+ * @method static Refunds refunds()
  *
  * @see \Commerz\Sales\Sales
  */

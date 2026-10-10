@@ -10,6 +10,7 @@ use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
+use Commerz\Sales\Refunds\Contracts\Refunds;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Illuminate\Contracts\Container\Container;
 
@@ -50,5 +51,10 @@ final readonly class Sales
     public function returns(): Returns
     {
         return $this->container->make(Returns::class);
+    }
+
+    public function refunds(): Refunds
+    {
+        return $this->container->make(Refunds::class);
     }
 }

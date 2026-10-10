@@ -22,7 +22,9 @@ use RuntimeException;
  * `decline` or `invalid`: an answer in a foreign currency) and `status` (`pending` by default, `requires_action`,
  * `authorized`, `captured`, `failed`, `cancelled`). `find` follows the scenario's `found`: null by default (the
  * provider knows no such payment), `fail` (it throws) or a status. `during` runs a callback inside `initiate`, after
- * the call is logged and before the answer, as a webhook that overtakes the synchronous answer.
+ * the call is logged and before the answer, as a webhook that overtakes the synchronous answer. `refund` follows the
+ * scenario's `refund`: `succeeded` by default, `pending`, `failed`, `timeout` (it throws), `decline` or `invalid` (a
+ * malformed provider id), after `sleep_ms`; `findRefund` follows `found_refund`: null by default, `fail` or a status.
  */
 final class RecordingGateway implements PaymentGateway
 {
@@ -33,6 +35,9 @@ final class RecordingGateway implements PaymentGateway
 
     /** @var (Closure(GatewayPaymentRequest): void)|null */
     private static ?Closure $during = null;
+
+    /** @var (Closure(GatewayRefundRequest): void)|null */
+    private static ?Closure $duringRefund = null;
 
     public function key(): string
     {
@@ -49,6 +54,12 @@ final class RecordingGateway implements PaymentGateway
     public static function during(?Closure $callback): void
     {
         self::$during = $callback;
+    }
+
+    /** @param  (Closure(GatewayRefundRequest): void)|null  $callback  runs inside `refund`, as `during` does inside `initiate` */
+    public static function duringRefund(?Closure $callback): void
+    {
+        self::$duringRefund = $callback;
     }
 
     public function initiate(GatewayPaymentRequest $request): GatewayPaymentResult
@@ -82,16 +93,30 @@ final class RecordingGateway implements PaymentGateway
 
     public function refund(GatewayRefundRequest $request): GatewayRefundResult
     {
-        self::record('refund', $request->reference, 0);
+        self::record('refund', $request->reference, self::$scenario['sleep_ms'] ?? 0);
 
-        return new GatewayRefundResult(GatewayRefundStatus::Succeeded, 'ext-'.$request->reference);
+        if (self::$duringRefund instanceof Closure) {
+            (self::$duringRefund)($request);
+        }
+
+        return match (self::$scenario['refund'] ?? null) {
+            'timeout' => throw new RuntimeException('The gateway timed out.'),
+            'decline' => throw new PaymentDeclined(self::KEY, 'refund_declined'),
+            'invalid' => new GatewayRefundResult(GatewayRefundStatus::Succeeded, "ext\n".$request->reference),
+            null => new GatewayRefundResult(GatewayRefundStatus::Succeeded, 'ext-'.$request->reference),
+            default => new GatewayRefundResult(GatewayRefundStatus::from((string) self::$scenario['refund']), 'ext-'.$request->reference),
+        };
     }
 
     public function findRefund(string $reference): ?GatewayRefundResult
     {
         self::record('findRefund', $reference, 0);
 
-        return null;
+        return match ($found = self::$scenario['found_refund'] ?? null) {
+            null => null,
+            'fail' => throw new RuntimeException('The gateway cannot be reached.'),
+            default => new GatewayRefundResult(GatewayRefundStatus::from((string) $found), 'ext-'.$reference),
+        };
     }
 
     public static function log(): string
@@ -103,6 +128,7 @@ final class RecordingGateway implements PaymentGateway
     {
         self::$scenario = [];
         self::$during = null;
+        self::$duringRefund = null;
 
         if (is_file(self::log())) {
             unlink(self::log());
