@@ -223,15 +223,16 @@ final readonly class DatabaseCarts implements Carts
         $refs = [];
 
         foreach ($quoted->quote->lines as $line) {
-            if (! $line->sellable->requiresShipping) {
-                continue;
-            }
-
-            $refs[] = $line->sellable->ref;
+            // The tariff threshold uses the whole cart after discounts, as Shipping's DeliveryStage does.
+            // The parcel's weight and sellable refs still describe only the lines that ship.
             $value = $value->plus($line->subtotal);
 
             foreach ($line->adjustments as $adjustment) {
                 $value = $value->plus($adjustment->amount);
+            }
+
+            if ($line->sellable->requiresShipping) {
+                $refs[] = $line->sellable->ref;
             }
         }
 

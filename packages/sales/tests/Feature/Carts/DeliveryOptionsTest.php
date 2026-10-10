@@ -52,18 +52,18 @@ it('asks the port for the goods that ship: weight is the sum of weight × quanti
     expect($options)->toHaveCount(1)
         ->and($options[0]->methodCode)->toBe('courier')
         ->and($request->parcel->weightGrams)->toBe(2 * 500 + 3 * 100)
-        ->and($request->parcel->value->toDecimal())->toBe('330.00')
+        ->and($request->parcel->value->toDecimal())->toBe('630.00')
         ->and(array_map(strval(...), $request->sellables))->toBe(['sku:heavy', 'sku:light', 'sku:nogram'])
         ->and($request->destination)->toEqual(ctAddress())
         ->and($request->context->channel)->toEqual($this->web);
 });
 
-it('declares the value of the goods that ship, not of the services', function (): void {
+it('rates delivery on the whole cart value, including services, as the quote stage does', function (): void {
     $cart = doCart(['sku:heavy' => 1, 'svc:install' => 1]);
 
     ctCarts()->deliveryOptions($cart->id);
 
-    expect($this->commerce->delivery->requests[0]->parcel->value->toDecimal())->toBe('100.00');
+    expect($this->commerce->delivery->requests[0]->parcel->value->toDecimal())->toBe('400.00');
 });
 
 it('needs the shipping address', function (): void {
