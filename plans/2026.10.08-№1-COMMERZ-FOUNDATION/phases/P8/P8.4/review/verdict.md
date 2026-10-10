@@ -33,3 +33,18 @@ Accepted residual risk: E6 interleaving stays nondeterministic; exact waiter cou
 isolated test database; the 150/300 ms head starts are sleeps (3/3 runs green).
 Checks after the fix: lint, analyse, refactor, api:check, Inventory (211), Sales (467), EndToEnd (24), concurrency dir
 3/3. Cost 1.20 USD, 45 turns, 1576 s.
+
+## Round 3 (new owner request: 'ревью на grok 4.7') — session 01a125bb-a2d4-78c1-b6b9-7f3f284258b6
+
+Route proven from the session record: model grok-4.7, reasoning_effort high (60 turns), contextWindowTokens 500000.
+Scope: final state after both corrections (a658638 + 40f8e3e).
+
+Verdict: pass. No new defects. `lockDemand` holds for consume/release line by line, `ReservationNotFound` precedes the
+lock, lazy expiry/sweeper stay `SKIP LOCKED`; plan rules (public API only, class-based outcome mapping,
+`deadlock_timeout` first, reconcile after each pair, pcntl-only skip) conform. Its synthetic promotion→level vs
+level→promotion repro (6 × 40P01) is a bypass demonstration, not a code path: `Checkout::place` locks stock levels
+before usages (invariants.md, Sales lock order), so E8 would catch such an inversion.
+Reviewer runs: EndToEnd Concurrency 10 passed; inventory Reservations 32 passed; sales Orders 45 passed.
+Accepted residual risk (unchanged): E6 nondeterministic winner; E4/E8 head-start sleeps and exact waiter counts on an
+isolated DB; a host that releases and re-reserves onto a new level in one transaction is outside the lock model (no
+package command does it); late stats flush after the 2 s poll. Cost 2.12 USD, 60 turns, 1399 s.
