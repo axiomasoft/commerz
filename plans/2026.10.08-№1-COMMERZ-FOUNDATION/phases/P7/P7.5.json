@@ -2,7 +2,7 @@
   "$schema": "urn:swissknifeman:task:plan:item:v1",
   "id": "P7.5",
   "title": "Payments: payment_gateway workflow with journal, lease and fencing, provider event inbox and reconciliation (PAY-01, PAY-02, SAL-01)",
-  "status": "in_progress",
+  "status": "done_with_deviations",
   "summary": "Модуль Payments по sales-design#payments: initiate (Tx A balance под блокировкой заказа → шлюз вне транзакции → fenced finish), recordEvent через Common/Internal/PaymentEventInbox (UNIQUE(gateway, external_event_id) + fingerprint), reconcile через find, монотонные PaymentTransitions, find/list; фикстура RecordingGateway; конкурентные C4, C5 и C8.",
   "why": "Деньги: двойной webhook или повтор после таймаута не должны удвоить captured; два параллельных initiate не должны выставить двойную сумму; таймаут — не failed. Риски: шлюз в транзакции; запись без фенсинга; дедуп по object id; регресс captured → pending; захват отменённого заказа без сигнала.",
   "scope": {
@@ -214,12 +214,50 @@
   },
   "result": {
     "started_at": "2026-10-10T04:39:02Z",
+    "finished_at": "2026-10-10T05:36:21Z",
     "executor": {
       "provider": "anthropic",
       "model": "claude-opus-5-5",
       "effort": "high",
       "session": "5c212dec-712d-4da7-9965-269e31bfe6a1"
-    }
+    },
+    "notes": "Payments module: PaymentWorkflow (Tx A balance under order lock → gateway outside tx → attempt-fenced finish; decline → failed, other exception → unknown; reconcile via find with lease), PaymentJournal (sole writer of payments), PaymentTransitions (monotonic, captured strongest), PaymentEventInbox (UNIQUE claim + fingerprint before any transition), DatabasePayments find/list; RecordingGateway fixture; C4/C5/C8, fence and gate tests. Grok 4.7 review of P7.4–P7.5: 2 high findings fixed (2bcd254). Sales 340 passed.",
+    "deviations": [
+      "RecordPaymentEvent takes at least one of reference/externalPaymentId",
+      "failed/cancelled final except captured in PaymentTransitions",
+      "PaymentRow internal; refund signal only from OrderStatus::refresh",
+      "reconcile checks the gateway before leasing; explicit non-positive amount is InvalidCommand",
+      "payment tests and ExpiryTest commit data; SalesRootTest extended",
+      "finish fenced by attempts only (review fix 1)",
+      "OrderWriter places a free order paid (review fix 2)"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T05:36:21Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T05:36:21Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T05:36:21Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T05:36:21Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T05:36:21Z"
+      }
+    ]
   },
-  "updated_at": "2026-10-10T04:39:02Z"
+  "updated_at": "2026-10-10T05:36:21Z"
 }
