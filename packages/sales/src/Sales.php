@@ -8,6 +8,7 @@ use Commerz\Attributes\Api;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Payments\Contracts\Payments;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -32,5 +33,10 @@ final readonly class Sales
     public function orders(): Orders
     {
         return $this->container->make(Orders::class);
+    }
+
+    public function payments(): Payments
+    {
+        return $this->container->make(Payments::class);
     }
 }

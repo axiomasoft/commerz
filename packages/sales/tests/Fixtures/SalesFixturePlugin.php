@@ -7,11 +7,12 @@ namespace Commerz\Sales\Tests\Fixtures;
 use Commerz\Plugins\Contracts\CommerzPlugin;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
+use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Internal\SalesPlugin;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 
 /**
- * The sellables of the static registry, the colliding number generator, and stages standing in for the promotions
+ * The sellables of the static registry, the recording gateway, the colliding number generator, and stages standing in for the promotions
  * (`promo:{id}`), shipping (`flat:{price}`) and tax (`vat`) packages.
  */
 final class SalesFixturePlugin implements CommerzPlugin
@@ -24,6 +25,7 @@ final class SalesFixturePlugin implements CommerzPlugin
     public function register(PluginRegistrar $registrar): void
     {
         $registrar->sellableProvider(StaticSellables::class);
+        $registrar->contribute(PaymentGateway::KIND, RecordingGateway::class);
         $registrar->contribute(OrderNumberGenerator::KIND, DuplicateNumbers::class);
         $registrar->quoteStage(PromotionAdjustmentStage::class);
         $registrar->quoteStage(FlatDeliveryStage::class);

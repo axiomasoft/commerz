@@ -1,0 +1,225 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P7.5",
+  "title": "Payments: payment_gateway workflow with journal, lease and fencing, provider event inbox and reconciliation (PAY-01, PAY-02, SAL-01)",
+  "status": "in_progress",
+  "summary": "Модуль Payments по sales-design#payments: initiate (Tx A balance под блокировкой заказа → шлюз вне транзакции → fenced finish), recordEvent через Common/Internal/PaymentEventInbox (UNIQUE(gateway, external_event_id) + fingerprint), reconcile через find, монотонные PaymentTransitions, find/list; фикстура RecordingGateway; конкурентные C4, C5 и C8.",
+  "why": "Деньги: двойной webhook или повтор после таймаута не должны удвоить captured; два параллельных initiate не должны выставить двойную сумму; таймаут — не failed. Риски: шлюз в транзакции; запись без фенсинга; дедуп по object id; регресс captured → pending; захват отменённого заказа без сигнала.",
+  "scope": {
+    "include": [
+      "Payments/{Contracts/Payments, Data/{PaymentId, InitiatePayment, RecordPaymentEvent, PaymentEventResult, ReconcilePayment, PaymentView, ListPayments}, Enums/{PaymentStatus, PaymentEventType, PaymentEventOutcome}, Events/PaymentStatusChanged, Exceptions/{PaymentNotFound, OrderNotPayable, PaymentExceedsBalance, PaymentInProgress, PaymentOutcomeUnknown, InvalidPaymentEvent}, Internal/{PaymentWorkflow, PaymentJournal, PaymentTransitions, DatabasePayments}}",
+      "Common/Internal/PaymentEventInbox (claim по (gateway, external_event_id), fingerprint, outcome; общий с Refunds в P7.8)",
+      "Sales.php payments(); биндинги провайдера",
+      "tests/Fixtures/RecordingGateway (key recording, лог вызовов с flock, сценарий из meta: sleep_ms, fail timeout|decline|invalid, status, found); добавить в SalesFixturePlugin",
+      "тесты: tests/Unit/Payments/PaymentTransitionsTest.php (таблица sales-design#payments, включая captured после failed и идемпотентный captured), tests/Feature/Payments/InitiatePaymentTest.php (manual → pending; recording authorized/captured → PaymentState и OrderStatus; внутри Transactions::run → OperationInsideTransaction и нет строки; неизвестный шлюз → UnsupportedContribution без строки; cancelled/completed заказ → OrderNotPayable; сумма > balance → PaymentExceedsBalance; decline → failed и новая попытка разрешена; timeout → unknown + PaymentOutcomeUnknown; invalid → unknown + InvalidGatewayResult; повтор с ключом → тот же платёж без второго вызова шлюза), tests/Feature/Payments/PaymentEventsTest.php (captured событие manual → paid и completed при исполненном заказе; повтор → duplicate без изменений; тот же id с другим payload → IdempotencyConflict; неизвестный reference → PaymentNotFound и событие не сохранено; captured > amount → InvalidPaymentEvent; регресс → outcome ignored; захват отменённого → payment_requires_refund в outbox и PaymentRequiresRefund), tests/Feature/Payments/ReconcileTest.php (unknown → find captured → captured; find null → failed; свежий initiating → PaymentInProgress; протухший → recover; терминальный — без вызова шлюза), tests/Unit/Payments/PaymentJournalFenceTest.php или Feature (finish с устаревшим attempt не пишет), tests/Feature/Payments/PaymentConcurrencyTest.php (C4, C5, C8 sales-design#tests), tests/Feature/Orders/ExpiryTest.php дополнить реальными платежами через initiate"
+    ],
+    "exclude": [
+      "возвраты денег и refund-события (P7.8)",
+      "явные capture/void (после 0.1)",
+      "PSP-адаптеры"
+    ]
+  },
+  "depends_on": [
+    "P7.4"
+  ],
+  "decisions": [
+    "D33",
+    "D32",
+    "D29",
+    "D30"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/sales-design#model",
+      "why": "модель, суммы, производные состояния, порты",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#spi",
+      "why": "SPI шлюзов и номеров",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#payments",
+      "why": "протокол платежей и переходы",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#lifecycle",
+      "why": "журнал строк, OrderStatus, отмена, истечение",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#locks",
+      "why": "модель блокировок, обходы, конфликтующие пары",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#api",
+      "why": "публичный API, коды ошибок, события, outbox",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#tests",
+      "why": "фикстуры и конкурентные тесты",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/src/Bookings/Internal/CarrierShipmentBooking.php",
+      "why": "образец протокола: claim, сеть вне транзакции, unknown, recover",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/src/Bookings/Internal/BookingJournal.php",
+      "why": "образец аренды и фенсинга attempts",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/tests/Fixtures/RecordingCarrier.php",
+      "why": "образец записывающей фикстуры с flock",
+      "required": true
+    },
+    {
+      "path": "packages/shipping/tests/Feature/Bookings/BookingConcurrencyTest.php",
+      "why": "образец конкурентных тестов журнала",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Plugins/Contracts/Contributions.php",
+      "why": "get по kind/key",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Operations/Fingerprint.php",
+      "why": "fingerprint события и запроса",
+      "required": true
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/sales/src/Payments/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/PaymentEventInbox.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Sales.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/Facades/Sales.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/SalesServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/sales/tests/Fixtures/**",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/tests/Unit/Payments/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Payments/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Orders/ExpiryTest.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Helpers.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, количества — int.",
+    "Расхождение с knowledge/sales-design, D31–D34, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенном Transactions::run (savepoint), чтобы не отравить транзакцию хоста.",
+    "sales пишет только в свои таблицы (cart*, order*, payment*, refund*, fulfillment*, return*); channel_id/store_id — uuid без FK; ссылки на чужое — *_ref без FK.",
+    "Модуль не импортирует Internal другого модуля: общее — только Common/Internal или публичные контракты (sales-design#layout).",
+    "Любая мутация заказа начинается с OrderLocks::lock (FOR UPDATE заказа) и дальше соблюдает глобальный порядок sales-design#locks: receipt → cart/order → документы заказа → stock → coupons → promotions → customer usages → payments → refunds.",
+    "PaymentGateway и ShipmentBooking вызываются только вне транзакции БД (Transactions::inTransaction() → OperationInsideTransaction до любой записи); результат сети пишется отдельной транзакцией с фенсингом attempts.",
+    "Исключение шлюза, кроме PaymentDeclined, — всегда unknown, никогда failed; failed без доказательства — только reconcile с find = null для initiating/unknown.",
+    "Balance (amount_due − committed) и вставка попытки — в одной транзакции под FOR UPDATE заказа.",
+    "Переход статуса платежа — только PaymentTransitions::apply и только после успешного claim в PaymentEventInbox (для событий) или фенсинга (для finish).",
+    "Шлюз вызывается только из PaymentWorkflow; исходный вклад для reconcile — по payment.gateway, а не по текущей конфигурации."
+  ],
+  "guidance": "Секции: sales-design#payments (протоколы initiate/recordEvent/reconcile и таблица переходов — ядро item'а), #spi (DTO и проверки результата шлюза), #locks (порядок order → payment → inbox), #tests (RecordingGateway, C4/C5/C8). Tx A и Tx B — отдельные Transactions::run. finish initiate: UPDATE … WHERE id = ? AND attempts = ? AND status = 'initiating'; finish reconcile: только по attempts. Lease::isFresh(claimed_at, SalesConfig::$leaseSeconds) по UTC now. PaymentOutcomeUnknown — категория integration, previous — исходное исключение, context {payment, gateway}. После перехода — OrderStatus::refresh (P7.4) в той же транзакции.",
+  "examples": [
+    {
+      "path": "packages/shipping/src/Bookings/Internal/BookingJournal.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Sales",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "Payments API",
+    "PaymentEventInbox",
+    "конкурентные тесты двойного webhook и параллельной оплаты"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T04:39:02Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "5c212dec-712d-4da7-9965-269e31bfe6a1"
+    }
+  },
+  "updated_at": "2026-10-10T04:39:02Z"
+}

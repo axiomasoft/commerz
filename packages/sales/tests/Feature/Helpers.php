@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
+use Commerz\Errors\CommerzException;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
@@ -28,7 +29,11 @@ use Commerz\Sales\Common\Internal\SalesConfig;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Data\OrderView;
+use Commerz\Sales\Payments\Contracts\Payments;
+use Commerz\Sales\Payments\Data\InitiatePayment;
+use Commerz\Sales\Payments\Data\PaymentView;
 use Commerz\Sales\Sales;
+use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
@@ -70,6 +75,11 @@ function slsOrders(): Orders
     return app(Orders::class);
 }
 
+function slsPayments(): Payments
+{
+    return app(Payments::class);
+}
+
 /**
  * Config of `commerz-sales`, applied to the modules resolved from now on.
  *
@@ -81,7 +91,7 @@ function slsConfig(array $sections): void
         config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
     }
 
-    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Sales::class] as $abstract) {
+    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Sales::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }
@@ -198,4 +208,42 @@ function slsOrderPayment(OrderView $order, string $status, int $amountMinor, int
     ]);
 
     return $id;
+}
+
+/**
+ * Payments call their gateway outside any transaction, so their tests cannot run inside the transaction of
+ * `RefreshDatabase`: they commit, and the sales tables are emptied after each test (`slsTruncate`).
+ */
+function slsCommitted(): void
+{
+    test()->artisan('migrate')->assertSuccessful();
+    slsTruncate();
+    RecordingGateway::reset();
+}
+
+function slsTruncate(): void
+{
+    DB::statement('truncate cmz_payment_events, cmz_refunds, cmz_payments, cmz_return_lines, cmz_returns,'
+        .' cmz_fulfillment_lines, cmz_fulfillments, cmz_order_events, cmz_order_lines, cmz_orders, cmz_cart_lines,'
+        .' cmz_carts, cmz_channels, cmz_stores, cmz_outbox_messages, cmz_operation_receipts cascade');
+}
+
+/** @param  array<string, scalar>  $meta */
+function slsPay(OrderView $order, string $gateway = 'manual', ?Money $amount = null, array $meta = [], ?string $key = null): PaymentView
+{
+    return slsPayments()->initiate(new InitiatePayment($order->id, $gateway, $amount, $meta, $key === null ? null : IdempotencyKey::of($key)));
+}
+
+/**
+ * What a call ended with, as a string a forked process can return: its own string, or the code of its error.
+ *
+ * @param  Closure(): string  $call
+ */
+function slsOutcome(Closure $call): string
+{
+    try {
+        return $call();
+    } catch (CommerzException $e) {
+        return $e->code();
+    }
 }

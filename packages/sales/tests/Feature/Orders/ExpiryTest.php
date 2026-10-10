@@ -10,6 +10,7 @@ use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Common\Data\LineQuantity;
+use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Orders\Data\DraftLine;
 use Commerz\Sales\Orders\Data\DraftOrder;
 use Commerz\Sales\Orders\Data\ExpireOrders;
@@ -17,24 +18,28 @@ use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
+use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
 use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 require_once __DIR__.'/../Helpers.php';
 
-uses(RefreshDatabase::class, SlsEnvironment::class);
+uses(SlsEnvironment::class);
 
 // D32: sales owns the payment deadline (4320 minutes for orders from a cart); the stock never expires a reservation.
+// Committed data: payments are started outside any transaction.
 
 beforeEach(function (): void {
+    slsCommitted();
     $this->commerce = Commerce::fake();
     $this->commerce->sellables->add(slsSnapshot('fake:a', '100.00'), slsSnapshot('fake:svc', '50.00', SellableKind::Service));
     slsConfig(['checkout' => ['require_delivery' => false]]);
     $this->web = slsChannel();
     $this->later = new DateTimeImmutable('+4321 minutes');
 });
+
+afterEach(fn () => slsTruncate());
 
 /** Moves the deadline of the order. */
 function expDue(OrderView $order, string $at): void
@@ -139,4 +144,20 @@ it('runs one pass from the console and prints its outcome', function (): void {
     $this->artisan('commerz:sales:expire-orders')->expectsOutputToContain('expired 0, skipped 0')->assertSuccessful();
     $this->artisan('commerz:sales:expire-orders', ['--limit' => 'all'])->assertFailed();
     $this->artisan('commerz:sales:expire-orders', ['--limit' => '1001'])->assertFailed();
+});
+
+it('keeps an order whose payment was started, until the attempt fails', function (): void {
+    $pending = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    $unknown = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    $declined = slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
+    slsPay($pending);
+    expect(fn () => slsPay($unknown, 'recording', meta: ['fail' => 'timeout']))->toThrow(PaymentOutcomeUnknown::class)
+        ->and(fn () => slsPay($declined, 'recording', meta: ['fail' => 'decline']))->toThrow(PaymentDeclined::class);
+
+    $report = slsOrders()->expireDue(new ExpireOrders($this->later));
+
+    expect(expIds($report->expired))->toBe(expIds([$declined]))
+        ->and($report->skipped)->toBe(2)
+        ->and(slsOrders()->find($pending->id)->state)->toBe(OrderState::Placed)
+        ->and(slsOrders()->find($unknown->id)->state)->toBe(OrderState::Placed);
 });

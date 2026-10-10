@@ -15,6 +15,8 @@ use Commerz\Sales\Internal\Console\ExpireOrdersCommand;
 use Commerz\Sales\Internal\SalesPlugin;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Internal\DatabaseOrders;
+use Commerz\Sales\Payments\Contracts\Payments;
+use Commerz\Sales\Payments\Internal\DatabasePayments;
 use Commerz\Schema\Contracts\SchemaOwnership;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -38,6 +40,7 @@ final class SalesServiceProvider extends ServiceProvider
         $this->app->singleton(Carts::class, DatabaseCarts::class);
         $this->app->singleton(Checkout::class, OrderPlacement::class);
         $this->app->singleton(Orders::class, DatabaseOrders::class);
+        $this->app->singleton(Payments::class, DatabasePayments::class);
         $this->app->singleton(Sales::class);
 
         CommerzPlugins::builtIn(SalesPlugin::class);
