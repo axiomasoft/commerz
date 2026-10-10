@@ -17,3 +17,19 @@ Verdict: fail. Four findings, all confirmed by the executor:
 Residual risk accepted: E6 interleaving is nondeterministic (both branches observed across runs); late stats flush.
 Checks after the fix: lint, analyse, refactor, api:check, Inventory (211), Sales (467), EndToEnd (24), concurrency
 dir 3/3 runs. Cost 1.38 USD, 57 turns, 1329 s.
+
+## Round 2 (the last allowed) — session 01a12589-c61d-7873-87ae-89fa86f5d142
+
+Verdict: fail. Both findings confirmed by the executor and fixed; no third round (owner budget: two):
+- High (product): the wide `consume` lock deadlocked with line-by-line `release` (sales `cancelLines`), and two
+  partial cancellations in opposite line order already deadlocked with each other (reviewer: 40P01 executed). Fixed in
+  inventory: `release` of one sellable takes the same demand-wide sorted lock as `consume` (shared `lockDemand`).
+  Inventory regression now mixes consume and release line by line in opposite orders: red without the fix
+  (6 × 40P01, twice), green with it. invariants.md updated.
+- Medium (test): E4 accepted a lock-free count whose update was granted before the adjust (a legal-looking 11).
+  The count now queues after the adjust (lock waits are FIFO), so the locked code must end at exactly 8; a simulated
+  stale count (`counted − 5`) turns E4 red (11 ≠ 8). E8 now requires all 8 contenders behind the gate (was ≥ 2).
+Accepted residual risk: E6 interleaving stays nondeterministic; exact waiter counts assume no foreign sessions in the
+isolated test database; the 150/300 ms head starts are sleeps (3/3 runs green).
+Checks after the fix: lint, analyse, refactor, api:check, Inventory (211), Sales (467), EndToEnd (24), concurrency dir
+3/3. Cost 1.20 USD, 45 turns, 1576 s.
