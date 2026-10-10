@@ -18,7 +18,11 @@ use Commerz\Sales\Common\Internal\OrderRows;
 use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Common\Internal\SalesCodec;
 use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Orders\Data\CancelOrder;
+use Commerz\Sales\Orders\Data\CancelOrderLines;
 use Commerz\Sales\Orders\Data\DraftOrder;
+use Commerz\Sales\Orders\Data\ExpireOrders;
+use Commerz\Sales\Orders\Data\ExpireReport;
 use Commerz\Sales\Orders\Data\ListOrders;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderView;
@@ -42,6 +46,8 @@ final readonly class DatabaseOrders implements Orders
         private CartLines $cartLines,
         private OrderRows $rows,
         private OrderJournal $journal,
+        private OrderCancellation $cancellation,
+        private OrderExpiry $expiry,
     ) {}
 
     public function draft(DraftOrder $command): CartView
@@ -138,6 +144,21 @@ final readonly class DatabaseOrders implements Orders
         $this->rows->get($id->value);
 
         return $this->journal->history($id);
+    }
+
+    public function cancel(CancelOrder $command): OrderView
+    {
+        return $this->cancellation->cancel($command);
+    }
+
+    public function cancelLines(CancelOrderLines $command): OrderView
+    {
+        return $this->cancellation->cancelLines($command);
+    }
+
+    public function expireDue(ExpireOrders $command): ExpireReport
+    {
+        return $this->expiry->expireDue($command);
     }
 
     /** The keyset is (placed_at, id), newest first; the timestamp is PostgreSQL's own text of it, so no precision is lost. */

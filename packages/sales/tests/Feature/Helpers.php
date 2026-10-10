@@ -5,8 +5,10 @@ declare(strict_types=1);
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\Uuid7;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
@@ -19,11 +21,16 @@ use Commerz\Sales\Carts\Data\SetCartAddress;
 use Commerz\Sales\Carts\Enums\AddressRole;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Checkout\Data\PlaceOrder;
+use Commerz\Sales\Common\Internal\OrderLedger;
+use Commerz\Sales\Common\Internal\OrderLocks;
+use Commerz\Sales\Common\Internal\OrderStatus;
 use Commerz\Sales\Common\Internal\SalesConfig;
 use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -31,6 +38,7 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The fixture plugin goes in before the registry is compiled (the migrations already resolve it); without the inventory
@@ -137,4 +145,57 @@ function slsPlace(CartView|CartId $cart, ?string $key = null): OrderView
     $id = $cart instanceof CartView ? $cart->id : $cart;
 
     return slsCheckout()->place(new PlaceOrder($id, slsCarts()->quote($id)->total, $key === null ? null : IdempotencyKey::of($key)));
+}
+
+function slsLedger(): OrderLedger
+{
+    return app(OrderLedger::class);
+}
+
+/** Refreshes the states of the order under its lock, as every module does after changing its ledger or money. */
+function slsRefresh(OrderView $order): OrderView
+{
+    app(Transactions::class)->run(static fn () => app(OrderStatus::class)->refresh(app(OrderLocks::class)->lock($order->id)));
+
+    return slsOrders()->find($order->id);
+}
+
+/** The id of the order line placed from `$sellable`. */
+function slsLine(OrderView $order, string $sellable): OrderLineId
+{
+    foreach ($order->lines as $line) {
+        if ((string) $line->sellable === $sellable) {
+            return $line->id;
+        }
+    }
+
+    throw new LogicException("Order '{$order->id->value}' has no line of {$sellable}.");
+}
+
+/**
+ * A payment of the order written straight into its table, for tests that run before the payments module or that need
+ * a payment in a given status; the order is not refreshed.
+ */
+function slsOrderPayment(OrderView $order, string $status, int $amountMinor, int $capturedMinor = 0, int $authorizedMinor = 0): string
+{
+    $id = Uuid7::generate();
+    $now = now('UTC')->format('Y-m-d H:i:s.uP');
+
+    DB::table(app(TableNames::class)->table('payments'))->insert([
+        'id' => $id,
+        'order_id' => $order->id->value,
+        'gateway' => 'manual',
+        'reference' => 'payment:'.$id,
+        'status' => $status,
+        'currency' => $order->currency->code,
+        'amount_minor' => $amountMinor,
+        'authorized_minor' => $authorizedMinor,
+        'captured_minor' => $capturedMinor,
+        'fingerprint' => str_repeat('0', 64),
+        'claimed_at' => $now,
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
+
+    return $id;
 }

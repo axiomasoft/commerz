@@ -1,0 +1,261 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:item:v1",
+  "id": "P7.4",
+  "title": "Order lifecycle: line ledger, derived states and completion, cancel, partial cancel and expiry with console command (ORD-03, D32)",
+  "status": "done_with_deviations",
+  "summary": "Common/Internal OrderLocks, OrderLedger (единственный писатель счётчиков строк), OrderStatus (derive + refresh: amount_due, суммы, три состояния, completed/cancelled, журнал, outbox, события); Common Data/Exceptions; Orders::cancel, cancelLines, expireDue и commerz:sales:expire-orders; release резерва и restore лимитов.",
+  "why": "ORD-03 и производные состояния используют все следующие модули; ошибка derive делает заказ «оплаченным» при недоплате или не закрывает его. Риски: отмена исполненного; release с чужим количеством; restore с неверной причиной; истечение заказа с идущей оплатой (SAL-02); две параллельные отмены — двойной release/outbox.",
+  "scope": {
+    "include": [
+      "Common/Internal/{OrderLocks, OrderLedger, OrderStatus}; Common/Data/LineQuantity; Common/Exceptions/{OperationInsideTransaction, LineNotFound, QuantityExceedsOutstanding}",
+      "Orders: cancel(CancelOrder), cancelLines(CancelOrderLines), expireDue(ExpireOrders): ExpireReport; Data {CancelOrder, CancelOrderLines, ExpireOrders, ExpireReport}; Events {OrderCancelled, OrderCompleted, OrderPaymentStateChanged, PaymentRequiresRefund}; Exceptions/OrderNotCancellable; Internal {OrderCancellation, OrderExpiry}",
+      "Internal/Console/ExpireOrdersCommand (commerz:sales:expire-orders {--limit=}) и регистрация в провайдере",
+      "OrderPlacement переводится на OrderStatus для начального состояния только если это не меняет поведение (иначе оставить)",
+      "тесты: tests/Unit/Orders/OrderStatusDeriveTest.php (таблица всех ветвей sales-design#model; amount_due 0 → paid), tests/Unit/Orders/CancelledValueTest.php (1000 × 3 единицы, отмена 1 → 333/334 точным allocate), tests/Feature/Orders/LedgerTest.php (cancel/fulfill/returnReceived через OrderLedger: QuantityExceedsOutstanding, LineNotFound, CHECK как вторая линия), tests/Feature/Orders/CancelTest.php (release demand и restore Cancelled в FakeStock/FakePromotionUsage; повтор — no-op; completed → OrderNotCancellable; исполненное → OrderNotCancellable('fulfilled'); captured > 0 → outbox sales.payment_requires_refund — платёж вставить напрямую), tests/Feature/Orders/CancelLinesTest.php (частичная отмена: release по sellable/qty только Physical, amount_due уменьшен, полная отмена всех единиц = cancel с restore; ORD-03 отгрузка части через OrderLedger::fulfill + отмена остатка → completed при paid), tests/Feature/Orders/ExpiryTest.php (кандидаты по payment_due_at; пропуск: платёж initiating/pending/requires_action/unknown/authorized, исполнено, черновик без срока; причина expired и restore Expired; ExpireReport; команда печатает итог), tests/Feature/Orders/CancelConcurrencyTest.php (4 процесса × cancel одного заказа → одна запись order_events cancelled и одно outbox-сообщение; 2 процесса expireDue одновременно → каждый заказ истёк один раз)"
+    ],
+    "exclude": [
+      "платёжные команды (P7.5)",
+      "исполнение и возвраты (P7.6, P7.7)",
+      "автоматический возврат денег при отмене"
+    ]
+  },
+  "depends_on": [
+    "P7.3"
+  ],
+  "decisions": [
+    "D31",
+    "D32",
+    "D13",
+    "D27"
+  ],
+  "reads": [
+    {
+      "ref": "knowledge/sales-design#model",
+      "why": "модель, суммы, производные состояния, порты",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#lifecycle",
+      "why": "журнал строк, OrderStatus, отмена, истечение",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#locks",
+      "why": "модель блокировок, обходы, конфликтующие пары",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#api",
+      "why": "публичный API, коды ошибок, события, outbox",
+      "required": true
+    },
+    {
+      "ref": "knowledge/sales-design#tests",
+      "why": "фикстуры и конкурентные тесты",
+      "required": true
+    },
+    {
+      "ref": "knowledge/invariants#placement",
+      "why": "отмена/истечение и порядок блокировок",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Money/MoneyAllocator.php",
+      "why": "точное деление стоимости отменённых единиц",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Stock/Data/ReleaseReservation.php",
+      "why": "release по demand/sellable/qty",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Promotions/Data/RestorePromotionUsage.php",
+      "why": "restore и причины",
+      "required": true
+    },
+    {
+      "path": "packages/core/src/Ports/Promotions/Enums/RestoreReason.php",
+      "why": "Cancelled/Expired/Refunded",
+      "required": true
+    },
+    {
+      "path": "packages/promotions/config/commerz-promotions.php",
+      "why": "restore_on — политику решает promotions",
+      "required": false
+    },
+    {
+      "path": "packages/promotions/src/Internal/Console/ReconcilePromotionsCommand.php",
+      "why": "образец консольной команды пакета",
+      "required": false
+    }
+  ],
+  "task_files": [
+    {
+      "path": "packages/sales/src/Common/Internal/OrderLocks.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/OrderLedger.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Internal/OrderStatus.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Data/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Common/Exceptions/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/Orders/**",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/Checkout/Internal/OrderPlacement.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/src/Internal/Console/ExpireOrdersCommand.php",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/src/SalesServiceProvider.php",
+      "change": "modify"
+    },
+    {
+      "path": "packages/sales/tests/Unit/Orders/**",
+      "change": "create"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Orders/**",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    },
+    {
+      "path": "packages/sales/tests/Feature/Helpers.php",
+      "change": "any",
+      "note": "создаётся предыдущим item фазы"
+    }
+  ],
+  "rules": [
+    "Публичные типы вне Internal несут #[Api(since: '0.1')] или #[Spi(kind: SpiKind::Implement, since: '0.1')]; в публичных сигнатурах нет Eloquent, Builder, Collection, float; деньги — Money, количества — int.",
+    "Расхождение с knowledge/sales-design, D31–D34, kernel-contracts или api-blueprint → plan.py log PLAN1 <item> --type deviation с причиной, не молча.",
+    "Каждая мутация — Transactions::run; вставка, которая может нарушить UNIQUE, — во вложенном Transactions::run (savepoint), чтобы не отравить транзакцию хоста.",
+    "sales пишет только в свои таблицы (cart*, order*, payment*, refund*, fulfillment*, return*); channel_id/store_id — uuid без FK; ссылки на чужое — *_ref без FK.",
+    "Модуль не импортирует Internal другого модуля: общее — только Common/Internal или публичные контракты (sales-design#layout).",
+    "Любая мутация заказа начинается с OrderLocks::lock (FOR UPDATE заказа) и дальше соблюдает глобальный порядок sales-design#locks: receipt → cart/order → документы заказа → stock → coupons → promotions → customer usages → payments → refunds.",
+    "Резерв, consume и restock — только для строк SellableKind::Physical; услуги и цифровые строки склад не трогают.",
+    "Счётчики cancelled/fulfilled/returned меняет только OrderLedger условным UPDATE; другие классы их не пишут.",
+    "Состояния заказа, amount_due и суммы пишет только OrderStatus::refresh; completed и cancelled терминальны.",
+    "expire: каждый заказ — свой Transactions::run с FOR UPDATE SKIP LOCKED и полной перепроверкой условий под блокировкой (D32).",
+    "Отмена при captured > 0 публикует sales.payment_requires_refund — деньги не теряются молча."
+  ],
+  "guidance": "Секции: sales-design#lifecycle (алгоритмы cancel, cancelLines, expire, Common/Internal), #model (derive, amount_due, cancelled_value), #locks (порядок и пары), #api (события, outbox). OrderStatus::derive — чистая static-функция над числами (Σ quantity, Σ cancelled, Σ fulfilled, Σ returned, amount_due, authorized, captured, refunded, текущий state) → три enum; refresh читает суммы из payments/refunds (таблицы уже есть с P7.1; пока пустые) и пишет только изменившееся. Причина restore: CancelReason::Expired → RestoreReason::Expired, иначе Cancelled. Для тестов платежей до P7.5 строки payments вставлять прямым insert в хелпере.",
+  "examples": [
+    {
+      "path": "packages/promotions/src/Usage/Internal/DatabasePromotionUsage.php"
+    }
+  ],
+  "validation": [
+    {
+      "id": "V1",
+      "cmd": "scripts/php84 composer lint:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V2",
+      "cmd": "scripts/php84 composer analyse",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V3",
+      "cmd": "scripts/php84 composer refactor:check",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V4",
+      "cmd": "pg_isready -h 127.0.0.1 -p 54329 && scripts/php84 vendor/bin/pest --testsuite=Sales",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    },
+    {
+      "id": "V5",
+      "cmd": "scripts/php84 vendor/bin/pest --testsuite=Arch",
+      "expect": "exit 0",
+      "kind": "acceptance"
+    }
+  ],
+  "deliverables": [
+    "OrderLedger и OrderStatus",
+    "cancel, cancelLines, expireDue и команда",
+    "тесты ORD-03 и истечения"
+  ],
+  "route": {
+    "class": "frontier",
+    "effort": "high"
+  },
+  "review": {
+    "mode": "none"
+  },
+  "authority": {
+    "kind": "routine"
+  },
+  "rag": {
+    "need": "none",
+    "status": "not_needed"
+  },
+  "result": {
+    "started_at": "2026-10-10T04:24:17Z",
+    "finished_at": "2026-10-10T04:37:35Z",
+    "executor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "session": "5a02f4f7-db17-401c-9381-dfbe88549a06"
+    },
+    "notes": "OrderLocks (lock/lockSkip), OrderLedger (conditional updates, sole writer, grep gate), OrderStatus (derive/cancelledValue/refresh with journal, outbox, events); Orders cancel/cancelLines/expireDue via OrderCancellation/OrderExpiry; commerz:sales:expire-orders; Sales suite 242 passed incl. concurrent cancel and parallel expiry.",
+    "deviations": [
+      "Cancelled order owes nothing: amount_due 0, cancelled unpaid stays unpaid",
+      "payment_requires_refund published by OrderStatus::refresh on growth of money held over amount due; order-level event (OrderId, Money amount)",
+      "Common/Internal OrderRow, OrderLineRow, OrderStatusChange added; OrderPlacement unchanged"
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "exit": 0,
+        "at": "2026-10-10T04:37:35Z"
+      },
+      {
+        "id": "V2",
+        "exit": 0,
+        "at": "2026-10-10T04:37:35Z"
+      },
+      {
+        "id": "V3",
+        "exit": 0,
+        "at": "2026-10-10T04:37:35Z"
+      },
+      {
+        "id": "V4",
+        "exit": 0,
+        "at": "2026-10-10T04:37:35Z"
+      },
+      {
+        "id": "V5",
+        "exit": 0,
+        "at": "2026-10-10T04:37:35Z"
+      }
+    ]
+  },
+  "updated_at": "2026-10-10T04:37:35Z"
+}

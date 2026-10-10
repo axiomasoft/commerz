@@ -11,6 +11,7 @@ use Commerz\Sales\Carts\Internal\DatabaseCarts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Checkout\Internal\OrderPlacement;
 use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Internal\Console\ExpireOrdersCommand;
 use Commerz\Sales\Internal\SalesPlugin;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Internal\DatabaseOrders;
@@ -51,6 +52,7 @@ final class SalesServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([ExpireOrdersCommand::class]);
             $this->publishes([
                 __DIR__.'/../config/commerz-sales.php' => config_path('commerz-sales.php'),
             ], 'commerz-sales-config');
