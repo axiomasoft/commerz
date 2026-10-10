@@ -6,6 +6,7 @@ use Commerz\Errors\InvalidConfiguration;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Facades\Sales as SalesFacade;
+use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Sales;
@@ -18,6 +19,7 @@ it('hands out the module contracts from the root', function (): void {
         ->and($root->checkout())->toBe(app(Checkout::class))
         ->and($root->orders())->toBe(app(Orders::class))
         ->and($root->payments())->toBe(app(Payments::class))
+        ->and($root->fulfillments())->toBe(app(Fulfillments::class))
         ->and(app(Sales::class))->toBe($root);
 });
 
@@ -27,7 +29,8 @@ it('reaches the same modules through the facade', function (): void {
     expect(SalesFacade::carts())->toBe(app(Carts::class))
         ->and(SalesFacade::checkout())->toBe(app(Checkout::class))
         ->and(SalesFacade::orders())->toBe(app(Orders::class))
-        ->and(SalesFacade::payments())->toBe(app(Payments::class));
+        ->and(SalesFacade::payments())->toBe(app(Payments::class))
+        ->and(SalesFacade::fulfillments())->toBe(app(Fulfillments::class));
 });
 
 it('resolves a module only when it is asked for, so the carts need no stock port', function (): void {
