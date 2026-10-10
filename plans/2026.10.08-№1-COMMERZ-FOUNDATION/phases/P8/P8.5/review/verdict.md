@@ -17,3 +17,12 @@ Residual risk accepted: no PHP 8.5 binary locally (the AST path and probes cover
 only by design; hooks / `new` with arguments / `self|null` unused in the surface.
 Checks after the fix: lint, analyse, refactor, Arch (17), api:check (double generation byte-identical),
 docs:reference --check. Cost 1.38 USD, 47 turns, 1643 s.
+
+## Round 2 — session 01a1258d-f664-7c70-8580-04014d6fa61d
+
+Verdict: pass, no findings: all six round-1 findings closed on every instance of the eight manifests (8 constant
+defaults, 9 asymmetric logs, every `self` parameter/return, the final methods of `EntityId`/`Ref`, `sales.md`,
+`Reservations extends StockReservations`); `ApiManifestTest`, `api:check` and `docs:reference --check` green.
+Residual risk accepted: no PHP 8.5 binary (AST path covers every public `self`); union order follows reflection;
+`implements`/`extends` list ancestors too (only one parented interface today); command options are names only.
+Cost 1.22 USD, 45 turns, 1366 s.
