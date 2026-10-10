@@ -290,11 +290,11 @@ it('checks the amounts and the number of an order', function (): void {
         ->and(slsSqlState(static fn () => slsOrder(null, ['currency' => 'RU'])))->not->toBeNull()
         ->and(slsSqlState(static fn () => slsOrder(null, ['currency' => 'rub'])))->toBe(SLS_CHECK);
 
-    foreach (['-1', 'a b', 'ORD_1', '', str_repeat('A', 65)] as $number) {
+    foreach (['-', '---', 'a b', 'ORD_1', '', str_repeat('A', 65)] as $number) {
         expect(slsSqlState(static fn () => slsOrder(null, ['number' => $number])))->not->toBeNull("number '{$number}'");
     }
 
-    foreach (['1001', 'ORD-1001', 'a', str_repeat('A', 64)] as $number) {
+    foreach (['1001', 'ORD-1001', '-1001', 'a', str_repeat('A', 64)] as $number) {
         expect(slsSqlState(static fn () => slsOrder(null, ['number' => $number])))->toBeNull("number '{$number}'");
     }
 });

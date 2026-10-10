@@ -68,6 +68,7 @@ it('refuses a malformed payment result', function (Closure $make, string $field)
     expect($make)->toThrow(fn (InvalidCommand $e) => expect($e->code())->toBe('sales.invalid_gateway_payment')->and($e->field)->toBe($field));
 })->with([
     'empty external id' => [fn () => new GatewayPaymentResult(GatewayPaymentStatus::Pending, ''), 'externalId'],
+    'external id longer than its column' => [fn () => new GatewayPaymentResult(GatewayPaymentStatus::Pending, str_repeat('x', 192)), 'externalId'],
     'negative authorized' => [fn () => new GatewayPaymentResult(GatewayPaymentStatus::Authorized, authorized: gwRub(-1)), 'authorized'],
     'negative captured' => [fn () => new GatewayPaymentResult(GatewayPaymentStatus::Captured, captured: gwRub(-1)), 'captured'],
     'empty action url' => [fn () => new GatewayPaymentResult(GatewayPaymentStatus::RequiresAction, actionUrl: ''), 'actionUrl'],
@@ -94,6 +95,7 @@ it('carries and checks a refund request', function (): void {
 it('carries and checks a refund result', function (): void {
     expect(new GatewayRefundResult(GatewayRefundStatus::Pending, 'r-1', ['k' => 1])->meta)->toBe(['k' => 1])
         ->and(fn () => new GatewayRefundResult(GatewayRefundStatus::Succeeded, ''))->toThrow(InvalidCommand::class)
+        ->and(fn () => new GatewayRefundResult(GatewayRefundStatus::Succeeded, str_repeat('x', 192)))->toThrow(InvalidCommand::class, 'externalId')
         ->and(fn () => new GatewayRefundResult(GatewayRefundStatus::Succeeded, meta: [1 => 'x']))->toThrow(InvalidCommand::class);
 });
 

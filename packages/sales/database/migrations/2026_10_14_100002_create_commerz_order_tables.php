@@ -24,11 +24,12 @@ return new class extends CommerzMigration
             $table->string('cancel_reason', 32)->nullable();
             // Declared by hand: `money()` would make the currency nullable, an order always has one.
             $table->char('currency', 3);
-            $table->string('locale', 35);
+            $table->text('locale');
             $this->ref($table, 'customer', nullable: true);
             $table->jsonb('customer_groups');
-            $table->string('customer_email', 191)->nullable();
-            $table->string('customer_name', 191)->nullable();
+            // Texts the core does not bound are kept in full (ORD-02): `text`, never a varchar that would refuse the order.
+            $table->text('customer_email')->nullable();
+            $table->text('customer_name')->nullable();
             $table->jsonb('codes');
             $table->jsonb('shipping_address')->nullable();
             $table->jsonb('billing_address')->nullable();
@@ -70,7 +71,7 @@ return new class extends CommerzMigration
         $this->check($orders, 'amounts_valid', 'total_minor >= 0 and amount_due_minor between 0 and total_minor');
         $this->check($orders, 'payments_valid', 'authorized_minor >= 0 and captured_minor >= 0 and refunded_minor between 0 and captured_minor');
         $this->check($orders, 'currency_valid', "currency ~ '^[A-Z]{3}$'");
-        $this->check($orders, 'number_valid', "number ~ '^[A-Za-z0-9][A-Za-z0-9-]{0,63}$'");
+        $this->check($orders, 'number_valid', "number ~ '^[A-Za-z0-9-]{1,64}$' and number ~ '[A-Za-z0-9]'");
 
         $lines = $this->create('order_lines', function (Blueprint $table) use ($orders): void {
             $this->uuidPrimary($table); // equals the id of the cart line, so quote line ids stay valid in the order
@@ -78,18 +79,18 @@ return new class extends CommerzMigration
             $table->integer('position');
             $this->ref($table, 'sellable');
             $table->string('sku', 191);
-            $table->string('name', 191);
+            $table->text('name');
             $table->string('kind', 16);
             $table->boolean('requires_shipping');
             $table->jsonb('options');
-            $table->string('tax_class', 64)->nullable();
+            $table->text('tax_class')->nullable();
             $table->integer('weight_grams')->nullable();
             $table->integer('quantity');
             $table->char('currency', 3);
             $table->bigInteger('unit_price_minor');
             $table->bigInteger('compare_at_minor')->nullable();
             $table->boolean('tax_included');
-            $table->string('price_source', 191);
+            $table->text('price_source');
             $table->bigInteger('subtotal_minor');
             $table->bigInteger('total_minor');
             $table->jsonb('adjustments');

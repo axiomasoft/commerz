@@ -252,7 +252,7 @@ final readonly class OrderPlacement implements Checkout
     {
         $number = $placement->generator->next(new OrderNumbering($placement->store, $placement->channel->id, $id, $placement->at));
 
-        if (preg_match('/\A[A-Za-z0-9][A-Za-z0-9-]{0,63}\z/', $number) !== 1) {
+        if (preg_match('/\A(?=[A-Za-z0-9-]{1,64}\z)[A-Za-z0-9-]*[A-Za-z0-9]/', $number) !== 1) {
             throw new InvalidOrderNumber($placement->generator->key(), $number);
         }
 

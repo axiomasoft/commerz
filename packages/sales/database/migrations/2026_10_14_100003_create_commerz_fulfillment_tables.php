@@ -17,10 +17,10 @@ return new class extends CommerzMigration
             $table->uuid('order_id');
             $table->string('status', 16)->default('created');
             $table->string('location_code', 64)->nullable();
-            $table->string('carrier', 64)->nullable();
+            $table->text('carrier')->nullable(); // carrier, tracking and label come from the booking port unbounded
             $table->string('method_code', 64)->nullable();
-            $table->string('tracking', 191)->nullable();
-            $table->string('label_ref', 191)->nullable();
+            $table->text('tracking')->nullable();
+            $table->text('label_ref')->nullable();
             $table->timestampTz('shipped_at', 6)->nullable();
             $table->timestampTz('delivered_at', 6)->nullable();
             $this->timestampsTz($table);

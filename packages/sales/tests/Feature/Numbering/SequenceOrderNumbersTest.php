@@ -51,7 +51,7 @@ it('numbers from 1001 and shares one sequence between stores', function (): void
 it('takes an empty prefix and a long one and still matches the order number pattern', function (): void {
     $generator = app(SequenceOrderNumbers::class);
 
-    expect($generator->next(seqNumbering('')))->toMatch('/\A[A-Za-z0-9][A-Za-z0-9-]{0,63}\z/')
+    expect($generator->next(seqNumbering('')))->toMatch('/\A(?=[A-Za-z0-9-]{1,64}\z)[A-Za-z0-9-]*[A-Za-z0-9]/')
         ->and($generator->next(seqNumbering(str_repeat('A', 16))))->toMatch('/\A[A-Z0-9]{16}\d+\z/');
 });
 

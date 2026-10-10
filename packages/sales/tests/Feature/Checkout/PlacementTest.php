@@ -2,19 +2,24 @@
 
 declare(strict_types=1);
 
+use Commerz\Context\CommerceContext;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\SellableRef;
+use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
+use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
+use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Carts\Data\SelectDelivery;
 use Commerz\Sales\Carts\Data\SetCartCustomer;
@@ -326,4 +331,31 @@ it('refuses to place a cart of an archived channel', function (): void {
 
     expect(fn () => slsPlace($cart))->toThrow(ChannelArchived::class)
         ->and(plcCounts())->toBe(plcNothingWritten());
+});
+
+it('keeps texts the core does not bound in full: names, customer details, tax class and locale', function (): void {
+    slsConfig(['checkout' => ['require_delivery' => false]]);
+    $long = slsSnapshot('fake:long', name: str_repeat('Длинное имя ', 30));
+    $this->commerce->sellables->add(new SellableSnapshot($long->ref, $long->sku, $long->name, $long->kind, false, basePrice: $long->basePrice, taxClass: str_repeat('t', 100)));
+    $customer = CustomerRef::of('crm', 'long');
+    $this->commerce->customers->add(new CustomerProfile($customer, [], str_repeat('e', 300).'@example.test', str_repeat('N', 300)));
+    $locale = 'en'.str_repeat('-abcdef', 6);
+    $cart = slsCarts()->create(new CreateCart(CommerceContext::for($this->web, Currency::of('RUB'), $locale)));
+    slsCarts()->addLine(new AddCartLine($cart->id, SellableRef::fromString('fake:long'), 1));
+    slsCarts()->setCustomer(new SetCartCustomer($cart->id, $customer));
+
+    $order = slsPlace($cart);
+
+    expect($order->lines[0]->name)->toBe($long->name)
+        ->and($order->lines[0]->taxClass)->toBe(str_repeat('t', 100))
+        ->and($order->customerName)->toBe(str_repeat('N', 300))
+        ->and($order->customerEmail)->toBe(str_repeat('e', 300).'@example.test')
+        ->and($order->locale)->toBe($locale)
+        ->and(slsCarts()->find($cart->id)->locale)->toBe($locale);
+});
+
+it('numbers the orders of a store whose prefix starts with a hyphen', function (): void {
+    slsConfig(['checkout' => ['require_delivery' => false]]);
+
+    expect(slsPlace(slsCartWith(slsChannel('hy', '-'), ['fake:a' => 1]))->number)->toMatch('/\A-\d+\z/');
 });

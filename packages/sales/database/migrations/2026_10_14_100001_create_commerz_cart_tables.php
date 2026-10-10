@@ -16,7 +16,7 @@ return new class extends CommerzMigration
             $table->uuid('channel_id'); // a core table: no foreign key
             // Declared by hand: `money()` would make the currency nullable, a cart always has one.
             $table->char('currency', 3);
-            $table->string('locale', 35);
+            $table->text('locale'); // the core bounds a locale tag by its grammar only
             $this->ref($table, 'customer', nullable: true);
             $table->jsonb('customer_groups')->default('[]');
             $table->jsonb('codes')->default('[]');

@@ -35,8 +35,9 @@ final readonly class GatewayPaymentResult
         public ?string $actionUrl = null,
         public array $meta = [],
     ) {
-        if ($externalId === '') {
-            throw new InvalidCommand('externalId', 'must be null or not empty', self::CODE);
+        // The id is unique per gateway in a varchar(191) index.
+        if ($externalId !== null && ($externalId === '' || strlen($externalId) > 191)) {
+            throw new InvalidCommand('externalId', 'must be null or 1..191 bytes', self::CODE);
         }
 
         foreach (['authorized' => $authorized, 'captured' => $captured] as $field => $amount) {

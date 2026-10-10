@@ -8,7 +8,7 @@ use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 
-/** A generator produced a number that does not match `[A-Za-z0-9][A-Za-z0-9-]{0,63}`: a configuration defect, the order is not placed. */
+/** A generator produced a number that is not 1..64 characters of `A-Za-z0-9-` with at least one letter or digit: a configuration defect, the order is not placed. */
 #[Api(since: '0.1')]
 final class InvalidOrderNumber extends CommerzException
 {

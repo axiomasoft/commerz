@@ -17,6 +17,9 @@ interface OrderNumberGenerator
     /** Contribution key, e.g. `sequence`. */
     public function key(): string;
 
-    /** The visible number: `[A-Za-z0-9][A-Za-z0-9-]{0,63}`, unique within the store. */
+    /**
+     * The visible number: 1..64 characters of `A-Za-z0-9-` with at least one letter or digit (a store prefix may
+     * start with a hyphen), unique within the store.
+     */
     public function next(OrderNumbering $numbering): string;
 }
