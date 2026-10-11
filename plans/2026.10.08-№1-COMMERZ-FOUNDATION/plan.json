@@ -3,9 +3,9 @@
   "id": "2026.10.08-№1-COMMERZ-FOUNDATION",
   "short_id": "PLAN1",
   "title": "Plan №1 — Commerz — embeddable commerce package family: architecture, API and v0 build",
-  "status": "active",
+  "status": "done",
   "created": "2026-10-08",
-  "updated_at": "2026-10-08T17:30:22Z",
+  "updated_at": "2026-10-11T02:37:40Z",
   "repository": "commerz",
   "owner": "Dmitry Vostrikov",
   "authoring": {
