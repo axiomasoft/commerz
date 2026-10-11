@@ -20,7 +20,7 @@ jobs:
     name: Lint & static analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: shivammathur/setup-php@v2
@@ -73,7 +73,7 @@ jobs:
       DB_USERNAME: commerz
       DB_PASSWORD: commerz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -88,7 +88,7 @@ jobs:
     name: Documentation site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
