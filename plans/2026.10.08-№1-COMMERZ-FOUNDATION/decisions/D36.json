@@ -1,0 +1,40 @@
+{
+  "$schema": "urn:swissknifeman:task:plan:decision:v1",
+  "id": "D36",
+  "title": "Release 0.1.0 versioning and distribution check",
+  "date": "2026-10-10",
+  "status": "accepted",
+  "question": "Как версионировать и проверять первый релиз монорепо (межпакетные ограничения, тег, проверка дистрибутива)?",
+  "options": [
+    {
+      "id": "A",
+      "text": "Lockstep-версия, межпакетные ^0.1, корень ^0.1@dev + path options.versions 0.1.x-dev, аннотированный локальный тег v0.1.0, проверка формы дистрибутива через composer archive + artifact-репозиторий в свежем Laravel 13",
+      "pros": "стандартная совместимость Composer; патчи пакетов независимы; доказана установка без монорепо"
+    },
+    {
+      "id": "B",
+      "text": "self.version между пакетами",
+      "cons": "жёсткий lockstep патчей у потребителя без выгоды; ломает path-разработку без точных версий"
+    },
+    {
+      "id": "C",
+      "text": "Оставить ^0.1@dev и тегать как есть",
+      "cons": "@dev в опубликованных manifest вводит в заблуждение; форма дистрибутива не проверена"
+    }
+  ],
+  "context": "Сейчас пакеты требуют друг друга ^0.1@dev; корень minimum-stability dev, path packages/*. Split и Packagist — non_goals. Perplexity 2026-10-10: @dev — только в корне, пакеты публикуют ^0.1; монорепо-установка не доказывает установку потребителем.",
+  "decision": "A — Lockstep-версия, межпакетные ^0.1, корень ^0.1@dev + path options.versions 0.1.x-dev, аннотированный локальный тег v0.1.0, проверка формы дистрибутива через composer archive + artifact-репозиторий в свежем Laravel 13",
+  "rationale": "Owner delegated architecture (M3). Composer semantics: stability flags are root-only, so @dev belongs to the development root; ^0.1 keeps patch releases interoperable; a clean-consumer artifact install is the only evidence that the distributed packages resolve and boot without the monorepo. Tag stays local; push/publish remain owner actions.",
+  "applies_to": [
+    "P8",
+    "P8.1",
+    "P8.7",
+    "P8.8"
+  ],
+  "actor": {
+    "provider": "claude-code",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "answered_by": "agent"
+}
