@@ -2,7 +2,7 @@
 
 Accepted architecture decisions of Commerz. Each entry states the decision and
 the one-line reason; options and evidence live in plan `PLAN1`
-(`plans/2026.10.08-№1-COMMERZ-FOUNDATION/`) and the research corpus. A new
+(`plans/archive/2026.10.08-№1-COMMERZ-FOUNDATION/`) and the research corpus. A new
 decision gets the next number; a reversed decision keeps its number and is
 marked `superseded by Dn`.
 
