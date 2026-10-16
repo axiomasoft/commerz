@@ -8,7 +8,7 @@ description: "Use when changing project skills, plugins, memory scopes, roles, o
 This project is an ecosystem node **academici**, connected to the hub **mAInd**. File is managed
 from maind (`templates/skills/ecosystem-setup/SKILL.md`) — edit there and `maind sync`, not in copy.
 
-**Project status:** type `php-package` · scope `project:commerz` · namespaces `axioma`.
+**Project status:** type `php-package` · scope `project:commerz` · namespaces `axioma, commerz`.
 
 ## General rules (do not violate)
 
@@ -51,5 +51,5 @@ The complete tree of all layers is in the dock maind «Decision Tree: Project Se
 
 ## Project Communications
 
-- namespaces: `axioma` · scope: `project:commerz` · linked to: —.
+- namespaces: `axioma, commerz` · scope: `project:commerz` · linked to: —.
 - current connections: `maind graph --project commerz`.
