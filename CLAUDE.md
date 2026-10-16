@@ -37,10 +37,9 @@
 
 <!-- swissknifeman:hub:start -->
 <!-- swissknifeman hub: stub — skills and task-commands are connected natively; index and priority rules are not duplicated here. -->
-<!-- swissknifeman:registry sha=f6eed7ea5379 skills=217 -->
+<!-- swissknifeman:registry sha=4a7f58cd2b84 skills=209 -->
 <!-- Full index: `skiller status` or generate-hub.sh --target <dir> --full-index. -->
 <!-- swissknifeman:hub:end -->
-
 <!-- maind:healthcheck hash=4a1d4d3fa345 (managed by maind — do not edit manually) -->
 ## mAInd — temporary project context and graph
 
