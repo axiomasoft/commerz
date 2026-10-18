@@ -1,2 +1,0 @@
-{"reviewer":"grok/grok-4.7/high","session":"01a1247c-3b44-7cb1-a740-e53565972f1a","scope":"P7.6 306b259, eac1ee4","verdict":"pass","findings":[],
-"residual":[{"topic":"two multi-line fulfillments consuming stock in line-id order can deadlock in the stock port (one transaction aborted, no double consume); same per-line pattern as cancelLines","disposition":"recommendation, not fixed"},{"topic":"separate partial parcels of one line each allocate against the full line total: declared value may under-declare by a minor unit","disposition":"accepted"}]}

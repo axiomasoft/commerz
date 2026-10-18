@@ -1,4 +1,0 @@
-{"reviewer":"grok/grok-4.7/high","session":"01a12436-4270-7560-8eef-aa31559c0af0","scope":"P7.4 24c7816, P7.5 4565bc3","verdict":"fail","findings":[
-{"id":1,"severity":"high","file":"packages/sales/src/Payments/Internal/PaymentJournal.php","disposition":"fixed"},
-{"id":2,"severity":"high","file":"packages/sales/src/Common/Internal/OrderWriter.php","disposition":"fixed"}],
-"questions":[{"id":"Q1","topic":"partial capture frees the rest of the balance; a later larger capture overpays","disposition":"answered: by design (sales-design#payments committed = captured_minor for captured); overpay is signalled once by payment_requires_refund"}]}

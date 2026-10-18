@@ -1,4 +1,0 @@
-{"reviewer":"grok/grok-4.7/high","session":"01a123e7-dabd-7f50-bb96-a5ba4a163bec","scope":"P7.1 689c1a8, P7.2 8ee63d5, P7.3 3026393","verdict":"fail","findings":[
-{"id":1,"severity":"medium","file":"packages/sales/src/Common/Internal/OrderWriter.php","disposition":"fixed"},
-{"id":2,"severity":"medium","file":"packages/sales/src/Numbering/Internal/SequenceOrderNumbers.php","disposition":"fixed"}],
-"questions":[{"id":"Q1","topic":"invariants#placement retry vs sales-design#placement","disposition":"answered: D20 (no automatic retry) and sales-design are binding; invariants.json text is stale, owner's uncommitted file left untouched"}]}
