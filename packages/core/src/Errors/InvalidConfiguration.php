@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 namespace Commerz\Errors;
 
-use Commerz\Attributes\Api;
+use Commerz\Errors\Enums\CommerzErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
-/** A configuration value is wrong; `path` is the dotted key, e.g. `commerz.table_prefix`. */
+/**
+ * Legacy configuration error retained during Slice A until all feature subpackages migrate to Packman\Config.
+ *
+ * @deprecated Use Packman\Config\Exceptions\InvalidConfiguration instead.
+ */
 #[Api(since: '0.1')]
 final class InvalidConfiguration extends CommerzException
 {
@@ -28,5 +36,16 @@ final class InvalidConfiguration extends CommerzException
     public function context(): array
     {
         return ['path' => $this->path, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CommerzErrorCode::InvalidConfiguration,
+            category: PackmanErrorCategory::Validation,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

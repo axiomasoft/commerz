@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Commerz\Operations\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Operations\Contracts\Transactions;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
+use Packman\Attributes\Internal;
 use Throwable;
 
+#[Internal]
 final readonly class DatabaseTransactions implements Transactions
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $options,
     ) {}
 
     public function run(callable $work, int $lockTimeoutMs = 3000): mixed
@@ -59,6 +61,6 @@ final readonly class DatabaseTransactions implements Transactions
 
     private function connection(): ConnectionInterface
     {
-        return $this->connections->connection($this->config->connection);
+        return $this->connections->connection($this->options->connection);
     }
 }

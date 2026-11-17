@@ -6,14 +6,16 @@ namespace Commerz\Ports\Sellables\Internal;
 
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 /** Routes each ref type to the provider contributed under that key; one provider call per type. */
+#[Internal]
 final readonly class SellableRouter implements Sellables
 {
     public function __construct(private Contributions $contributions) {}

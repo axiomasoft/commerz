@@ -6,10 +6,12 @@ namespace Commerz\Outbox\Internal;
 
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
+#[Internal]
 final readonly class DatabaseOutbox implements Outbox
 {
     public function __construct(

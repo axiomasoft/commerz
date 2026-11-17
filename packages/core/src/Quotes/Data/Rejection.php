@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Why a promotion or a presented code was not applied. */
 #[Api(since: '0.1')]

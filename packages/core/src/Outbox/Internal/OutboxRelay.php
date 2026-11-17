@@ -7,14 +7,15 @@ namespace Commerz\Outbox\Internal;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Events\IntegrationEventDelivered;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**
@@ -23,6 +24,7 @@ use Throwable;
  * outside any transaction, so consumers may do network calls; a crashed relay's rows become ready again after the
  * lease. A failure reschedules the row with exponential backoff capped at one hour.
  */
+#[Internal]
 final readonly class OutboxRelay
 {
     public const int LEASE_SECONDS = 300;

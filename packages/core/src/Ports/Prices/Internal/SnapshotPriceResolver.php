@@ -10,8 +10,10 @@ use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
 use Commerz\Stores\Contracts\Channels;
+use Packman\Attributes\Internal;
 
 /** Default without the pricing package: the sellable's base price, as gross or net as the channel sells. */
+#[Internal]
 final readonly class SnapshotPriceResolver implements PriceResolver
 {
     public function __construct(private Channels $channels) {}

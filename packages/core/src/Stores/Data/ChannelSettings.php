@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
+use Packman\Attributes\Api;
 
 /** List checks shared by the channel commands. */
 #[Api(since: '0.1')]
@@ -45,6 +45,6 @@ final class ChannelSettings
     /** @param  list<Currency>  $currencies */
     public static function hasCurrency(array $currencies, Currency $currency): bool
     {
-        return array_any($currencies, fn ($candidate) => $candidate->equals($currency));
+        return array_any($currencies, fn (Currency $candidate): bool => $candidate->equals($currency));
     }
 }

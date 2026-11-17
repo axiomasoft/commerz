@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Arch\ApiManifest;
 use Commerz\Arch\ApiSurface;
+use Packman\DevTools\Generators\Contracts\ApiManifestGenerator;
 
 // The SemVer snapshot of 0.1: every package's public PHP surface in packages/<pkg>/resources/contracts/php-api.json.
 // `COMMERZ_UPDATE_API_MANIFEST=1` writes the manifests (composer api:manifest); otherwise a stale one fails here.
@@ -78,7 +79,18 @@ it('keeps every php-api.json manifest in sync with the code', function (): void 
     $manifests = (new ApiManifest(ApiSurface::fromRoot($root)))->build();
     $update = getenv('COMMERZ_UPDATE_API_MANIFEST') === '1';
 
+    $packmanSync = (new ApiManifestGenerator)->sync(
+        $root,
+        [['name' => 'axiomasoft/commerz', 'path' => 'packages/core']],
+        write: $update,
+    );
+    expect($packmanSync['ok'])->toBeTrue(implode("\n", $packmanSync['diagnostics']));
+
     foreach ($manifests as $package => $manifest) {
+        if ($package === 'core') {
+            continue;
+        }
+
         $path = ApiManifest::path($root, $package);
         $encoded = ApiManifest::encode($manifest);
 

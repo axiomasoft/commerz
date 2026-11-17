@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Operations\Contracts;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * Database transactions on the Commerz connection (`commerz.connection`).

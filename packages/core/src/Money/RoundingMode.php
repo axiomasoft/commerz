@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Money;
 
 use Brick\Math\RoundingMode as BrickRoundingMode;
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** How a fractional minor unit is resolved. `Up`/`Down` act on magnitude; `Ceiling`/`Floor` on the signed value. */
 #[Api(since: '0.1')]

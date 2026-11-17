@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Identity;
 
-use Commerz\Attributes\Api;
 use LogicException;
+use Packman\Attributes\Api;
 
 /**
  * Time-ordered UUIDv7 generator (RFC 9562, method 1: a 12-bit counter keeps ids from one process

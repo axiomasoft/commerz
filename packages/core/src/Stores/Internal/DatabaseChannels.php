@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Currency;
@@ -12,7 +12,6 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ArchiveChannel;
 use Commerz\Stores\Data\ChannelId;
@@ -35,12 +34,15 @@ use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
+#[Internal]
 final readonly class DatabaseChannels implements Channels
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $options,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,
@@ -208,7 +210,7 @@ final readonly class DatabaseChannels implements Channels
 
     private function db(): ConnectionInterface
     {
-        return $this->connections->connection($this->config->connection);
+        return $this->connections->connection($this->options->connection);
     }
 
     private static function now(): string

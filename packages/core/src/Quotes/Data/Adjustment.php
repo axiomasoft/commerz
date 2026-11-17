@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /**
  * A price reduction with its reason. `$target` says where it was declared; `$lineId` names the line it is carried

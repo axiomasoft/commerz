@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Measures;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Text by locale tag. Never empty, so `resolve()` always has an answer. */
 #[Api(since: '0.1')]

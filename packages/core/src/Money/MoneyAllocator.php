@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Commerz\Money;
 
 use Brick\Math\BigInteger;
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Splits an amount by weights so the parts sum exactly to the whole (largest remainder method). */
 #[Api(since: '0.1')]

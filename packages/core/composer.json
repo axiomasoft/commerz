@@ -10,17 +10,24 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": ">=8.4 <8.6",
+        "axiomasoft/packman": "^0.1",
+        "axiomasoft/packman-panels": "^0.1",
+        "axiomasoft/packman-plugins": "^0.1",
+        "axiomasoft/packman-schema": "^0.1",
+        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
         "illuminate/console": "^13.0",
         "illuminate/contracts": "^13.0",
-        "illuminate/support": "^13.0",
         "illuminate/database": "^13.0",
-        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17"
+        "illuminate/support": "^13.0"
     },
     "autoload": {
         "psr-4": {
             "Commerz\\": "src/"
-        }
+        },
+        "files": [
+            "src/aliases.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -31,6 +38,30 @@
         "laravel": {
             "providers": [
                 "Commerz\\CommerzServiceProvider"
+            ]
+        },
+        "packman": {
+            "error-prefix": "commerz",
+            "owns": [
+                "Configuration",
+                "Context",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Identity",
+                "Internal",
+                "Laravel",
+                "Measures",
+                "Money",
+                "Operations",
+                "Outbox",
+                "Pagination",
+                "Panels",
+                "Plugins",
+                "Ports",
+                "Quotes",
+                "Schema",
+                "Stores"
             ]
         },
         "branch-alias": {

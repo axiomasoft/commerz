@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Arch;
 
 use BackedEnum;
+use Packman\Errors\Contracts\DescribesError;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
@@ -95,7 +96,7 @@ final readonly class ApiManifest
             ! $type->isEnum() && $type->isReadOnly() ? 'readonly' : null,
         ]));
         $parent = $type->getParentClass();
-        $interfaces = array_values(array_diff($type->getInterfaceNames(), [UnitEnum::class, BackedEnum::class]));
+        $interfaces = array_values(array_diff($type->getInterfaceNames(), [UnitEnum::class, BackedEnum::class, DescribesError::class]));
         sort($interfaces);
         $extensible = ! $type->isFinal() && ! $type->isEnum();
 

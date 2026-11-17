@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Stock\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Ports\Stock\Data\ReservationResult;
 use Commerz\Ports\Stock\Data\ReserveStock;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
+use Packman\Attributes\Api;
 
 /**
  * Holds stock for a demand (`order:{id}`). Every mutation joins the caller's database transaction on the Commerz

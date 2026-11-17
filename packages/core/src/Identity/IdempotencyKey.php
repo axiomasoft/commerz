@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Identity;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 use Stringable;
 
 /** A caller-chosen key that makes a mutation safe to retry. 1..191 bytes of printable text. */

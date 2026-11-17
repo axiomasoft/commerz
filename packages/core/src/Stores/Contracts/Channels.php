@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Pagination\Page;
 use Commerz\Stores\Data\ArchiveChannel;
@@ -18,6 +17,7 @@ use Commerz\Stores\Exceptions\ChannelNotFound;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Commerz\Stores\Exceptions\DuplicateCode;
 use Commerz\Stores\Exceptions\StoreNotFound;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 interface Channels

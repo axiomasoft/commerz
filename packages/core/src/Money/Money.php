@@ -7,8 +7,8 @@ namespace Commerz\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode as BrickRoundingMode;
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** An amount in integer minor units of one currency. Arithmetic never leaves int64 silently. */
 #[Api(since: '0.1')]

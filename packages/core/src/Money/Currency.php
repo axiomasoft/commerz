@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Money;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 use Stringable;
 
 /** ISO 4217 code with its minor-unit exponent, taken from a built-in table. */

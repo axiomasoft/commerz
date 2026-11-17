@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Facades;
 
-use Commerz\Attributes\Api;
-use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Illuminate\Support\Facades\Facade;
+use Packman\Attributes\Api;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
 
 /**
  * @method static Stores stores()

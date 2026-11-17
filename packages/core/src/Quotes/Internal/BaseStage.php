@@ -14,11 +14,13 @@ use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Illuminate\Contracts\Container\Container;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * Prices every input line with one `PriceResolver::resolveMany()` call; the sellable's base price is the fallback.
  * The resolver is looked up per run, so a port rebound after the registry froze (a test fake) is still used.
  */
+#[Internal]
 final readonly class BaseStage implements QuoteStage
 {
     public function __construct(private Container $container) {}

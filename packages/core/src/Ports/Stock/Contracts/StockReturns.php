@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Stock\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Packman\Attributes\Api;
 
 /**
  * Puts returned units back on hand (REF-01: stock returns only through an explicit restock, never implicitly).

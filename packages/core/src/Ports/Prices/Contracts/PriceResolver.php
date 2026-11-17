@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Prices\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
+use Packman\Attributes\Api;
 
 /** Unit prices in the context's channel, currency, customer groups and moment. Reads only. */
 #[Api(since: '0.1')]

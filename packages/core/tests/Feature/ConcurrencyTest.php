@@ -11,12 +11,12 @@ use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Internal\OutboxRelay;
 use Commerz\Plugins\CommerzPlugins;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 // Committed data across processes: no transactional isolation; tables are emptied after each test.
 
@@ -35,7 +35,7 @@ final readonly class FileLogConsumer implements OutboxConsumer
     }
 }
 
-final class FileLogPlugin implements CommerzPlugin
+final class FileLogPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Stock\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Packman\Attributes\Api;
 
 /** Releases the whole demand, all of one sellable, or `$quantity` of one sellable. */
 #[Api(since: '0.1')]

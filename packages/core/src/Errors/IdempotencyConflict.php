@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Errors;
 
-use Commerz\Attributes\Api;
+use Commerz\Errors\Enums\CommerzErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The same idempotency key was reused for a different request payload. */
 #[Api(since: '0.1')]
@@ -28,5 +32,16 @@ final class IdempotencyConflict extends CommerzException
     public function context(): array
     {
         return ['operation' => $this->operation, 'key' => $this->key];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CommerzErrorCode::IdempotencyConflict,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

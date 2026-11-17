@@ -4,8 +4,10 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          cacheDirectory=".phpunit.cache"
+         executionOrder="default"
          failOnWarning="true"
-         failOnRisky="true">
+         failOnRisky="true"
+         failOnEmptyTestSuite="false">
     <testsuites>
         <testsuite name="Core"><directory>packages/core/tests</directory></testsuite>
         <testsuite name="Catalog"><directory>packages/catalog/tests</directory></testsuite>
@@ -20,11 +22,21 @@
         <testsuite name="Arch"><directory>tests/Arch</directory></testsuite>
     </testsuites>
     <php>
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="54329"/>
         <env name="DB_DATABASE" value="commerz_test"/>
-        <env name="DB_USERNAME" value="commerz"/>
-        <env name="DB_PASSWORD" value="commerz"/>
+        <env name="DB_USERNAME" value="skm"/>
+        <env name="DB_PASSWORD" value="skm_dev"/>
+        <env name="PACKMAN_TEST_DESTRUCTIVE_OPT_IN" value="1"/>
+        <env name="PGSQL_HOST" value="127.0.0.1"/>
+        <env name="PGSQL_PORT" value="54329"/>
+        <env name="PGSQL_DATABASE" value="commerz_test"/>
+        <env name="PGSQL_USERNAME" value="skm"/>
+        <env name="PGSQL_PASSWORD" value="skm_dev"/>
     </php>
 </phpunit>

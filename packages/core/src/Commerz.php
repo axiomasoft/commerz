@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz;
 
-use Commerz\Attributes\Api;
-use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
+use Packman\Attributes\Api;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
 
 /** Root of the public API: only accessors of domain contracts. Feature packages add their own roots. */
 #[Api(since: '0.1')]

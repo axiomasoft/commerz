@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Pagination;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
+use Stringable;
 
 /** Opaque keyset position of a page; callers pass it back unchanged as `after`. */
 #[Api(since: '0.1')]
-final readonly class Cursor implements \Stringable
+final readonly class Cursor implements Stringable
 {
     private function __construct(public string $token) {}
 

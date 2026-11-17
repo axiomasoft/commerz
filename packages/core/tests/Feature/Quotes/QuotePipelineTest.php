@@ -3,19 +3,16 @@
 declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Facades\Commerz;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\DeliveryCharge;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Data\QuoteResult;
@@ -29,6 +26,10 @@ use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 /** Records that it ran: "<priced lines>|<settled or open>". */
 final readonly class QtRecordingStage implements QuoteStage
@@ -128,7 +129,7 @@ final readonly class QtLateStage implements QuoteStage
     }
 }
 
-final class QtCodePlugin implements CommerzPlugin
+final class QtCodePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -137,12 +138,12 @@ final class QtCodePlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(QtCodeStage::class);
-        $registrar->quoteStage(new QtLateStage);
+        $registrar->contribute(QuoteStage::KIND, QtCodeStage::class);
+        $registrar->contribute(QuoteStage::KIND, new QtLateStage);
     }
 }
 
-final class QtOrderPlugin implements CommerzPlugin
+final class QtOrderPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -161,12 +162,12 @@ final class QtOrderPlugin implements CommerzPlugin
             ['tax', QuoteAnchor::Tax, StagePosition::At],
             ['delivery.after', QuoteAnchor::Delivery, StagePosition::After],
         ] as [$key, $anchor, $position]) {
-            $registrar->quoteStage(new QtRecordingStage($key, $anchor, $position));
+            $registrar->contribute(QuoteStage::KIND, new QtRecordingStage($key, $anchor, $position));
         }
     }
 }
 
-final class QtTwoAtPlugin implements CommerzPlugin
+final class QtTwoAtPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -175,12 +176,12 @@ final class QtTwoAtPlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(new QtRecordingStage('acme.tax', QuoteAnchor::Tax, StagePosition::At));
-        $registrar->quoteStage(new QtRecordingStage('other.tax', QuoteAnchor::Tax, StagePosition::At));
+        $registrar->contribute(QuoteStage::KIND, new QtRecordingStage('acme.tax', QuoteAnchor::Tax, StagePosition::At));
+        $registrar->contribute(QuoteStage::KIND, new QtRecordingStage('other.tax', QuoteAnchor::Tax, StagePosition::At));
     }
 }
 
-final class QtBaseAtPlugin implements CommerzPlugin
+final class QtBaseAtPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -189,7 +190,7 @@ final class QtBaseAtPlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(new QtRecordingStage('acme.base', QuoteAnchor::Base, StagePosition::At));
+        $registrar->contribute(QuoteStage::KIND, new QtRecordingStage('acme.base', QuoteAnchor::Base, StagePosition::At));
     }
 }
 
@@ -280,8 +281,8 @@ it('prices lines with the PriceResolver and falls back to the sellable base pric
 
     $result = qtRun(qtInput(['a' => ['10.00', 3], 'b' => ['2.50', 2]]));
 
-    expect(qtDecimals(array_map(static fn ($l) => $l->unitPrice, $result->lines)))->toBe(['7.00', '2.50'])
-        ->and(array_map(static fn ($l) => $l->priceSource, $result->lines))->toBe(['fake', 'sellable'])
+    expect(qtDecimals(array_map(static fn (QuotedLine $l) => $l->unitPrice, $result->lines)))->toBe(['7.00', '2.50'])
+        ->and(array_map(static fn (QuotedLine $l) => $l->priceSource, $result->lines))->toBe(['fake', 'sellable'])
         ->and($result->lines[0]->compareAt?->toDecimal())->toBe('9.00')
         ->and(qtDecimals([$result->totals->subtotal, $result->total]))->toBe(['26.00', '26.00']);
 });
@@ -289,12 +290,12 @@ it('prices lines with the PriceResolver and falls back to the sellable base pric
 it('spreads a 100.00 order discount over three lines to the kopeck', function (): void {
     $result = qtRun(qtInput(['a' => ['100.00'], 'b' => ['100.00'], 'c' => ['100.00']], ['order:100.00']));
 
-    $shares = array_map(static fn ($line) => $line->adjustments[0]->amount, $result->lines);
+    $shares = array_map(static fn (QuotedLine $line) => $line->adjustments[0]->amount, $result->lines);
 
     expect(qtDecimals($shares))->toBe(['-33.34', '-33.33', '-33.33'])
-        ->and(array_map(static fn ($line) => [$line->adjustments[0]->target, $line->adjustments[0]->lineId, $line->adjustments[0]->promotionId], $result->lines))
+        ->and(array_map(static fn (QuotedLine $line) => [$line->adjustments[0]->target, $line->adjustments[0]->lineId, $line->adjustments[0]->promotionId], $result->lines))
         ->toBe([[AdjustmentTarget::Order, 'a', 'promo-1'], [AdjustmentTarget::Order, 'b', 'promo-1'], [AdjustmentTarget::Order, 'c', 'promo-1']])
-        ->and(qtDecimals(array_map(static fn ($line) => $line->total, $result->lines)))->toBe(['66.66', '66.67', '66.67'])
+        ->and(qtDecimals(array_map(static fn (QuotedLine $line) => $line->total, $result->lines)))->toBe(['66.66', '66.67', '66.67'])
         ->and(qtDecimals([$result->totals->subtotal, $result->totals->discountTotal, $result->total]))->toBe(['300.00', '100.00', '200.00'])
         ->and($result->orderAdjustments)->toHaveCount(1)
         ->and($result->orderAdjustments[0]->lineId)->toBeNull();
@@ -303,7 +304,7 @@ it('spreads a 100.00 order discount over three lines to the kopeck', function ()
 it('weights the allocation by line subtotals after line adjustments', function (): void {
     $result = qtRun(qtInput(['1' => ['100.00'], '2' => ['300.00'], '3' => ['0.00']], ['line:2:200.00', 'order:50.00']));
 
-    expect(array_map(static fn ($line) => qtDecimals(array_map(static fn ($a) => $a->amount, $line->adjustments)), $result->lines))
+    expect(array_map(static fn (QuotedLine $line) => qtDecimals(array_map(static fn (Adjustment $a) => $a->amount, $line->adjustments)), $result->lines))
         ->toBe([['-25.00'], ['-200.00', '-25.00'], []])
         ->and($result->lines[1]->adjustments[0]->target)->toBe(AdjustmentTarget::Line)
         ->and(qtDecimals([$result->totals->discountTotal, $result->total]))->toBe(['250.00', '150.00']);

@@ -6,14 +6,12 @@ use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\DeliveryCharge;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Data\QuoteResult;
@@ -23,6 +21,9 @@ use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 /**
  * Turns presented codes into adjustments: `line:<id>:<amount>:<promotion>[:<coupon>]`,
@@ -70,7 +71,7 @@ final readonly class ApCodeStage implements QuoteStage
     }
 }
 
-final class ApCodePlugin implements CommerzPlugin
+final class ApCodePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -79,7 +80,7 @@ final class ApCodePlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(ApCodeStage::class);
+        $registrar->contribute(QuoteStage::KIND, ApCodeStage::class);
     }
 }
 
@@ -127,7 +128,7 @@ it('adds line, order and delivery adjustments of one promotion into one positive
 it('does not count the line shares of an order-level adjustment again', function (): void {
     $result = apQuote(['a' => '100.00', 'b' => '100.00', 'c' => '100.00'], ['order:100.00:p1', 'line:b:30.00:p2']);
 
-    $shares = array_sum(array_map(static fn ($line): int => count($line->adjustments), $result->lines));
+    $shares = array_sum(array_map(static fn (QuotedLine $line): int => count($line->adjustments), $result->lines));
 
     expect($shares)->toBe(4)
         ->and(apRows($result->appliedPromotions()))->toBe([['p2', null, '30.00'], ['p1', null, '100.00']])

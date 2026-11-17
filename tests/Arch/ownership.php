@@ -8,7 +8,7 @@ declare(strict_types=1);
  * `php`, `ext-*`, `illuminate/*`, `brick/math` and its allowed `axiomasoft/*` packages.
  */
 return [
-    'core' => ['kind' => 'core', 'nouns' => ['store', 'channel', 'schema', 'operation', 'outbox']],
+    'core' => ['kind' => 'core', 'nouns' => ['store', 'channel', 'schema', 'operation', 'outbox'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'catalog' => ['kind' => 'feature', 'nouns' => ['product', 'variant', 'option', 'attribute', 'category', 'listing']],
     'inventory' => ['kind' => 'feature', 'nouns' => ['stock']],
     'pricing' => ['kind' => 'feature', 'nouns' => ['price', 'tax']],

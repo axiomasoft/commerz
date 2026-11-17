@@ -18,8 +18,10 @@ use Commerz\Ports\Stock\Data\ReservedLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Packman\Attributes\Internal;
 
 /** `commerz.stock = unlimited`: everything is available, nothing is held or written. */
+#[Internal]
 final readonly class UnlimitedStock implements StockAvailability, StockReservations, StockReturns
 {
     public function check(CheckAvailability $query): AvailabilityAnswer

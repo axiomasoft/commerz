@@ -27,9 +27,14 @@ return [
     'customers' => null,
 
     /*
-     | Plugin classes implementing CommerzPlugin, registered in order.
+     | Plugin classes implementing ExtensionPlugin, registered in order.
      */
     'plugins' => [],
+
+    /*
+     | Plugin ids disabled at runtime via configuration.
+     */
+    'disabled_plugins' => [],
 
     'operations' => [
         /*

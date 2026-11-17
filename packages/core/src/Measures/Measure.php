@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Commerz\Measures;
 
 use Brick\Math\BigDecimal;
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** A decimal attribute value with its unit, e.g. '1.250' kg. Kept as a string; never a float. */
 #[Api(since: '0.1')]

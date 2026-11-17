@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Fixed points of the quote pipeline, in run order (the order of the cases). */
 #[Api(since: '0.1')]

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Outbox\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Outbox\Data\IntegrationEvent;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * Receives every relayed event. Registered by a plugin: `$registrar->contribute(OutboxConsumer::KIND, MyConsumer::class)`.

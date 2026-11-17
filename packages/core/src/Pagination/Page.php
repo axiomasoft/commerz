@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pagination;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * One page of a cursor-paginated list.

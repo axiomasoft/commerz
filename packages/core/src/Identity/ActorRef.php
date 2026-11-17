@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Identity;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Reference to who performs a command: an operator, a customer or the system. */
 #[Api(since: '0.1')]

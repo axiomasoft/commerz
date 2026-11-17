@@ -1,0 +1,65 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz configuration",
+    "type": "object",
+    "properties": {
+        "commerz": {
+            "type": "object",
+            "properties": {
+                "connection": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "customers": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "disabled_plugins": {
+                    "type": [
+                        "array",
+                        "object"
+                    ]
+                },
+                "operations": {
+                    "type": "object",
+                    "properties": {
+                        "receipt_ttl_days": {
+                            "type": "integer",
+                            "default": 30
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "plugins": {
+                    "type": [
+                        "array",
+                        "object"
+                    ]
+                },
+                "stock": {
+                    "type": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "null"
+                    ]
+                },
+                "table_prefix": {
+                    "type": "string",
+                    "default": "cmz_"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

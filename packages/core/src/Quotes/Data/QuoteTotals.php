@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /**
  * `total = subtotal − discountTotal + deliveryTotal + excluded taxes`. `discountTotal` (positive) sums line and

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Channels ordered by code, optionally of one store. */
 #[Api(since: '0.1')]

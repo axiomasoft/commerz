@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Commerz\Operations;
 
 use BackedEnum;
-use Commerz\Attributes\Api;
 use InvalidArgumentException;
 use JsonSerializable;
+use Packman\Attributes\Api;
 use Stringable;
 
 /**

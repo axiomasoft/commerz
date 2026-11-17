@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Measures;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** @internal Shared unit-code validation for Quantity and Measure. */
 #[Api(since: '0.1')]

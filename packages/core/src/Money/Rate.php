@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Money;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** A non-negative ratio in basis points: 2000 = 20%. */
 #[Api(since: '0.1')]

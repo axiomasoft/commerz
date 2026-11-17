@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Commerz\Schema\CommerzMigration;
-use Commerz\Schema\ConstraintNames;
 use Illuminate\Database\Schema\Blueprint;
+use Packman\Schema\Data\Compiler\ConstraintNames;
+use Packman\Schema\Laravel\PackmanMigration;
 
-return new class extends CommerzMigration
+return new class extends PackmanMigration
 {
     public function up(): void
     {

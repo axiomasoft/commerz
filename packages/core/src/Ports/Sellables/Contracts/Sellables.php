@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Sellables\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
+use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Resolves anything sellable to a snapshot by routing `SellableRef::$type` to the `SellableProvider` with that key.

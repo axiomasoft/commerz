@@ -3,15 +3,10 @@
 declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Customers\Internal\GuestOnlyDirectory;
@@ -27,6 +22,7 @@ use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
 use Commerz\Ports\Promotions\Internal\NullPromotionUsage;
+use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
@@ -35,16 +31,21 @@ use Commerz\Ports\Stock\Internal\UnlimitedStock;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Fakes\FakePrices;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 final class PdHostDirectory implements CustomerDirectory
 {
-    public function find(CustomerRef $customer): ?CustomerProfile
+    public function find(CustomerRef $customer): CustomerProfile
     {
         return new CustomerProfile($customer, ['vip']);
     }
 }
 
-final class PdSellablesPlugin implements CommerzPlugin
+final class PdSellablesPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -53,11 +54,11 @@ final class PdSellablesPlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->sellableProvider(new FakeSellables('test.thing')->add(
+        $registrar->contribute(SellableProvider::KIND, new FakeSellables('test.thing')->add(
             FakeSellables::snapshot('test.thing:a'),
             FakeSellables::snapshot('test.thing:b'),
         ));
-        $registrar->sellableProvider(new FakeSellables('other')->add(FakeSellables::snapshot('other:x')));
+        $registrar->contribute(SellableProvider::KIND, new FakeSellables('other')->add(FakeSellables::snapshot('other:x')));
     }
 }
 

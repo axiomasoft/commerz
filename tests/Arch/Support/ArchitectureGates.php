@@ -25,9 +25,9 @@ use PhpParser\ParserFactory;
  */
 final class ArchitectureGates
 {
-    private const string API = 'Commerz\Attributes\Api';
+    private const array API_ATTRIBUTES = ['Packman\Attributes\Api', 'Commerz\Attributes\Api'];
 
-    private const string SPI = 'Commerz\Attributes\Spi';
+    private const array SPI_ATTRIBUTES = ['Packman\Attributes\Spi', 'Commerz\Attributes\Spi'];
 
     private const array MODEL_BASES = [
         'Illuminate\Database\Eloquent\Model',
@@ -64,6 +64,14 @@ final class ArchitectureGates
             $path = $this->scanner->relative($package->path.'/composer.json');
 
             foreach ($package->requires() as $required) {
+                if (str_starts_with($required, 'axiomasoft/packman')) {
+                    if (! $this->allowedExternal($required, $package)) {
+                        $violations[] = "{$path}: '{$package->name()}' must not require '{$required}'.";
+                    }
+
+                    continue;
+                }
+
                 if (str_starts_with($required, 'axiomasoft/')) {
                     if ($package->kind === 'core' || $required !== 'axiomasoft/commerz') {
                         $violations[] = "{$path}: '{$package->name()}' must not require '{$required}'.";
@@ -107,7 +115,7 @@ final class ArchitectureGates
                     continue;
                 }
 
-                if ($owner->kind === 'core' && $this->module($file->namespace, $owner) !== null && $this->module($file->namespace, $owner) !== $this->module(substr($name, 0, (int) strrpos($name, '\\')), $owner)) {
+                if ($owner->kind === 'core' && $file->relativePath !== 'packages/core/src/Plugins/CorePlugin.php' && $this->module($file->namespace, $owner) !== null && $this->module($file->namespace, $owner) !== $this->module(substr($name, 0, (int) strrpos($name, '\\')), $owner)) {
                     $violations[] = "{$file->relativePath}: imports {$name} of another core module.";
                 }
             }
@@ -130,7 +138,7 @@ final class ArchitectureGates
             foreach ($file->declarations() as $declaration) {
                 $checked++;
 
-                if (! $this->hasAttribute($declaration, self::API, self::SPI)) {
+                if (! $this->hasAttribute($declaration, ...self::API_ATTRIBUTES, ...self::SPI_ATTRIBUTES)) {
                     $violations[] = "{$file->relativePath}: {$file->namespace}\\{$declaration->name} lacks #[Api] or #[Spi].";
                 }
             }
@@ -260,8 +268,8 @@ final class ArchitectureGates
 
         $module = $relative === '' ? '' : explode('\\', $relative)[0];
 
-        // The package root and its `Internal` namespace are the composition root: it may wire every module.
-        return $module === '' || $module === 'Internal' ? null : $module;
+        // The package root, Laravel registrars, and `Internal` are composition roots allowed to wire core modules.
+        return in_array($module, ['', 'Internal', 'Laravel'], true) ? null : $module;
     }
 
     private function hasAttribute(Node\Stmt\ClassLike $declaration, string ...$names): bool

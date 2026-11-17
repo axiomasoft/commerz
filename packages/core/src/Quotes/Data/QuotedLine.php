@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Packman\Attributes\Api;
 
 /** A settled line of a quote result: what an order line snapshots. */
 #[Api(since: '0.1')]

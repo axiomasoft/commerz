@@ -9,8 +9,10 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Sleep;
+use Packman\Attributes\Internal;
 
 #[Description('Deliver recorded Commerz integration events to listeners and outbox consumers.')]
+#[Internal]
 #[Signature('commerz:outbox:relay
         {--batch=100 : Messages claimed per round (1..1000)}
         {--once : Deliver what is ready now, then exit}')]
@@ -28,7 +30,7 @@ final class RelayOutboxCommand extends Command
 
         $stop = false;
 
-        if (! $this->option('once') && extension_loaded('pcntl')) {
+        if ($this->option('once') !== true && extension_loaded('pcntl')) {
             $this->trap([SIGTERM, SIGINT], static function () use (&$stop): void {
                 $stop = true;
             });
@@ -43,7 +45,7 @@ final class RelayOutboxCommand extends Command
             $failed += $report->failed;
 
             if ($report->claimed < $batch) {
-                if ($this->option('once')) {
+                if ($this->option('once') === true) {
                     break;
                 }
 

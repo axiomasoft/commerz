@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Archived channels stay readable but cannot start new contexts. Archiving twice is a no-op. */
 #[Api(since: '0.1')]

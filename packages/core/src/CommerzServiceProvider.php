@@ -4,140 +4,37 @@ declare(strict_types=1);
 
 namespace Commerz;
 
-use Commerz\Attributes\Api;
-use Commerz\Configuration\CommerzConfig;
-use Commerz\Configuration\StockMode;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Internal\Console\DoctorCommand;
-use Commerz\Internal\Console\InstallCommand;
-use Commerz\Internal\CorePlugin;
-use Commerz\Operations\Contracts\CommittedEvents;
-use Commerz\Operations\Contracts\OperationReceipts;
-use Commerz\Operations\Contracts\Transactions;
-use Commerz\Operations\Internal\ConnectionCommittedEvents;
-use Commerz\Operations\Internal\Console\PruneOperationsCommand;
-use Commerz\Operations\Internal\DatabaseOperationReceipts;
-use Commerz\Operations\Internal\DatabaseTransactions;
-use Commerz\Outbox\Contracts\Outbox;
-use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
-use Commerz\Outbox\Internal\DatabaseOutbox;
-use Commerz\Outbox\Internal\OutboxRelay;
-use Commerz\Plugins\CommerzPlugins;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
-use Commerz\Plugins\Internal\Console\PluginsCommand;
-use Commerz\Plugins\Internal\PluginCatalog;
-use Commerz\Plugins\Internal\PluginGraphCompiler;
-use Commerz\Ports\Customers\Contracts\CustomerDirectory;
-use Commerz\Ports\Customers\Internal\GuestOnlyDirectory;
-use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
-use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
-use Commerz\Ports\Delivery\Internal\NoDelivery;
-use Commerz\Ports\Prices\Contracts\PriceResolver;
-use Commerz\Ports\Prices\Internal\SnapshotPriceResolver;
-use Commerz\Ports\Promotions\Contracts\PromotionUsage;
-use Commerz\Ports\Promotions\Internal\NullPromotionUsage;
-use Commerz\Ports\Sellables\Contracts\Sellables;
-use Commerz\Ports\Sellables\Internal\SellableRouter;
-use Commerz\Ports\Stock\Contracts\StockAvailability;
-use Commerz\Ports\Stock\Contracts\StockReservations;
-use Commerz\Ports\Stock\Contracts\StockReturns;
-use Commerz\Ports\Stock\Internal\UnlimitedStock;
-use Commerz\Quotes\Contracts\QuotePipeline;
-use Commerz\Quotes\Internal\StagedQuotePipeline;
-use Commerz\Schema\Contracts\SchemaOwnership;
-use Commerz\Schema\Internal\SchemaOwnershipRegistry;
-use Commerz\Schema\TableNames;
-use Commerz\Stores\Contracts\Channels;
-use Commerz\Stores\Contracts\Stores;
-use Commerz\Stores\Internal\DatabaseChannels;
-use Commerz\Stores\Internal\DatabaseStores;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Foundation\Application;
+use Commerz\Laravel\Registrars\CommerzCoreRegistrar;
+use Commerz\Laravel\Registrars\CommerzPortsRegistrar;
+use Commerz\Laravel\Registrars\CommerzStoresRegistrar;
 use Illuminate\Support\ServiceProvider;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Foundation\Concerns\RegistersPackageRegistrars;
+use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
 final class CommerzServiceProvider extends ServiceProvider
 {
+    use RegistersPackageRegistrars {
+        register as protected registerRegistrars;
+        boot as protected bootRegistrars;
+    }
+
     /** Table nouns owned by the core package. */
     public const array NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox'];
 
+    /** @var list<class-string<PackageRegistrar>> */
+    protected const array REGISTRARS = [
+        CommerzCoreRegistrar::class,
+        CommerzPortsRegistrar::class,
+        CommerzStoresRegistrar::class,
+    ];
+
+    #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/commerz.php', 'commerz');
-
-        $this->app->singleton(CommerzConfig::class, static function (Application $app): CommerzConfig {
-            $config = $app->make(Repository::class)->get('commerz', []);
-
-            return CommerzConfig::fromArray(is_array($config) ? $config : []);
-        });
-
-        $this->app->singleton(SchemaOwnership::class, SchemaOwnershipRegistry::class);
-        $this->app->singleton(TableNames::class);
-        $this->app->singleton(Transactions::class, DatabaseTransactions::class);
-        $this->app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
-        $this->app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);
-        $this->app->singleton(Outbox::class, DatabaseOutbox::class);
-        $this->app->singleton(OutboxRelay::class);
-
-        // Feature providers add their built-in plugins in their own register(), possibly before this one runs.
-        $this->app->singletonIf(PluginCatalog::class);
-        $this->app->singleton(Contributions::class, static fn (Application $app): Contributions => $app->make(PluginGraphCompiler::class)->compile(
-            $app->make(PluginCatalog::class)->seal()->entries($app->make(CommerzConfig::class)),
-        ));
-        $this->app->alias(Contributions::class, PluginInspector::class);
-
-        $this->app->singleton(Stores::class, DatabaseStores::class);
-        $this->app->singleton(Channels::class, DatabaseChannels::class);
-        $this->app->singleton(Sellables::class, SellableRouter::class);
-        $this->app->singleton(QuotePipeline::class, StagedQuotePipeline::class);
-        $this->registerPortDefaults();
-        $this->app->singleton(Commerz::class);
-
-        CommerzPlugins::builtIn(CorePlugin::class);
-
-        $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
-            $ownership->declare('commerz.core', self::NOUNS);
-        });
-    }
-
-    /**
-     * Core defaults of the cross-package ports, bound only when nothing else is: a feature package overrides them
-     * with a plain bind in its own provider, whatever the provider order.
-     */
-    private function registerPortDefaults(): void
-    {
-        $this->app->singletonIf(PriceResolver::class, SnapshotPriceResolver::class);
-        $this->app->singletonIf(PromotionUsage::class, NullPromotionUsage::class);
-        $this->app->singletonIf(DeliveryOptions::class, NoDelivery::class);
-        $this->app->singletonIf(ShipmentBooking::class, NoDelivery::class);
-
-        $unlimited = static function (Application $app): UnlimitedStock {
-            if ($app->make(CommerzConfig::class)->stock === StockMode::Inventory) {
-                throw new InvalidConfiguration('commerz.stock', "'inventory' needs a package implementing StockAvailability, StockReservations and StockReturns (axiomasoft/commerz-inventory); install it or set 'unlimited'");
-            }
-
-            return new UnlimitedStock;
-        };
-        $this->app->singletonIf(StockAvailability::class, $unlimited);
-        $this->app->singletonIf(StockReservations::class, $unlimited);
-        $this->app->singletonIf(StockReturns::class, $unlimited);
-
-        $this->app->singletonIf(CustomerDirectory::class, static function (Application $app): CustomerDirectory {
-            $class = $app->make(CommerzConfig::class)->customers;
-
-            if ($class === null) {
-                return new GuestOnlyDirectory;
-            }
-
-            $directory = $app->make($class);
-
-            if (! $directory instanceof CustomerDirectory) {
-                throw new InvalidConfiguration('commerz.customers', "{$class} does not implement ".CustomerDirectory::class);
-            }
-
-            return $directory;
-        });
+        $this->registerRegistrars();
     }
 
     public function boot(): void
@@ -146,16 +43,10 @@ final class CommerzServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/commerz.php' => config_path('commerz.php'),
+                __DIR__.'/../config/commerz.php' => $this->app->configPath('commerz.php'),
             ], 'commerz-config');
-
-            $this->commands([
-                RelayOutboxCommand::class,
-                PruneOperationsCommand::class,
-                PluginsCommand::class,
-                InstallCommand::class,
-                DoctorCommand::class,
-            ]);
         }
+
+        $this->bootRegistrars();
     }
 }

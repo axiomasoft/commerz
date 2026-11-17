@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Promotions\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
 use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
+use Packman\Attributes\Api;
 
 /**
  * Counts promotion, coupon and budget usage of placed orders. Both mutations join the caller's database transaction

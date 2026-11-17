@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Where a stage runs relative to its anchor. Only the anchor's owner takes `At`, and only one stage per anchor. */
 #[Api(since: '0.1')]

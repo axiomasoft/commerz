@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Outbox\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Outbox\Data\IntegrationEvent;
+use Packman\Attributes\Api;
 
 /**
  * Transactional outbox: an event is stored in the same transaction as the change it describes and delivered by

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Stock\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Shared shape checks of the stock port commands. */
 #[Api(since: '0.1')]

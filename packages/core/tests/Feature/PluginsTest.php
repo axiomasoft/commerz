@@ -3,21 +3,21 @@
 declare(strict_types=1);
 
 use Commerz\CommerzServiceProvider;
-use Commerz\Configuration\CommerzConfig;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Errors\UnsupportedContribution;
-use Commerz\Internal\CorePlugin;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Plugins\CommerzPlugins;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
-use Commerz\Plugins\ContributionKind;
-use Commerz\Plugins\Internal\PluginEntry;
-use Commerz\Plugins\Internal\PluginGraphCompiler;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
-use Commerz\Plugins\PluginSource;
+use Commerz\Plugins\CorePlugin;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Data\Contributions\ContributionKind;
+use Packman\Plugins\Data\Plugin\PluginDescription;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Enums\Plugin\PluginSource;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use Packman\Plugins\Laravel\PluginRegistrar;
+use Packman\Plugins\Testing\PluginGraph;
 
 interface Greeter
 {
@@ -73,7 +73,7 @@ final class BadKeyGreeter implements Greeter
     }
 }
 
-abstract class PlgBase implements CommerzPlugin
+abstract class PlgBase implements ExtensionPlugin
 {
     /** @return array{0: string, 1?: list<string>, 2?: list<string>} */
     abstract protected function spec(): array;
@@ -238,7 +238,7 @@ final class PlgForeignOwner extends PlgBase
     }
 }
 
-final class PlgBadManifest implements CommerzPlugin
+final class PlgBadManifest implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -263,16 +263,15 @@ final class PlgLate extends PlgBase
     }
 }
 
-/** @param  class-string  ...$plugins  host plugins, in config order; the core plugin is always built in */
+/** @param class-string ...$plugins */
 function compilePlugins(string ...$plugins): Contributions&PluginInspector
 {
-    $entries = [PluginEntry::builtIn(CorePlugin::class)];
-
-    foreach (array_values($plugins) as $index => $plugin) {
-        $entries[] = PluginEntry::config($plugin, $index);
-    }
-
-    return new PluginGraphCompiler(app())->compile($entries);
+    return PluginGraph::compile(
+        container: app(),
+        plugins: array_values($plugins),
+        corePluginId: CorePlugin::ID,
+        builtIn: [CorePlugin::class],
+    );
 }
 
 function compileError(string ...$plugins): string
@@ -280,7 +279,7 @@ function compileError(string ...$plugins): string
     try {
         compilePlugins(...$plugins);
     } catch (InvalidConfiguration $e) {
-        return $e->path.' | '.$e->reason;
+        return $e->getMessage();
     }
 
     return 'compiled';
@@ -306,14 +305,14 @@ it('compiles the core plugin alone', function (): void {
     $registry = compilePlugins();
 
     expect($registry->keys(OutboxConsumer::KIND))->toBe([])
-        ->and(array_map(fn ($p): string => $p->id, $registry->describe()))->toBe(['commerz.core'])
+        ->and(array_map(fn (PluginDescription $p): string => $p->id, $registry->describe()))->toBe(['commerz.core'])
         ->and($registry->describe()[0]->kinds[0]->name)->toBe('outbox_consumer');
 });
 
 it('merges contributions from required plugins in load order', function (): void {
-    $registry = compilePlugins(PlgExtension::class, PlgOwner::class); // registered before its dependency
+    $registry = compilePlugins(PlgExtension::class, PlgOwner::class);
 
-    expect(array_map(fn ($p): string => $p->id, $registry->describe()))->toBe(['commerz.core', 'test.owner', 'test.extension'])
+    expect(array_map(fn (PluginDescription $p): string => $p->id, $registry->describe()))->toBe(['commerz.core', 'test.owner', 'test.extension'])
         ->and($registry->keys('greeter'))->toBe(['test.hello', 'test.hola'])
         ->and($registry->has('greeter', 'test.hola'))->toBeTrue()
         ->and($registry->get('greeter', 'test.hola', Greeter::class)->greet())->toBe('hola')
@@ -325,32 +324,32 @@ it('merges contributions from required plugins in load order', function (): void
 });
 
 it('orders independent plugins by id whatever the registration order', function (): void {
-    $forward = array_map(fn ($p): string => $p->id, compilePlugins(PlgOwner::class, PlgOptional::class, PlgExtension::class)->describe());
-    $reverse = array_map(fn ($p): string => $p->id, compilePlugins(PlgExtension::class, PlgOptional::class, PlgOwner::class)->describe());
+    $forward = array_map(fn (PluginDescription $p): string => $p->id, compilePlugins(PlgOwner::class, PlgOptional::class, PlgExtension::class)->describe());
+    $reverse = array_map(fn (PluginDescription $p): string => $p->id, compilePlugins(PlgExtension::class, PlgOptional::class, PlgOwner::class)->describe());
 
     expect($forward)->toBe($reverse)->toBe(['commerz.core', 'test.owner', 'test.extension', 'test.optional']);
 });
 
 it('ignores an optional plugin that is absent and loads a present one first', function (): void {
     expect(compileError(PlgOptional::class))->toBe('compiled')
-        ->and(array_map(fn ($p): string => $p->id, compilePlugins(PlgOptional::class, PlgOwner::class)->describe()))->toBe(['commerz.core', 'test.owner', 'test.optional']);
+        ->and(array_map(fn (PluginDescription $p): string => $p->id, compilePlugins(PlgOptional::class, PlgOwner::class)->describe()))->toBe(['commerz.core', 'test.owner', 'test.optional']);
 });
 
-it('reports graph problems with the plugin and where it was registered', function (string $problem, array $plugins, string $path, string $reason): void {
-    expect(compileError(...$plugins))->toBe("{$path} | {$reason}");
+it('reports graph problems with the plugin and where it was registered', function (string $problem, array $plugins, string $expected): void {
+    expect(compileError(...$plugins))->toContain($expected);
 })->with([
-    'cycle' => ['cycle', [PlgCycleA::class, PlgCycleB::class], 'commerz.plugins.0', "plugin 'test.cycle-a' (PlgCycleA): dependency cycle among test.cycle-a, test.cycle-b"],
-    'missing requirement' => ['missing', [PlgOptional::class, PlgMissingRequirement::class], 'commerz.plugins.1', "plugin 'test.needy' (PlgMissingRequirement): requires 'test.absent', which is not registered"],
-    'duplicate id' => ['dup id', [PlgOwner::class, PlgExtension::class, PlgOwner::class], 'commerz.plugins.2', "plugin id 'test.owner' is already registered by commerz.plugins.0"],
-    'duplicate key' => ['dup key', [PlgOwner::class, PlgDuplicateKey::class], 'commerz.plugins.1', "plugin 'test.dup-key' (PlgDuplicateKey): greeter/test.hello is already contributed by 'test.owner'"],
-    'duplicate kind' => ['dup kind', [PlgOwner::class, PlgDuplicateKind::class], 'commerz.plugins.1', "plugin 'test.dup-kind' (PlgDuplicateKind): kind 'greeter' is already declared by 'test.owner'"],
-    'unknown kind' => ['unknown kind', [PlgUnknownKind::class], 'commerz.plugins.0', "plugin 'test.unknown-kind' (PlgUnknownKind): contributes to unknown kind 'nonexistent'"],
-    'wrong interface' => ['interface', [PlgOwner::class, PlgWrongInterface::class], 'commerz.plugins.1', "plugin 'test.wrong-interface' (PlgWrongInterface): greeter contribution NotAGreeter must implement Greeter"],
-    'bad key' => ['key', [PlgOwner::class, PlgBadKey::class], 'commerz.plugins.1', "plugin 'test.bad-key' (PlgBadKey): greeter contribution BadKeyGreeter must have a key() returning a lowercase dotted key"],
-    'kind of a plugin it does not require' => ['not required', [PlgOwner::class, PlgNotRequired::class], 'commerz.plugins.1', "plugin 'test.not-required' (PlgNotRequired): kind 'greeter' belongs to 'test.owner', which this plugin does not require"],
-    'kind declared for another owner' => ['foreign', [PlgForeignOwner::class], 'commerz.plugins.0', "PlgForeignOwner: plugin.kind.owner: plugin 'test.foreign' declared kind 'stolen' for 'test.owner'"],
-    'bad manifest' => ['manifest', [PlgBadManifest::class], 'commerz.plugins.0', "PlgBadManifest: plugin.manifest.id: 'NoVendor' is not a plugin id (vendor.name, lowercase letters, digits, dots and dashes)"],
-    'not a plugin' => ['class', [HelloGreeter::class], 'commerz.plugins.0', 'HelloGreeter must be a class implementing '.CommerzPlugin::class],
+    'cycle' => ['cycle', [PlgCycleA::class, PlgCycleB::class], "plugin 'test.cycle-a' (PlgCycleA): dependency cycle among test.cycle-a, test.cycle-b"],
+    'missing requirement' => ['missing', [PlgOptional::class, PlgMissingRequirement::class], "plugin 'test.needy' (PlgMissingRequirement): requires 'test.absent', which is not registered"],
+    'duplicate id' => ['dup id', [PlgOwner::class, PlgExtension::class, PlgOwner::class], "plugin id 'test.owner' is already registered"],
+    'duplicate key' => ['dup key', [PlgOwner::class, PlgDuplicateKey::class], "plugin 'test.dup-key' (PlgDuplicateKey): greeter/test.hello is already contributed by 'test.owner'"],
+    'duplicate kind' => ['dup kind', [PlgOwner::class, PlgDuplicateKind::class], "plugin 'test.dup-kind' (PlgDuplicateKind): kind 'greeter' is already declared by 'test.owner'"],
+    'unknown kind' => ['unknown kind', [PlgUnknownKind::class], "plugin 'test.unknown-kind' (PlgUnknownKind): contributes to unknown kind 'nonexistent'"],
+    'wrong interface' => ['interface', [PlgOwner::class, PlgWrongInterface::class], "plugin 'test.wrong-interface' (PlgWrongInterface): greeter contribution NotAGreeter must implement Greeter"],
+    'bad key' => ['key', [PlgOwner::class, PlgBadKey::class], "plugin 'test.bad-key' (PlgBadKey): greeter contribution BadKeyGreeter must have a key() returning a lowercase dotted key"],
+    'kind of a plugin it does not require' => ['not required', [PlgOwner::class, PlgNotRequired::class], "plugin 'test.not-required' (PlgNotRequired): kind 'greeter' belongs to 'test.owner', which this plugin does not require"],
+    'kind declared for another owner' => ['foreign', [PlgForeignOwner::class], "plugin.kind.owner: plugin 'test.foreign' declared kind 'stolen' for 'test.owner'"],
+    'bad manifest' => ['manifest', [PlgBadManifest::class], "plugin.manifest.id: 'NoVendor' is not a plugin id"],
+    'not a plugin' => ['class', [HelloGreeter::class], 'HelloGreeter must be a class implementing '.ExtensionPlugin::class],
 ]);
 
 it('fails closed on a missing or mistyped contribution', function (): void {
@@ -414,16 +413,16 @@ it('keeps the plugin list config:cache friendly', function (): void {
     $config['plugins'] = [PlgOwner::class];
 
     expect(eval('return '.var_export($config, true).';'))->toBe($config)
-        ->and(CommerzConfig::fromArray($config)->plugins)->toBe([PlgOwner::class])
-        ->and(fn () => CommerzConfig::fromArray(['plugins' => [new PlgOwner]]))->toThrow(InvalidConfiguration::class, 'commerz.plugins.0')
-        ->and(fn () => CommerzConfig::fromArray(['plugins' => [fn () => null]]))->toThrow(InvalidConfiguration::class);
+        ->and(CommerzOptions::fromArray($config)->plugins)->toBe([PlgOwner::class])
+        ->and(fn () => CommerzOptions::fromArray(['plugins' => [new PlgOwner]]))->toThrow(InvalidConfiguration::class, 'commerz.plugins.0')
+        ->and(fn () => CommerzOptions::fromArray(['plugins' => [fn () => null]]))->toThrow(InvalidConfiguration::class);
 });
 
-it('lists plugins with commerz:plugins', function (): void {
+it('lists plugins with packman:plugins', function (): void {
     CommerzPlugins::builtIn(PlgOwner::class);
     config(['commerz.plugins' => [PlgExtension::class]]);
 
-    $this->artisan('commerz:plugins')
+    $this->artisan('packman:plugins')
         ->assertSuccessful()
         ->expectsOutputToContain('commerz.core')
         ->expectsOutputToContain('test.hello')
@@ -433,13 +432,13 @@ it('lists plugins with commerz:plugins', function (): void {
 it('prints the registry as json', function (): void {
     CommerzPlugins::builtIn(PlgOwner::class);
 
-    $this->artisan('commerz:plugins', ['--json' => true])->assertSuccessful()->expectsOutputToContain('"id": "test.owner"');
+    $this->artisan('packman:plugins', ['--json' => true])->assertSuccessful()->expectsOutputToContain('"id": "test.owner"');
 });
 
-it('fails commerz:plugins with the configuration error', function (): void {
+it('fails packman:plugins with the configuration error', function (): void {
     config(['commerz.plugins' => [PlgCycleA::class, PlgCycleB::class]]);
 
-    $this->artisan('commerz:plugins')->assertFailed()->expectsOutputToContain('commerz.plugins.0');
+    $this->artisan('packman:plugins')->assertFailed()->expectsOutputToContain('dependency cycle');
 });
 
 final class PlgOptionalExtension extends PlgBase

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
+use Commerz\Errors\Enums\CommerzErrorCode;
 use Commerz\Errors\ErrorCategory;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A currency is outside the channel's currency list (including a default currency that is not in it). */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CurrencyNotAllowed extends CommerzException
     public function context(): array
     {
         return ['channel' => $this->channel, 'currency' => $this->currency];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CommerzErrorCode::CurrencyNotAllowed,
+            category: PackmanErrorCategory::Validation,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

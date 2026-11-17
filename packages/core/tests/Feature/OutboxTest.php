@@ -12,11 +12,11 @@ use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Events\IntegrationEventDelivered;
 use Commerz\Outbox\Internal\OutboxRelay;
 use Commerz\Plugins\CommerzPlugins;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 // Relay consumers must run after commit, so these tests use committed data.
 beforeEach(function (): void {
@@ -47,7 +47,7 @@ final class RecordingConsumer implements OutboxConsumer
     }
 }
 
-final class RecordingConsumerPlugin implements CommerzPlugin
+final class RecordingConsumerPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {

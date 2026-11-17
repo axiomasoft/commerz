@@ -1,0 +1,176 @@
+{
+    "schema_version": 1,
+    "name": "axiomasoft/commerz-monorepo",
+    "profile": "laravel-package",
+    "php": ">=8.4 <8.6",
+    "phpstan_level": "max",
+    "provider_max_lines": 80,
+    "packages": [
+        {
+            "name": "axiomasoft/commerz",
+            "path": "packages/core",
+            "namespace": "Commerz\\",
+            "profile": "laravel-package",
+            "layer": "L1",
+            "type": "domain",
+            "owns": [
+                "Configuration",
+                "Context",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Identity",
+                "Internal",
+                "Laravel",
+                "Measures",
+                "Money",
+                "Operations",
+                "Outbox",
+                "Pagination",
+                "Panels",
+                "Plugins",
+                "Ports",
+                "Quotes",
+                "Schema",
+                "Stores"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-catalog",
+            "path": "packages/catalog",
+            "namespace": "Commerz\\Catalog\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Attributes",
+                "Categories",
+                "Common",
+                "Facades",
+                "Internal",
+                "Listings",
+                "Options",
+                "Products",
+                "ProductTypes",
+                "Variants"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-inventory",
+            "path": "packages/inventory",
+            "namespace": "Commerz\\Inventory\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Allocation",
+                "Availability",
+                "Common",
+                "Facades",
+                "Internal",
+                "Items",
+                "Locations",
+                "Movements",
+                "Reservations",
+                "Sources",
+                "Stock",
+                "Transfers"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-pricing",
+            "path": "packages/pricing",
+            "namespace": "Commerz\\Pricing\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Calculation",
+                "Common",
+                "Facades",
+                "Internal",
+                "PriceLists",
+                "Prices",
+                "Taxes"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-promotions",
+            "path": "packages/promotions",
+            "namespace": "Commerz\\Promotions\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Common",
+                "Coupons",
+                "Definitions",
+                "Evaluation",
+                "Facades",
+                "Internal",
+                "Rules",
+                "Usage"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-sales",
+            "path": "packages/sales",
+            "namespace": "Commerz\\Sales\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Carts",
+                "Checkout",
+                "Common",
+                "Facades",
+                "Fulfillments",
+                "Gateways",
+                "Internal",
+                "Numbering",
+                "Orders",
+                "Payments",
+                "Refunds",
+                "Returns"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-shipping",
+            "path": "packages/shipping",
+            "namespace": "Commerz\\Shipping\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Bookings",
+                "Carriers",
+                "Common",
+                "Facades",
+                "Internal",
+                "Methods",
+                "Options",
+                "Rates",
+                "Zones"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-testkit",
+            "path": "packages/testkit",
+            "namespace": "Commerz\\Testkit\\",
+            "profile": "laravel-package",
+            "layer": "L3",
+            "type": "dev",
+            "dev_only": true,
+            "owns": [
+                "Fakes"
+            ]
+        }
+    ],
+    "gates": {
+        "strict_ownership": true,
+        "provider_size_limit": 80,
+        "disallow_internal_cross_imports": true,
+        "require_api_manifest": true,
+        "error_urn_prefix": "urn:packman:problem:"
+    }
+}

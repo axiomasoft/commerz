@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Quotes\Internal;
 
 use BackedEnum;
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Operations\Fingerprint;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
@@ -19,6 +16,10 @@ use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use DateTimeInterface;
+use Packman\Attributes\Internal;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
 use Stringable;
 use Throwable;
 use UnitEnum;
@@ -27,6 +28,7 @@ use UnitEnum;
  * Orders the `quote_stage` contributions once per process (the registry is frozen): by anchor, then
  * `Before → At → After`, then key; two `At` stages on one anchor are a configuration error.
  */
+#[Internal]
 final class StagedQuotePipeline implements QuotePipeline
 {
     /** @var list<QuoteStage>|null */
@@ -97,7 +99,9 @@ final class StagedQuotePipeline implements QuotePipeline
             $anchor = $stage->anchor()->value;
 
             if (isset($owners[$anchor])) {
-                throw new InvalidConfiguration('commerz.plugins', "quote stages '{$owners[$anchor]}' and '{$stage->key()}' both run At anchor '{$anchor}'; only the anchor's owner may");
+                throw InvalidConfiguration::fromProblems([
+                    "commerz.plugins: quote stages '{$owners[$anchor]}' and '{$stage->key()}' both run At anchor '{$anchor}'; only the anchor's owner may",
+                ]);
             }
 
             $owners[$anchor] = $stage->key();

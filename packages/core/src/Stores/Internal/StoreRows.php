@@ -13,9 +13,11 @@ use Commerz\Stores\Enums\ChannelStatus;
 use Commerz\Stores\Enums\StoreStatus;
 use DateTimeImmutable;
 use JsonException;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /** Maps raw `stores` / `channels` rows to view DTOs. */
+#[Internal]
 final class StoreRows
 {
     public static function store(object $row): StoreView

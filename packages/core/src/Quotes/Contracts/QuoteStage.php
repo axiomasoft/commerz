@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * One step of the quote pipeline, registered as the `quote_stage` contribution (`PluginRegistrar::quoteStage()`).

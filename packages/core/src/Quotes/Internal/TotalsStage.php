@@ -14,6 +14,7 @@ use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
+use Packman\Attributes\Internal;
 
 /**
  * Settles the quote: every input line must be priced; each order-level adjustment is spread over the lines by
@@ -21,6 +22,7 @@ use Commerz\Quotes\Exceptions\QuoteFailed;
  * order-level shares), so no line goes below zero and the shares add up exactly; then the totals, which must not be
  * negative.
  */
+#[Internal]
 final readonly class TotalsStage implements QuoteStage
 {
     public function key(): string

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Operations\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\IdempotencyKey;
+use Packman\Attributes\Api;
 
 /**
  * Idempotent execution (INV-01): a keyed operation runs at most once per `(scope, key)`.

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
+use Packman\Attributes\Api;
 
 /**
  * The first currency and the first locale are the defaults unless `defaultCurrency` / `defaultLocale` say otherwise.

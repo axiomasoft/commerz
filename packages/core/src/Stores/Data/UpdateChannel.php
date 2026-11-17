@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
+use Packman\Attributes\Api;
 
 /**
  * Changes the given fields; a null field stays as it is. The code and store never change. The resulting default

@@ -7,8 +7,10 @@ namespace Commerz\Internal\Console;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Packman\Attributes\Internal;
 
 #[Description('Publish the Commerz config and run the migrations.')]
+#[Internal]
 #[Signature('commerz:install {--force : Overwrite the published config and migrate in production} {--no-migrate : Only publish the config}')]
 final class InstallCommand extends Command
 {
@@ -21,7 +23,7 @@ final class InstallCommand extends Command
         }
 
         if ($this->option('no-migrate') === true) {
-            $this->components->info('Config published. Run `php artisan migrate`, then `php artisan commerz:doctor`.');
+            $this->components->info('Config published. Run `php artisan migrate`, then `php artisan packman:doctor --prefix=commerz`.');
 
             return self::SUCCESS;
         }
@@ -32,7 +34,7 @@ final class InstallCommand extends Command
             return $migrated;
         }
 
-        $this->components->info('Commerz installed. Run `php artisan commerz:doctor` to verify.');
+        $this->components->info('Commerz installed. Run `php artisan packman:doctor --prefix=commerz` to verify.');
 
         return self::SUCCESS;
     }

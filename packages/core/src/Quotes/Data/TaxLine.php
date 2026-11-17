@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /** Tax on a line or on delivery. An included tax is part of the price; an excluded one is added to the total. */
 #[Api(since: '0.1')]

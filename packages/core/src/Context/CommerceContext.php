@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Context;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeZone;
+use Packman\Attributes\Api;
 
 /** Everything a calculation or sale needs to know about where, for whom and when. Passed explicitly. */
 #[Api(since: '0.1')]

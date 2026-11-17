@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Commerz\Plugins\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Plugins\PluginManifest;
 use Commerz\Plugins\PluginRegistrar;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
- * A unit of behavior: pure declarations, no IO, no database, no container lookups. The compiler creates it with
- * `new $class()` (no constructor arguments) once per process and calls `manifest()` and `register()` exactly once.
- * Packages register their built-in contributions through the same contract (`CommerzPlugins::builtIn()`).
+ * Legacy plugin contract retained in Slice A for unmigrated feature subpackages.
+ *
+ * @deprecated Implement Packman\Plugins\Contracts\Registry\ExtensionPlugin instead.
  */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]
 interface CommerzPlugin

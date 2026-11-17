@@ -1,0 +1,10 @@
+providers: []
+
+dont-discover:
+  - axiomasoft/commerz
+  - axiomasoft/commerz-catalog
+  - axiomasoft/commerz-inventory
+  - axiomasoft/commerz-pricing
+  - axiomasoft/commerz-promotions
+  - axiomasoft/commerz-sales
+  - axiomasoft/commerz-shipping

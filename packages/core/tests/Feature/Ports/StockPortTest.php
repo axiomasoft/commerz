@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
@@ -11,6 +10,7 @@ use Commerz\Ports\Stock\Data\RestockLine;
 use Commerz\Ports\Stock\Data\RestockStock;
 use Commerz\Ports\Stock\Internal\UnlimitedStock;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Config\Exceptions\InvalidConfiguration;
 
 function spLine(string $id = 'a', int $quantity = 1): RestockLine
 {

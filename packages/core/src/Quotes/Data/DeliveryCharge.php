@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /** The priced delivery method, before delivery adjustments and taxes. */
 #[Api(since: '0.1')]

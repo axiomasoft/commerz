@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace Commerz\Tests\Feature\Quotes;
 
 use Commerz\Context\CommerceContext;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Facades\Commerz;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
@@ -23,6 +19,7 @@ use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\CheckAvailability;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Stores\Data\CreateChannel;
@@ -30,6 +27,10 @@ use Commerz\Stores\Data\CreateStore;
 use Commerz\Tests\TestCase;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use Packman\Plugins\Laravel\PluginRegistrar;
 use PHPUnit\Framework\Attributes\Test;
 
 /** A host CRM's services, priced from its own tariffs: the scenario of api-blueprint §9. */
@@ -65,7 +66,7 @@ final readonly class CrmServiceSellables implements SellableProvider
     }
 }
 
-final class CrmPlugin implements CommerzPlugin
+final class CrmPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
@@ -74,7 +75,7 @@ final class CrmPlugin implements CommerzPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->sellableProvider(CrmServiceSellables::class);
+        $registrar->contribute(SellableProvider::KIND, CrmServiceSellables::class);
     }
 }
 
@@ -117,7 +118,7 @@ final class CrmScenarioTest extends TestCase
         $this->assertEquals(Money::of('3700.00', 'RUB'), $quote->total);
         $this->assertSame(
             [['SRV-77', '3000.00', 'sellable', true], ['SRV-78', '700.00', 'sellable', true]],
-            array_map(static fn ($line): array => [$line->sellable->sku, $line->subtotal->toDecimal(), $line->priceSource, $line->taxIncluded], $quote->lines),
+            array_map(static fn (QuotedLine $line): array => [$line->sellable->sku, $line->subtotal->toDecimal(), $line->priceSource, $line->taxIncluded], $quote->lines),
         );
         $this->assertSame([], $quote->taxLines);
         $this->assertNull($quote->delivery);

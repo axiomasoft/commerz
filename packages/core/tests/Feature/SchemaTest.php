@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use Commerz\Configuration\CommerzConfig;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Schema\CommerzMigration;
-use Commerz\Schema\ConstraintNames;
-use Commerz\Schema\Contracts\SchemaOwnership;
-use Commerz\Schema\Internal\SchemaFingerprint;
-use Commerz\Schema\TableNames;
+use Commerz\Configuration\CommerzOptions;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Schema\Contracts\Compiler\SchemaOwnership;
+use Packman\Schema\Data\Compiler\ConstraintNames;
+use Packman\Schema\Data\Compiler\SchemaFingerprint;
+use Packman\Schema\Data\Compiler\TableNames;
+use Packman\Schema\Laravel\PackmanMigration;
 
 uses(RefreshDatabase::class);
 
@@ -36,7 +36,7 @@ function indexesOf(string $table): array
 function usePrefix(string $prefix): void
 {
     config()->set('commerz.table_prefix', $prefix);
-    app()->forgetInstance(CommerzConfig::class);
+    app()->forgetInstance(CommerzOptions::class);
     app()->forgetInstance(TableNames::class);
 }
 
@@ -124,8 +124,8 @@ it('refuses a prefix that differs from the installed one', function (): void {
 
     expect(fn () => app(TableNames::class)->table('operation_receipts'))
         ->toThrow(function (InvalidConfiguration $e): void {
-            expect($e->path)->toBe('commerz.table_prefix')
-                ->and($e->reason)->toContain("installed with prefix 'cmz_'");
+            expect($e->getMessage())->toContain('commerz.table_prefix')
+                ->and($e->getMessage())->toContain("installed with prefix 'cmz_'");
         });
 });
 
@@ -143,7 +143,7 @@ it('ignores host tables that only look like a state table', function (): void {
 it('gives migrations helpers for keys, money, refs, timestamps and checks', function (): void {
     app(SchemaOwnership::class)->declare('acme.test', ['x_test']);
 
-    $migration = new class extends CommerzMigration
+    $migration = new class extends PackmanMigration
     {
         public function up(): void
         {

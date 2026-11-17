@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Changes the given fields; a null field stays as it is. The code and default currency never change. */
 #[Api(since: '0.1')]

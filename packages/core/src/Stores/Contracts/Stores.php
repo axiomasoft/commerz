@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Stores\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Pagination\Page;
 use Commerz\Stores\Data\ArchiveStore;
 use Commerz\Stores\Data\CreateStore;
@@ -14,6 +13,7 @@ use Commerz\Stores\Data\StoreView;
 use Commerz\Stores\Data\UpdateStore;
 use Commerz\Stores\Exceptions\DuplicateCode;
 use Commerz\Stores\Exceptions\StoreNotFound;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 interface Stores

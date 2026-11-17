@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Sellables\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Packman\Attributes\Api;
 
 /** What a sale needs to know about a sellable at one moment, independent of the live owner. */
 #[Api(since: '0.1')]

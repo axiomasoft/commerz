@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class ResolvePrice

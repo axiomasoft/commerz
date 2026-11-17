@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Identity;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 use Stringable;
 
 /** Base of typed entity ids (`ProductId`, `OrderId`…): a canonical lowercase UUID, generated as UUIDv7. */

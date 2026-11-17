@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\Parcel;
+use Packman\Attributes\Api;
 
 /** The delivery method the buyer chose; the delivery stage prices it. */
 #[Api(since: '0.1')]

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Measures;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** A non-negative whole count in the base unit of a stock item (pcs, g, ml, mm). */
 #[Api(since: '0.1')]

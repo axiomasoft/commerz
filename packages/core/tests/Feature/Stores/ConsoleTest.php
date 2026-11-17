@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 it('passes the doctor on a fresh install', function (): void {
-    $exit = Artisan::call('commerz:doctor');
+    $exit = Artisan::call('packman:doctor', ['--prefix' => ['commerz']]);
     $output = Artisan::output();
 
     expect($exit)->toBe(0, $output)
@@ -20,14 +20,14 @@ it('passes the doctor on a fresh install', function (): void {
 it('fails the doctor when the fingerprint row is gone', function (): void {
     DB::table('cmz_schema_state')->delete();
 
-    $this->artisan('commerz:doctor')->expectsOutputToContain('FAIL')->assertExitCode(1);
+    $this->artisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
 });
 
 it('fails the doctor on a broken configuration', function (): void {
     config()->set('commerz.table_prefix', 'BAD');
-    app()->forgetInstance(CommerzConfig::class);
+    app()->forgetInstance(CommerzOptions::class);
 
-    $this->artisan('commerz:doctor')->expectsOutputToContain('FAIL')->assertExitCode(1);
+    $this->artisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
 });
 
 it('installs without migrating on request', function (): void {

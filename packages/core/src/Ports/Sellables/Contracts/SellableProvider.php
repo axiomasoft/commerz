@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Sellables\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * Source of sellables of one ref type: the catalog provides `variant`, a CRM its own services. Registered as the

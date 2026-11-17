@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Packman\Attributes\Api;
 
 /** A priced line inside the pipeline: what the base stage resolved, before adjustments and taxes. */
 #[Api(since: '0.1')]

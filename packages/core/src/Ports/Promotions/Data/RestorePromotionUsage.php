@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Promotions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Ports\Promotions\Enums\RestoreReason;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class RestorePromotionUsage

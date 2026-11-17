@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Money\MoneyAllocator;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /**
  * The immutable state passed from stage to stage. The base stage prices the input lines; later stages add

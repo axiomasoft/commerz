@@ -1,9 +1,10 @@
 includes:
+    - vendor/axiomasoft/packman-devtools/config/phpstan-base.neon
     - vendor/larastan/larastan/extension.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 
 parameters:
-    level: max
+    tmpDir: build/phpstan
     paths:
         - packages/core/src
         - packages/catalog/src
@@ -14,4 +15,11 @@ parameters:
         - packages/sales/src
         - packages/testkit/src
         - packages/testkit/tests
-    tmpDir: build/phpstan
+    ignoreErrors:
+        # Temporary Slice-A ignores for unmigrated feature subpackages under strict phpstan-base rules (cleaned up in Slice B).
+        -
+            identifier: missingType.callable
+            path: packages/catalog/src/Products/Internal/FilterCompiler.php
+        -
+            identifier: argument.type
+            path: packages/sales/src/Internal/Console/ExpireOrdersCommand.php

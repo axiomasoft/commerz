@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidConfiguration;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Exceptions\QuoteFailed;
+use Packman\Attributes\Api;
 
 /**
  * Prices a set of lines: runs every registered `QuoteStage` in anchor order. Pure calculation: it writes nothing,

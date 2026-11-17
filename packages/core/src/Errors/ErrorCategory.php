@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Errors;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
+/**
+ * Legacy exception category enum retained for unmigrated Slice B domain packages.
+ *
+ * @deprecated Use Packman\Errors\Enums\ErrorCategory instead.
+ */
 #[Api(since: '0.1')]
 enum ErrorCategory: string
 {

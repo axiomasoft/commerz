@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Identity;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Reference to something that can be sold (product variant, service, bundle). */
 #[Api(since: '0.1')]

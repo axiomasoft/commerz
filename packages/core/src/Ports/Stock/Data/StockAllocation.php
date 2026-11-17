@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Ports\Stock\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Where a reserved quantity is held. */
 #[Api(since: '0.1')]

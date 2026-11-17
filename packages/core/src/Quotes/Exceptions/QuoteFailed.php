@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
+use Commerz\Errors\Enums\CommerzErrorCode;
 use Commerz\Errors\ErrorCategory;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 use Throwable;
 
 /**
@@ -55,5 +59,16 @@ final class QuoteFailed extends CommerzException
                 default => null,
             },
         ];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CommerzErrorCode::QuoteFailed,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

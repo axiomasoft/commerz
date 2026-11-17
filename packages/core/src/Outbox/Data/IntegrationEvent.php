@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Outbox\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Ref;
 use Commerz\Identity\Uuid7;
 use DateTimeImmutable;
 use DateTimeZone;
+use Packman\Attributes\Api;
 
 /**
  * A fact published to other systems through the outbox. `type` is a dotted stable name (`sales.order_placed`),
