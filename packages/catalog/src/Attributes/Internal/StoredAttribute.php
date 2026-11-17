@@ -6,8 +6,10 @@ namespace Commerz\Catalog\Attributes\Internal;
 
 use Commerz\Catalog\Attributes\Data\AttributeDefinition;
 use Commerz\Catalog\Attributes\Enums\AttributeStatus;
+use Packman\Attributes\Internal;
 
 /** An attribute definition row as the writer reads it. */
+#[Internal]
 final readonly class StoredAttribute
 {
     public function __construct(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 // Shared fixtures of the reservation and availability tests.
 
 use Commerz\Identity\SellableRef;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Items\Data\CreateStockItem;
 use Commerz\Inventory\Items\Data\LinkSellable;
@@ -102,7 +102,7 @@ function rsvConfigure(array $config): void
 {
     config(collect($config)->mapWithKeys(fn ($value, $key) => ["commerz-inventory.{$key}" => $value])->all());
 
-    foreach ([InventoryConfig::class, DatabaseReservations::class, Reservations::class, StockReservations::class, StockAvailability::class, Transfers::class, Commerz\Inventory\Inventory::class] as $abstract) {
+    foreach ([InventoryOptions::class, DatabaseReservations::class, Reservations::class, StockReservations::class, StockAvailability::class, Transfers::class, Commerz\Inventory\Inventory::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Transfers\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\Uuid7;
@@ -45,10 +45,11 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -57,13 +58,14 @@ use RuntimeException;
  * the levels in one ordered statement, the reservation lines. The stock of a draft is a reservation of demand
  * `transfer:{id}` at the source; goods in transit sit on no level, only on the transfer's lines.
  */
+#[Internal]
 final readonly class DatabaseTransfers implements Transfers
 {
     private const string DATETIME = 'Y-m-d\TH:i:s.uP';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private OperationReceipts $receipts,
@@ -154,7 +156,8 @@ final readonly class DatabaseTransfers implements Transfers
 
         if ($query->location instanceof LocationId) {
             $where[] = '(t.from_location_id = ? or t.to_location_id = ?)';
-            array_push($bindings, $query->location->value, $query->location->value);
+            $bindings[] = $query->location->value;
+            $bindings[] = $query->location->value;
         }
 
         if ($query->after instanceof Cursor) {

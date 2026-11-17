@@ -10,7 +10,9 @@ use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Internal\ConfigReader;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class LocalizedTextType implements AttributeType
 {
     public function key(): string

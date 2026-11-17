@@ -7,8 +7,10 @@ namespace Commerz\Catalog\Variants\Internal;
 use Commerz\Catalog\Variants\Data\PlannedVariant;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
+use Packman\Attributes\Internal;
 
 /** The combinations of one generation, split into those the product lacks and those it already has. */
+#[Internal]
 final class GenerationPlan
 {
     /** @var list<PlannedVariant> */

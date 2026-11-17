@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Data;
 
-use Commerz\Attributes\Api;
 use InvalidArgumentException;
+use Packman\Attributes\Api;
 
 /** One row of the filter projection: exactly one of the fields is set. */
 #[Api(since: '0.1')]

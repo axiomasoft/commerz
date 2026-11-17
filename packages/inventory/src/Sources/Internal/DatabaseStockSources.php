@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Sources\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Internal\Clock;
 use Commerz\Inventory\Common\Internal\Rows;
@@ -17,18 +17,20 @@ use Commerz\Inventory\Sources\Data\AssignSource;
 use Commerz\Inventory\Sources\Data\StockSourceView;
 use Commerz\Inventory\Sources\Data\UnassignSource;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** The location is held `for share` while it is assigned, so archiving it (`for no key update`) cannot slip past. */
+#[Internal]
 final readonly class DatabaseStockSources implements StockSources
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private Channels $channels,

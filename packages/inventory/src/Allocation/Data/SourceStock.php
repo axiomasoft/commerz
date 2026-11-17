@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Allocation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Locations\Data\LocationId;
+use Packman\Attributes\Api;
 
 /** What a location can give a channel right now. */
 #[Api(since: '0.1')]

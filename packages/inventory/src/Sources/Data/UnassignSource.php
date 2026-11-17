@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Sources\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** Stops the channel selling from the location; a missing pair is not an error. Open reservations keep their stock. */
 #[Api(since: '0.1')]

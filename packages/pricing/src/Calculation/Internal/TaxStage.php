@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Calculation\Internal;
 
 use Commerz\Errors\InvalidCommand;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Data\TaxLine;
@@ -19,6 +18,8 @@ use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use Illuminate\Contracts\Container\Container;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 /**
  * Taxes every line and the delivery charge on what is left after all discounts: the line net plus the line's share of
@@ -27,6 +28,7 @@ use Illuminate\Contracts\Container\Container;
  * tax-exempt buyer gets no tax lines. Pure: it writes nothing and reads time from the context. Dependencies are looked
  * up per run, so a port or a calculator rebound after the registry froze (a test fake) is still used.
  */
+#[Internal]
 final readonly class TaxStage implements QuoteStage
 {
     public function __construct(private Container $container) {}
@@ -58,7 +60,7 @@ final readonly class TaxStage implements QuoteStage
             return $state;
         }
 
-        $config = $this->container->make(PricingConfig::class);
+        $config = $this->container->make(PricingOptions::class);
         $items = $this->items($state, $config);
 
         if ($items === []) {
@@ -92,7 +94,7 @@ final readonly class TaxStage implements QuoteStage
     }
 
     /** @return list<TaxableItem> lines in quote order, then the delivery */
-    private function items(QuoteState $state, PricingConfig $config): array
+    private function items(QuoteState $state, PricingOptions $config): array
     {
         $bases = [];
 

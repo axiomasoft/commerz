@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
+use Packman\Attributes\Api;
 
 /** `Sellables` bound by `Commerce::fake()`: every ref type is answered from one `FakeSellables`. */
 #[Api(since: '0.1')]

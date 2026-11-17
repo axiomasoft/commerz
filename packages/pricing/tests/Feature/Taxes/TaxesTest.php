@@ -15,7 +15,9 @@ use Commerz\Pricing\Taxes\Data\RemoveTaxRate;
 use Commerz\Pricing\Taxes\Data\RescheduleTaxRate;
 use Commerz\Pricing\Taxes\Data\SetTaxRate;
 use Commerz\Pricing\Taxes\Data\SetTaxZoneMembers;
+use Commerz\Pricing\Taxes\Data\TaxClassView;
 use Commerz\Pricing\Taxes\Data\TaxRateId;
+use Commerz\Pricing\Taxes\Data\TaxRateView;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Pricing\Taxes\Events\TaxRatesChanged;
 use Commerz\Pricing\Taxes\Exceptions\TaxClassNotFound;
@@ -41,7 +43,7 @@ it('defines classes and rejects a repeated code', function (): void {
 
     txClass('standard');
 
-    expect(array_map(static fn ($view): string => $view->code, Pricing::taxes()->listClasses()))->toBe(['reduced', 'standard']);
+    expect(array_map(static fn (TaxClassView $view): string => $view->code, Pricing::taxes()->listClasses()))->toBe(['reduced', 'standard']);
 });
 
 it('defines a zone with its members and rejects a repeated code', function (): void {
@@ -197,7 +199,7 @@ it('lists rates by zone, class and the moment', function (): void {
     txRate(zone: 'by', bp: 2000);
 
     $bps = static fn (ListTaxRates $query): array => array_map(
-        static fn ($rate): string => "{$rate->taxClass}/{$rate->zone}/{$rate->code}/{$rate->rate->basisPoints}",
+        static fn (TaxRateView $rate): string => "{$rate->taxClass}/{$rate->zone}/{$rate->code}/{$rate->rate->basisPoints}",
         Pricing::taxes()->listRates($query),
     );
 

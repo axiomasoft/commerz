@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Categories ordered by code: the children of `parent`, the roots, or (neither) every category. */
 #[Api(since: '0.1')]

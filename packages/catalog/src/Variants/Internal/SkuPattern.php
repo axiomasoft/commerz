@@ -6,8 +6,10 @@ namespace Commerz\Catalog\Variants\Internal;
 
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Internal;
 
 /** `TEE-{color}-{size}`: each `{optionCode}` is replaced by the value code of that axis. */
+#[Internal]
 final readonly class SkuPattern
 {
     private const string PLACEHOLDER = '/\{([^{}]*)\}/';

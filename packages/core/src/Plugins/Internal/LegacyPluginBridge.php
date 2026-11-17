@@ -12,6 +12,8 @@ use Illuminate\Contracts\Container\Container;
 use LogicException;
 use Packman\Attributes\Internal;
 use Packman\Config\Exceptions\InvalidConfiguration as PackmanInvalidConfiguration;
+use Packman\Extensions\Data\ExtensionFacetProfile;
+use Packman\Extensions\ExtensionInspector;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
@@ -157,6 +159,8 @@ final class LegacyPluginBridge
 
         $disabledSet = array_flip($disabled);
         $activeNodes = array_filter($nodes, static fn (string $id): bool => ! isset($disabledSet[$id]), ARRAY_FILTER_USE_KEY);
+        $disabledIds = array_values(array_diff(array_keys($nodes), array_keys($activeNodes)));
+        sort($disabledIds, SORT_STRING);
 
         $dependencies = [];
 
@@ -205,14 +209,19 @@ final class LegacyPluginBridge
         $items = [];
         $descriptions = [];
         $extDeclarations = [];
+        $facets = [];
+        /** @var list<class-string<ExtensionPlugin>> $extensionClasses */
+        $extensionClasses = [];
 
         // Extract kinds & contributions using ExtensionPlugin::register or CommerzPlugin::register.
         foreach ($order as $id) {
             $node = $activeNodes[$id];
             $plugin = $node['plugin'];
+            $facets[$id] = ExtensionInspector::inspect($plugin);
 
             if ($plugin instanceof ExtensionPlugin) {
-                $tempItems = self::captureExtension($container, $plugin);
+                $extensionClasses[] = $plugin::class;
+                $tempItems = self::captureExtension($container, $id, $extensionClasses);
                 $extDeclarations[$id] = $tempItems;
             } else {
                 $registrar = new LegacyRegistrar($id);
@@ -275,17 +284,21 @@ final class LegacyPluginBridge
             );
         }
 
-        return new readonly class($allKinds, $items, $descriptions) implements Contributions, PluginInspector
+        return new readonly class($allKinds, $items, $descriptions, $disabledIds, $facets) implements Contributions, PluginInspector
         {
             /**
              * @param  array<string, ContributionKind>  $kinds
              * @param  array<string, array<string, object>>  $items
              * @param  list<PluginDescription>  $descriptions
+             * @param  list<string>  $disabled
+             * @param  array<string, ExtensionFacetProfile>  $facets
              */
             public function __construct(
                 private array $kinds,
                 private array $items,
                 private array $descriptions,
+                private array $disabled,
+                private array $facets,
             ) {}
 
             public function get(string $kind, string $key, string $interface): object
@@ -321,19 +334,44 @@ final class LegacyPluginBridge
             {
                 return $this->descriptions;
             }
+
+            public function slots(): array
+            {
+                return [];
+            }
+
+            public function slotContributions(): array
+            {
+                return [];
+            }
+
+            public function disabledIds(): array
+            {
+                return $this->disabled;
+            }
+
+            public function facetsOf(string $pluginId): ?ExtensionFacetProfile
+            {
+                return $this->facets[$pluginId] ?? null;
+            }
         };
     }
 
     /**
+     * @param  list<class-string<ExtensionPlugin>>  $extensionClasses
      * @return array{kinds: list<ContributionKind>, contributions: list<array{kind: string, contribution: object|class-string}>}
      */
-    private static function captureExtension(Container $container, ExtensionPlugin $plugin): array
+    private static function captureExtension(Container $container, string $pluginId, array $extensionClasses): array
     {
-        $temp = PluginGraph::compile($container, [], '', [$plugin::class]);
+        $temp = PluginGraph::compile($container, [], CorePlugin::ID, $extensionClasses);
         $kinds = [];
         $contributions = [];
 
         foreach ($temp->describe() as $desc) {
+            if ($desc->id !== $pluginId) {
+                continue;
+            }
+
             $kinds = $desc->kinds;
 
             foreach ($desc->contributions as $c) {

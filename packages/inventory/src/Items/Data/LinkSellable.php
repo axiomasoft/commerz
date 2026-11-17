@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Packman\Attributes\Api;
 
 /**
  * Says that one unit of the sellable takes `quantityPerUnit` of the item. A sellable with several links is a kit;

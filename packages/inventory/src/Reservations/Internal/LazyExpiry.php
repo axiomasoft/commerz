@@ -9,6 +9,7 @@ use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Reservations\Enums\ReleaseCause;
 use Commerz\Inventory\Reservations\Events\StockReleased;
 use Commerz\Operations\Contracts\CommittedEvents;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /**
@@ -17,6 +18,7 @@ use RuntimeException;
  * (its consume, release or the sweeper) is left alone — so it never waits and never closes a cycle. The header stays
  * active until the sweeper closes it, since its lines on other levels are not this reserve's to lock.
  */
+#[Internal]
 final readonly class LazyExpiry
 {
     public function __construct(

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Allocation\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
 use Commerz\Inventory\Allocation\Data\SourceStock;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * Proposes where demand is held, contributed under kind `allocation_strategy`. Pure: no I/O, no clock, no state

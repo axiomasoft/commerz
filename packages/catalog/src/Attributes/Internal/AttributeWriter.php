@@ -18,12 +18,13 @@ use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
 use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the `attributes` documents of products and variants and of the `attribute_index` projection
@@ -31,6 +32,7 @@ use Illuminate\Database\ConnectionResolverInterface;
  * Every check happens in `prepare()`, before anything is written, so a refused value leaves no partial change even
  * when the caller's transaction is the host's and the host goes on after the exception.
  */
+#[Internal]
 final readonly class AttributeWriter implements AttributeIndexer
 {
     /** Owners read per reindex step (keyset by id). */
@@ -41,7 +43,7 @@ final readonly class AttributeWriter implements AttributeIndexer
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Contributions $contributions,
     ) {}

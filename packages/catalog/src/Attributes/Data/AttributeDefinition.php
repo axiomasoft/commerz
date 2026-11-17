@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** What an attribute type needs to know about a definition: its code, canonical config and choices. */
 #[Api(since: '0.1')]

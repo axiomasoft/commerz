@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * How reservations treat the item's stock: `tracked` reserves only free stock, `backorder` reserves beyond it

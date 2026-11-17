@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Pricing\PriceLists\Data\CreatePriceList;
+use Packman\Attributes\Api;
 
 /** A tax zone: the countries and regions that share one set of rates. The code is unique. */
 #[Api(since: '0.1')]

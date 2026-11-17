@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Categories\Enums\CategoryStatus;
 use Commerz\Measures\LocalizedText;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class CategoryView

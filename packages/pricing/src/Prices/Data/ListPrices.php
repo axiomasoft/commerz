@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Pagination\Cursor;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
+use Packman\Attributes\Api;
 
 /** Prices of one price list ordered by sellable, optionally of one sellable. */
 #[Api(since: '0.1')]

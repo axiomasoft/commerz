@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Exceptions;
 
-use Commerz\Attributes\Api;
+use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The new parent is the category itself or one of its descendants: the move would close a cycle. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CategoryCycle extends CommerzException
     public function context(): array
     {
         return ['category' => $this->category, 'parent' => $this->parent];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CatalogErrorCode::CategoryCycle,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

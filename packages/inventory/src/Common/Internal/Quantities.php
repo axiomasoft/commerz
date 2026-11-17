@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Common\Internal;
 
+use Packman\Attributes\Internal;
+
 /** Overflow-safe int64 arithmetic on non-negative quantities: a result beyond PHP_INT_MAX is null, never a float. */
+#[Internal]
 final class Quantities
 {
     public static function mul(int $a, int $b): ?int

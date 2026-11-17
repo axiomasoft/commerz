@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Items\Data\CreateStockItem;
 use Commerz\Inventory\Items\Data\LinkSellable;
@@ -16,6 +16,7 @@ use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Inventory\Movements\Data\ListMovements;
+use Commerz\Inventory\Movements\Data\MovementView;
 use Commerz\Inventory\Sources\Data\AssignSource;
 use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Inventory\Stock\Exceptions\StockLinkMissing;
@@ -76,7 +77,7 @@ it('restocks a kit into the given location by quantity per unit', function (): v
     expect(rtnOnHand($items['body'], 'returns'))->toBe(6)
         ->and(rtnOnHand($items['strap'], 'returns'))->toBe(3)
         ->and($moves)->toHaveCount(2)
-        ->and(array_map(fn ($m) => $m->kind, $moves))->toBe([MovementKind::Return, MovementKind::Return])
+        ->and(array_map(fn (MovementView $m) => $m->kind, $moves))->toBe([MovementKind::Return, MovementKind::Return])
         ->and(DB::table('cmz_stock_levels')->where('stock_item_id', $items['manual']->value)->exists())->toBeFalse();
 });
 
@@ -122,7 +123,7 @@ it('fails on an unlinked sellable unless unlinked sellables are unlimited', func
 
 it('skips an unlinked sellable when unlinked sellables are unlimited', function (): void {
     config(['commerz-inventory.unlinked_sellables' => 'unlimited']);
-    app()->forgetInstance(InventoryConfig::class);
+    app()->forgetInstance(InventoryOptions::class);
     app()->forgetInstance(StockReturns::class);
     [$channel, $kit, $items] = rtnKit();
     Inventory::locations()->create(new CreateLocation('returns', 'Returns'));

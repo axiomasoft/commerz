@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
+use Packman\Attributes\Api;
 
 /**
  * Units of a sellable held on one stock item at one location; a kit unit has one line per component, all with the

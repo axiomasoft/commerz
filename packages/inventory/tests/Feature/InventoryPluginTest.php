@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
-use Commerz\Inventory\Internal\InventoryPlugin;
 use Commerz\Inventory\InventoryServiceProvider;
+use Commerz\Inventory\Plugins\InventoryPlugin;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
 

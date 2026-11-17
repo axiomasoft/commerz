@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Products\Data\ProductView;
+use Packman\Attributes\Api;
 
 /** Dispatched after the creating transaction commits. */
 #[Api(since: '0.1')]

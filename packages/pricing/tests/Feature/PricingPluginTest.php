@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
-use Commerz\PluginGraph;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Internal\RatesTaxCalculator;
 use Commerz\Pricing\Calculation\Internal\TaxStage;
-use Commerz\Pricing\Internal\PricingPlugin;
+use Commerz\Pricing\Plugins\PricingPlugin;
 use Commerz\Pricing\PricingServiceProvider;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Testing\PluginGraph;
 use PHPUnit\Framework\Attributes\Test;
 
 final class PricingPluginTest extends PackageTestCase
@@ -35,7 +36,7 @@ final class PricingPluginTest extends PackageTestCase
     #[Test]
     public function declares_the_tax_calculator_kind(): void
     {
-        $registry = PluginGraph::compile(app(), [PricingPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, PricingPlugin::class]);
 
         self::assertInstanceOf(PluginInspector::class, $registry);
 
@@ -55,7 +56,7 @@ final class PricingPluginTest extends PackageTestCase
     #[Test]
     public function contributes_the_rates_calculator(): void
     {
-        $registry = PluginGraph::compile(app(), [PricingPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, PricingPlugin::class]);
         $contributions = [];
 
         foreach ($registry->describe() as $plugin) {
@@ -71,7 +72,7 @@ final class PricingPluginTest extends PackageTestCase
     #[Test]
     public function contributes_the_tax_quote_stage(): void
     {
-        $registry = PluginGraph::compile(app(), [PricingPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, PricingPlugin::class]);
         $stages = [];
 
         foreach ($registry->describe() as $plugin) {

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Pricing\Errors\Enums\PricingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A tax calculator answered with something the quote cannot use. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class InvalidTaxResult extends CommerzException
     public function context(): array
     {
         return ['calculator' => $this->calculator, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PricingErrorCode::InvalidTaxResult,
+            category: PackmanErrorCategory::Unavailable,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

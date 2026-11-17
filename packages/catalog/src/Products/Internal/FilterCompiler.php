@@ -16,18 +16,20 @@ use Commerz\Catalog\Attributes\Internal\StoredAttribute;
 use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Products\Data\AttributeFilter;
 use Commerz\Catalog\Products\Data\VariantFilter;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Compiles AttributeFilter/VariantFilter into conditions on one variant row `v` of the product row `p`
  * (knowledge/catalog-design#filters, CAT-03). Filter values are normalized and indexed by the attribute's own type,
  * so they meet the projection in the form the writer stored. Values reach SQL only as bindings.
  */
+#[Internal]
 final readonly class FilterCompiler
 {
     /** Projection column of a fact => the SQL type its binding is cast to. */
@@ -35,7 +37,7 @@ final readonly class FilterCompiler
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Contributions $contributions,
         private AttributeWriter $attributes,
@@ -109,7 +111,11 @@ final readonly class FilterCompiler
         };
     }
 
-    /** The indexed term is a 255-character prefix; equality also compares the complete canonical document value. */
+    /**
+     * The indexed term is a 255-character prefix; equality also compares the complete canonical document value.
+     *
+     * @return Closure(Builder): void
+     */
     private function text(AttributeFilter $filter, AttributeType $type, StoredAttribute $definition): Closure
     {
         $values = [];

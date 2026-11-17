@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A location that still holds or reserves stock, or has a draft or in-transit transfer, cannot be archived. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class LocationNotEmpty extends CommerzException
     public function context(): array
     {
         return ['location' => $this->location];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: InventoryErrorCode::LocationNotEmpty,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

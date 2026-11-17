@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** What kind of place holds the stock. */
 #[Api(since: '0.1')]

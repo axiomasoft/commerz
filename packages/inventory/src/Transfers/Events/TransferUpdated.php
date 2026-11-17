@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Transfers\Data\TransferView;
+use Packman\Attributes\Api;
 
 /** A transfer was created, dispatched, received (in part or in full) or cancelled in a committed operation. */
 #[Api(since: '0.1')]

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Items\Data\StockItemId;
+use Packman\Attributes\Api;
 
 /** Units of a stock item to move, in the item's base unit. */
 #[Api(since: '0.1')]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\ProductTypes\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Where an attribute value lives: on the product or on each variant. */
 #[Api(since: '0.1')]

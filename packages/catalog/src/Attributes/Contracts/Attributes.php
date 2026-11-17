@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Data\AddAttributeChoices;
 use Commerz\Catalog\Attributes\Data\AttributeId;
 use Commerz\Catalog\Attributes\Data\AttributeView;
@@ -17,6 +16,7 @@ use Commerz\Catalog\Attributes\Exceptions\InvalidStatusTransition;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /** Attribute definitions: the vocabulary product types, products and filters refer to. */
 #[Api(since: '0.1')]

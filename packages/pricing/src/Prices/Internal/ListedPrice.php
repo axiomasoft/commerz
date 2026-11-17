@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Prices\Internal;
 
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** A stored price with the facts of its price list that the decision needs; the amounts are in the context currency. */
+#[Internal]
 final readonly class ListedPrice
 {
     public function __construct(

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Listings\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Listings\Data\ListingView;
 use Commerz\Catalog\Listings\Data\PublishProduct;
 use Commerz\Catalog\Listings\Data\UnpublishProduct;
@@ -15,6 +14,7 @@ use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
+use Packman\Attributes\Api;
 
 /**
  * Listings: in which channels a product is offered and when. The channel is checked through the core `Channels`

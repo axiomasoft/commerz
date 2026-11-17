@@ -9,8 +9,10 @@ use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
 use Commerz\Inventory\Allocation\Exceptions\InvalidAllocationPlan;
 use Commerz\Inventory\Common\Internal\Quantities;
+use Packman\Attributes\Internal;
 
 /** Does not trust a strategy: a plan must stay within the request's needs, sources and free stock. */
+#[Internal]
 final class AllocationPlanValidator
 {
     /** @throws InvalidAllocationPlan */

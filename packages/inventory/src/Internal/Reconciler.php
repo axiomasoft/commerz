@@ -4,28 +4,30 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Inventory\Common\Internal\LevelRow;
 use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Internal\Data\Discrepancy;
 use Commerz\Inventory\Internal\Data\ReconciliationReport;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Checks the stock tables against each other (INV-03, INV-04) and repairs the one derived number that is safe to
  * rebuild. Reads share one `repeatable read` read-only snapshot, so concurrent traffic cannot fake a discrepancy.
  */
+#[Internal]
 final readonly class Reconciler
 {
     private const string OUTSTANDING = '(ln.units - ln.consumed_units - ln.released_units - ln.expired_units)';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private StockLedger $ledger,
         private Transactions $transactions,
@@ -169,7 +171,7 @@ final readonly class Reconciler
                 $found[] = new Discrepancy(Discrepancy::RESERVATION_STATE, 'demand:'.Rows::string($row, 'demand'), 'closed without outstanding lines', "closed with {$outstanding} outstanding");
             } elseif ($state === 'active' && $outstanding === 0 && Rows::string($row, 'consumed') === '0'
                 && Rows::int($row, 'lines') > 0
-                && ! (Rows::bool($row, 'expired') && Rows::string($row, 'expired_units') !== '0')) {
+                && (! Rows::bool($row, 'expired') || Rows::string($row, 'expired_units') === '0')) {
                 // Line-free unlimited demands stay active; lazy expiry leaves an expired header for the sweeper.
                 $found[] = new Discrepancy(Discrepancy::RESERVATION_STATE, 'demand:'.Rows::string($row, 'demand'), 'closed', 'active without outstanding lines');
             }

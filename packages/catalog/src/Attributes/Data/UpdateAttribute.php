@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Changes name, filterable, status or choice labels; type, config and choice codes are immutable. */
 #[Api(since: '0.1')]

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotAllowed;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotWritable;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
@@ -29,6 +28,7 @@ use Commerz\Catalog\Variants\Exceptions\VariantNotFound;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /**
  * Variants: what is sold. Every sellable is a variant; a combination of axis values is unique within its product

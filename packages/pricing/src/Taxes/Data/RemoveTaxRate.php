@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Deletes a rate; removing one that is gone changes nothing. */
 #[Api(since: '0.1')]

@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Inventory\Allocation\Data\NeedComponent;
 use Commerz\Inventory\Common\Enums\UnlinkedSellables;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
 use Commerz\Inventory\Common\Internal\Rows;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Items\Enums\StockItemStatus;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Turns requested sellables into stock needs through their current links: untracked items drop out, a sellable
@@ -26,13 +27,14 @@ use Illuminate\Database\ConnectionResolverInterface;
  * `commerz-inventory.unlinked_sellables`. Links are read unlocked (a new link applies to later reservations); the
  * items and the source locations are held `for share`, so archiving or re-policing them waits for the reservation.
  */
+#[Internal]
 final readonly class DemandResolver
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
-        private InventoryConfig $inventory,
+        private InventoryOptions $inventory,
     ) {}
 
     /**

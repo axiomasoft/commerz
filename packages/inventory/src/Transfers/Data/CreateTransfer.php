@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Locations\Data\LocationId;
+use Packman\Attributes\Api;
 
 /** Drafts a transfer and reserves its lines at the source location. */
 #[Api(since: '0.1')]

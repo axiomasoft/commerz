@@ -75,7 +75,7 @@ it('does not deadlock batches that share keys and list them in another order', f
 
         for ($round = 0; $round < 10; $round++) {
             Pricing::prices()->setMany(new SetPrices($id, array_map(
-                static fn (string $sellable) => plsPrice($id, $sellable, (string) (1 + $worker + $round).'.00'),
+                static fn (string $sellable) => plsPrice($id, $sellable, (1 + $worker + $round).'.00'),
                 $order,
             )));
         }

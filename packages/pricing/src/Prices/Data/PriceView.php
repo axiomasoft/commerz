@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class PriceView

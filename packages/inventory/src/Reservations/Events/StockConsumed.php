@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Stock\Data\StockAllocation;
+use Packman\Attributes\Api;
 
 /** Held units of a demand left stock as a sale (movement `sale`) in a committed operation. */
 #[Api(since: '0.1')]

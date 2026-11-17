@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * Stock of one item at one location. `available = onHand − reserved − safetyStock` and is negative while the level

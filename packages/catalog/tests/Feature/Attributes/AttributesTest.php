@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Attributes\Data\AddAttributeChoices;
+use Commerz\Catalog\Attributes\Data\AttributeChoiceView;
 use Commerz\Catalog\Attributes\Data\AttributeId;
 use Commerz\Catalog\Attributes\Data\DefineAttribute;
 use Commerz\Catalog\Attributes\Data\ListAttributes;
@@ -43,7 +44,7 @@ it('defines each built-in type with a minimal config', function (string $type, a
         ->and($view->status)->toBe(AttributeStatus::Active)
         ->and($view->filterable)->toBeFalse()
         ->and($view->configVersion)->toBe(1)
-        ->and(array_map(static fn ($choice) => $choice->code, $view->choices))->toBe(array_keys($choices));
+        ->and(array_map(static fn (AttributeChoiceView $choice) => $choice->code, $view->choices))->toBe(array_keys($choices));
     expect(Catalog::attributes()->find($view->id)->code)->toBe('a_'.$type);
 })->with([
     'text' => ['text', [], []],
@@ -66,7 +67,7 @@ it('stores the canonical config and keeps choice order', function (): void {
 
     expect($decimal->config)->toBe(['scale' => 3])
         ->and($enum->filterable)->toBeTrue()
-        ->and(array_map(static fn ($c) => [$c->code, $c->position], $enum->choices))->toBe([['xl', 0], ['s', 1], ['42', 2]]);
+        ->and(array_map(static fn (AttributeChoiceView $c) => [$c->code, $c->position], $enum->choices))->toBe([['xl', 0], ['s', 1], ['42', 2]]);
 });
 
 it('rejects invalid combinations of type, config, choices and filterable', function (DefineAttribute $command): void {
@@ -161,7 +162,7 @@ it('adds and relabels choices', function (): void {
     $view = Catalog::attributes()->define(new DefineAttribute('color', 'enum', attrLabel('Color'), choices: ['red' => attrLabel('Red')]));
     $added = Catalog::attributes()->addChoices(new AddAttributeChoices($view->id, ['green' => attrLabel('Green'), 'blue' => attrLabel('Blue')]));
 
-    expect(array_map(static fn ($c) => [$c->code, $c->position], $added->choices))->toBe([['red', 0], ['green', 1], ['blue', 2]]);
+    expect(array_map(static fn (AttributeChoiceView $c) => [$c->code, $c->position], $added->choices))->toBe([['red', 0], ['green', 1], ['blue', 2]]);
 
     $relabelled = Catalog::attributes()->update(new UpdateAttribute($view->id, choiceLabels: ['green' => attrLabel('Lime')]));
 
@@ -191,10 +192,10 @@ it('lists by code with a keyset cursor, a type filter and retired hidden', funct
     $first = Catalog::attributes()->list(new ListAttributes(first: 2));
     $second = Catalog::attributes()->list(new ListAttributes(first: 2, after: $first->next));
 
-    expect(array_map(static fn ($v) => $v->code, $first->items))->toBe(['a', 'b'])
+    expect(array_map(static fn (object $v) => $v->code, $first->items))->toBe(['a', 'b'])
         ->and($first->hasMore())->toBeTrue()
         ->and($first->next)->toBeInstanceOf(Cursor::class)
-        ->and(array_map(static fn ($v) => $v->code, $second->items))->toBe(['d'])
+        ->and(array_map(static fn (object $v) => $v->code, $second->items))->toBe(['d'])
         ->and($second->hasMore())->toBeFalse()
         ->and(Catalog::attributes()->list(new ListAttributes(includeRetired: true))->items)->toHaveCount(4)
         ->and(Catalog::attributes()->list(new ListAttributes(type: 'integer'))->items)->toBe([])

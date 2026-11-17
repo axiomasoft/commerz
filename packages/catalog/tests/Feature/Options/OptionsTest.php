@@ -8,6 +8,7 @@ use Commerz\Catalog\Options\Data\AddOptionValues;
 use Commerz\Catalog\Options\Data\DefineOption;
 use Commerz\Catalog\Options\Data\ListOptions;
 use Commerz\Catalog\Options\Data\OptionId;
+use Commerz\Catalog\Options\Data\OptionValueView;
 use Commerz\Catalog\Options\Data\UpdateOption;
 use Commerz\Catalog\Options\Exceptions\OptionNotFound;
 use Commerz\Catalog\Options\Exceptions\UnknownOptionValue;
@@ -31,7 +32,7 @@ it('defines an option with ordered values', function (): void {
     $view = Catalog::options()->define(new DefineOption('size', optLabel('Size'), optValues('s', 'm', 'l')));
 
     expect($view->code)->toBe('size')
-        ->and(array_map(static fn ($v) => [$v->code, $v->position], $view->values))->toBe([['s', 0], ['m', 1], ['l', 2]])
+        ->and(array_map(static fn (OptionValueView $v) => [$v->code, $v->position], $view->values))->toBe([['s', 0], ['m', 1], ['l', 2]])
         ->and(Catalog::options()->find($view->id)->values)->toHaveCount(3)
         ->and(Catalog::options()->findByCode('size')->id->equals($view->id))->toBeTrue();
 });
@@ -53,7 +54,7 @@ it('appends values and refuses a duplicate value code', function (): void {
     $view = Catalog::options()->define(new DefineOption('color', optLabel('Color'), optValues('red')));
     $added = Catalog::options()->addValues(new AddOptionValues($view->id, optValues('blue', 'green')));
 
-    expect(array_map(static fn ($v) => [$v->code, $v->position], $added->values))->toBe([['red', 0], ['blue', 1], ['green', 2]])
+    expect(array_map(static fn (OptionValueView $v) => [$v->code, $v->position], $added->values))->toBe([['red', 0], ['blue', 1], ['green', 2]])
         ->and(fn () => Catalog::options()->addValues(new AddOptionValues($view->id, optValues('red'))))->toThrow(DuplicateCode::class)
         ->and(fn () => Catalog::options()->addValues(new AddOptionValues(OptionId::generate(), optValues('x'))))->toThrow(OptionNotFound::class);
 });
@@ -78,9 +79,9 @@ it('lists by code with a keyset cursor', function (): void {
     $first = Catalog::options()->list(new ListOptions(first: 2));
     $second = Catalog::options()->list(new ListOptions(first: 2, after: $first->next));
 
-    expect(array_map(static fn ($v) => $v->code, $first->items))->toBe(['a', 'b'])
+    expect(array_map(static fn (object $v) => $v->code, $first->items))->toBe(['a', 'b'])
         ->and($first->hasMore())->toBeTrue()
-        ->and(array_map(static fn ($v) => $v->code, $second->items))->toBe(['c'])
+        ->and(array_map(static fn (object $v) => $v->code, $second->items))->toBe(['c'])
         ->and($second->hasMore())->toBeFalse();
 });
 

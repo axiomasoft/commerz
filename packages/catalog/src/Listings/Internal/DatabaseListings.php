@@ -18,26 +18,28 @@ use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The channel belongs to the core: it is checked through `Channels`, never joined or referenced by a foreign key.
  * Archiving a channel after a publication is not blocked across packages; such a listing is harmless.
  */
+#[Internal]
 final readonly class DatabaseListings implements Listings
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

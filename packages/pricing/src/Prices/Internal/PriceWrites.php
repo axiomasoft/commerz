@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Pricing\Common\Internal\Clock;
@@ -16,11 +16,12 @@ use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\QueryException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The write steps of a price, shared by `set`, `setMany` and `reschedule` (PRC-01). PostgreSQL cannot `ON CONFLICT
@@ -31,11 +32,12 @@ use Illuminate\Database\QueryException;
  * inserts of overlapping windows both put their tuple in the index before either checks the constraint, each waits
  * for the other and PostgreSQL aborts one with a deadlock instead of the 23P01 this code answers.
  */
+#[Internal]
 final readonly class PriceWrites
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

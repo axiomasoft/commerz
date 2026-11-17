@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Closes up to `$limit` reservations whose `expiresAt` has passed; null takes `commerz-inventory.expiry_batch`. */
 #[Api(since: '0.1')]

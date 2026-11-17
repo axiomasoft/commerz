@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Packman\Attributes\Api;
 
 /**
  * In-memory sellables. As a `SellableProvider` (contribute it from a test plugin) it serves refs of type `$key`;

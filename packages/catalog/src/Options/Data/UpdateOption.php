@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Options\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Renames an option or relabels its values; codes are immutable. */
 #[Api(since: '0.1')]

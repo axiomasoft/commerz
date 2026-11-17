@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Facades;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\PriceLists\Contracts\PriceLists;
 use Commerz\Pricing\Prices\Contracts\Prices;
 use Commerz\Pricing\Taxes\Contracts\Taxes;
 use Illuminate\Support\Facades\Facade;
+use Packman\Attributes\Api;
 
 /**
  * @method static PriceLists priceLists()

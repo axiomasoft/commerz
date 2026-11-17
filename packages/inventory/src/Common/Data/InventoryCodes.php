@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Common\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Field checks shared by the inventory commands. */
 #[Api(since: '0.1')]

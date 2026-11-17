@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Cancels a draft and releases its reservation; shipped units cannot be called back. */
 #[Api(since: '0.1')]

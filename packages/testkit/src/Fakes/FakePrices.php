@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
@@ -12,6 +11,7 @@ use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
+use Packman\Attributes\Api;
 
 /** Fixed unit prices per sellable; otherwise the request's fallback (the sellable's base price), as the core does. */
 #[Api(since: '0.1')]

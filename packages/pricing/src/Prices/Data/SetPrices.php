@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
+use Packman\Attributes\Api;
 
 /** 1 to 1000 prices of one price list, set atomically. */
 #[Api(since: '0.1')]

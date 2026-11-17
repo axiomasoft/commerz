@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Internal\Clock;
@@ -15,19 +15,21 @@ use Commerz\Inventory\Reservations\Data\ReservationId;
 use Commerz\Inventory\Reservations\Data\ReservationLineView;
 use Commerz\Inventory\Reservations\Data\ReservationView;
 use Commerz\Inventory\Reservations\Enums\ReservationState;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * SQL on `stock_reservations` and `stock_reservation_lines`. Callers own the lock order: a header (`for no key
  * update`, foreign headers only `skip locked`), then the levels through the ledger, then the lines
  * ({@see lockLines()}). Every expiry comparison uses the database clock.
  */
+#[Internal]
 final readonly class ReservationStore
 {
     private const string OUTSTANDING = 'ln.units > ln.consumed_units + ln.released_units + ln.expired_units';
@@ -36,7 +38,7 @@ final readonly class ReservationStore
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 
@@ -62,6 +64,7 @@ final readonly class ReservationStore
     /** @return object{id: string, channel_id: ?string, state: string, generation: int, expired: bool}|null */
     public function lock(string $demand): ?object
     {
+        /** @var object{id: string, channel_id: ?string, state: string, generation: int, expired: bool}|null $row */
         $row = $this->db()->selectOne(
             'select id, channel_id, state, generation, coalesce(expires_at <= now(), false) as expired'
             ." from {$this->headerTable()} where demand = ? for no key update",
@@ -69,7 +72,6 @@ final readonly class ReservationStore
             useReadPdo: false,
         );
 
-        /** @var object{id: string, channel_id: ?string, state: string, generation: int, expired: bool}|null */
         return is_object($row) ? $row : null;
     }
 

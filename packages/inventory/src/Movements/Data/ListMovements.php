@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Movements\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Journal rows in the order they were written, optionally of one item, location and/or reference. */
 #[Api(since: '0.1')]

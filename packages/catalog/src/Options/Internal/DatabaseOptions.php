@@ -19,22 +19,24 @@ use Commerz\Catalog\Options\Data\OptionView;
 use Commerz\Catalog\Options\Data\UpdateOption;
 use Commerz\Catalog\Options\Exceptions\OptionNotFound;
 use Commerz\Catalog\Options\Exceptions\UnknownOptionValue;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
+#[Internal]
 final readonly class DatabaseOptions implements Options
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
     ) {}

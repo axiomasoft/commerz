@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Catalog\Tests\Feature;
 
 use Commerz\Catalog\CatalogServiceProvider;
-use Commerz\Catalog\Internal\CatalogPlugin;
+use Commerz\Catalog\Plugins\CatalogPlugin;
 use Commerz\CommerzServiceProvider;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;

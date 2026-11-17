@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Pricing\Common\Internal\Windows;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * The rate of one tax of a class in a zone, valid in `[validFrom, validUntil)`. The same class, zone, tax code and

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Sources\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class StockSourceView

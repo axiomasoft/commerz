@@ -10,10 +10,12 @@ use Commerz\Inventory\Reservations\Data\ExpireReservations;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Packman\Attributes\Internal;
 
 /** The expiry sweeper: closes reservations past their `expiresAt` and gives their stock back. Schedule it, e.g. every minute. */
 #[Description('Release expired Commerz stock reservations.')]
 #[Signature('commerz:inventory:expire-reservations {--limit= : Reservations to close in this run (1..10000); defaults to commerz-inventory.expiry_batch}')]
+#[Internal]
 final class ExpireReservationsCommand extends Command
 {
     public function handle(Reservations $reservations): int

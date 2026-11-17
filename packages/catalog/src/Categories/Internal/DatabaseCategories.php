@@ -25,27 +25,29 @@ use Commerz\Catalog\Common\Internal\Locks;
 use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The tree stays acyclic because every move runs under one advisory lock of the whole tree and checks for a cycle
  * after taking it. A parent is held `for share` while a child is created under it or moved under it, so archiving
  * the parent (`for no key update`) cannot slip in between the check and the commit.
  */
+#[Internal]
 final readonly class DatabaseCategories implements Categories
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
     ) {}

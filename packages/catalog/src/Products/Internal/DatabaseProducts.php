@@ -28,23 +28,25 @@ use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Catalog\ProductTypes\Enums\ProductTypeStatus;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
+#[Internal]
 final readonly class DatabaseProducts implements Products
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

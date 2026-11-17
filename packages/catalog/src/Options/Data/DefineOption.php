@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Options\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Defines a variant axis with its values. */
 #[Api(since: '0.1')]

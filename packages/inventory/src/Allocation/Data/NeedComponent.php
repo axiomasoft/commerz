@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Allocation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Items\Data\StockItemId;
+use Packman\Attributes\Api;
 
 /** One stock item of a sellable unit; untracked items never appear. */
 #[Api(since: '0.1')]

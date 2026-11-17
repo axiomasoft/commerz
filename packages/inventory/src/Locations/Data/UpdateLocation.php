@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Locations\Enums\LocationKind;
+use Packman\Attributes\Api;
 
 /** Renames a location or changes its kind; a field left null stays. The code never changes. */
 #[Api(since: '0.1')]

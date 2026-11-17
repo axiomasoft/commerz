@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** What a tax calculator answers. An empty result means nothing is taxed. */
 #[Api(since: '0.1')]

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Internal;
 
+use Packman\Attributes\Internal;
+
 /** A validated attribute change of one owner that is not written yet (`AttributeWriter::prepare`). */
+#[Internal]
 final readonly class PreparedAttributes
 {
     /**

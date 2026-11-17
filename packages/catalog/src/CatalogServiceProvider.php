@@ -4,62 +4,32 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog;
 
-use Commerz\Attributes\Api;
-use Commerz\Catalog\Attributes\Contracts\Attributes;
-use Commerz\Catalog\Attributes\Internal\AttributeIndexer;
-use Commerz\Catalog\Attributes\Internal\AttributeWriter;
-use Commerz\Catalog\Attributes\Internal\DatabaseAttributes;
-use Commerz\Catalog\Categories\Contracts\Categories;
-use Commerz\Catalog\Categories\Internal\DatabaseCategories;
-use Commerz\Catalog\Common\Internal\CatalogConfig;
-use Commerz\Catalog\Internal\CatalogPlugin;
-use Commerz\Catalog\Listings\Contracts\Listings;
-use Commerz\Catalog\Listings\Internal\DatabaseListings;
-use Commerz\Catalog\Options\Contracts\Options;
-use Commerz\Catalog\Options\Internal\DatabaseOptions;
-use Commerz\Catalog\Products\Contracts\Products;
-use Commerz\Catalog\Products\Internal\DatabaseProducts;
-use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
-use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
-use Commerz\Catalog\Variants\Contracts\Variants;
-use Commerz\Catalog\Variants\Internal\DatabaseVariants;
-use Commerz\Plugins\CommerzPlugins;
-use Commerz\Schema\Contracts\SchemaOwnership;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Foundation\Application;
+use Commerz\Catalog\Laravel\Registrars\CatalogRegistrar;
 use Illuminate\Support\ServiceProvider;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Foundation\Concerns\RegistersPackageRegistrars;
+use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
 final class CatalogServiceProvider extends ServiceProvider
 {
+    use RegistersPackageRegistrars {
+        register as protected registerRegistrars;
+        boot as protected bootRegistrars;
+    }
+
     public const array NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing'];
 
+    /** @var list<class-string<PackageRegistrar>> */
+    protected const array REGISTRARS = [
+        CatalogRegistrar::class,
+    ];
+
+    #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/commerz-catalog.php', 'commerz-catalog');
-
-        $this->app->singleton(CatalogConfig::class, static function (Application $app): CatalogConfig {
-            $config = $app->make(Repository::class)->get('commerz-catalog', []);
-
-            return CatalogConfig::fromArray(is_array($config) ? $config : []);
-        });
-
-        $this->app->singleton(AttributeWriter::class);
-        $this->app->singleton(AttributeIndexer::class, AttributeWriter::class);
-        $this->app->singleton(Attributes::class, DatabaseAttributes::class);
-        $this->app->singleton(Options::class, DatabaseOptions::class);
-        $this->app->singleton(ProductTypes::class, DatabaseProductTypes::class);
-        $this->app->singleton(Products::class, DatabaseProducts::class);
-        $this->app->singleton(Variants::class, DatabaseVariants::class);
-        $this->app->singleton(Categories::class, DatabaseCategories::class);
-        $this->app->singleton(Listings::class, DatabaseListings::class);
-        $this->app->singleton(Catalog::class);
-
-        CommerzPlugins::builtIn(CatalogPlugin::class);
-
-        $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
-            $ownership->declare('commerz.catalog', self::NOUNS);
-        });
+        $this->registerRegistrars();
     }
 
     public function boot(): void
@@ -68,8 +38,10 @@ final class CatalogServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/commerz-catalog.php' => config_path('commerz-catalog.php'),
+                __DIR__.'/../config/commerz-catalog.php' => $this->app->configPath('commerz-catalog.php'),
             ], 'commerz-catalog-config');
         }
+
+        $this->bootRegistrars();
     }
 }

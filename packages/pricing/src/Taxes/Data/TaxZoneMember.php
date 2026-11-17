@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** A country, or one region of it, that belongs to a tax zone. A pair belongs to at most one zone (TAX-01). */
 #[Api(since: '0.1')]

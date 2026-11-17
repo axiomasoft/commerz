@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\ProductTypes\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Options\Exceptions\OptionNotFound;
@@ -19,6 +18,7 @@ use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
 use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /** Product types: the attribute slots and variant axes of a family of products. */
 #[Api(since: '0.1')]

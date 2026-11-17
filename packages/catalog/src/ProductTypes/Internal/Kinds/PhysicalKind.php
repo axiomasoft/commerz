@@ -6,7 +6,9 @@ namespace Commerz\Catalog\ProductTypes\Internal\Kinds;
 
 use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class PhysicalKind implements ProductKind
 {
     public function key(): string

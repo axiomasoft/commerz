@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** What became of one price among the candidates of a sellable (`Prices::explain`). */
 #[Api(since: '0.1')]

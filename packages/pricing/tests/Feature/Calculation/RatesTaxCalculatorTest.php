@@ -9,10 +9,11 @@ use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxableItem;
+use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
 use Commerz\Pricing\Calculation\Internal\RatesTaxCalculator;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
@@ -41,7 +42,7 @@ function rcCalculate(array $items, ?Address $to = new Address('RU'), string $at 
 function rcTaxes(TaxResult $result): array
 {
     return array_map(
-        static fn ($tax): string => ($tax->lineId ?? $tax->target->value).'|'.$tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal(),
+        static fn (TaxAmount $tax): string => ($tax->lineId ?? $tax->target->value).'|'.$tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal(),
         $result->amounts,
     );
 }
@@ -49,7 +50,7 @@ function rcTaxes(TaxResult $result): array
 function rcReconfigure(array $tax): void
 {
     config()->set('commerz-pricing.tax', [...config('commerz-pricing.tax'), ...$tax]);
-    app()->forgetInstance(PricingConfig::class);
+    app()->forgetInstance(PricingOptions::class);
 }
 
 it('is the contributed `rates` calculator', function (): void {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Reservations\Enums\ReservationState;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * What a demand holds. A demand reserved again after everything was released or expired starts a new `generation`;

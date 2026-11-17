@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** `draft ↔ active → archived`; archived is final. */
 #[Api(since: '0.1')]

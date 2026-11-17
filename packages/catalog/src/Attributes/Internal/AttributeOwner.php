@@ -7,8 +7,10 @@ namespace Commerz\Catalog\Attributes\Internal;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
 use Commerz\Identity\EntityId;
+use Packman\Attributes\Internal;
 
 /** The row whose attribute document the writer changes: a product, or a variant of a product. */
+#[Internal]
 final readonly class AttributeOwner
 {
     private function __construct(

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Inventory\Common\Enums\UnlinkedSellables;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
 use Commerz\Inventory\Common\Internal\LevelRow;
 use Commerz\Inventory\Common\Internal\Quantities;
 use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Common\Internal\StockLedger;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Items\Enums\StockItemStatus;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Items\Exceptions\StockItemArchived;
@@ -25,10 +25,11 @@ use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\RestockLine;
 use Commerz\Ports\Stock\Data\RestockStock;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -37,17 +38,18 @@ use RuntimeException;
  * a sellable without links is skipped under `unlinked_sellables = unlimited` and fails otherwise. Once per reference
  * (`inventory.restock` receipt): a repeated reference changes nothing, a different payload under it conflicts.
  */
+#[Internal]
 final readonly class DatabaseStockReturns implements StockReturns
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private OperationReceipts $receipts,
         private StockLedger $ledger,
         private StockEntities $entities,
         private Channels $channels,
-        private InventoryConfig $inventory,
+        private InventoryOptions $inventory,
     ) {}
 
     public function restock(RestockStock $command): void

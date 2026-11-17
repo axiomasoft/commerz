@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\Common\Data\PricingCodes;
+use Packman\Attributes\Api;
 
 /** Replaces the members of a zone; a pair that belongs to another zone is refused (TAX-01). */
 #[Api(since: '0.1')]

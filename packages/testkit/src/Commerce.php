@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
-use Commerz\Attributes\Api;
 use Commerz\Commerz;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
@@ -24,6 +23,7 @@ use Commerz\Testkit\Fakes\FakeSellables;
 use Commerz\Testkit\Fakes\FakeStock;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Facade;
+use Packman\Attributes\Api;
 
 /**
  * Swaps every core port for an in-memory fake: `$commerce = Commerce::fake();` then arrange through

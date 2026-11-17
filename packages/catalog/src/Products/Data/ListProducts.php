@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Categories\Data\CategoryId;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
@@ -12,6 +11,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * Products ordered by handle. With a channel: active products published there and available at `at` (default now);

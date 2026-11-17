@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Money\RoundingMode;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
+use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('defaults to the base price fallback, the rates calculator and half-up tax rounding', function (): void {
-    $config = PricingConfig::fromArray([]);
+    $config = PricingOptions::fromArray([]);
 
     expect($config->fallbackToSellable)->toBeTrue()
         ->and($config->taxCalculator)->toBe('rates')
@@ -18,13 +18,13 @@ it('defaults to the base price fallback, the rates calculator and half-up tax ro
 });
 
 it('reads the shipped config file', function (): void {
-    $config = PricingConfig::fromArray(require __DIR__.'/../../config/commerz-pricing.php');
+    $config = PricingOptions::fromArray(require __DIR__.'/../../config/commerz-pricing.php');
 
-    expect($config)->toEqual(PricingConfig::fromArray([]));
+    expect($config)->toEqual(PricingOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {
-    $config = PricingConfig::fromArray([
+    $config = PricingOptions::fromArray([
         'fallback_to_sellable' => false,
         'tax' => ['calculator' => 'acme.avalara', 'default_class' => 'general', 'delivery_class' => null, 'default_zone' => 'ru', 'rounding' => 'half_even'],
     ]);
@@ -38,12 +38,19 @@ it('reads every key', function (): void {
 });
 
 it('accepts a rounding mode enum', function (): void {
-    expect(PricingConfig::fromArray(['tax' => ['rounding' => RoundingMode::Floor]])->taxRounding)->toBe(RoundingMode::Floor);
+    expect(PricingOptions::fromArray(['tax' => ['rounding' => RoundingMode::Floor]])->taxRounding)->toBe(RoundingMode::Floor);
+});
+
+it('rejects unknown keys under closed schema validation', function (): void {
+    expect(fn () => PricingOptions::fromArray(['unknown_key' => 1], 'app.pricing'))
+        ->toThrow(InvalidConfiguration::class, 'app.pricing.unknown_key')
+        ->and(fn () => PricingOptions::fromArray(['tax' => ['extra' => 1]], 'app.pricing'))
+        ->toThrow(InvalidConfiguration::class, 'app.pricing.tax.extra');
 });
 
 it('names the offending key', function (array $config, string $path): void {
-    expect(fn () => PricingConfig::fromArray($config))
-        ->toThrow(fn (InvalidConfiguration $e) => expect($e->path)->toBe($path));
+    expect(fn () => PricingOptions::fromArray($config))
+        ->toThrow(InvalidConfiguration::class, $path);
 })->with([
     'fallback not a bool' => [['fallback_to_sellable' => 1], 'commerz-pricing.fallback_to_sellable'],
     'tax not an array' => [['tax' => 'rates'], 'commerz-pricing.tax'],

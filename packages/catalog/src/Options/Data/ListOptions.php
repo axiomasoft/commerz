@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Options\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Options ordered by code. */
 #[Api(since: '0.1')]

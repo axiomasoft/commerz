@@ -8,7 +8,9 @@ use Commerz\Inventory\Common\Internal\LevelQueries;
 use Commerz\Inventory\Movements\Contracts\Movements;
 use Commerz\Inventory\Movements\Data\ListMovements;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class DatabaseMovements implements Movements
 {
     public function __construct(private LevelQueries $queries) {}

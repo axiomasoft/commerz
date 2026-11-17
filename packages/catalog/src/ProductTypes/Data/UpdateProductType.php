@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\ProductTypes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Renames a type or appends optional slots; axes, kind and existing slots are fixed. */
 #[Api(since: '0.1')]

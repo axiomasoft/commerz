@@ -7,12 +7,13 @@ use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Facades\Pricing;
 use Commerz\Pricing\PriceLists\Data\CreatePriceList;
 use Commerz\Pricing\PriceLists\Data\PriceListView;
 use Commerz\Pricing\Prices\Data\ExplainPrice;
 use Commerz\Pricing\Prices\Data\ListPrices;
+use Commerz\Pricing\Prices\Data\PriceCandidate;
 use Commerz\Pricing\Prices\Data\ReschedulePrice;
 use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Enums\CandidateVerdict;
@@ -21,6 +22,7 @@ use Commerz\Pricing\Taxes\Data\SetTaxRate;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
+use Commerz\Quotes\Data\TaxLine;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -60,13 +62,13 @@ function pscQuote(ChannelId $channel, string $at): array
     return [
         $result->lines[0]->priceSource,
         $result->total->toDecimal(),
-        array_map(static fn ($tax): string => $tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal().'|'.($tax->included ? 'in' : 'ex'), $result->taxLines),
+        array_map(static fn (TaxLine $tax): string => $tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal().'|'.($tax->included ? 'in' : 'ex'), $result->taxLines),
     ];
 }
 
 it('prices and taxes a sale across a VAT change from lists to a quote', function (): void {
     config(['commerz-pricing.tax.default_zone' => 'ru']);
-    app()->forgetInstance(PricingConfig::class);
+    app()->forgetInstance(PricingOptions::class);
 
     $channel = pscChannel();
     $retail = pscList('retail', $channel);
@@ -94,7 +96,7 @@ it('prices and taxes a sale across a VAT change from lists to a quote', function
         ->and(pscQuote($channel, '2026-01-02'))->toBe(['price_list:sale', '122.00', ['vat|2200|22.00|in']]);
 
     $why = Pricing::prices()->explain(new ExplainPrice($tee, 1, pscContext($channel, '2026-01-02')));
-    $verdicts = array_column(array_map(static fn ($c): array => ['list' => $c->priceList, 'verdict' => $c->verdict], $why->candidates), 'verdict', 'list');
+    $verdicts = array_column(array_map(static fn (PriceCandidate $c): array => ['list' => $c->priceList, 'verdict' => $c->verdict], $why->candidates), 'verdict', 'list');
 
     expect($verdicts)->toBe(['sale' => CandidateVerdict::Selected, 'retail' => CandidateVerdict::Outranked])
         ->and($why->price?->source)->toBe('price_list:sale');

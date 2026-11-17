@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Pricing\Errors\Enums\PricingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The window overlaps another window of the same rate (tax class, zone, tax code) (TAX-01). */
 #[Api(since: '0.1')]
@@ -39,5 +43,16 @@ final class TaxRateOverlap extends CommerzException
             'tax_code' => $this->taxCode,
             'conflicting_rate' => $this->conflictingRate,
         ];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PricingErrorCode::TaxRateOverlap,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

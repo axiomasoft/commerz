@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Sources\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** Lets the channel sell from the location; a lower priority is used first. Assigning an existing pair updates it. */
 #[Api(since: '0.1')]

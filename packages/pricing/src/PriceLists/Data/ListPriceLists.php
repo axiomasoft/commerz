@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\PriceLists\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Pagination\Cursor;
 use Commerz\Pricing\PriceLists\Enums\PriceListStatus;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** Price lists ordered by code, optionally of one status, assigned to one channel or in one currency. */
 #[Api(since: '0.1')]

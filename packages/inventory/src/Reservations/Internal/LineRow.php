@@ -6,8 +6,10 @@ namespace Commerz\Inventory\Reservations\Internal;
 
 use Commerz\Inventory\Common\Internal\LevelRow;
 use Commerz\Inventory\Common\Internal\Rows;
+use Packman\Attributes\Internal;
 
 /** A `stock_reservation_lines` row of the current generation; units are sellable units, `sellable` is '' on a transfer's line. */
+#[Internal]
 final readonly class LineRow
 {
     public function __construct(

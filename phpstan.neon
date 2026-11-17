@@ -16,10 +16,7 @@ parameters:
         - packages/testkit/src
         - packages/testkit/tests
     ignoreErrors:
-        # Temporary Slice-A ignores for unmigrated feature subpackages under strict phpstan-base rules (cleaned up in Slice B).
-        -
-            identifier: missingType.callable
-            path: packages/catalog/src/Products/Internal/FilterCompiler.php
+        # Temporary Slice-A ignore for unmigrated sales subpackage under strict phpstan-base rules (cleaned up in Slice B2).
         -
             identifier: argument.type
             path: packages/sales/src/Internal/Console/ExpireOrdersCommand.php

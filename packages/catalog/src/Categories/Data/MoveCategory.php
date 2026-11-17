@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Moves a category with its subtree under another active category, or to the root when `parent` is null. */
 #[Api(since: '0.1')]

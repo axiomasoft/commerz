@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\NotFound;
+use Commerz\Pricing\Errors\Enums\PricingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 #[Api(since: '0.1')]
 final class TaxClassNotFound extends NotFound
@@ -13,5 +17,16 @@ final class TaxClassNotFound extends NotFound
     public function __construct(string $code)
     {
         parent::__construct('Tax class', $code, 'pricing.tax_class_not_found');
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PricingErrorCode::TaxClassNotFound,
+            category: PackmanErrorCategory::NotFound,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

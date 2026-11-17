@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Deletes a price; removing one that is gone changes nothing. */
 #[Api(since: '0.1')]

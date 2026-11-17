@@ -81,13 +81,19 @@ it('keeps every php-api.json manifest in sync with the code', function (): void 
 
     $packmanSync = (new ApiManifestGenerator)->sync(
         $root,
-        [['name' => 'axiomasoft/commerz', 'path' => 'packages/core']],
+        [
+            ['name' => 'axiomasoft/commerz', 'path' => 'packages/core'],
+            ['name' => 'axiomasoft/commerz-testkit', 'path' => 'packages/testkit'],
+            ['name' => 'axiomasoft/commerz-catalog', 'path' => 'packages/catalog'],
+            ['name' => 'axiomasoft/commerz-inventory', 'path' => 'packages/inventory'],
+            ['name' => 'axiomasoft/commerz-pricing', 'path' => 'packages/pricing'],
+        ],
         write: $update,
     );
     expect($packmanSync['ok'])->toBeTrue(implode("\n", $packmanSync['diagnostics']));
 
     foreach ($manifests as $package => $manifest) {
-        if ($package === 'core') {
+        if (in_array($package, ['core', 'testkit', 'catalog', 'inventory', 'pricing'], true)) {
             continue;
         }
 

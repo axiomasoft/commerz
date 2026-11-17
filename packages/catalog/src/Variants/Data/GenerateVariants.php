@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /**
  * Creates the variants of the given combinations: the cartesian product of `axes` (in the product's axis order and the

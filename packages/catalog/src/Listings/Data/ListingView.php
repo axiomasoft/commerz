@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Listings\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Listings\Enums\ListingStatus;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class ListingView

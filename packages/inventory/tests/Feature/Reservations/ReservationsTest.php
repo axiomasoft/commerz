@@ -8,8 +8,10 @@ use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Data\ArchiveLocation;
 use Commerz\Inventory\Movements\Data\ListMovements;
+use Commerz\Inventory\Movements\Data\MovementView;
 use Commerz\Inventory\Reservations\Contracts\Reservations;
 use Commerz\Inventory\Reservations\Data\ExpireReservations;
+use Commerz\Inventory\Reservations\Data\ReservationLineView;
 use Commerz\Inventory\Reservations\Enums\ReleaseCause;
 use Commerz\Inventory\Reservations\Enums\ReservationState;
 use Commerz\Inventory\Reservations\Events\StockConsumed;
@@ -22,6 +24,7 @@ use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
+use Commerz\Ports\Stock\Data\ReservedLine;
 use Commerz\Ports\Stock\Data\StockAllocation;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
@@ -102,7 +105,7 @@ it('holds every component of a kit and shares a component between sellables', fu
 
     $view = Inventory::reservations()->find('order:1');
 
-    expect(array_map(fn ($l) => [$l->sku, $l->quantityPerUnit, $l->units, $l->outstanding], $view->lines))
+    expect(array_map(fn (ReservationLineView $l) => [$l->sku, $l->quantityPerUnit, $l->units, $l->outstanding], $view->lines))
         ->toBe([['body', 2, 2, 2], ['strap', 1, 2, 2]]);
 });
 
@@ -200,7 +203,7 @@ it('reserves a fully released demand anew as its next generation', function (): 
     expect(rsvHeld($result))->toBe(['tee' => [['main', 3]]])
         ->and($view->generation)->toBe(2)
         ->and($view->state)->toBe(ReservationState::Active)
-        ->and(array_map(fn ($l) => $l->units, $view->lines))->toBe([3])
+        ->and(array_map(fn (ReservationLineView $l) => $l->units, $view->lines))->toBe([3])
         ->and(rsvLines())->toBe(2)
         ->and(rsvLevel($tee, $main)->reserved)->toBe(3);
 });
@@ -235,7 +238,7 @@ it('releases from the latest allocation, a sellable, or the whole demand', funct
 
     expect(rsvLevel($tee, $main)->reserved)->toBe(0)
         ->and($view->state)->toBe(ReservationState::Closed)
-        ->and(array_sum(array_map(fn ($l) => $l->released, $view->lines)))->toBe(8);
+        ->and(array_sum(array_map(fn (ReservationLineView $l) => $l->released, $view->lines)))->toBe(8);
 });
 
 it('consumes held units earliest allocation first or from a location', function (): void {
@@ -255,7 +258,7 @@ it('consumes held units earliest allocation first or from a location', function 
 
     expect([rsvLevel($tee, $main)->onHand, rsvLevel($tee, $main)->reserved])->toBe([1, 1])
         ->and([rsvLevel($tee, $backup)->onHand, rsvLevel($tee, $backup)->reserved])->toBe([1, 1])
-        ->and(array_map(fn ($m) => [$m->kind, $m->delta], $moves))->toBe([[MovementKind::Sale, -2]])
+        ->and(array_map(fn (MovementView $m) => [$m->kind, $m->delta], $moves))->toBe([[MovementKind::Sale, -2]])
         ->and(fn () => Inventory::reservations()->consume(new ConsumeReservation('order:1', $sku, 2, 'fulfillment:3', 'main')))
         ->toThrow(ReservationNotFound::class)
         ->and(fn () => Inventory::reservations()->consume(new ConsumeReservation('order:1', $sku, 3, 'fulfillment:3')))
@@ -354,7 +357,7 @@ it('repeats a live demand that holds only untracked sellables without writing', 
     $again = rsvReserve($channel, 'order:1', ['ebook' => 1, 'tee' => 1]);
 
     expect(Inventory::reservations()->find('order:1')->generation)->toBe(1)
-        ->and(array_map(fn ($l) => $l->quantity, $again->lines))->toBe([1, 0])
+        ->and(array_map(fn (ReservedLine $l) => $l->quantity, $again->lines))->toBe([1, 0])
         ->and(rsvLevel($tee, $main)->reserved)->toBe(0);
     Event::assertNotDispatched(StockReserved::class);
 });

@@ -10,6 +10,7 @@ use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Inventory\Sources\Data\AssignSource;
+use Commerz\Inventory\Sources\Data\StockSourceView;
 use Commerz\Inventory\Sources\Data\UnassignSource;
 use Commerz\Money\Currency;
 use Commerz\Stores\Contracts\Channels;
@@ -43,8 +44,8 @@ it('lists a channel sources by priority and then by location code', function ():
 
     $list = Inventory::sources()->list($channel);
 
-    expect(array_map(fn ($s) => $s->locationCode, $list))->toBe(['c', 'a', 'b'])
-        ->and(array_map(fn ($s) => $s->priority, $list))->toBe([5, 10, 10])
+    expect(array_map(fn (StockSourceView $s) => $s->locationCode, $list))->toBe(['c', 'a', 'b'])
+        ->and(array_map(fn (StockSourceView $s) => $s->priority, $list))->toBe([5, 10, 10])
         ->and($list[0]->channel->equals($channel))->toBeTrue()
         ->and($list[0]->location->equals($c->id))->toBeTrue();
 });

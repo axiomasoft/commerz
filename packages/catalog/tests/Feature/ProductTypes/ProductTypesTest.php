@@ -13,6 +13,7 @@ use Commerz\Catalog\Options\Exceptions\OptionNotFound;
 use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Data\ArchiveProductType;
+use Commerz\Catalog\ProductTypes\Data\AttributeSlotView;
 use Commerz\Catalog\ProductTypes\Data\CreateProductType;
 use Commerz\Catalog\ProductTypes\Data\ListProductTypes;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
@@ -23,11 +24,11 @@ use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Measures\LocalizedText;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 uses(RefreshDatabase::class);
 
@@ -81,7 +82,7 @@ it('creates a type with slots on two levels, required flags and ordered axes', f
     expect($view->kind)->toBe('physical')
         ->and($view->status)->toBe(ProductTypeStatus::Active)
         ->and($view->axes)->toBe(['size', 'color'])
-        ->and(array_map(static fn ($s) => [$s->code, $s->level, $s->required, $s->position], $view->slots))->toBe([
+        ->and(array_map(static fn (AttributeSlotView $s) => [$s->code, $s->level, $s->required, $s->position], $view->slots))->toBe([
             ['material', AttributeLevel::Product, true, 0],
             ['density', AttributeLevel::Product, false, 1],
             ['color_name', AttributeLevel::Variant, true, 0],
@@ -153,7 +154,7 @@ it('renames a type and appends optional slots after the existing ones', function
 
     expect($updated->name->texts)->toBe(['en' => 'Clothes'])
         ->and($updated->axes)->toBe(['color'])
-        ->and(array_map(static fn ($s) => [$s->code, $s->level->value, $s->required, $s->position], $updated->slots))->toBe([
+        ->and(array_map(static fn (AttributeSlotView $s) => [$s->code, $s->level->value, $s->required, $s->position], $updated->slots))->toBe([
             ['material', 'product', false, 0],
             ['density', 'product', false, 1],
             ['color_name', 'variant', false, 0],
@@ -198,9 +199,9 @@ it('lists by code with a keyset cursor and hides archived types', function (): v
     $first = Catalog::productTypes()->list(new ListProductTypes(first: 2));
     $second = Catalog::productTypes()->list(new ListProductTypes(first: 2, after: $first->next));
 
-    expect(array_map(static fn ($v) => $v->code, $first->items))->toBe(['a', 'b'])
+    expect(array_map(static fn (object $v) => $v->code, $first->items))->toBe(['a', 'b'])
         ->and($first->hasMore())->toBeTrue()
-        ->and(array_map(static fn ($v) => $v->code, $second->items))->toBe(['c'])
+        ->and(array_map(static fn (object $v) => $v->code, $second->items))->toBe(['c'])
         ->and($second->hasMore())->toBeFalse()
         ->and(Catalog::productTypes()->list(new ListProductTypes(includeArchived: true))->items)->toHaveCount(4);
 });

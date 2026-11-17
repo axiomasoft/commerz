@@ -13,7 +13,9 @@ use Commerz\Catalog\Attributes\Enums\FilterOperator;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Internal\ConfigReader;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class IntegerType implements AttributeType
 {
     public function key(): string

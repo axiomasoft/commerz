@@ -9,8 +9,10 @@ use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Stock\Data\StockLevelView;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** A `stock_levels` row as {@see StockLedger::lock()} returns it, with the item and location it belongs to. */
+#[Internal]
 final readonly class LevelRow
 {
     public function __construct(

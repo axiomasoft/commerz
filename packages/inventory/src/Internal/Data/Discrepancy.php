@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Internal\Data;
 
+use Packman\Attributes\Internal;
+
 /** One disagreement the reconciler found; quantities are decimal strings so sums never overflow. */
+#[Internal]
 final readonly class Discrepancy
 {
     public const string LEDGER_SUM = 'ledger_sum';

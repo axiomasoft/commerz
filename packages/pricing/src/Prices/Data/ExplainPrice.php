@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /** Asks why a sellable costs what it costs in a context; the answer of `Prices::explain` follows the resolver's own path. */
 #[Api(since: '0.1')]

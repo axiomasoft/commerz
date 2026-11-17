@@ -8,10 +8,10 @@ use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Attributes\Internal\AttributeOwner;
 use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\CatalogConfig;
 use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
 use Commerz\Catalog\Common\Internal\Rows;
+use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
@@ -36,19 +36,20 @@ use Commerz\Catalog\Variants\Events\VariantUpdated;
 use Commerz\Catalog\Variants\Exceptions\DuplicateCombination;
 use Commerz\Catalog\Variants\Exceptions\TooManyVariants;
 use Commerz\Catalog\Variants\Exceptions\VariantNotFound;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\ConstraintNames;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\ConstraintNames;
+use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**
@@ -56,6 +57,7 @@ use Throwable;
  * concurrent creations and generations of one product run one after another and see each other's combinations.
  * `UNIQUE(product_id, option_signature)` and `on conflict do nothing` are the safety net, not the mechanism.
  */
+#[Internal]
 final readonly class DatabaseVariants implements Variants
 {
     /** Variant rows per generated INSERT; 7 bindings each stay far below the 65535 bind limit. */
@@ -63,8 +65,8 @@ final readonly class DatabaseVariants implements Variants
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
-        private CatalogConfig $catalog,
+        private CommerzOptions $config,
+        private CatalogOptions $catalog,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,
@@ -162,7 +164,13 @@ final readonly class DatabaseVariants implements Variants
 
                         foreach ($chunk as $signature => $planned) {
                             $rows[] = '(?, ?, ?, ?, ?, ?, ?)';
-                            array_push($bindings, $planned['id'], $command->product->value, $planned['variant']->sku, $signature, $position++, $now, $now);
+                            $bindings[] = $planned['id'];
+                            $bindings[] = $command->product->value;
+                            $bindings[] = $planned['variant']->sku;
+                            $bindings[] = $signature;
+                            $bindings[] = $position++;
+                            $bindings[] = $now;
+                            $bindings[] = $now;
                         }
 
                         $returned = $db->select(

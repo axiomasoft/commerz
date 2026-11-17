@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-pricing configuration",
+    "type": "object",
+    "properties": {
+        "commerz-pricing": {
+            "type": "object",
+            "properties": {
+                "fallback_to_sellable": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "tax": {
+                    "type": "object",
+                    "properties": {
+                        "calculator": {
+                            "type": "string",
+                            "default": "rates"
+                        },
+                        "default_class": {
+                            "type": "string",
+                            "default": "standard"
+                        },
+                        "default_zone": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "default": null
+                        },
+                        "delivery_class": {
+                            "type": "string",
+                            "default": "standard"
+                        },
+                        "rounding": {
+                            "type": "string",
+                            "default": "half_up"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

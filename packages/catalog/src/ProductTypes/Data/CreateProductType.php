@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\ProductTypes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Creates a product type: its kind, the attributes valid on products and variants, and the variant axes. */
 #[Api(since: '0.1')]

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Common\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A location code or SKU is already taken in this installation. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class DuplicateCode extends CommerzException
     public function context(): array
     {
         return ['entity' => $this->entity, 'code' => $this->duplicate];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: InventoryErrorCode::DuplicateCode,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Creates a category at the root or under an active parent. */
 #[Api(since: '0.1')]

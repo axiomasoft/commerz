@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Commerz\Testkit;
 
 use Closure;
-use Commerz\Attributes\Api;
 use Illuminate\Container\Container;
 use Illuminate\Database\DatabaseManager;
+use Packman\Attributes\Api;
 use RuntimeException;
 use Throwable;
 

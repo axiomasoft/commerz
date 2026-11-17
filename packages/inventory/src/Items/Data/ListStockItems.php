@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Items\Enums\StockItemStatus;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Items ordered by SKU, optionally of one status. */
 #[Api(since: '0.1')]

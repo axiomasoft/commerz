@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Categories\Contracts\Categories;
 use Commerz\Catalog\Listings\Contracts\Listings;
@@ -12,6 +11,7 @@ use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\Variants\Contracts\Variants;
+use Packman\Attributes\Api;
 
 /** Root of the catalog API: accessors of the module contracts. */
 #[Api(since: '0.1')]

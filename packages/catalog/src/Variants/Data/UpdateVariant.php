@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Changes the given fields; a null field stays as it is, a field named in `clear` becomes empty. Axes never change. */
 #[Api(since: '0.1')]

@@ -7,8 +7,10 @@ namespace Commerz\Inventory\Reservations\Internal;
 use Commerz\Identity\SellableRef;
 use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\NeedComponent;
+use Packman\Attributes\Internal;
 
 /** A requested sellable resolved through its links: stock to place, unlimited (`components` null) or unavailable. */
+#[Internal]
 final readonly class DemandLine
 {
     /** @param  list<NeedComponent>|null  $components  tracked and backorder items; null when stock does not limit it */

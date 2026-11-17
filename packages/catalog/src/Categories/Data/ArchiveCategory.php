@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Archives a category without active children; its product assignments stay. Archiving twice changes nothing. */
 #[Api(since: '0.1')]

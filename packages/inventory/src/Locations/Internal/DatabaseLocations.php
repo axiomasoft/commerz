@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
 use Commerz\Inventory\Common\Internal\Clock;
@@ -26,22 +26,24 @@ use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Archiving takes the location row (`for no key update`), then its levels in a stable order, and only then reads
  * them: a reserve filters on the location status before it locks levels and rechecks it in the same query, so it
  * cannot add stock to a location that is being archived.
  */
+#[Internal]
 final readonly class DatabaseLocations implements Locations
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private LevelQueries $levels,

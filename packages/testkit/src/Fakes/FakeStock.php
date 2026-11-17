@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit\Fakes;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
@@ -23,6 +22,7 @@ use Commerz\Ports\Stock\Data\RestockStock;
 use Commerz\Ports\Stock\Data\StockAllocation;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
+use Packman\Attributes\Api;
 
 /**
  * In-memory stock with the port's semantics: refs without a limit are unlimited; reserve is all-or-nothing and

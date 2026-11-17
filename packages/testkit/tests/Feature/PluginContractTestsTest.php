@@ -7,11 +7,11 @@ namespace Commerz\Testkit\Tests\Feature;
 use Commerz\CommerzServiceProvider;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 final class AuditConsumer implements OutboxConsumer
 {
@@ -23,7 +23,7 @@ final class AuditConsumer implements OutboxConsumer
     public function consume(IntegrationEvent $event): void {}
 }
 
-final class AuditPlugin implements CommerzPlugin
+final class AuditPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {

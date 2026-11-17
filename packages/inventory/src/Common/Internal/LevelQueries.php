@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Inventory\Items\Data\StockItemId;
@@ -18,16 +18,18 @@ use Commerz\Inventory\Stock\Data\StockLevelView;
 use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Reads of `stock_levels` and `stock_movements` outside a ledger operation; the only such reader besides the ledger
  * itself. Each read is one statement, so a page never mixes two snapshots.
  */
+#[Internal]
 final readonly class LevelQueries
 {
     private const array LEVEL_COLUMNS = [
@@ -37,7 +39,7 @@ final readonly class LevelQueries
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

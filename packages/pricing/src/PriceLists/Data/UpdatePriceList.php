@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\PriceLists\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
+use Packman\Attributes\Api;
 
 /** Renames a price list or changes its priority or tax inclusion; a field left null stays. Code and currency never change. */
 #[Api(since: '0.1')]

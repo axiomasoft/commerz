@@ -6,10 +6,12 @@ namespace Commerz\Catalog\Variants\Internal;
 
 use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Variants\Exceptions\InvalidAxes;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Turns option and value codes into the ids of a product's axes. */
+#[Internal]
 final readonly class AxisResolver
 {
     public function __construct(private TableNames $tables) {}

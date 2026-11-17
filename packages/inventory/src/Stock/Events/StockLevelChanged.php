@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Stock\Data\StockLevelView;
 use Commerz\Inventory\Stock\Enums\MovementKind;
+use Packman\Attributes\Api;
 
 /**
  * A level changed in a committed operation; one event per level and operation, carrying its final state.

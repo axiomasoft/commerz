@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Commerz\Catalog\Common\Internal;
 
 use JsonException;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /**
  * JSONB object documents. The top level is always an object, even when empty or keyed `0..n` (a code `'0'`):
  * the tables CHECK `jsonb_typeof = 'object'`.
  */
+#[Internal]
 final class Documents
 {
     private const int FLAGS = JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION;

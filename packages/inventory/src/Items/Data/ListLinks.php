@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Links of one sellable, of one item, or of both; at least one must be given. Ordered by link id. */
 #[Api(since: '0.1')]

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
 use Commerz\Inventory\Locations\Data\ArchiveLocation;
 use Commerz\Inventory\Locations\Data\CreateLocation;
@@ -17,6 +16,7 @@ use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotEmpty;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /** Places that hold stock: warehouses, stores, pickup points. */
 #[Api(since: '0.1')]

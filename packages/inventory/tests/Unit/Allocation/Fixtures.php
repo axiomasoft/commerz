@@ -7,6 +7,7 @@ use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
 use Commerz\Inventory\Allocation\Data\NeedComponent;
+use Commerz\Inventory\Allocation\Data\PlannedAllocation;
 use Commerz\Inventory\Allocation\Data\SourceStock;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
@@ -66,7 +67,7 @@ function alloc_describe(AllocationPlan $plan): array
     ) ?? $id;
 
     return array_map(
-        static fn ($a): string => $a->sellable.'@'.$location((string) $a->location).'='.$a->units,
+        static fn (PlannedAllocation $a): string => $a->sellable.'@'.$location((string) $a->location).'='.$a->units,
         $plan->allocations,
     );
 }

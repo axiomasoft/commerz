@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Sources\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Inventory\Sources\Data\AssignSource;
@@ -12,6 +11,7 @@ use Commerz\Inventory\Sources\Data\StockSourceView;
 use Commerz\Inventory\Sources\Data\UnassignSource;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Exceptions\ChannelNotFound;
+use Packman\Attributes\Api;
 
 /** Which locations a channel sells from, and in which order. */
 #[Api(since: '0.1')]

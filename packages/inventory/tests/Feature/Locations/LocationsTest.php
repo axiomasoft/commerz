@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
@@ -19,16 +19,16 @@ use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotEmpty;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 
 function locDb(): ConnectionInterface
 {
-    return app(ConnectionResolverInterface::class)->connection(app(CommerzConfig::class)->connection);
+    return app(ConnectionResolverInterface::class)->connection(app(CommerzOptions::class)->connection);
 }
 
 it('creates, reads and lists locations by code', function (): void {

@@ -7,9 +7,10 @@ use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Ports\Prices\Contracts\PriceResolver;
+use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Facades\Pricing;
 use Commerz\Pricing\PriceLists\Data\ArchivePriceList;
 use Commerz\Pricing\PriceLists\Data\AssignPriceListChannels;
@@ -18,6 +19,7 @@ use Commerz\Pricing\PriceLists\Data\PriceListView;
 use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Pricing\Prices\Contracts\Prices;
 use Commerz\Pricing\Prices\Data\ExplainPrice;
+use Commerz\Pricing\Prices\Data\PriceCandidate;
 use Commerz\Pricing\Prices\Enums\CandidateVerdict;
 use Commerz\Pricing\Prices\Internal\DatabasePriceResolver;
 use Commerz\Pricing\Pricing as PricingRoot;
@@ -78,7 +80,7 @@ function prReconfigure(array $config): void
 {
     config()->set('commerz-pricing', [...config('commerz-pricing'), ...$config]);
 
-    foreach ([PricingConfig::class, DatabasePriceResolver::class, PriceResolver::class, Prices::class, PricingRoot::class] as $abstract) {
+    foreach ([PricingOptions::class, DatabasePriceResolver::class, PriceResolver::class, Prices::class, PricingRoot::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }
@@ -116,7 +118,7 @@ it('takes the lowest applicable price once the sale is over', function (): void 
 
     $price = Pricing::prices()->resolveMany([prRequest(quantity: 10)], $context)[0];
     $why = Pricing::prices()->explain(prExplain('tee', 10, $context));
-    $verdicts = array_map(static fn ($candidate): string => "{$candidate->priceList}/{$candidate->customerGroup}/{$candidate->minQuantity}:{$candidate->verdict->value}", $why->candidates);
+    $verdicts = array_map(static fn (PriceCandidate $candidate): string => "{$candidate->priceList}/{$candidate->customerGroup}/{$candidate->minQuantity}:{$candidate->verdict->value}", $why->candidates);
 
     expect($price->unit)->toEqual(Money::of('90.00', 'RUB'))
         ->and($price->source)->toBe('price_list:retail')
@@ -134,7 +136,7 @@ it('uses the group price below the quantity step', function (): void {
 
     $price = Pricing::prices()->resolveMany([prRequest(quantity: 5)], $context)[0];
     $verdicts = array_map(
-        static fn ($candidate): string => "{$candidate->priceList}/{$candidate->customerGroup}/{$candidate->minQuantity}:{$candidate->verdict->value}",
+        static fn (PriceCandidate $candidate): string => "{$candidate->priceList}/{$candidate->customerGroup}/{$candidate->minQuantity}:{$candidate->verdict->value}",
         Pricing::prices()->explain(prExplain('tee', 5, $context))->candidates,
     );
 
@@ -154,7 +156,7 @@ it('does not offer the group price to a customer outside the group', function ()
     $why = Pricing::prices()->explain(prExplain('tee', 1, $context));
 
     expect($why->price?->unit)->toEqual(Money::of('100.00', 'RUB'))
-        ->and(array_map(static fn ($candidate): CandidateVerdict => $candidate->verdict, $why->candidates))->toBe([
+        ->and(array_map(static fn (PriceCandidate $candidate): CandidateVerdict => $candidate->verdict, $why->candidates))->toBe([
             CandidateVerdict::Selected,
             CandidateVerdict::GroupMismatch,
             CandidateVerdict::BelowMinQuantity,
@@ -302,7 +304,7 @@ it('answers in the order of the requests, repeated sellables included', function
         prContext($channel),
     );
 
-    expect(array_map(static fn ($price): string => $price->unit->toDecimal(), $prices))->toBe(['3.00', '8.00', '10.00', '3.00', '8.00'])
+    expect(array_map(static fn (ResolvedPrice $price): string => $price->unit->toDecimal(), $prices))->toBe(['3.00', '8.00', '10.00', '3.00', '8.00'])
         ->and(Pricing::prices()->resolveMany([], prContext($channel)))->toBe([]);
 });
 
@@ -337,7 +339,7 @@ it('gives explain the same answer as resolve', function (): void {
                 $context = prContext($channel, $groups, $at);
                 $resolved = Pricing::prices()->resolveMany([prRequest('tee', $quantity)], $context)[0];
                 $why = Pricing::prices()->explain(prExplain('tee', $quantity, $context));
-                $selected = array_values(array_filter($why->candidates, static fn ($candidate): bool => $candidate->verdict === CandidateVerdict::Selected));
+                $selected = array_values(array_filter($why->candidates, static fn (PriceCandidate $candidate): bool => $candidate->verdict === CandidateVerdict::Selected));
 
                 expect($why->price)->toEqual($resolved)
                     ->and($selected)->toHaveCount(1)

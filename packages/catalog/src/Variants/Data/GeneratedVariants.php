@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Outcome of `generate`: every planned combination is either created or skipped (it existed); a dry run creates none. */
 #[Api(since: '0.1')]

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Sets and removes product-level attribute values; values not named stay as they are. */
 #[Api(since: '0.1')]

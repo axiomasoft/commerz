@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Pricing\Errors\Enums\PricingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /**
  * Either no rate of a tax class applies in a zone at the moment of a calculation (fail-closed: a missing rate is a
@@ -48,5 +52,16 @@ final class TaxRateNotFound extends CommerzException
     public function context(): array
     {
         return $this->context;
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PricingErrorCode::TaxRateNotFound,
+            category: PackmanErrorCategory::NotFound,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

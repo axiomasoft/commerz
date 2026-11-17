@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Archives a variant; its combination stays taken. Archiving an archived variant changes nothing. */
 #[Api(since: '0.1')]

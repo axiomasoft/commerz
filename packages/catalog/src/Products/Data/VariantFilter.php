@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /**
  * Option values one active variant has together: `axes(['color' => 'red', 'size' => 'm'])` matches a product only

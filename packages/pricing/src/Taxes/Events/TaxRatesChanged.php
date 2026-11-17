@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Events;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** A rate of the class in the zone was set, rescheduled or removed in a committed operation. */
 #[Api(since: '0.1')]

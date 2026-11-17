@@ -7,8 +7,10 @@ namespace Commerz\Inventory\Allocation\Internal;
 use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\NeedComponent;
 use Commerz\Inventory\Common\Internal\Quantities;
+use Packman\Attributes\Internal;
 
 /** Arithmetic shared by the built-in strategies; `$free` is item id => units free in one location. */
+#[Internal]
 final class Placement
 {
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
@@ -30,22 +30,24 @@ use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Events\PricesChanged;
 use Commerz\Pricing\Prices\Exceptions\PriceNotFoundById;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the price list row `for share` first, then price rows (`for no key update`); batches take the price
  * rows in a fixed order (`PriceWrites::compare`).
  */
+#[Internal]
 final readonly class DatabasePrices implements Prices
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

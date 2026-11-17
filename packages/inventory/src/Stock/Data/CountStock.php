@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
+use Packman\Attributes\Api;
 
 /**
  * Sets on-hand to a counted quantity (movement `count` with the difference). Pass `expectedOnHand` — the on-hand the

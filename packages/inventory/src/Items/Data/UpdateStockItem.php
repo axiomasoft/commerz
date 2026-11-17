@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Items\Enums\StockPolicy;
+use Packman\Attributes\Api;
 
 /** Renames an item or changes its policy; a field left null stays. The SKU and the unit never change. */
 #[Api(since: '0.1')]

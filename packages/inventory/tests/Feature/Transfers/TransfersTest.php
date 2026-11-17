@@ -39,6 +39,7 @@ use Commerz\Inventory\Transfers\Data\ListTransfers;
 use Commerz\Inventory\Transfers\Data\ReceiveTransfer;
 use Commerz\Inventory\Transfers\Data\TransferId;
 use Commerz\Inventory\Transfers\Data\TransferLine;
+use Commerz\Inventory\Transfers\Data\TransferLineView;
 use Commerz\Inventory\Transfers\Data\TransferReceipt;
 use Commerz\Inventory\Transfers\Data\TransferView;
 use Commerz\Inventory\Transfers\Enums\TransferState;
@@ -316,7 +317,7 @@ it('moves several items in one document', function (): void {
     $sent = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($from, $to, [$tee->value => 3, $cap->value => 4])->id));
     $partial = trfReceive($sent, [$cap->value => [4], $tee->value => [1, 1]]);
 
-    expect(array_map(static fn ($line): string => $line->sku, $partial->lines))->toBe(['cap', 'tee'])
+    expect(array_map(static fn (TransferLineView $line): string => $line->sku, $partial->lines))->toBe(['cap', 'tee'])
         ->and($partial->state)->toBe(TransferState::InTransit)
         ->and(rsvLevel($cap, $from)->onHand)->toBe(0)
         ->and(rsvLevel($cap, $to)->onHand)->toBe(4)

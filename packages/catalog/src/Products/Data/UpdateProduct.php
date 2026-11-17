@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Changes the given fields; a null field stays as it is. Status moves only between draft and active. */
 #[Api(since: '0.1')]

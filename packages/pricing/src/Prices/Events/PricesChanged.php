@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
+use Packman\Attributes\Api;
 
 /** Prices of the sellables were set, rescheduled or removed in a committed operation. */
 #[Api(since: '0.1')]

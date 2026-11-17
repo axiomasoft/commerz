@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Items\Exceptions\StockItemNotFound;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Holds the items and the location of a stock change `for share` — items first, ordered by id, then the location —
  * so archiving them (`for no key update`, then their levels) waits until the change commits and then sees it.
  */
+#[Internal]
 final readonly class StockEntities
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

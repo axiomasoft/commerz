@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Common\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Field checks shared by the catalog commands. */
 #[Api(since: '0.1')]

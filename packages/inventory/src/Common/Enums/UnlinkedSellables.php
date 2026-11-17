@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Common\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** How inventory treats a sellable that has no stock item link (`commerz-inventory.unlinked_sellables`). */
 #[Api(since: '0.1')]

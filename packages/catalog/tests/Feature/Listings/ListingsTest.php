@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Catalog\Facades\Catalog;
 use Commerz\Catalog\Listings\Contracts\Listings;
+use Commerz\Catalog\Listings\Data\ListingView;
 use Commerz\Catalog\Listings\Data\PublishProduct;
 use Commerz\Catalog\Listings\Data\UnpublishProduct;
 use Commerz\Catalog\Listings\Enums\ListingStatus;
@@ -118,7 +119,7 @@ it('lists the listings of a product', function (): void {
     $ids = [$web->id->value, $pos->id->value];
     sort($ids);
 
-    expect(array_map(fn ($listing): string => $listing->channel->value, $listings))->toBe($ids)
+    expect(array_map(fn (ListingView $listing): string => $listing->channel->value, $listings))->toBe($ids)
         ->and(Catalog::listings()->ofProduct(Catalog::products()->findByHandle('other')->id))->toBe([])
         ->and(fn () => Catalog::listings()->ofProduct(ProductId::generate()))->toThrow(ProductNotFound::class);
 });

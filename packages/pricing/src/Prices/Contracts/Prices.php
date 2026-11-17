@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
@@ -23,6 +22,7 @@ use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Exceptions\PriceNotFoundById;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
+use Packman\Attributes\Api;
 
 /** Prices of sellables: a currency amount per price list, customer group, quantity step and validity window. */
 #[Api(since: '0.1')]

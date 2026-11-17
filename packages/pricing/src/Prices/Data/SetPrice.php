@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Prices\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * The price of a sellable in a price list for a customer group from a quantity step, valid in `[validFrom, validUntil)`.

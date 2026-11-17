@@ -6,14 +6,15 @@ namespace Commerz\Inventory\Reservations\Internal;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Allocation\Contracts\AllocationStrategy;
+use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
 use Commerz\Inventory\Allocation\Data\SourceStock;
 use Commerz\Inventory\Allocation\Internal\AllocationPlanValidator;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
 use Commerz\Inventory\Common\Internal\LevelRow;
 use Commerz\Inventory\Common\Internal\Quantities;
 use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Common\Internal\StockLedger;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Reservations\Contracts\Reservations;
 use Commerz\Inventory\Reservations\Data\ExpireReservations;
@@ -27,7 +28,6 @@ use Commerz\Inventory\Reservations\Exceptions\ReservationConflict;
 use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Ports\Stock\Data\ReservationResult;
@@ -40,6 +40,8 @@ use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 use RuntimeException;
 
 /**
@@ -47,6 +49,7 @@ use RuntimeException;
  * then the source locations, `for share`) → all levels the command touches in one ordered `for no key update`
  * ({@see StockLedger::lock()}) → the reservation lines by id. Foreign headers are taken only `skip locked`.
  */
+#[Internal]
 final readonly class DatabaseReservations implements Reservations
 {
     public function __construct(
@@ -58,7 +61,7 @@ final readonly class DatabaseReservations implements Reservations
         private DemandResolver $demand,
         private LazyExpiry $expiry,
         private Contributions $contributions,
-        private InventoryConfig $inventory,
+        private InventoryOptions $inventory,
         private AllocationPlanValidator $validator,
     ) {}
 
@@ -441,7 +444,7 @@ final readonly class DatabaseReservations implements Reservations
             $sourceStock[] = new SourceStock(new LocationId($source['id']), $source['code'], $source['priority'], $free);
         }
 
-        $request = new AllocationRequest($channel, array_values(array_map(static fn (DemandLine $line) => $line->need(), $stocked)), $sourceStock);
+        $request = new AllocationRequest($channel, array_values(array_map(static fn (DemandLine $line): AllocationNeed => $line->need(), $stocked)), $sourceStock);
         $strategy = $this->contributions->get(AllocationStrategy::KIND, $this->inventory->allocationStrategy, AllocationStrategy::class);
         $plan = $strategy->allocate($request);
         $this->validator->validate($request, $plan);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
 use Commerz\Inventory\Items\Data\ArchiveStockItem;
 use Commerz\Inventory\Items\Data\CreateStockItem;
@@ -23,6 +22,7 @@ use Commerz\Inventory\Items\Exceptions\StockItemNotFound;
 use Commerz\Inventory\Items\Exceptions\TooManyComponents;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /** What lies on the shelf, and which sellables draw from it. */
 #[Api(since: '0.1')]

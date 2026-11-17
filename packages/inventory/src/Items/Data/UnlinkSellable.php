@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
+use Packman\Attributes\Api;
 
 /** Removes the link; a missing one is not an error. Reservations made earlier keep their own snapshot. */
 #[Api(since: '0.1')]

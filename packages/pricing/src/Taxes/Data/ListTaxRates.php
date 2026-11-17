@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** Rates, optionally of one zone, of one class, or only those whose window contains `$at`. */
 #[Api(since: '0.1')]

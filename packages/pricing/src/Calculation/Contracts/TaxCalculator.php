@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Errors\CommerzException;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * Computes the tax on the discounted base of every line and of delivery. The built-in `rates` calculator reads the

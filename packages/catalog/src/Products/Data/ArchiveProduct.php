@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Archives a product; archiving an archived product changes nothing. */
 #[Api(since: '0.1')]

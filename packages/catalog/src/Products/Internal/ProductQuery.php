@@ -11,21 +11,23 @@ use Commerz\Catalog\Products\Data\ListProducts;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Catalog\Variants\Enums\VariantStatus;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Pagination\Cursor;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** The single SQL of `Products::list` over `products p` (knowledge/catalog-design#filters, D19). */
+#[Internal]
 final readonly class ProductQuery
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private FilterCompiler $filters,
     ) {}

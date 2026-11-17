@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Allocation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Packman\Attributes\Api;
 
 /** Units of one sellable to place; all components of one unit are placed in the same location. */
 #[Api(since: '0.1')]

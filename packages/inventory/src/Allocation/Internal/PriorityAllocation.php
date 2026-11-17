@@ -8,13 +8,16 @@ use Commerz\Inventory\Allocation\Contracts\AllocationStrategy;
 use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
+use Commerz\Inventory\Allocation\Data\NeedComponent;
 use Commerz\Inventory\Allocation\Data\PlannedAllocation;
+use Packman\Attributes\Internal;
 
 /**
  * Fills the channel's sources in order, splitting a need across locations when none holds it all. Units a
  * backorder component cannot cover from free stock go to the first locations whose tracked components still can.
  * A need that does not fit completely is left out of the plan: a reservation is all or nothing.
  */
+#[Internal]
 final readonly class PriorityAllocation implements AllocationStrategy
 {
     public const string KEY = 'priority';
@@ -40,7 +43,7 @@ final readonly class PriorityAllocation implements AllocationStrategy
             $remaining = $need->units;
 
             foreach ([true, false] as $backorderToo) {
-                if ($remaining > 0 && ! $backorderToo && ! array_any($need->components, static fn ($component): bool => $component->backorder)) {
+                if ($remaining > 0 && ! $backorderToo && ! array_any($need->components, static fn (NeedComponent $component): bool => $component->backorder)) {
                     break;
                 }
 
@@ -81,7 +84,7 @@ final readonly class PriorityAllocation implements AllocationStrategy
 
     public function capacity(AllocationNeed $need, array $sources): ?int
     {
-        if (array_all($need->components, static fn ($component): bool => $component->backorder)) {
+        if (array_all($need->components, static fn (NeedComponent $component): bool => $component->backorder)) {
             return null;
         }
 

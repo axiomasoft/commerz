@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Package size of a variant in millimetres. */
 #[Api(since: '0.1')]

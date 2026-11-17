@@ -14,7 +14,9 @@ use Commerz\Catalog\Attributes\Internal\ConfigReader;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\Measure;
 use Commerz\Measures\Unit;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class MeasureType implements AttributeType
 {
     public function key(): string

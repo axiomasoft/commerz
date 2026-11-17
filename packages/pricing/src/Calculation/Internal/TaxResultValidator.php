@@ -10,8 +10,10 @@ use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
 use Commerz\Pricing\Calculation\Exceptions\InvalidTaxResult;
+use Packman\Attributes\Internal;
 
 /** Checks an answer of a `tax_calculator` against the request it was given; a calculator is never trusted (EXT-01). */
+#[Internal]
 final class TaxResultValidator
 {
     /** @throws InvalidTaxResult */

@@ -1,224 +1,1296 @@
 {
-    "schema": "commerz.php-api/1",
-    "package": "testkit",
-    "composer": "axiomasoft/commerz-testkit",
-    "types": {
+    "schema": "php-api/1",
+    "package": "axiomasoft/commerz-testkit",
+    "symbols": {
         "Commerz\\Testkit\\Commerce": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final",
-                "readonly"
-            ],
-            "properties": {
-                "customers": "public readonly \\Commerz\\Testkit\\Fakes\\FakeCustomers $customers",
-                "delivery": "public readonly \\Commerz\\Testkit\\Fakes\\FakeDelivery $delivery",
-                "prices": "public readonly \\Commerz\\Testkit\\Fakes\\FakePrices $prices",
-                "promotions": "public readonly \\Commerz\\Testkit\\Fakes\\FakePromotionUsage $promotions",
-                "sellables": "public readonly \\Commerz\\Testkit\\Fakes\\FakeSellables $sellables",
-                "stock": "public readonly \\Commerz\\Testkit\\Fakes\\FakeStock $stock"
-            },
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "__construct": "__construct(\\Commerz\\Testkit\\Fakes\\FakeSellables $sellables, \\Commerz\\Testkit\\Fakes\\FakeStock $stock, \\Commerz\\Testkit\\Fakes\\FakePrices $prices, \\Commerz\\Testkit\\Fakes\\FakePromotionUsage $promotions, \\Commerz\\Testkit\\Fakes\\FakeDelivery $delivery, \\Commerz\\Testkit\\Fakes\\FakeCustomers $customers)",
-                "fake": "static fake(?\\Illuminate\\Container\\Container $container = null): self"
-            }
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellables",
+                            "type": "Commerz\\Testkit\\Fakes\\FakeSellables",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "stock",
+                            "type": "Commerz\\Testkit\\Fakes\\FakeStock",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "prices",
+                            "type": "Commerz\\Testkit\\Fakes\\FakePrices",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "promotions",
+                            "type": "Commerz\\Testkit\\Fakes\\FakePromotionUsage",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "delivery",
+                            "type": "Commerz\\Testkit\\Fakes\\FakeDelivery",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "customers",
+                            "type": "Commerz\\Testkit\\Fakes\\FakeCustomers",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "fake": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "container",
+                            "type": "?Illuminate\\Container\\Container",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Concurrency": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "run": "static run(int $workers, \\Closure $work, int $timeoutSeconds = 30): array"
-            }
+                "run": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "workers",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "work",
+                            "type": "Closure",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "timeoutSeconds",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "30",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakeCustomers": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Customers\\Contracts\\CustomerDirectory"
             ],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "add": "add(\\Commerz\\Ports\\Customers\\Data\\CustomerProfile ...$profiles): self",
-                "find": "find(\\Commerz\\Identity\\CustomerRef $customer): ?\\Commerz\\Ports\\Customers\\Data\\CustomerProfile"
-            }
+                "add": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "profiles",
+                            "type": "Commerz\\Ports\\Customers\\Data\\CustomerProfile",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "find": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "customer",
+                            "type": "Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Ports\\Customers\\Data\\CustomerProfile",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakeDelivery": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Delivery\\Contracts\\DeliveryOptions",
                 "Commerz\\Ports\\Delivery\\Contracts\\ShipmentBooking"
             ],
-            "properties": {
-                "bookings": "public private(set) array $bookings = []",
-                "requests": "public private(set) array $requests = []"
-            },
+            "uses": [],
+            "doc": [],
             "methods": {
-                "book": "book(\\Commerz\\Ports\\Delivery\\Data\\BookShipment $command): \\Commerz\\Ports\\Delivery\\Data\\BookedShipment",
-                "offer": "offer(\\Commerz\\Ports\\Delivery\\Data\\DeliveryOption ...$options): self",
-                "options": "options(\\Commerz\\Ports\\Delivery\\Data\\DeliveryRequest $request): array"
-            }
+                "book": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\BookShipment",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Delivery\\Data\\BookedShipment",
+                    "doc": []
+                },
+                "offer": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "options",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\DeliveryOption",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "options": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\DeliveryRequest",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "bookings": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "requests": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakePrices": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Prices\\Contracts\\PriceResolver"
             ],
-            "properties": {
-                "requests": "public private(set) array $requests = []",
-                "taxIncluded": "public bool $taxIncluded"
-            },
+            "uses": [],
+            "doc": [],
             "methods": {
-                "__construct": "__construct(bool $taxIncluded = false)",
-                "resolveMany": "resolveMany(array $requests, \\Commerz\\Context\\CommerceContext $context): array",
-                "set": "set(\\Commerz\\Identity\\SellableRef $sellable, \\Commerz\\Money\\Money $unit, ?\\Commerz\\Money\\Money $compareAt = null): self"
-            }
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "taxIncluded",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "resolveMany": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "requests",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "set": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellable",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "unit",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "compareAt",
+                            "type": "?Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "requests": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakePromotionUsage": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Promotions\\Contracts\\PromotionUsage"
             ],
-            "properties": {
-                "consumed": "public private(set) array $consumed = []",
-                "restored": "public private(set) array $restored = []"
-            },
+            "uses": [],
+            "doc": [],
             "methods": {
-                "consume": "consume(\\Commerz\\Ports\\Promotions\\Data\\ConsumePromotionUsage $command): void",
-                "limit": "limit(string $promotionId, int $total): self",
-                "restore": "restore(\\Commerz\\Ports\\Promotions\\Data\\RestorePromotionUsage $command): void",
-                "uses": "uses(string $promotionId): int"
-            }
+                "consume": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Promotions\\Data\\ConsumePromotionUsage",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "limit": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "promotionId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "total",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "restore": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Promotions\\Data\\RestorePromotionUsage",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "uses": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "promotionId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "int",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "consumed": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "restored": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakeSellableRouter": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final",
-                "readonly"
-            ],
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Sellables\\Contracts\\Sellables"
             ],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "__construct": "__construct(\\Commerz\\Testkit\\Fakes\\FakeSellables $sellables)",
-                "resolve": "resolve(\\Commerz\\Identity\\SellableRef $ref, \\Commerz\\Context\\CommerceContext $context): \\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
-                "resolveMany": "resolveMany(array $refs, \\Commerz\\Context\\CommerceContext $context): array"
-            }
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellables",
+                            "type": "Commerz\\Testkit\\Fakes\\FakeSellables",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 4
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "resolve": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "ref",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                    "doc": []
+                },
+                "resolveMany": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "refs",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakeSellables": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Sellables\\Contracts\\SellableProvider"
             ],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "__construct": "__construct(string $key = 'fake')",
-                "add": "add(\\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot ...$snapshots): self",
-                "find": "find(\\Commerz\\Identity\\SellableRef $ref): ?\\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
-                "forget": "forget(\\Commerz\\Identity\\SellableRef $ref): self",
-                "key": "key(): string",
-                "resolve": "resolve(array $refs, \\Commerz\\Context\\CommerceContext $context): array",
-                "snapshot": "static snapshot(\\Commerz\\Identity\\SellableRef|string $ref, ?\\Commerz\\Money\\Money $basePrice = null, \\Commerz\\Ports\\Sellables\\Enums\\SellableKind $kind = Commerz\\Ports\\Sellables\\Enums\\SellableKind::Physical, ?string $name = null): \\Commerz\\Ports\\Sellables\\Data\\SellableSnapshot"
-            }
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "'fake'",
+                            "flags": 68
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "add": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "snapshots",
+                            "type": "Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "find": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "ref",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                    "doc": []
+                },
+                "forget": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "ref",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "key": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "resolve": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "refs",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "snapshot": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "ref",
+                            "type": "Commerz\\Identity\\SellableRef|string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "basePrice",
+                            "type": "?Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "kind",
+                            "type": "Commerz\\Ports\\Sellables\\Enums\\SellableKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "\\Commerz\\Ports\\Sellables\\Enums\\SellableKind::Physical",
+                            "flags": 0
+                        },
+                        {
+                            "name": "name",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Sellables\\Data\\SellableSnapshot",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\Fakes\\FakeStock": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "final"
-            ],
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
             "implements": [
                 "Commerz\\Ports\\Stock\\Contracts\\StockAvailability",
                 "Commerz\\Ports\\Stock\\Contracts\\StockReservations",
                 "Commerz\\Ports\\Stock\\Contracts\\StockReturns"
             ],
-            "constants": {
-                "LOCATION": "'fake'"
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "available": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellable",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?int",
+                    "doc": []
+                },
+                "check": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "Commerz\\Ports\\Stock\\Data\\CheckAvailability",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Stock\\Data\\AvailabilityAnswer",
+                    "doc": []
+                },
+                "consume": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Stock\\Data\\ConsumeReservation",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "held": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "demand",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "limit": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellable",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "onHand",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "onHand": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sellable",
+                            "type": "Commerz\\Identity\\SellableRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?int",
+                    "doc": []
+                },
+                "release": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Stock\\Data\\ReleaseReservation",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "reserve": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Stock\\Data\\ReserveStock",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Stock\\Data\\ReservationResult",
+                    "doc": []
+                },
+                "restock": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Stock\\Data\\RestockStock",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                }
             },
             "properties": {
-                "consumed": "public private(set) array $consumed = []",
-                "released": "public private(set) array $released = []",
-                "reserved": "public private(set) array $reserved = []",
-                "restocked": "public private(set) array $restocked = []"
+                "consumed": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "released": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "reserved": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "restocked": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
             },
-            "methods": {
-                "available": "available(\\Commerz\\Identity\\SellableRef $sellable): ?int",
-                "check": "check(\\Commerz\\Ports\\Stock\\Data\\CheckAvailability $query): \\Commerz\\Ports\\Stock\\Data\\AvailabilityAnswer",
-                "consume": "consume(\\Commerz\\Ports\\Stock\\Data\\ConsumeReservation $command): void",
-                "held": "held(string $demand): array",
-                "limit": "limit(\\Commerz\\Identity\\SellableRef $sellable, int $onHand): self",
-                "onHand": "onHand(\\Commerz\\Identity\\SellableRef $sellable): ?int",
-                "release": "release(\\Commerz\\Ports\\Stock\\Data\\ReleaseReservation $command): void",
-                "reserve": "reserve(\\Commerz\\Ports\\Stock\\Data\\ReserveStock $command): \\Commerz\\Ports\\Stock\\Data\\ReservationResult",
-                "restock": "restock(\\Commerz\\Ports\\Stock\\Data\\RestockStock $command): void"
-            }
+            "constants": [
+                {
+                    "name": "LOCATION",
+                    "type": "string",
+                    "visibility": "public",
+                    "final": false
+                }
+            ],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\PackageTestCase": {
             "kind": "class",
             "layer": "api",
             "since": "0.1",
-            "modifiers": [
-                "abstract"
+            "final": false,
+            "readonly": false,
+            "abstract": true,
+            "extends": [
+                "Packman\\Testkit\\PackageTestCase"
             ],
-            "extends": "Orchestra\\Testbench\\TestCase",
-            "implements": [
-                "Countable",
-                "Orchestra\\Testbench\\Contracts\\TestCase",
-                "PHPUnit\\Framework\\Reorderable",
-                "PHPUnit\\Framework\\SelfDescribing",
-                "PHPUnit\\Framework\\Test"
-            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "commerzProviders": "protected abstract commerzProviders(): array",
-                "databaseConnection": "protected databaseConnection(): array",
-                "defineEnvironment": "protected defineEnvironment($app): void",
-                "getPackageProviders": "protected getPackageProviders($app): array",
-                "setUpTraits": "protected setUpTraits()"
-            }
+                "commerzProviders": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "databaseConnection": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "defineEnvironment": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": null,
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "getPackageProviders": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": null,
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "setUpTraits": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Testkit\\PluginContractTests": {
             "kind": "trait",
             "layer": "api",
             "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
             "methods": {
-                "aPluginThatIsNotRegisteredLeavesNoContributions": "aPluginThatIsNotRegisteredLeavesNoContributions(): void",
-                "anUnknownKeyIsUnsupported": "anUnknownKeyIsUnsupported(): void",
-                "contributionKeysAreStable": "contributionKeysAreStable(): void",
-                "expectedContributions": "protected expectedContributions(): array",
-                "pluginClass": "protected abstract pluginClass(): string",
-                "pluginDependencies": "protected pluginDependencies(): array",
-                "registeringThePluginTwiceFails": "registeringThePluginTwiceFails(): void"
-            }
+                "aPluginThatIsNotRegisteredLeavesNoContributions": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "anUnknownKeyIsUnsupported": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "contributionKeysAreStable": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "expectedContributions": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "pluginClass": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "pluginDependencies": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "registeringThePluginTwiceFails": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         }
-    },
-    "platform": {}
+    }
 }

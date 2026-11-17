@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** One combination of a generation and the SKU it gets. */
 #[Api(since: '0.1')]

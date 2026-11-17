@@ -10,12 +10,16 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": ">=8.4 <8.6",
+        "axiomasoft/commerz": "^0.1",
+        "axiomasoft/packman": "^0.1",
+        "axiomasoft/packman-panels": "^0.1",
+        "axiomasoft/packman-plugins": "^0.1",
+        "axiomasoft/packman-schema": "^0.1",
         "illuminate/console": "^13.0",
         "illuminate/contracts": "^13.0",
-        "illuminate/support": "^13.0",
-        "axiomasoft/commerz": "^0.1",
-        "illuminate/database": "^13.0"
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,6 +35,30 @@
         "laravel": {
             "providers": [
                 "Commerz\\Inventory\\InventoryServiceProvider"
+            ]
+        },
+        "packman": {
+            "error-prefix": "inventory",
+            "owns": [
+                "Allocation",
+                "Availability",
+                "Common",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Internal",
+                "Items",
+                "Laravel",
+                "Locations",
+                "Movements",
+                "Panels",
+                "Plugins",
+                "Reservations",
+                "Schema",
+                "Sources",
+                "Stock",
+                "Transfers"
             ]
         },
         "branch-alias": {

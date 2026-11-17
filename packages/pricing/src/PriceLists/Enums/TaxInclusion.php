@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\PriceLists\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Whether the amounts of a price list include tax; `AsChannel` leaves it to the channel of the quote context. */
 #[Api(since: '0.1')]

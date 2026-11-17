@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Stock\Data\StockLevelView;
+use Packman\Attributes\Api;
 
 /**
  * A committed operation left the level short — `shortfall = reserved + safetyStock − onHand > 0` — and shorter than

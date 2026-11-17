@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Categories\Data\ArchiveCategory;
 use Commerz\Catalog\Categories\Data\AssignProductCategories;
 use Commerz\Catalog\Categories\Data\CategoryId;
@@ -21,6 +20,7 @@ use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /** Categories: a tree for navigation that stays acyclic under concurrent moves; products belong to any number of them. */
 #[Api(since: '0.1')]

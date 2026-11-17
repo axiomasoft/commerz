@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Enums\FilterOperator;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /**
  * A condition on a filterable attribute. Values are inputs of the attribute's type: they are normalized like a written

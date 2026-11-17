@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Internal;
 
+use Packman\Attributes\Internal;
+
 /**
  * The stored identity of a combination (CAT-01): `{optionId}={valueId}` pairs sorted by option id, joined by `;`.
  * The empty combination (a product without axes) is `''`. Ids, not codes: codes are labels, ids never change.
  */
+#[Internal]
 final class OptionSignature
 {
     /** @param  array<string, string>  $values  option id => option value id */

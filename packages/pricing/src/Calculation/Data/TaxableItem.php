@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /** One taxable amount of a quote: a line or the delivery charge, after all discounts. */
 #[Api(since: '0.1')]

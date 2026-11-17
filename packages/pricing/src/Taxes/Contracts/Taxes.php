@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Pricing\Common\Exceptions\DuplicateCode;
 use Commerz\Pricing\Taxes\Data\DefineTaxClass;
@@ -22,6 +21,7 @@ use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateOverlap;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
+use Packman\Attributes\Api;
 
 /** Tax classes, zones with their countries and regions, and rates with validity windows. */
 #[Api(since: '0.1')]

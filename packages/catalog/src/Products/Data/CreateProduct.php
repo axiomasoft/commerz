@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Packman\Attributes\Api;
 
 /** Creates a product of an active type; the type's variant axes are copied onto it. */
 #[Api(since: '0.1')]

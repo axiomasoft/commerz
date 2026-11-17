@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Facades;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Movements\Contracts\Movements;
@@ -14,6 +13,7 @@ use Commerz\Inventory\Stock\Contracts\StockLevels;
 use Commerz\Inventory\Transfers\Contracts\Transfers;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Illuminate\Support\Facades\Facade;
+use Packman\Attributes\Api;
 
 /**
  * @method static Locations locations()

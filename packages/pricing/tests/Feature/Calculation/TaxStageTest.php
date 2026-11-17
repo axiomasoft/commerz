@@ -18,7 +18,7 @@ use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
@@ -28,6 +28,7 @@ use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Data\QuoteState;
+use Commerz\Quotes\Data\TaxLine;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
@@ -140,7 +141,7 @@ function tsRun(QuoteInput $input): QuoteResult
 function tsTaxes(QuoteResult $result): array
 {
     return array_map(
-        static fn ($tax): string => ($tax->lineId ?? $tax->target->value).'|'.$tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal().'|'.($tax->included ? 'in' : 'ex'),
+        static fn (TaxLine $tax): string => ($tax->lineId ?? $tax->target->value).'|'.$tax->code.'|'.$tax->rate->basisPoints.'|'.$tax->amount->toDecimal().'|'.($tax->included ? 'in' : 'ex'),
         $result->taxLines,
     );
 }
@@ -148,7 +149,7 @@ function tsTaxes(QuoteResult $result): array
 function tsReconfigure(array $tax): void
 {
     config()->set('commerz-pricing.tax', [...config('commerz-pricing.tax'), ...$tax]);
-    app()->forgetInstance(PricingConfig::class);
+    app()->forgetInstance(PricingOptions::class);
 }
 
 beforeEach(function (): void {

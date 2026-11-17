@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Commerz\Schema\CommerzMigration;
+use Packman\Schema\Laravel\PackmanMigration;
 
-return new class extends CommerzMigration
+return new class extends PackmanMigration
 {
     public function up(): void
     {

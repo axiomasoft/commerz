@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Rate;
 use Commerz\Operations\Contracts\CommittedEvents;
@@ -34,13 +34,14 @@ use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateOverlap;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the membership advisory lock before any zone or member row when defining a zone or replacing members;
@@ -49,11 +50,12 @@ use Illuminate\Database\UniqueConstraintViolationException;
  * deadlocking on uncommitted member deletions. Like prices, a rate is an upsert by hand:
  * PostgreSQL cannot `ON CONFLICT DO UPDATE` through an exclusion constraint (TAX-01).
  */
+#[Internal]
 final readonly class DatabaseTaxes implements Taxes
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

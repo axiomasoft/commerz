@@ -10,23 +10,25 @@ use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
-use Commerz\Pricing\Common\Internal\PricingConfig;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Prices\Data\ExplainPrice;
 use Commerz\Pricing\Prices\Data\PriceCandidate;
 use Commerz\Pricing\Prices\Data\PriceExplanation;
 use Commerz\Pricing\Prices\Data\PriceId;
 use Commerz\Stores\Contracts\Channels;
+use Packman\Attributes\Internal;
 
 /**
  * The `PriceResolver` of the price lists (PRC-02). One read of the candidates serves the whole call; `explain` runs
  * the same candidates and selection, so it cannot disagree with `resolveMany`. Reads only, no locks; time is the context's.
  */
+#[Internal]
 final readonly class DatabasePriceResolver implements PriceResolver
 {
     public function __construct(
         private PriceCandidates $candidates,
         private Channels $channels,
-        private PricingConfig $config,
+        private PricingOptions $config,
     ) {}
 
     public function resolveMany(array $requests, CommerceContext $context): array

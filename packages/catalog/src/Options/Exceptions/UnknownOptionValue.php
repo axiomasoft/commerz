@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Options\Exceptions;
 
-use Commerz\Attributes\Api;
+use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A value code that does not belong to the option. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class UnknownOptionValue extends CommerzException
     public function context(): array
     {
         return ['option' => $this->option, 'value' => $this->value];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CatalogErrorCode::UnknownOptionValue,
+            category: PackmanErrorCategory::Validation,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

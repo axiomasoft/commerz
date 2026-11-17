@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Categories\Exceptions;
 
-use Commerz\Attributes\Api;
+use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A category with active children cannot be archived; move or archive the children first. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CategoryHasChildren extends CommerzException
     public function context(): array
     {
         return ['category' => $this->category];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: CatalogErrorCode::CategoryHasChildren,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

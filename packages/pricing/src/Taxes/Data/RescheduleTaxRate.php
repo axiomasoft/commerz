@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Pricing\Common\Internal\Windows;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** Moves a rate to another window; a null bound is open. */
 #[Api(since: '0.1')]

@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
-use Commerz\Attributes\Api;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Errors\UnsupportedContribution;
-use Commerz\PluginGraph;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
-use Commerz\Plugins\PluginDescription;
+use Commerz\Errors\InvalidConfiguration as LegacyInvalidConfiguration;
+use Commerz\PluginGraph as LegacyPluginGraph;
+use Commerz\Plugins\CorePlugin;
+use Packman\Attributes\Api;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Data\Plugin\PluginDescription;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use Packman\Plugins\Testing\PluginGraph;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * Contract tests every Commerz plugin should pass. Use it in a Testbench test case (e.g. `PackageTestCase`):
@@ -35,10 +39,10 @@ use PHPUnit\Framework\TestCase;
 #[Api(since: '0.1')]
 trait PluginContractTests
 {
-    /** @return class-string<CommerzPlugin> */
+    /** @return class-string<ExtensionPlugin> */
     abstract protected function pluginClass(): string;
 
-    /** @return list<class-string<CommerzPlugin>> plugins the one under test requires, in any order */
+    /** @return list<class-string<ExtensionPlugin>> plugins the one under test requires, in any order */
     protected function pluginDependencies(): array
     {
         return [];
@@ -81,9 +85,9 @@ trait PluginContractTests
         $plugins = [...$this->plugins(true), $this->pluginClass()];
 
         try {
-            PluginGraph::compile(app(), $plugins);
-        } catch (InvalidConfiguration $e) {
-            self::assertStringContainsString('already registered', $e->reason);
+            $this->compilePlugins($plugins);
+        } catch (InvalidConfiguration|LegacyInvalidConfiguration $e) {
+            self::assertStringContainsString('already registered', $e->getMessage());
 
             return;
         }
@@ -127,12 +131,27 @@ trait PluginContractTests
         }
 
         $this->expectException(UnsupportedContribution::class);
-        $registry->get('contract_test_missing_kind', 'x', \stdClass::class);
+        $registry->get('contract_test_missing_kind', 'x', stdClass::class);
     }
 
-    private function compile(bool $withPlugin): Contributions
+    private function compile(bool $withPlugin): Contributions&PluginInspector
     {
-        return PluginGraph::compile(app(), $this->plugins($withPlugin));
+        return $this->compilePlugins($this->plugins($withPlugin));
+    }
+
+    /** @param  list<class-string>  $plugins */
+    private function compilePlugins(array $plugins): Contributions&PluginInspector
+    {
+        if (array_all($plugins, static fn (string $class): bool => is_subclass_of($class, ExtensionPlugin::class))) {
+            return PluginGraph::compile(
+                container: app(),
+                plugins: $plugins,
+                corePluginId: CorePlugin::ID,
+                builtIn: [CorePlugin::class],
+            );
+        }
+
+        return LegacyPluginGraph::compile(app(), $plugins);
     }
 
     /** @return list<class-string> */

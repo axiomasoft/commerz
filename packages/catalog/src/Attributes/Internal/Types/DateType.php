@@ -11,7 +11,9 @@ use Commerz\Catalog\Attributes\Enums\FilterOperator;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Internal\ConfigReader;
 use DateTimeInterface;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class DateType implements AttributeType
 {
     public function key(): string

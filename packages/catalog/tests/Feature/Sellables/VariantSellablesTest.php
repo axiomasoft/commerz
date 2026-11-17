@@ -27,9 +27,9 @@ use Commerz\Identity\SellableRef;
 use Commerz\Measures\LocalizedText;
 use Commerz\Measures\Measure;
 use Commerz\Money\Currency;
+use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelView;
@@ -38,6 +38,7 @@ use Commerz\Stores\Data\CreateStore;
 use Commerz\Stores\Data\ListStores;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 
@@ -270,8 +271,8 @@ it('resolves a batch of 20 variants in at most 6 queries', function (): void {
     expect($refs)->toHaveCount(20)
         ->and($snapshots)->toHaveCount(20)
         ->and($queries)->toBeLessThanOrEqual(6)
-        ->and(array_values(array_unique(array_map(static fn ($snapshot): string => implode(',', $snapshot->categories), $snapshots))))->toBe(['leaf,root'])
-        ->and(array_values(array_unique(array_map(static fn ($snapshot): bool => $snapshot->purchasable, $snapshots))))->toBe([true]);
+        ->and(array_values(array_unique(array_map(static fn (SellableSnapshot $snapshot): string => implode(',', $snapshot->categories), $snapshots))))->toBe(['leaf,root'])
+        ->and(array_values(array_unique(array_map(static fn (SellableSnapshot $snapshot): bool => $snapshot->purchasable, $snapshots))))->toBe([true]);
 });
 
 it('preserves numeric attribute codes in snapshots and removes retired codes', function (): void {

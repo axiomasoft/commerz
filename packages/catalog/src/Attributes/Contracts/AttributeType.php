@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Attributes\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Catalog\Attributes\Data\AttributeDefinition;
 use Commerz\Catalog\Attributes\Data\IndexFact;
 use Commerz\Catalog\Attributes\Enums\FilterOperator;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /** A data type of attribute values, contributed under kind `attribute_type`; stateless, pure, no IO. */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]

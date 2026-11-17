@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Products\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotAllowed;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotFilterable;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
@@ -26,6 +25,7 @@ use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /**
  * Products: what is sold, described by attributes of its type. Every change is one transaction; a failed attribute

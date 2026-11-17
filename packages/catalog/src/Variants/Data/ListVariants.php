@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Variants of one product ordered by position, then id. */
 #[Api(since: '0.1')]

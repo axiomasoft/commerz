@@ -1,0 +1,303 @@
+{
+    "schema": "packman-error-codes/1",
+    "package": "axiomasoft/commerz-inventory",
+    "codes": [
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "DuplicateCode",
+            "code": "inventory.duplicate_code",
+            "type": "urn:packman:problem:inventory.duplicate_code",
+            "status": 409,
+            "title": "Duplicate Inventory Code",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidAllocation",
+            "code": "inventory.invalid_allocation",
+            "type": "urn:packman:problem:inventory.invalid_allocation",
+            "status": 422,
+            "title": "Invalid Allocation Request",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidAllocationPlan",
+            "code": "inventory.invalid_allocation_plan",
+            "type": "urn:packman:problem:inventory.invalid_allocation_plan",
+            "status": 503,
+            "title": "Invalid Allocation Strategy Plan",
+            "retryable": false,
+            "category": "unavailable"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidCode",
+            "code": "inventory.invalid_code",
+            "type": "urn:packman:problem:inventory.invalid_code",
+            "status": 422,
+            "title": "Invalid Inventory Code",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidFilter",
+            "code": "inventory.invalid_filter",
+            "type": "urn:packman:problem:inventory.invalid_filter",
+            "status": 422,
+            "title": "Invalid Stock Link Filter",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidLimit",
+            "code": "inventory.invalid_limit",
+            "type": "urn:packman:problem:inventory.invalid_limit",
+            "status": 422,
+            "title": "Invalid Expiry Batch Limit",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidPriority",
+            "code": "inventory.invalid_priority",
+            "type": "urn:packman:problem:inventory.invalid_priority",
+            "status": 422,
+            "title": "Invalid Stock Source Priority",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidQuantity",
+            "code": "inventory.invalid_quantity",
+            "type": "urn:packman:problem:inventory.invalid_quantity",
+            "status": 422,
+            "title": "Invalid Stock Quantity",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidReason",
+            "code": "inventory.invalid_reason",
+            "type": "urn:packman:problem:inventory.invalid_reason",
+            "status": 422,
+            "title": "Invalid Stock Movement Reason",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidReference",
+            "code": "inventory.invalid_reference",
+            "type": "urn:packman:problem:inventory.invalid_reference",
+            "status": 422,
+            "title": "Invalid Inventory Reference",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidSku",
+            "code": "inventory.invalid_sku",
+            "type": "urn:packman:problem:inventory.invalid_sku",
+            "status": 422,
+            "title": "Invalid Stock Item SKU",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidTransfer",
+            "code": "inventory.invalid_transfer",
+            "type": "urn:packman:problem:inventory.invalid_transfer",
+            "status": 422,
+            "title": "Invalid Stock Transfer",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "InvalidTransferState",
+            "code": "inventory.invalid_transfer_state",
+            "type": "urn:packman:problem:inventory.invalid_transfer_state",
+            "status": 409,
+            "title": "Invalid Transfer State",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "LocationArchived",
+            "code": "inventory.location_archived",
+            "type": "urn:packman:problem:inventory.location_archived",
+            "status": 409,
+            "title": "Stock Location Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "LocationNotEmpty",
+            "code": "inventory.location_not_empty",
+            "type": "urn:packman:problem:inventory.location_not_empty",
+            "status": 409,
+            "title": "Stock Location Not Empty",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "LocationNotFound",
+            "code": "inventory.location_not_found",
+            "type": "urn:packman:problem:inventory.location_not_found",
+            "status": 404,
+            "title": "Stock Location Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "NegativeStock",
+            "code": "inventory.negative_stock",
+            "type": "urn:packman:problem:inventory.negative_stock",
+            "status": 409,
+            "title": "Insufficient On-Hand Stock",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "NoStockSource",
+            "code": "inventory.no_stock_source",
+            "type": "urn:packman:problem:inventory.no_stock_source",
+            "status": 422,
+            "title": "No Stock Source Configured",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "ReservationConflict",
+            "code": "inventory.reservation_conflict",
+            "type": "urn:packman:problem:inventory.reservation_conflict",
+            "status": 409,
+            "title": "Reservation Channel Conflict",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "StaleStockCount",
+            "code": "inventory.stale_stock_count",
+            "type": "urn:packman:problem:inventory.stale_stock_count",
+            "status": 409,
+            "title": "Stale Stock Count",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "StockItemArchived",
+            "code": "inventory.stock_item_archived",
+            "type": "urn:packman:problem:inventory.stock_item_archived",
+            "status": 409,
+            "title": "Stock Item Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "StockItemNotEmpty",
+            "code": "inventory.stock_item_not_empty",
+            "type": "urn:packman:problem:inventory.stock_item_not_empty",
+            "status": 409,
+            "title": "Stock Item Not Empty",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "StockItemNotFound",
+            "code": "inventory.stock_item_not_found",
+            "type": "urn:packman:problem:inventory.stock_item_not_found",
+            "status": 404,
+            "title": "Stock Item Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "StockLinkMissing",
+            "code": "inventory.stock_link_missing",
+            "type": "urn:packman:problem:inventory.stock_link_missing",
+            "status": 404,
+            "title": "Sellable Stock Link Missing",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "TooManyComponents",
+            "code": "inventory.too_many_components",
+            "type": "urn:packman:problem:inventory.too_many_components",
+            "status": 409,
+            "title": "Too Many Kit Components",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "TransferNotFound",
+            "code": "inventory.transfer_not_found",
+            "type": "urn:packman:problem:inventory.transfer_not_found",
+            "status": 404,
+            "title": "Stock Transfer Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-inventory",
+            "enum": "Commerz\\Inventory\\Errors\\Enums\\InventoryErrorCode",
+            "case": "UntrackedStockItem",
+            "code": "inventory.untracked_stock_item",
+            "type": "urn:packman:problem:inventory.untracked_stock_item",
+            "status": 409,
+            "title": "Untracked Stock Item",
+            "retryable": false,
+            "category": "conflict"
+        }
+    ]
+}

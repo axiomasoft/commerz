@@ -1,0 +1,26 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-inventory configuration",
+    "type": "object",
+    "properties": {
+        "commerz-inventory": {
+            "type": "object",
+            "properties": {
+                "allocation_strategy": {
+                    "type": "string",
+                    "default": "priority"
+                },
+                "expiry_batch": {
+                    "type": "integer",
+                    "default": 500
+                },
+                "unlinked_sellables": {
+                    "type": "string",
+                    "default": "unavailable"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

@@ -18,6 +18,7 @@ use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Pricing\PriceLists\Events\PriceListChanged;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
+use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ it('creates a price list with channels, priority and the default tax inclusion',
         ->and($list->priority)->toBe(5)
         ->and($list->taxInclusion)->toBe(TaxInclusion::AsChannel)
         ->and($list->status)->toBe(PriceListStatus::Active)
-        ->and(array_map(static fn ($channel): string => $channel->value, $list->channels))->toBe($expected)
+        ->and(array_map(static fn (ChannelId $channel): string => $channel->value, $list->channels))->toBe($expected)
         ->and(Pricing::priceLists()->find($list->id)->name)->toBe('Retail');
 });
 
@@ -163,9 +164,9 @@ it('lists by code with a cursor and filters by status, channel and currency', fu
     $first = Pricing::priceLists()->list(new ListPriceLists(first: 2));
     $second = Pricing::priceLists()->list(new ListPriceLists(first: 2, after: $first->next));
 
-    expect(array_map(static fn ($list): string => $list->code, $first->items))->toBe(['a-list', 'b-list'])
+    expect(array_map(static fn (object $list): string => $list->code, $first->items))->toBe(['a-list', 'b-list'])
         ->and($first->hasMore())->toBeTrue()
-        ->and(array_map(static fn ($list): string => $list->code, $second->items))->toBe(['c-list'])
+        ->and(array_map(static fn (object $list): string => $list->code, $second->items))->toBe(['c-list'])
         ->and($second->hasMore())->toBeFalse()
         ->and(Pricing::priceLists()->list(new ListPriceLists(status: PriceListStatus::Archived))->items)->toHaveCount(1)
         ->and(Pricing::priceLists()->list(new ListPriceLists(channel: $web))->items[0]->code)->toBe('c-list')

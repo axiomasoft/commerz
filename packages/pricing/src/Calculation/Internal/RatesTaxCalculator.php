@@ -12,18 +12,20 @@ use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
-use Commerz\Pricing\Common\Internal\PricingConfig;
 use Commerz\Pricing\Common\Internal\Rows;
+use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
 use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
+use Packman\Attributes\Internal;
 
 /**
  * The built-in calculator: the zone of the delivery address (else `default_zone`) and the stored rates in force at the
  * moment of the context. Several tax codes of one class are separate taxes on the same base. A class without a rate
  * in the zone is an error, never a silent zero; a zero rate is set explicitly.
  */
+#[Internal]
 final readonly class RatesTaxCalculator implements TaxCalculator
 {
     public const string KEY = 'rates';
@@ -31,7 +33,7 @@ final readonly class RatesTaxCalculator implements TaxCalculator
     public function __construct(
         private TaxZoneLookup $zones,
         private TaxRateLookup $rates,
-        private PricingConfig $config,
+        private PricingOptions $config,
     ) {}
 
     public function key(): string

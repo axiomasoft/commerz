@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Items\Exceptions\StockItemArchived;
@@ -23,6 +22,7 @@ use Commerz\Inventory\Transfers\Exceptions\InvalidTransferState;
 use Commerz\Inventory\Transfers\Exceptions\TransferNotFound;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
+use Packman\Attributes\Api;
 
 /**
  * Moves stock between two locations: `draft` (the units are reserved at the source) → `in_transit` (they left the

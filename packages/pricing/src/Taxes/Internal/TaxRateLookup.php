@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Taxes\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Rate;
 use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads the rates in force. The one reader of the validity windows: `listRates(at)` and the `rates` calculator share it. */
+#[Internal]
 final readonly class TaxRateLookup
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

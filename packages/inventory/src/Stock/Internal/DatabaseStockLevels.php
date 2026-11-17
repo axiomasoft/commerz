@@ -29,6 +29,7 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Pagination\Page;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /**
@@ -36,6 +37,7 @@ use RuntimeException;
  * through the ledger. Every precondition is checked against the locked level; `count` compares `expectedOnHand` with
  * the on-hand under the lock, never with an earlier read.
  */
+#[Internal]
 final readonly class DatabaseStockLevels implements StockLevels
 {
     public function __construct(

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Allocation\Exceptions\InvalidAllocationPlan;
 use Commerz\Inventory\Reservations\Data\ExpireReservations;
 use Commerz\Inventory\Reservations\Data\ReservationView;
@@ -15,6 +14,7 @@ use Commerz\Ports\Stock\Data\ReservationResult;
 use Commerz\Ports\Stock\Data\ReserveStock;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
+use Packman\Attributes\Api;
 
 /**
  * The inventory's stock reservations: the kernel port plus inspection and expiry.

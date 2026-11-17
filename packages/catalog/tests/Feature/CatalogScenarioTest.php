@@ -30,9 +30,11 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakePrices;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /** The blueprint's catalog example, end to end: modelled, generated, published, searched, sold into a quote. */
+#[Group('pg')]
 final class CatalogScenarioTest extends TestCase
 {
     use RefreshDatabase;
@@ -102,7 +104,7 @@ final class CatalogScenarioTest extends TestCase
             filters: [VariantFilter::axes(['color' => 'blue', 'size' => 's'])],
         ));
 
-        $this->assertSame(['basic-tee'], array_map(static fn ($item): string => $item->handle, $found->items));
+        $this->assertSame(['basic-tee'], array_map(static fn (object $item): string => $item->handle, $found->items));
         $this->assertSame([], $missing->items);
     }
 }

@@ -13,6 +13,7 @@ use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\ListPrices;
 use Commerz\Pricing\Prices\Data\PriceId;
+use Commerz\Pricing\Prices\Data\PriceView;
 use Commerz\Pricing\Prices\Data\RemovePrice;
 use Commerz\Pricing\Prices\Data\ReschedulePrice;
 use Commerz\Pricing\Prices\Data\SetPrices;
@@ -80,8 +81,8 @@ it('accepts adjacent windows and prices that differ in group or quantity step', 
 
     plsSet($list->id, from: plsAt('2026-01-01'), until: plsAt('2026-02-01'));
     plsSet($list->id, from: plsAt('2026-02-01'), until: plsAt('2026-03-01'));
-    plsSet($list->id, from: plsAt('2026-01-15'), until: plsAt('2026-02-15'), group: 'vip');
-    plsSet($list->id, from: plsAt('2026-01-15'), until: plsAt('2026-02-15'), minQuantity: 10);
+    plsSet($list->id, group: 'vip', from: plsAt('2026-01-15'), until: plsAt('2026-02-15'));
+    plsSet($list->id, minQuantity: 10, from: plsAt('2026-01-15'), until: plsAt('2026-02-15'));
     plsSet($list->id, 'cap', from: plsAt('2026-01-15'), until: plsAt('2026-02-15'));
 
     expect(DB::table('cmz_prices')->count())->toBe(5);
@@ -90,7 +91,7 @@ it('accepts adjacent windows and prices that differ in group or quantity step', 
 it('treats the no-group price as its own group', function (): void {
     $list = plsList();
 
-    plsSet($list->id, group: null);
+    plsSet($list->id);
     plsSet($list->id, group: 'vip');
 
     expect(fn () => plsSet($list->id, amount: '5.00', group: 'vip', from: plsAt('2026-01-01')))->toThrow(PriceWindowOverlap::class);
@@ -131,7 +132,7 @@ it('sets many prices atomically in the order of the command', function (): void 
         plsPrice($list->id, 'alpha', '2.00', 'vip'),
     ]));
 
-    expect(array_map(static fn ($view): string => $view->sellable->id.':'.$view->amount->amountMinor, $views))->toBe(['zed:300', 'alpha:100', 'alpha:200']);
+    expect(array_map(static fn (PriceView $view): string => $view->sellable->id.':'.$view->amount->amountMinor, $views))->toBe(['zed:300', 'alpha:100', 'alpha:200']);
 
     // The third price clashes with the existing alpha/vip price, so nothing of the batch stays.
     expect(fn () => Pricing::prices()->setMany(new SetPrices($list->id, [
@@ -188,7 +189,7 @@ it('reschedules a price and rejects a move into another window', function (): vo
     // Moving a price into its own window is not an overlap.
     Pricing::prices()->reschedule(new ReschedulePrice($march->id, plsAt('2026-02-01'), plsAt('2026-03-20')));
 
-    expect(fn () => Pricing::prices()->reschedule(new ReschedulePrice(PriceId::generate(), null, null)))->toThrow(PriceNotFoundById::class);
+    expect(fn () => Pricing::prices()->reschedule(new ReschedulePrice(PriceId::generate())))->toThrow(PriceNotFoundById::class);
 });
 
 it('removes a price and ignores a repeat', function (): void {
@@ -218,7 +219,7 @@ it('lists prices by sellable with a cursor and filters by sellable', function ()
 
     do {
         $page = Pricing::prices()->list(new ListPrices($list->id, first: 2, after: $cursor));
-        $seen = [...$seen, ...array_map(static fn ($price): string => (string) $price->sellable, $page->items)];
+        $seen = [...$seen, ...array_map(static fn (object $price): string => (string) $price->sellable, $page->items)];
         $cursor = $page->next;
     } while ($cursor !== null);
 

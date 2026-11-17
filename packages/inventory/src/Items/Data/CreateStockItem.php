@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Measures\Unit;
+use Packman\Attributes\Api;
 
 /** Creates a stock item; its unit is the base unit of every quantity and never changes. */
 #[Api(since: '0.1')]

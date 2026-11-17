@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Stock\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Items\Exceptions\StockItemArchived;
@@ -22,6 +21,7 @@ use Commerz\Inventory\Stock\Data\StockLevelView;
 use Commerz\Inventory\Stock\Exceptions\NegativeStock;
 use Commerz\Inventory\Stock\Exceptions\StaleStockCount;
 use Commerz\Pagination\Page;
+use Packman\Attributes\Api;
 
 /**
  * Physical stock of an item at a location. Every on-hand change writes one journal movement; a change that leaves the

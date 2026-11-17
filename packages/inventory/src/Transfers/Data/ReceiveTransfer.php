@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
+use Packman\Attributes\Api;
 
 /**
  * Receives the shipped units at the destination, in full or in part. Per line `received + lost` cannot exceed what is

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
@@ -26,9 +26,9 @@ use Commerz\Inventory\Items\Exceptions\TooManyComponents;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Pagination\Cursor;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 
@@ -41,7 +41,7 @@ function sellable(string $id): SellableRef
 function itemHolds(StockItemId $item, int $onHand, int $reserved = 0): void
 {
     $location = Inventory::locations()->findByCode('main');
-    $db = app(ConnectionResolverInterface::class)->connection(app(CommerzConfig::class)->connection);
+    $db = app(ConnectionResolverInterface::class)->connection(app(CommerzOptions::class)->connection);
     $db->table(app(TableNames::class)->table('stock_levels'))->insert([
         'id' => Uuid7::generate(), 'stock_item_id' => $item->value, 'location_id' => $location->id->value,
         'on_hand' => $onHand, 'reserved' => $reserved, 'created_at' => now(), 'updated_at' => now(),
@@ -77,8 +77,8 @@ it('lists items by SKU with a cursor', function (): void {
     $first = Inventory::items()->list(new ListStockItems(first: 2));
     $second = Inventory::items()->list(new ListStockItems(first: 2, after: $first->next));
 
-    expect(array_map(fn ($i) => $i->sku, $first->items))->toBe(['a', 'b'])
-        ->and(array_map(fn ($i) => $i->sku, $second->items))->toBe(['c'])
+    expect(array_map(fn (object $i) => $i->sku, $first->items))->toBe(['a', 'b'])
+        ->and(array_map(fn (object $i) => $i->sku, $second->items))->toBe(['c'])
         ->and($second->hasMore())->toBeFalse();
 });
 

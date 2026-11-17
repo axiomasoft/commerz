@@ -8,12 +8,15 @@ use Commerz\Inventory\Allocation\Contracts\AllocationStrategy;
 use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\AllocationRequest;
+use Commerz\Inventory\Allocation\Data\NeedComponent;
 use Commerz\Inventory\Allocation\Data\PlannedAllocation;
+use Packman\Attributes\Internal;
 
 /**
  * Holds every need of the request in one location: the first source that has all of it in stock, else the first
  * whose tracked stock suffices and backorder components cover the rest. No such location leaves the plan empty.
  */
+#[Internal]
 final readonly class SingleLocationAllocation implements AllocationStrategy
 {
     public const string KEY = 'single_location';
@@ -50,7 +53,7 @@ final readonly class SingleLocationAllocation implements AllocationStrategy
 
     public function capacity(AllocationNeed $need, array $sources): ?int
     {
-        if (array_all($need->components, static fn ($component): bool => $component->backorder)) {
+        if (array_all($need->components, static fn (NeedComponent $component): bool => $component->backorder)) {
             return null;
         }
 

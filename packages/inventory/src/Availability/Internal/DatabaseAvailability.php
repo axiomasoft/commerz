@@ -6,31 +6,33 @@ namespace Commerz\Inventory\Availability\Internal;
 
 use Commerz\Inventory\Allocation\Contracts\AllocationStrategy;
 use Commerz\Inventory\Allocation\Data\SourceStock;
-use Commerz\Inventory\Common\Internal\InventoryConfig;
 use Commerz\Inventory\Common\Internal\LevelQueries;
 use Commerz\Inventory\Common\Internal\Rows;
+use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Reservations\Internal\DemandResolver;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Data\AvailabilityAnswer;
 use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\CheckAvailability;
 use Commerz\Ports\Stock\Data\LineAvailability;
 use Commerz\Stores\Contracts\Channels;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 /**
  * Answers how many units of each sellable the channel could reserve now: the configured allocation strategy's
  * capacity over the channel's active sources, read without locks in one snapshot. Expired reservations the sweeper
  * has not closed yet do not count as held. Kits give the units their scarcest component allows.
  */
+#[Internal]
 final readonly class DatabaseAvailability implements StockAvailability
 {
     public function __construct(
         private LevelQueries $queries,
         private DemandResolver $demand,
         private Contributions $contributions,
-        private InventoryConfig $inventory,
+        private InventoryOptions $inventory,
         private Channels $channels,
     ) {}
 

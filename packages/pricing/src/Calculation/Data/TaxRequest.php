@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Ports\Delivery\Data\Address;
+use Packman\Attributes\Api;
 
 /** What a tax calculator is asked: the items of one quote, in the quote's currency. */
 #[Api(since: '0.1')]

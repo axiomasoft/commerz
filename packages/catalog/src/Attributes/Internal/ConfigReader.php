@@ -8,8 +8,10 @@ use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
+use Packman\Attributes\Internal;
 
 /** Shared checks for attribute type configs. */
+#[Internal]
 final class ConfigReader
 {
     /**

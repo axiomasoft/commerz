@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Items\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
@@ -34,22 +34,24 @@ use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the item row, then (archive, untrack) its levels. A link holds the item `for share`, so archiving it
  * (`for no key update`) waits for the link and the other way round; the 20-component limit is checked under an
  * advisory lock of the sellable, so two parallel links cannot both take the last place.
  */
+#[Internal]
 final readonly class DatabaseStockItems implements StockItems
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private LevelQueries $levels,

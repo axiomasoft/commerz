@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Pagination\Cursor;
+use Packman\Attributes\Api;
 
 /** Locations ordered by code, optionally of one status. */
 #[Api(since: '0.1')]

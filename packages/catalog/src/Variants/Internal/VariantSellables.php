@@ -11,31 +11,33 @@ use Commerz\Catalog\Listings\Enums\ListingStatus;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Catalog\Variants\Enums\VariantStatus;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The `variant` sellable provider (knowledge/catalog-design#sellables): five queries however large the batch,
  * no writes, no transaction. The first failing purchasability reason wins, in the documented order.
  */
+#[Internal]
 final readonly class VariantSellables implements SellableProvider
 {
     private const string UUID = '/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Container $container,
     ) {}

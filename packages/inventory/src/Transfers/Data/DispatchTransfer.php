@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Transfers\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Ships the whole draft: the reserved units leave the source (movement `transfer_out`). */
 #[Api(since: '0.1')]

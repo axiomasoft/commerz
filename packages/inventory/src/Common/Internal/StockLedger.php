@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Common\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\Uuid7;
@@ -20,10 +20,11 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `stock_levels` and `stock_movements` (INV-03: every on-hand change is exactly one movement whose
@@ -35,6 +36,7 @@ use LogicException;
  * level got shorter, `StockShortfall` for after commit. A failed scope publishes nothing; its writes roll back with the
  * caller's transaction or savepoint.
  */
+#[Internal]
 final class StockLedger
 {
     /** @var array<int, array<string, array{before: LevelRow, after: LevelRow, delta: int, kind: ?MovementKind, reference: ?string}>> */
@@ -42,7 +44,7 @@ final class StockLedger
 
     public function __construct(
         private readonly ConnectionResolverInterface $connections,
-        private readonly CommerzConfig $config,
+        private readonly CommerzOptions $config,
         private readonly TableNames $tables,
         private readonly Outbox $outbox,
         private readonly CommittedEvents $events,

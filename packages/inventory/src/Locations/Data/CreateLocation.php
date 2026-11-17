@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Locations\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Locations\Enums\LocationKind;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class CreateLocation

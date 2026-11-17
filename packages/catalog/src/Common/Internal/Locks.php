@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Commerz\Catalog\Common\Internal;
 
 use Illuminate\Database\ConnectionInterface;
+use Packman\Attributes\Internal;
 
 /** Advisory locks of the catalog; take them inside a transaction, they are released at its end. */
+#[Internal]
 final class Locks
 {
     /** `crc32('commerz.catalog.category_tree')` */

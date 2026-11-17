@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Calculation\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /** One tax computed for a requested item; the item's own `included` flag says whether it is part of the price. */
 #[Api(since: '0.1')]

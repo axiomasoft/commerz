@@ -6,6 +6,7 @@ namespace Commerz\Pricing\Prices\Internal;
 
 use Commerz\Pricing\Prices\Enums\CandidateVerdict;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /**
  * Which price of a sellable wins (PRC-02): a pure function of the candidates and the request, with a total order, so
@@ -15,6 +16,7 @@ use DateTimeImmutable;
  * customer group over a general one, then the larger quantity step, then list code and id. Priority is the seller's
  * explicit will; within a level the buyer never pays more than an offer they qualify for.
  */
+#[Internal]
 final class PriceSelection
 {
     /**

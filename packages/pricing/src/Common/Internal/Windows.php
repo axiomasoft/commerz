@@ -9,9 +9,11 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
+use Packman\Attributes\Internal;
 use Throwable;
 
 /** Validity windows `[from, until)` of prices and tax rates and the SQLSTATE of their constraint violations. */
+#[Internal]
 final class Windows
 {
     private const string UNIQUE_VIOLATION = '23505';

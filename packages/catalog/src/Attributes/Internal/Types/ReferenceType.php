@@ -13,7 +13,9 @@ use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Internal\ConfigReader;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Ref;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class ReferenceType implements AttributeType
 {
     public function key(): string

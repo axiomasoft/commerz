@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-require_once dirname(__DIR__).'/Reservations/Helpers.php';
+require_once __DIR__.'/../Reservations/Helpers.php';
 
 /**
  * @param  array<string, int>  $lines  sellable id => units

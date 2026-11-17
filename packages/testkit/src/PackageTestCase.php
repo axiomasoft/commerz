@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
-use Commerz\Attributes\Api;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
-use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Testkit\PackageTestCase as PackmanPackageTestCase;
 use RuntimeException;
 
 #[Api(since: '0.1')]
-abstract class PackageTestCase extends Orchestra
+abstract class PackageTestCase extends PackmanPackageTestCase
 {
     /** @return list<class-string> */
     abstract protected function commerzProviders(): array;
@@ -24,6 +25,7 @@ abstract class PackageTestCase extends Orchestra
      * `RefreshDatabase` migrates once per process, with the schema of the first test it sees. One process that runs
      * suites of several packages needs a fresh migration whenever the provider set (hence the schema) changes.
      */
+    #[Override]
     protected function setUpTraits()
     {
         $app = $this->app;
@@ -61,17 +63,21 @@ abstract class PackageTestCase extends Orchestra
      * @param  Application  $app
      * @return list<class-string>
      */
+    #[Override]
     protected function getPackageProviders($app): array
     {
         return $this->commerzProviders();
     }
 
     /** @param  Application  $app */
+    #[Override]
     protected function defineEnvironment($app): void
     {
-        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
-        $app['config']->set('database.default', 'testing');
-        $app['config']->set('database.connections.testing', $this->databaseConnection());
+        parent::defineEnvironment($app);
+
+        $config = $app->make(Repository::class);
+        $config->set('database.default', 'testing');
+        $config->set('database.connections.testing', $this->databaseConnection());
     }
 
     /** @return array<string, mixed> */

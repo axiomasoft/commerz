@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Reservations\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Inventory\Reservations\Enums\ReleaseCause;
+use Packman\Attributes\Api;
 
 /** Held stock of a demand went back to free stock in a committed operation. */
 #[Api(since: '0.1')]

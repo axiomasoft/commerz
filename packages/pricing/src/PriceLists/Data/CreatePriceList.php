@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\PriceLists\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Pricing\Common\Data\PricingCodes;
 use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** A price list in one currency; every channel must sell in that currency. The currency never changes afterwards. */
 #[Api(since: '0.1')]
