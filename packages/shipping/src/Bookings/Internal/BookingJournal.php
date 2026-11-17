@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Bookings\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\Uuid7;
@@ -14,18 +14,19 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Delivery\Data\BookShipment;
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use Commerz\Shipping\Bookings\Events\ShipmentBooked;
 use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
 use Commerz\Shipping\Carriers\Exceptions\CarrierRejected;
 use Commerz\Shipping\Common\Internal\Clock;
 use Commerz\Shipping\Common\Internal\Rows;
-use Commerz\Shipping\Common\Internal\ShippingConfig;
+use Commerz\Shipping\Configuration\ShippingOptions;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 use Throwable;
 
@@ -34,14 +35,15 @@ use Throwable;
  * it and hands out the next attempt; `finish()` (another transaction) records the carrier's outcome only while the
  * row is still `pending` under that attempt, so a process whose lease was taken over can never overwrite the new owner.
  */
+#[Internal]
 final readonly class BookingJournal
 {
     private const string OPERATION = 'shipping.book';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
-        private ShippingConfig $shipping,
+        private CommerzOptions $config,
+        private ShippingOptions $shipping,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

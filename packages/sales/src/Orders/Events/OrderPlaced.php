@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /** Dispatched after the placement commits. */
 #[Api(since: '0.1')]

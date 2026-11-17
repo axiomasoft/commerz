@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 // Shared fixtures of the method tests.
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\CommerzException;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Methods\Data\CreateMethod;
 use Commerz\Shipping\Methods\Data\MethodView;
@@ -31,6 +29,10 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Stores\Data\StoreId;
 use Illuminate\Support\Facades\DB;
+use Packman\Errors\Exceptions\CodedException;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Schema\Data\Compiler\TableNames;
 
 function mtChannel(string $code = 'web', string $currency = 'RUB'): ChannelId
 {
@@ -90,6 +92,8 @@ function mtFailure(Closure $call): string
         $call();
     } catch (CommerzException $e) {
         return $e->code().(property_exists($e, 'field') ? " @ {$e->field}" : '');
+    } catch (CodedException $e) {
+        return $e->errorDescriptor()->errorCode->value();
     }
 
     return 'no error';
@@ -106,7 +110,7 @@ function mtUsePlugins(array $plugins): void
     config(['commerz.plugins' => $plugins]);
 
     // These captured the configuration or the contribution registry built from it.
-    foreach ([CommerzConfig::class, Contributions::class, RateCodec::class, MethodRows::class, Methods::class, Shipping::class] as $abstract) {
+    foreach ([CommerzOptions::class, Contributions::class, PluginInspector::class, RateCodec::class, MethodRows::class, Methods::class, Shipping::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }

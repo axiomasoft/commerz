@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /** What orders placed with a promotion have used so far (orders not restored), counted from the usage log. */
 #[Api(since: '0.1')]

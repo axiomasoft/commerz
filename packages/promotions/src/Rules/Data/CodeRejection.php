@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Promotions\Definitions\Data\PromotionId;
+use Packman\Attributes\Api;
 
 /** Why a presented code switched nothing on. */
 #[Api(since: '0.1')]

@@ -16,9 +16,9 @@ use Commerz\Catalog\ProductTypes\Data\UpdateProductType;
 use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /** Product types: the attribute slots and variant axes of a family of products. */
 #[Api(since: '0.1')]

@@ -9,11 +9,13 @@ use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Shipping\Options\Data\MethodVerdict;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * The verdict of one method for a delivery request. `$price` is set only when it is available; `$name` and `$carrier`
  * are null only for `method_not_found`. `$freeAbove` says the price is zero because the goods reached the threshold.
  */
+#[Internal]
 final readonly class PricedMethod
 {
     public function __construct(

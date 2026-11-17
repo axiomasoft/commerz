@@ -7,8 +7,10 @@ namespace Commerz\Sales\Common\Internal;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
+use Packman\Attributes\Internal;
 
 /** The three states of an order before and after `OrderStatus::refresh`. */
+#[Internal]
 final readonly class OrderStatusChange
 {
     public function __construct(

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Promotions\Common\Internal\Rows;
@@ -19,18 +19,20 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads promotion rows with their channels, rules and usage into views; a page of views takes four queries. */
+#[Internal]
 final readonly class PromotionRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

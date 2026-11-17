@@ -4,29 +4,31 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\Rows;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Orders\Data\ExpireOrders;
 use Commerz\Sales\Orders\Data\ExpireReport;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Expiry of unpaid orders (D32): sales owns the payment deadline, the stock holds the reservation until then. Each
  * order expires in its own transaction under `for update skip locked`, so parallel passes share the work, and every
  * condition is checked again under the lock: an order with a payment under way, paid or partly fulfilled stays.
  */
+#[Internal]
 final readonly class OrderExpiry
 {
     /** A payment in one of these states may still bring money: the order waits for it (as Saleor does). */
@@ -34,10 +36,10 @@ final readonly class OrderExpiry
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
-        private SalesConfig $sales,
+        private SalesOptions $sales,
         private OrderLocks $locks,
         private OrderCancellation $cancellation,
     ) {}

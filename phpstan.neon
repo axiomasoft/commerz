@@ -15,8 +15,3 @@ parameters:
         - packages/sales/src
         - packages/testkit/src
         - packages/testkit/tests
-    ignoreErrors:
-        # Temporary Slice-A ignore for unmigrated sales subpackage under strict phpstan-base rules (cleaned up in Slice B2).
-        -
-            identifier: argument.type
-            path: packages/sales/src/Internal/Console/ExpireOrdersCommand.php

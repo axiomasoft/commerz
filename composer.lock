@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91d6d8092671185159201d70388937cf",
+    "content-hash": "3051c04aa2b081f2178dd19589bab2a2",
     "packages": [
         {
             "name": "axiomasoft/commerz",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "300d8c678089f16e47f1870ecba565f39edeef80"
+                "reference": "57ba1c3073f6dbf08bf7f5183d7a700ed202e746"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -34,6 +34,9 @@
                     ]
                 },
                 "packman": {
+                    "schema-version": 1,
+                    "package-type": "domain",
+                    "stability": "stable",
                     "error-prefix": "commerz",
                     "owns": [
                         "Configuration",
@@ -64,10 +67,7 @@
             "autoload": {
                 "psr-4": {
                     "Commerz\\": "src/"
-                },
-                "files": [
-                    "src/aliases.php"
-                ]
+                }
             },
             "autoload-dev": {
                 "psr-4": {
@@ -95,21 +95,50 @@
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "fe67ba8d845fce01de6825cb4047a51cfb3f362f"
+                "reference": "dd714054d20c55e8db92cf2999b7c221597098e3"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Catalog\\CatalogServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "catalog",
+                    "owns": [
+                        "Attributes",
+                        "Categories",
+                        "Common",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Internal",
+                        "Laravel",
+                        "Listings",
+                        "Options",
+                        "Panels",
+                        "Plugins",
+                        "Products",
+                        "ProductTypes",
+                        "Schema",
+                        "Variants"
                     ]
                 },
                 "branch-alias": {
@@ -147,7 +176,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/full",
-                "reference": "7cd844da7702b89e724998e284520354adfe3840"
+                "reference": "37cf50368086ac1d3e6a649aca7be0bad0de1da2"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -157,7 +186,7 @@
                 "axiomasoft/commerz-promotions": "^0.1",
                 "axiomasoft/commerz-sales": "^0.1",
                 "axiomasoft/commerz-shipping": "^0.1",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "metapackage",
             "extra": {
@@ -186,21 +215,52 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "68e37be4a0842ac004fcd9b61b056147590fb747"
+                "reference": "25c7a5ca3a8419d3410e69996299a522844f22f7"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Inventory\\InventoryServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "inventory",
+                    "owns": [
+                        "Allocation",
+                        "Availability",
+                        "Common",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Internal",
+                        "Items",
+                        "Laravel",
+                        "Locations",
+                        "Movements",
+                        "Panels",
+                        "Plugins",
+                        "Reservations",
+                        "Schema",
+                        "Sources",
+                        "Stock",
+                        "Transfers"
                     ]
                 },
                 "branch-alias": {
@@ -238,20 +298,46 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "b71fdaf1c063fcef9dc4b122793686a0468ea7b6"
+                "reference": "da78c5dae30f66f08647d9fb171587a8169820bd"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Pricing\\PricingServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "pricing",
+                    "owns": [
+                        "Calculation",
+                        "Common",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Internal",
+                        "Laravel",
+                        "Panels",
+                        "Plugins",
+                        "PriceLists",
+                        "Prices",
+                        "Schema",
+                        "Taxes"
                     ]
                 },
                 "branch-alias": {
@@ -289,21 +375,48 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "13880c6f56d2fe7f90ccad12d9d91eb169578128"
+                "reference": "a263c0acd625fa7a50a0116b65afa419bf3a5573"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Promotions\\PromotionsServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "promotions",
+                    "owns": [
+                        "Common",
+                        "Configuration",
+                        "Coupons",
+                        "Definitions",
+                        "Diagnostics",
+                        "Errors",
+                        "Evaluation",
+                        "Facades",
+                        "Internal",
+                        "Laravel",
+                        "Panels",
+                        "Plugins",
+                        "Rules",
+                        "Schema",
+                        "Usage"
                     ]
                 },
                 "branch-alias": {
@@ -341,21 +454,52 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "3cdfb1c2fd5d9dc67a383341715764021aec6804"
+                "reference": "101805d56b306d3f6ba3abd096148643ed669a13"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Sales\\SalesServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "sales",
+                    "owns": [
+                        "Carts",
+                        "Checkout",
+                        "Common",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Fulfillments",
+                        "Gateways",
+                        "Internal",
+                        "Laravel",
+                        "Numbering",
+                        "Orders",
+                        "Panels",
+                        "Payments",
+                        "Plugins",
+                        "Refunds",
+                        "Returns",
+                        "Schema"
                     ]
                 },
                 "branch-alias": {
@@ -393,20 +537,48 @@
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "8b1b9dfd0a7f6fc78b096b477689295ed9d10362"
+                "reference": "9220927d62449388b7c8102e7a10fb76d3f03c6a"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-panels": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-schema": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
                         "Commerz\\Shipping\\ShippingServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "shipping",
+                    "owns": [
+                        "Bookings",
+                        "Carriers",
+                        "Common",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Internal",
+                        "Laravel",
+                        "Methods",
+                        "Options",
+                        "Panels",
+                        "Plugins",
+                        "Rates",
+                        "Schema",
+                        "Zones"
                     ]
                 },
                 "branch-alias": {
@@ -444,7 +616,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/core",
-                "reference": "8d61c9303a474f7c469035a0882fa11ad08b4429"
+                "reference": "f5ef3ecc5eb2e057724b6c72b0c5192d25d997bd"
             },
             "require": {
                 "php": "^8.4",
@@ -526,7 +698,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/panels",
-                "reference": "eba117caa649e2c7a52bb6062bd6569612752605"
+                "reference": "62fa9ae4cdd83a2694bcc798856a7e1c837f332e"
             },
             "require": {
                 "axiomasoft/packman": "^0.1|^1.0@dev",
@@ -580,7 +752,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/plugins",
-                "reference": "1413808d28f1506dff75ff711907db6ac2556142"
+                "reference": "5182ae3652710d6a773860bd8747bf5ec59649b6"
             },
             "require": {
                 "axiomasoft/packman": "^0.1|^1.0@dev",
@@ -632,7 +804,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/schema",
-                "reference": "6f8e27c2672f9b07951588127ee773225e2ae0e4"
+                "reference": "59f0b117fa61a22c0cb1b709b6339130479195d6"
             },
             "require": {
                 "axiomasoft/packman": "^0.1|^1.0@dev",
@@ -6601,18 +6773,29 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "feea1e619fdc6a17ef2022215355d21224ce5826"
+                "reference": "bef9f7d11d21f34f12e4e17dad42251f6d730534"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman-plugins": "^0.1",
+                "axiomasoft/packman-testkit": "^0.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
                 "orchestra/testbench": "^11.3",
-                "php": "^8.4"
+                "php": ">=8.4 <8.6"
             },
             "type": "library",
             "extra": {
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "dev",
+                    "stability": "stable",
+                    "owns": [
+                        "Fakes"
+                    ]
+                },
                 "branch-alias": {
                     "dev-main": "0.1.x-dev"
                 }
@@ -6648,7 +6831,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/devtools",
-                "reference": "06571a6bbeae1a3f9f8db1666fdc9b65ca50d933"
+                "reference": "1756e2919c1b29ec01da7fa3eb6dec7b0618ac09"
             },
             "require": {
                 "axiomasoft/packman": "^0.1|^1.0@dev",
@@ -6703,7 +6886,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/testkit",
-                "reference": "f22e99b8d63dddf0aa58fb148100715c18c118d2"
+                "reference": "b8e21b76bd65c5bbfb590802cad860dc984dc775"
             },
             "require": {
                 "axiomasoft/packman": "^0.1|^1.0@dev",

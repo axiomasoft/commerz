@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Carriers\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Shipping\Carriers\Data\CarrierBooking;
 use Commerz\Shipping\Carriers\Exceptions\CarrierRejected;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /** A shipping company: books shipments on request of `ShipmentBooking`. */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]

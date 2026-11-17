@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Sales\Fulfillments\Enums\FulfillmentStatus;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /** Fulfillments, newest first. */
 #[Api(since: '0.1')]

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
@@ -25,6 +24,7 @@ use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
 use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
+use Packman\Attributes\Api;
 
 /** Delivery methods: a carrier, the channels that offer the method and its tariffs per zone and currency. */
 #[Api(since: '0.1')]

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
@@ -12,6 +11,7 @@ use Commerz\Money\Money;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Returns\Data\ReturnId;
+use Packman\Attributes\Api;
 
 /**
  * Gives money of an order back through the gateway of one of its captured payments. The caller sets the amount; the

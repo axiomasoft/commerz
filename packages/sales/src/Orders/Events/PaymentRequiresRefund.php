@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /**
  * Dispatched after a change that left the order holding more money than it is due commits: a cancellation of a paid

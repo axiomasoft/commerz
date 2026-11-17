@@ -11,8 +11,10 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** A fixed amount off the order, never more than what is left of it. */
+#[Internal]
 final readonly class OrderFixedOff implements PromotionEffect
 {
     public function key(): string

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Promotions\Coupons\Internal\CouponLimits;
 use Commerz\Promotions\Definitions\Data\PromotionId;
+use Packman\Attributes\Api;
 
 /**
  * A batch of `$count` random codes of one pattern for a `coupon` promotion. In the pattern `#` stands for a character

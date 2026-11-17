@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Measures\LocalizedText;
 use Commerz\Shipping\Common\Data\ShippingCodes;
+use Packman\Attributes\Api;
 
 /** Changes the given fields; a null field stays as it is. */
 #[Api(since: '0.1')]

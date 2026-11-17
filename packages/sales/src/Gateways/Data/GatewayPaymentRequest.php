@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Gateways\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Money;
 use Commerz\Sales\Gateways\Internal\GatewayMeta;
+use Packman\Attributes\Api;
 
 /** One payment attempt the gateway is asked to start. */
 #[Api(since: '0.1')]

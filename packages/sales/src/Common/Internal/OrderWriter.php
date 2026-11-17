@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\ActorRef;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
@@ -17,24 +17,26 @@ use Commerz\Sales\Checkout\Exceptions\DuplicateOrderNumber;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
-use Commerz\Schema\ConstraintNames;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelView;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\ConstraintNames;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of new `orders` and `order_lines` rows (ORD-01): the snapshot of an accepted quote (ORD-02). An
  * order line takes the id of the cart line it was quoted for, so the line ids of the quote's adjustments and taxes stay
  * valid in the order. Called only by the placement, under the lock of the cart.
  */
+#[Internal]
 final readonly class OrderWriter
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
     ) {}

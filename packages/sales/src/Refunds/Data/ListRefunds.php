@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
+use Packman\Attributes\Api;
 
 /** Refunds, newest first. */
 #[Api(since: '0.1')]

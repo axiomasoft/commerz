@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Rates\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
+use Packman\Attributes\Api;
 
 /**
  * What a rate prices. `$request->parcel->value` is the value of the goods after discounts; in a quote the stage

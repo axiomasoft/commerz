@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Bookings\Internal;
 
 use Commerz\Errors\IdempotencyConflict;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Operations\Contracts\Transactions;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Delivery\Data\BookShipment;
@@ -25,6 +23,9 @@ use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Commerz\Shipping\Methods\Exceptions\MethodArchived;
 use Commerz\Shipping\Methods\Exceptions\MethodNotFound;
 use JsonException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Throwable;
 
 /**
@@ -33,6 +34,7 @@ use Throwable;
  * outcome that is not a booking or a final refusal is `unknown`, and the next attempt asks the carrier with `find()`
  * before it may create the shipment again.
  */
+#[Internal]
 final readonly class CarrierShipmentBooking implements ShipmentBooking
 {
     public function __construct(

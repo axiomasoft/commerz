@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
-use Commerz\PluginGraph;
-use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
-use Commerz\Shipping\Internal\ShippingPlugin;
+use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\ShippingServiceProvider;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Testing\PluginGraph;
 use PHPUnit\Framework\Attributes\Test;
 
 final class ShippingPluginTest extends PackageTestCase
@@ -32,7 +33,7 @@ final class ShippingPluginTest extends PackageTestCase
     #[Test]
     public function declares_the_delivery_rate_and_carrier_kinds(): void
     {
-        $registry = PluginGraph::compile(app(), [ShippingPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, ShippingPlugin::class]);
 
         self::assertInstanceOf(PluginInspector::class, $registry);
 

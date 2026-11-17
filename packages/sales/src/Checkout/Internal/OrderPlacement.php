@@ -11,7 +11,6 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
@@ -38,7 +37,7 @@ use Commerz\Sales\Common\Internal\CartRows;
 use Commerz\Sales\Common\Internal\OrderJournal;
 use Commerz\Sales\Common\Internal\OrderRows;
 use Commerz\Sales\Common\Internal\OrderWriter;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Data\OrderNumbering;
 use Commerz\Sales\Numbering\Exceptions\InvalidOrderNumber;
@@ -50,6 +49,8 @@ use Commerz\Stores\Contracts\Stores;
 use DateTimeImmutable;
 use DateTimeZone;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 /**
  * The placement protocol of knowledge/sales-design#placement. Everything that reads — the quote, the channel, the
@@ -57,6 +58,7 @@ use LogicException;
  * receipt → cart `for update` → order snapshot with its number → stock (reserve) → promotion usage (consume) →
  * conversion of the cart, journal, outbox. A failure of any step rolls all of them back (EXT-01).
  */
+#[Internal]
 final readonly class OrderPlacement implements Checkout
 {
     private const string SCOPE = 'sales.place_order';
@@ -72,7 +74,7 @@ final readonly class OrderPlacement implements Checkout
         private CustomerDirectory $customers,
         private StockReservations $stock,
         private PromotionUsage $usage,
-        private SalesConfig $config,
+        private SalesOptions $config,
         private CartRows $carts,
         private CartQuoter $quoter,
         private OrderRows $orders,
@@ -213,7 +215,7 @@ final readonly class OrderPlacement implements Checkout
 
         if ($reserve !== []) {
             // No deadline: an unpaid order expires through sales (D32), never by the stock giving the units away.
-            $this->stock->reserve(new ReserveStock('order:'.$id->value, $placement->channel->id, $reserve, expiresAt: null));
+            $this->stock->reserve(new ReserveStock('order:'.$id->value, $placement->channel->id, $reserve));
         }
 
         if ($placement->applied !== []) {

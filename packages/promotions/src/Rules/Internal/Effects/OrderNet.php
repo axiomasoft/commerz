@@ -7,8 +7,10 @@ namespace Commerz\Promotions\Rules\Internal\Effects;
 use Commerz\Money\Money;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Internal;
 
 /** What an order-level discount is taken from: the items' net plus the (negative) order adjustments already in the state. */
+#[Internal]
 final class OrderNet
 {
     public static function of(QuoteState $state): Money

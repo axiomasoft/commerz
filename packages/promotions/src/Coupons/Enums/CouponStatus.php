@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** A disabled coupon is refused at the quote and at the placement; enabling it brings it back. */
 #[Api(since: '0.1')]

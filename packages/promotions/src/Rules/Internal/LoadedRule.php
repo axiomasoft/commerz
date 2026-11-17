@@ -7,8 +7,10 @@ namespace Commerz\Promotions\Rules\Internal;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
 use Commerz\Promotions\Rules\Data\RuleParams;
+use Packman\Attributes\Internal;
 
 /** A stored rule brought up to its plugin's current version, or the reason it cannot be: the promotion is then not applied. */
+#[Internal]
 final readonly class LoadedRule
 {
     private function __construct(

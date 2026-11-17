@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
+use Packman\Attributes\Api;
 
 /**
  * Sets or clears (`null`) the customer and the customer groups that price lists and promotions see: the groups of the

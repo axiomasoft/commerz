@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** Expires unpaid orders whose payment deadline is at or before `$at` (now when null), at most `$limit` of them (D32). */
 #[Api(since: '0.1')]

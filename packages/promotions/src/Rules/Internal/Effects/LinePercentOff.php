@@ -12,8 +12,10 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** A percentage off the current net of every eligible line. */
+#[Internal]
 final readonly class LinePercentOff implements PromotionEffect
 {
     public function key(): string

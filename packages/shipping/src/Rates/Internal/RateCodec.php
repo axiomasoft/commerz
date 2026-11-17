@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Rates\Internal;
 
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Currency;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
@@ -15,6 +13,9 @@ use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateResult;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Throwable;
 
 /**
@@ -22,6 +23,7 @@ use Throwable;
  * refuse the command. Reading never throws on stored data: a rate that cannot be loaded (no plugin, a newer version
  * than the plugin knows, an upgrade that fails) is `unsupported` and its method is not offered in that zone.
  */
+#[Internal]
 final readonly class RateCodec
 {
     public function __construct(private Contributions $contributions) {}

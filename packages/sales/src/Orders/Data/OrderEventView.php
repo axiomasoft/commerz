@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\ActorRef;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** An entry of the append-only history of an order. */
 #[Api(since: '0.1')]

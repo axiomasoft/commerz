@@ -6,8 +6,10 @@ namespace Commerz\Shipping\Rates\Internal;
 
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateParams;
+use Packman\Attributes\Internal;
 
 /** A stored rate brought up to its plugin's current version, or the reason it cannot be: the method is then not offered. */
+#[Internal]
 final readonly class LoadedRate
 {
     private function __construct(

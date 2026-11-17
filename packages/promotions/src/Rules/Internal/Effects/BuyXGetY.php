@@ -14,12 +14,14 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /**
  * Of every `buy + get` units of the eligible lines, the `get` cheapest are discounted by `rateBp` (10000 makes them
  * free), at most `maxApplications` times. One pool across the lines, as commercetools' multibuy with the cheapest
  * selection.
  */
+#[Internal]
 final readonly class BuyXGetY implements PromotionEffect
 {
     public function key(): string

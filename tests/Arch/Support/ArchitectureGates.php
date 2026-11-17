@@ -25,9 +25,9 @@ use PhpParser\ParserFactory;
  */
 final class ArchitectureGates
 {
-    private const array API_ATTRIBUTES = ['Packman\Attributes\Api', 'Commerz\Attributes\Api'];
+    private const array API_ATTRIBUTES = ['Packman\Attributes\Api'];
 
-    private const array SPI_ATTRIBUTES = ['Packman\Attributes\Spi', 'Commerz\Attributes\Spi'];
+    private const array SPI_ATTRIBUTES = ['Packman\Attributes\Spi'];
 
     private const array MODEL_BASES = [
         'Illuminate\Database\Eloquent\Model',
@@ -35,7 +35,7 @@ final class ArchitectureGates
         'Illuminate\Database\Eloquent\Relations\MorphPivot',
     ];
 
-    /** Static facade calls that create, change or drop tables without going through `CommerzMigration`. */
+    /** Static facade calls that create, change or drop tables without going through `PackmanMigration`. */
     private const array RAW_SCHEMA_METHODS = ['create', 'table', 'drop', 'dropIfExists', 'rename'];
 
     /** Calls whose first string argument is a table name. */
@@ -193,7 +193,7 @@ final class ArchitectureGates
 
                 foreach ($finder->findInstanceOf($statements, StaticCall::class) as $call) {
                     if ($this->staticCallName($call) === 'Schema' && $call->name instanceof Identifier && in_array($call->name->toString(), self::RAW_SCHEMA_METHODS, true)) {
-                        $violations[] = "{$path}: Schema::{$call->name}() bypasses CommerzMigration table helpers.";
+                        $violations[] = "{$path}: Schema::{$call->name}() bypasses PackmanMigration table helpers.";
                     }
                 }
 

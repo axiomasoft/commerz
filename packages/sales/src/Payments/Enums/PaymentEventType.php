@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** What a provider reports about a payment in an event (a webhook, or the operator recording offline money). */
 #[Api(since: '0.1')]

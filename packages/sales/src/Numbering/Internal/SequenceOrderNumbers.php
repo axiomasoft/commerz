@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Numbering\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Data\OrderNumbering;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
  * One database sequence for all stores; the visible number is the store's prefix plus the next value. A rolled back
  * placement leaves a gap, which is fine: an order number is not an invoice number.
  */
+#[Internal]
 final readonly class SequenceOrderNumbers implements OrderNumberGenerator
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

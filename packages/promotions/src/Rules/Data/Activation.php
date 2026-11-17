@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Promotions\Definitions\Data\PromotionId;
+use Packman\Attributes\Api;
 
 /**
  * One promotion an activator switched on. `couponCode` is an owned package coupon counted at placement;

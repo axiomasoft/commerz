@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Promotions\Definitions\Enums\VerdictKind;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
+use Packman\Attributes\Api;
 
 /**
  * The outcome for one switched-on promotion in one quote. An applied promotion carries the discount it gave (a

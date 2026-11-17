@@ -20,7 +20,9 @@ use Commerz\Sales\Payments\Data\RecordPaymentEvent;
 use Commerz\Sales\Payments\Enums\PaymentEventOutcome;
 use Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
+use Packman\Attributes\Internal;
 
+#[Internal]
 final readonly class DatabasePayments implements Payments
 {
     public function __construct(

@@ -11,11 +11,13 @@ use Commerz\Sales\Gateways\Data\GatewayRefundRequest;
 use Commerz\Sales\Gateways\Data\GatewayRefundResult;
 use Commerz\Sales\Gateways\Enums\GatewayPaymentStatus;
 use Commerz\Sales\Gateways\Enums\GatewayRefundStatus;
+use Packman\Attributes\Internal;
 
 /**
  * Offline payment (invoice, cash, bank transfer): no network and no state at the provider. A payment stays pending
  * until the operator records the money as a `captured` event; a refund is booked by the operator, so it succeeds at once.
  */
+#[Internal]
 final readonly class ManualGateway implements PaymentGateway
 {
     public function key(): string

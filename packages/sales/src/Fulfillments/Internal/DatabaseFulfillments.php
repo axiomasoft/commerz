@@ -40,12 +40,14 @@ use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotShipped;
 use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
 use Commerz\Sales\Orders\Enums\OrderState;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * Fulfillments of orders (sales-design#fulfillment). Every change runs under the lock of the order, then of the
  * document (sales-design#locks); a fulfillment moves the ledger, consumes stock and refreshes the order in one
  * transaction. The carrier is asked only by `book`, outside any transaction.
  */
+#[Internal]
 final readonly class DatabaseFulfillments implements Fulfillments
 {
     private const string SCOPE = 'sales.create_fulfillment';

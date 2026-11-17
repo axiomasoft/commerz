@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** The period `[startsAt, endsAt)` a promotion works in; a missing bound is open. */
 #[Api(since: '0.1')]

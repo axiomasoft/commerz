@@ -6,6 +6,7 @@ namespace Commerz\Promotions\Evaluation\Internal;
 
 use Commerz\Quotes\Data\QuoteInput;
 use Illuminate\Contracts\Container\Container;
+use Packman\Attributes\Internal;
 use WeakMap;
 
 /**
@@ -14,6 +15,7 @@ use WeakMap;
  * fresh data. The map is weak: a session lives as long as its input and never keeps it alive (long-running workers).
  * Bound as a singleton; the loader is resolved per load, so a configuration or binding changed later is seen.
  */
+#[Internal]
 final class PromotionSessions
 {
     /** @var WeakMap<QuoteInput, PromotionSession> */

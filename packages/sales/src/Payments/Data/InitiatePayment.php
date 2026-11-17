@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Money\Money;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /**
  * Starts a payment attempt of an order at a gateway: `$amount` (the balance by default) must fit in what the order

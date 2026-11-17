@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Checkout\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The cart was already placed; `$order` is the order it became (ORD-01). */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CartAlreadyPlaced extends CommerzException
     public function context(): array
     {
         return ['cart' => $this->cart, 'order' => $this->order];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::CartAlreadyPlaced,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

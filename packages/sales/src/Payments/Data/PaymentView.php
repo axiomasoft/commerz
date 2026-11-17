@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Payments\Enums\PaymentStatus;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** One payment attempt of an order. */
 #[Api(since: '0.1')]

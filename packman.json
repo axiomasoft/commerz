@@ -124,12 +124,19 @@
             "type": "addon",
             "owns": [
                 "Common",
+                "Configuration",
                 "Coupons",
                 "Definitions",
+                "Diagnostics",
+                "Errors",
                 "Evaluation",
                 "Facades",
                 "Internal",
+                "Laravel",
+                "Panels",
+                "Plugins",
                 "Rules",
+                "Schema",
                 "Usage"
             ]
         },
@@ -144,15 +151,22 @@
                 "Carts",
                 "Checkout",
                 "Common",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
                 "Facades",
                 "Fulfillments",
                 "Gateways",
                 "Internal",
+                "Laravel",
                 "Numbering",
                 "Orders",
+                "Panels",
                 "Payments",
+                "Plugins",
                 "Refunds",
-                "Returns"
+                "Returns",
+                "Schema"
             ]
         },
         {
@@ -166,11 +180,18 @@
                 "Bookings",
                 "Carriers",
                 "Common",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
                 "Facades",
                 "Internal",
+                "Laravel",
                 "Methods",
                 "Options",
+                "Panels",
+                "Plugins",
                 "Rates",
+                "Schema",
                 "Zones"
             ]
         },

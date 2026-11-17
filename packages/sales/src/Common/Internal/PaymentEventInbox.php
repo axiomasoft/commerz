@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Money\Money;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -19,6 +20,7 @@ use RuntimeException;
  * payments and refunds. `claim` runs under the lock of the order the event is about, so a concurrent delivery of the
  * same event waits for the first one and then finds it recorded. A transition is applied only after a claim.
  */
+#[Internal]
 final readonly class PaymentEventInbox
 {
     public const string APPLIED = 'applied';
@@ -27,7 +29,7 @@ final readonly class PaymentEventInbox
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

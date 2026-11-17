@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Money\RoundingMode;
 use Commerz\Ports\Promotions\Enums\RestoreReason;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Configuration\PromotionsOptions;
+use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('defaults to half-up rounding, five codes, restore on cancel and expiry, and a readable alphabet', function (): void {
-    $config = PromotionsConfig::fromArray([]);
+    $config = PromotionsOptions::fromArray([]);
 
     expect($config->rounding)->toBe(RoundingMode::HalfUp)
         ->and($config->maxCodes)->toBe(5)
@@ -20,11 +20,11 @@ it('defaults to half-up rounding, five codes, restore on cancel and expiry, and 
 });
 
 it('reads the shipped config file', function (): void {
-    expect(PromotionsConfig::fromArray(require __DIR__.'/../../config/commerz-promotions.php'))->toEqual(PromotionsConfig::fromArray([]));
+    expect(PromotionsOptions::fromArray(require __DIR__.'/../../config/commerz-promotions.php'))->toEqual(PromotionsOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {
-    $config = PromotionsConfig::fromArray([
+    $config = PromotionsOptions::fromArray([
         'rounding' => 'half_even',
         'max_codes' => 2,
         'restore_on' => ['refunded', RestoreReason::Refunded, 'cancelled'],
@@ -39,14 +39,21 @@ it('reads every key', function (): void {
 });
 
 it('accepts a rounding mode enum and an empty restore list', function (): void {
-    $config = PromotionsConfig::fromArray(['rounding' => RoundingMode::Floor, 'restore_on' => []]);
+    $config = PromotionsOptions::fromArray(['rounding' => RoundingMode::Floor, 'restore_on' => []]);
 
     expect($config->rounding)->toBe(RoundingMode::Floor)->and($config->restoreOn)->toBe([]);
 });
 
+it('rejects unknown keys under closed schema validation', function (): void {
+    expect(fn () => PromotionsOptions::fromArray(['unknown_key' => 1], 'app.promotions'))
+        ->toThrow(InvalidConfiguration::class, 'app.promotions.unknown_key')
+        ->and(fn () => PromotionsOptions::fromArray(['coupons' => ['extra' => 1]], 'app.promotions'))
+        ->toThrow(InvalidConfiguration::class, 'app.promotions.coupons.extra');
+});
+
 it('names the offending key', function (array $config, string $path): void {
-    expect(fn () => PromotionsConfig::fromArray($config))
-        ->toThrow(fn (InvalidConfiguration $e) => expect($e->path)->toBe($path));
+    expect(fn () => PromotionsOptions::fromArray($config))
+        ->toThrow(InvalidConfiguration::class, $path);
 })->with([
     'rounding unknown' => [['rounding' => 'banker'], 'commerz-promotions.rounding'],
     'rounding not a string' => [['rounding' => 3], 'commerz-promotions.rounding'],

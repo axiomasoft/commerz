@@ -25,7 +25,7 @@ use Commerz\Sales\Checkout\Data\PlaceOrder;
 use Commerz\Sales\Common\Internal\OrderLedger;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderStatus;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Data\OrderLineId;
@@ -38,7 +38,6 @@ use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -47,6 +46,7 @@ use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The fixture plugin goes in before the registry is compiled (the migrations already resolve it); without the inventory
@@ -109,7 +109,7 @@ function slsConfig(array $sections): void
         config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
     }
 
-    foreach ([SalesConfig::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
+    foreach ([SalesOptions::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }

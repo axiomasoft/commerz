@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Options\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /**
  * Whether one method delivers to the request and why not. `$verdict` is a stable snake_case code: `available`,

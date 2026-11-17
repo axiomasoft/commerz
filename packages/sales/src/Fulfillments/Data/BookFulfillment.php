@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
+use Packman\Attributes\Api;
 
 /**
  * Books the shipment of a fulfillment with the carrier of the delivery the order was placed with, then ships it. The

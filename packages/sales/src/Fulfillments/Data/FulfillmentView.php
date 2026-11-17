@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Fulfillments\Enums\FulfillmentStatus;
 use Commerz\Sales\Orders\Data\OrderId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** One fulfillment document of an order. */
 #[Api(since: '0.1')]

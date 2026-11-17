@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Testkit;
 
-use Commerz\Errors\InvalidConfiguration as LegacyInvalidConfiguration;
-use Commerz\PluginGraph as LegacyPluginGraph;
 use Commerz\Plugins\CorePlugin;
 use Packman\Attributes\Api;
 use Packman\Config\Exceptions\InvalidConfiguration;
@@ -86,7 +84,7 @@ trait PluginContractTests
 
         try {
             $this->compilePlugins($plugins);
-        } catch (InvalidConfiguration|LegacyInvalidConfiguration $e) {
+        } catch (InvalidConfiguration $e) {
             self::assertStringContainsString('already registered', $e->getMessage());
 
             return;
@@ -139,22 +137,18 @@ trait PluginContractTests
         return $this->compilePlugins($this->plugins($withPlugin));
     }
 
-    /** @param  list<class-string>  $plugins */
+    /** @param  list<class-string<ExtensionPlugin>>  $plugins */
     private function compilePlugins(array $plugins): Contributions&PluginInspector
     {
-        if (array_all($plugins, static fn (string $class): bool => is_subclass_of($class, ExtensionPlugin::class))) {
-            return PluginGraph::compile(
-                container: app(),
-                plugins: $plugins,
-                corePluginId: CorePlugin::ID,
-                builtIn: [CorePlugin::class],
-            );
-        }
-
-        return LegacyPluginGraph::compile(app(), $plugins);
+        return PluginGraph::compile(
+            container: app(),
+            plugins: $plugins,
+            corePluginId: CorePlugin::ID,
+            builtIn: [CorePlugin::class],
+        );
     }
 
-    /** @return list<class-string> */
+    /** @return list<class-string<ExtensionPlugin>> */
     private function plugins(bool $withPlugin): array
     {
         $classes = $this->pluginDependencies();

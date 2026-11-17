@@ -7,7 +7,6 @@ namespace Commerz\Shipping\Options\Internal;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
@@ -15,6 +14,8 @@ use Commerz\Shipping\Options\Data\MethodVerdict;
 use Commerz\Shipping\Rates\Data\RateInput;
 use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Internal\RateCodec;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 use Throwable;
 
 /**
@@ -25,6 +26,7 @@ use Throwable;
  * is decoded and priced, and `free_above` is applied to `$request->parcel->value`. A rate plugin that throws or
  * answers in another currency makes its method `invalid_rate_result`; nothing it does escapes. Pure: reads only.
  */
+#[Internal]
 final readonly class MethodPricer
 {
     public function __construct(

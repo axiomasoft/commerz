@@ -10,8 +10,10 @@ use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Options\Data\MethodVerdict;
 use Commerz\Shipping\Options\Data\OptionsExplanation;
+use Packman\Attributes\Internal;
 
 /** The options and the `DeliveryOptions` port of the kernel, both answered by `MethodPricer`. */
+#[Internal]
 final readonly class DatabaseShippingOptions implements DeliveryOptions, ShippingOptions
 {
     public function __construct(private MethodPricer $pricer) {}

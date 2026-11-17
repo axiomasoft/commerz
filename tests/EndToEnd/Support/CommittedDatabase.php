@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\EndToEnd\Support;
 
-use Commerz\Schema\TableNames;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

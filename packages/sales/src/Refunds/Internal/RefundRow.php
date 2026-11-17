@@ -14,8 +14,10 @@ use Commerz\Sales\Refunds\Data\RefundView;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Returns\Data\ReturnId;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** A stored refund attempt; the amount in minor units of `$currency`. */
+#[Internal]
 final readonly class RefundRow
 {
     public function __construct(

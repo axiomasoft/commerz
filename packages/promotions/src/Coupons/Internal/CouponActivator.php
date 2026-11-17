@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Promotions\Common\Data\PromotionCodes;
 use Commerz\Promotions\Common\Internal\Rows;
@@ -15,19 +15,21 @@ use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
 use Commerz\Promotions\Rules\Data\CodeRejection;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Switches a promotion on when a code of one of its coupons is presented. Reads the coupons in one query and never
  * writes: the usage is spent when the order is placed. A code that is no coupon at all is not answered here; the
  * engine rejects it as `unknown_code` after every activator has had its say.
  */
+#[Internal]
 final readonly class CouponActivator implements PromotionActivator
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

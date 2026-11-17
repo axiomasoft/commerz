@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Orders\Data\OrderId;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the ledger of the order lines (ORD-03): `cancelled_quantity`, `fulfilled_quantity` and
  * `returned_quantity`. Each change is one conditional update, so no two changes can take the same units even without
  * the lock of the order; the CHECK constraints of `order_lines` are the second line. Called under the lock of the order.
  */
+#[Internal]
 final readonly class OrderLedger
 {
     /** Units neither cancelled nor fulfilled. */
@@ -28,7 +30,7 @@ final readonly class OrderLedger
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

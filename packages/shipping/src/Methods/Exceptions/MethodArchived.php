@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The method is archived, which is final: it can no longer be changed, enabled or disabled. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class MethodArchived extends CommerzException
     public function context(): array
     {
         return ['method' => $this->method];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: ShippingErrorCode::MethodArchived,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

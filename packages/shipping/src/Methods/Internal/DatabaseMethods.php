@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
@@ -12,8 +12,6 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
 use Commerz\Shipping\Common\Internal\Clock;
@@ -47,17 +45,21 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order of the package: the method row `for update` first, then the zones of the new tariffs `for share` in id
  * order. Archiving, restoring or re-membering a zone takes only that zone `for update`, so it waits for the methods
  * writing a tariff in it and cannot form a cycle with them.
  */
+#[Internal]
 final readonly class DatabaseMethods implements Methods
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

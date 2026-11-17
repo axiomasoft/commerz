@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A cancelled or completed order takes no new fulfillment. */
 #[Api(since: '0.1')]
@@ -31,5 +35,16 @@ final class OrderNotFulfillable extends CommerzException
     public function context(): array
     {
         return ['order' => $this->order, 'state' => $this->state];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::OrderNotFulfillable,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

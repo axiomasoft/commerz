@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Options\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Shipping\Options\Data\OptionsExplanation;
+use Packman\Attributes\Api;
 
 /**
  * Priced delivery methods for a destination and parcel, and why the others are not offered. The price is the one the

@@ -38,8 +38,8 @@ it('binds the same ports and plugins whatever the order of the providers', funct
 it('lists the seven plugins and passes the doctor', function (): void {
     expect(PortMatrix::plugins())->toBe(['commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping']);
 
-    $this->artisan('commerz:plugins')->assertSuccessful();
-    $this->artisan('commerz:doctor')->assertSuccessful();
+    $this->artisan('packman:plugins')->assertSuccessful();
+    $this->artisan('packman:doctor')->assertSuccessful();
 });
 
 it('runs the quote stages of every package in the declared order', function (): void {

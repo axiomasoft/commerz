@@ -13,6 +13,7 @@ use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
+use Commerz\Sales\Carts\Data\CartLineView;
 use Commerz\Sales\Carts\Data\ClearDelivery;
 use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Carts\Data\EnterCode;
@@ -31,7 +32,6 @@ use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\CartNotOpen;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\TooManyCartLines;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ArchiveChannel;
 use Commerz\Stores\Exceptions\ChannelArchived;
@@ -39,6 +39,7 @@ use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -88,7 +89,7 @@ it('adds a line, and a second add of the sellable merges into it', function (): 
     expect($one->lines)->toHaveCount(1)
         ->and($two->lines)->toHaveCount(2)
         ->and($merged->lines)->toHaveCount(2)
-        ->and(array_map(fn ($line) => [(string) $line->sellable, $line->quantity], $merged->lines))->toBe([['sku:a', 5], ['sku:b', 1]])
+        ->and(array_map(fn (CartLineView $line) => [(string) $line->sellable, $line->quantity], $merged->lines))->toBe([['sku:a', 5], ['sku:b', 1]])
         ->and($merged->lines[0]->id)->toBe($one->lines[0]->id);
 });
 
@@ -158,7 +159,7 @@ it('keeps the position of the lines in the order they were added', function (): 
 
     $after = ctAdd($cart, 'sku:c');
 
-    expect(array_map(fn ($line) => (string) $line->sellable, $after->lines))->toBe(['sku:a', 'sku:b', 'sku:c']);
+    expect(array_map(fn (CartLineView $line) => (string) $line->sellable, $after->lines))->toBe(['sku:a', 'sku:b', 'sku:c']);
 });
 
 it('keeps trimmed codes without repeats', function (): void {

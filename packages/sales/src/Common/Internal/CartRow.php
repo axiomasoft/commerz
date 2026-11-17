@@ -13,8 +13,10 @@ use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** A stored cart with its lines in position order. */
+#[Internal]
 final readonly class CartRow
 {
     /**

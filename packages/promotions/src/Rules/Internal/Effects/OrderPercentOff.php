@@ -12,8 +12,10 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** A percentage off what is left of the order: the items' net minus the order discounts already applied. */
+#[Internal]
 final readonly class OrderPercentOff implements PromotionEffect
 {
     public function key(): string

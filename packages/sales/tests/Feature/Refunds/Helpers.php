@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Money;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Payments\Data\PaymentView;
 use Commerz\Sales\Payments\Data\RecordPaymentEvent;
@@ -13,8 +14,8 @@ use Commerz\Sales\Refunds\Data\IssueRefund;
 use Commerz\Sales\Refunds\Data\RefundId;
 use Commerz\Sales\Refunds\Data\RefundView;
 use Commerz\Sales\Returns\Data\ReturnId;
-use Commerz\Schema\TableNames;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -79,5 +80,5 @@ function rfOutbox(string $type): array
 /** @return list<string> */
 function rfHistory(OrderView $order): array
 {
-    return array_map(static fn ($event): string => $event->type, slsOrders()->history($order->id));
+    return array_map(static fn (OrderEventView $event): string => $event->type, slsOrders()->history($order->id));
 }

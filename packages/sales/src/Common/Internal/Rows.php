@@ -6,9 +6,11 @@ namespace Commerz\Sales\Common\Internal;
 
 use DateTimeImmutable;
 use JsonException;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /** Typed readers of a raw query-builder row; a missing or mistyped column is a programming error. */
+#[Internal]
 final class Rows
 {
     public static function string(object $row, string $column): string

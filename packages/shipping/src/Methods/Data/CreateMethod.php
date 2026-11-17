@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
 use Commerz\Shipping\Common\Data\ShippingCodes;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** A delivery method with its carrier, the channels that offer it and its tariffs. Repeated channels count once. */
 #[Api(since: '0.1')]

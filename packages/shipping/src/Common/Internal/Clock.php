@@ -6,8 +6,10 @@ namespace Commerz\Shipping\Common\Internal;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Packman\Attributes\Internal;
 
 /** Write timestamp in the format the `timestamptz(6)` columns take. */
+#[Internal]
 final class Clock
 {
     public static function now(): string

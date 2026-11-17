@@ -11,11 +11,13 @@ use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Illuminate\Contracts\Container\Container;
+use Packman\Attributes\Internal;
 
 /**
  * Runs the cart promotions (line and order discounts) on what the catalog promotions left.
  * The engine is resolved per run, so a binding changed after the registry froze (a test fake) is still used.
  */
+#[Internal]
 final readonly class CartPromotionsStage implements QuoteStage
 {
     public function __construct(private Container $container) {}

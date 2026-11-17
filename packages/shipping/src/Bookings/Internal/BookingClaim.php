@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Bookings\Internal;
 
 use Commerz\Ports\Delivery\Data\BookedShipment;
+use Packman\Attributes\Internal;
 
 /**
  * What the claim transaction decided: `create` and `recover` hold the lease of `attempt`, so only this process may
  * call the carrier and finish the row; `done` is the shipment booked before with the same payload.
  */
+#[Internal]
 final readonly class BookingClaim
 {
     public const string CREATE = 'create';

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Promotions\Rules\Data\ConditionInput;
 use Commerz\Promotions\Rules\Data\ConditionOutcome;
 use Commerz\Promotions\Rules\Data\RuleParams;
@@ -13,6 +11,8 @@ use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * A condition a promotion needs before its effects apply. Stored by key and `version()`, never by class: a rule

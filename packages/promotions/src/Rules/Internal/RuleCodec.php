@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Rules\Internal;
 
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
 use Commerz\Promotions\Rules\Data\RuleParams;
@@ -15,12 +13,16 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleResult;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * The only way rules go into and come out of storage. Writing is strict: an unknown key, a rule outside its stage or
  * wrong parameters refuse the command. Reading never throws on stored data: a rule that cannot be loaded (no plugin,
  * a newer version than the plugin knows, an upgrade that fails) is `unsupported` and its promotion is not applied.
  */
+#[Internal]
 final readonly class RuleCodec
 {
     public const string CONDITION = 'condition';

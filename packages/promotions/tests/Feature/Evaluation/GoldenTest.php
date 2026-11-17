@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 // Golden examples G1–G21 of knowledge/promotions-design#golden, through the real quote pipeline (G22 is in ExplainTest).
 // G1–G12 run with the promotions created in both orders: the result must not depend on it (PRM-04).
-
 use Commerz\Money\Money;
 use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Promotions\Coupons\Data\DisableCoupon;
@@ -13,6 +12,8 @@ use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Facades\Promotions;
 use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
+use Commerz\Quotes\Data\Adjustment;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,7 +103,7 @@ it('clamps an order discount to the order and spreads it over the lines (G7)', f
 
     $result = evRun(evInput(['100.00', '200.00']));
     $shares = array_map(
-        static fn ($line): array => array_map(static fn ($a): string => $a->amount->toDecimal(), array_values(array_filter($line->adjustments, static fn ($a): bool => $a->target === AdjustmentTarget::Order))),
+        static fn (QuotedLine $line): array => array_map(static fn (Adjustment $a): string => $a->amount->toDecimal(), array_values(array_filter($line->adjustments, static fn (Adjustment $a): bool => $a->target === AdjustmentTarget::Order))),
         $result->lines,
     );
 
@@ -260,7 +261,7 @@ it('spreads an order discount to the minor unit and folds it once per promotion 
     $promotion = evPromotion('ten', PromotionStage::Cart, [evOrderFixed('10.00')]);
 
     $result = evRun(evInput(['10.00', '10.00', '10.00']));
-    $shares = array_map(static fn ($line): string => $line->adjustments[0]->amount->toDecimal(), $result->lines);
+    $shares = array_map(static fn (QuotedLine $line): string => $line->adjustments[0]->amount->toDecimal(), $result->lines);
 
     expect($shares)->toBe(['-3.34', '-3.33', '-3.33'])
         ->and($result->appliedPromotions())->toEqual([new AppliedPromotion($promotion->id->value, null, Money::of('10.00', 'RUB'))]);

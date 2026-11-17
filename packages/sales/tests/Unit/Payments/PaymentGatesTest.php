@@ -60,7 +60,7 @@ it('lets only PaymentWorkflow and RefundWorkflow call the gateway', function ():
         ARRAY_FILTER_USE_BOTH,
     ));
 
-    expect($users)->toBe(['Internal/SalesPlugin.php', 'Payments/Internal/PaymentWorkflow.php', 'Refunds/Internal/RefundWorkflow.php']);
+    expect($users)->toBe(['Payments/Internal/PaymentWorkflow.php', 'Plugins/SalesPlugin.php', 'Refunds/Internal/RefundWorkflow.php']);
 });
 
 it('moves a payment on an event only after its claim in the inbox', function (): void {

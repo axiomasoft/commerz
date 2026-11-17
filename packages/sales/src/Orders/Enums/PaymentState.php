@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Derived from the amounts of the payments and refunds of the order, never set by a command. */
 #[Api(since: '0.1')]

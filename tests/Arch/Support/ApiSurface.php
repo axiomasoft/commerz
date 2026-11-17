@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Arch;
 
-use Commerz\Plugins\Contracts\CommerzPlugin;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Packman\Attributes\Api;
@@ -65,18 +64,14 @@ final class ApiSurface
      */
     public static function classify(ReflectionClass $type): array
     {
-        foreach ([Spi::class, 'Commerz\\Attributes\\Spi'] as $spiClass) {
-            foreach ($type->getAttributes($spiClass) as $attribute) {
-                $spi = $attribute->newInstance();
+        foreach ($type->getAttributes(Spi::class) as $attribute) {
+            $spi = $attribute->newInstance();
 
-                return ['layer' => 'spi', 'since' => $spi->since, 'spiKind' => $spi->kind->value];
-            }
+            return ['layer' => 'spi', 'since' => $spi->since, 'spiKind' => $spi->kind->value];
         }
 
-        foreach ([Api::class, 'Commerz\\Attributes\\Api'] as $apiClass) {
-            foreach ($type->getAttributes($apiClass) as $attribute) {
-                return ['layer' => 'api', 'since' => $attribute->newInstance()->since];
-            }
+        foreach ($type->getAttributes(Api::class) as $attribute) {
+            return ['layer' => 'api', 'since' => $attribute->newInstance()->since];
         }
 
         throw new RuntimeException("{$type->getName()} has neither #[Api] nor #[Spi].");
@@ -104,11 +99,11 @@ final class ApiSurface
                 $commands[] = self::commandName($reflection);
             }
 
-            if (($reflection->implementsInterface(ExtensionPlugin::class) || $reflection->implementsInterface(CommerzPlugin::class)) && $reflection->hasConstant('ID')) {
+            if ($reflection->implementsInterface(ExtensionPlugin::class) && $reflection->hasConstant('ID')) {
                 $plugins[] = (string) $reflection->getConstant('ID');
             }
 
-            $hasSpi = $reflection->getAttributes(Spi::class) !== [] || $reflection->getAttributes('Commerz\\Attributes\\Spi') !== [];
+            $hasSpi = $reflection->getAttributes(Spi::class) !== [];
 
             if (! SourceScanner::isInternal($type) && $reflection->isInterface() && $hasSpi && $reflection->hasConstant('KIND')) {
                 $kinds[] = (string) $reflection->getConstant('KIND');

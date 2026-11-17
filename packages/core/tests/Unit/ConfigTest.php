@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use Commerz\Configuration\CommerzConfig;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Configuration\StockMode;
-use Commerz\Errors\InvalidConfiguration as LegacyInvalidConfiguration;
 use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('reads the shipped config file', function (): void {
@@ -57,13 +55,6 @@ it('names the failing key path', function (array $input, string $path): void {
         $this->fail('expected InvalidConfiguration');
     } catch (InvalidConfiguration $e) {
         expect($e->getMessage())->toContain($path);
-    }
-
-    try {
-        CommerzConfig::fromArray($input, 'app.commerz');
-        $this->fail('expected legacy InvalidConfiguration');
-    } catch (LegacyInvalidConfiguration $e) {
-        expect($e->path)->toBe($path)->and($e->code())->toBe('config.invalid');
     }
 })->with([
     'empty connection' => [['connection' => ''], 'app.commerz.connection'],

@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Internal;
 
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Common\Internal\Lease;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderRow;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
 use Commerz\Sales\Gateways\Data\GatewayPaymentResult;
@@ -29,6 +27,9 @@ use Commerz\Sales\Payments\Exceptions\PaymentInProgress;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
 use JsonException;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Throwable;
 
 /**
@@ -37,6 +38,7 @@ use Throwable;
  * `failed`), and the answer is written in its own transaction fenced by the attempt. `find` recovers an unknown
  * outcome, at the gateway the payment was made at, not the one configured now.
  */
+#[Internal]
 final readonly class PaymentWorkflow
 {
     private const string SCOPE = 'sales.initiate_payment';
@@ -47,7 +49,7 @@ final readonly class PaymentWorkflow
         private Contributions $contributions,
         private OrderLocks $locks,
         private PaymentJournal $journal,
-        private SalesConfig $config,
+        private SalesOptions $config,
     ) {}
 
     public function initiate(InitiatePayment $command): PaymentView

@@ -14,15 +14,16 @@ use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Orders\Data\DraftLine;
 use Commerz\Sales\Orders\Data\DraftOrder;
 use Commerz\Sales\Orders\Data\ExpireOrders;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -71,7 +72,7 @@ it('expires the unpaid orders past their deadline, earliest deadline first', fun
         ->and(slsOrders()->find($second->id)->cancelReason)->toBe(CancelReason::Expired)
         ->and($this->commerce->stock->released)->toEqual([new ReleaseReservation('order:'.$first->id->value)])
         ->and($this->commerce->promotions->restored)->toEqual([new RestorePromotionUsage('order:'.$first->id->value, RestoreReason::Expired)])
-        ->and(array_map(static fn ($event): array => [$event->type, $event->actor, $event->data], array_slice(slsOrders()->history($first->id), 1)))
+        ->and(array_map(static fn (OrderEventView $event): array => [$event->type, $event->actor, $event->data], array_slice(slsOrders()->history($first->id), 1)))
         ->toEqual([['cancelled', null, ['reason' => 'expired']]])
         ->and(slsOrders()->expireDue(new ExpireOrders)->expired)->toBe([]);
 });

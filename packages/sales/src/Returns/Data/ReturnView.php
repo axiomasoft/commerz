@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** One return of an order. */
 #[Api(since: '0.1')]

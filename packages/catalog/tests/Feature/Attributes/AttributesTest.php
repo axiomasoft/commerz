@@ -18,11 +18,11 @@ use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Facades\Catalog;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Measures\LocalizedText;
 use Commerz\Pagination\Cursor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 uses(RefreshDatabase::class);
 

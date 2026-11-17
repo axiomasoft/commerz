@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** A rule as a command or a view carries it: the contribution key and the parameters (canonical in a view). */
 #[Api(since: '0.1')]

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Api;
 
 /** What an effect takes off and where: a line, the order, or the delivery. The amount is positive; the engine makes the adjustment negative. */
 #[Api(since: '0.1')]

@@ -8,7 +8,6 @@ use Commerz\Errors\Enums\CommerzErrorCode;
 use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Errors\NotFound;
 use Commerz\Money\CurrencyMismatch;
 use Commerz\Money\InvalidCurrency;
@@ -42,7 +41,6 @@ it('exposes stable codes, categories, descriptors and scalar context', function 
     'invalid command' => [new InvalidCommand('amount', 'too big'), 'common.invalid_command', ErrorCategory::Validation, CommerzErrorCode::InvalidCommand, PackmanErrorCategory::Validation, ['field' => 'amount', 'reason' => 'too big']],
     'not found' => [new NotFound('Order', '7'), 'common.not_found', ErrorCategory::NotFound, CommerzErrorCode::NotFound, PackmanErrorCategory::NotFound, ['entity' => 'Order', 'id' => '7']],
     'idempotency' => [new IdempotencyConflict('place_order', 'k1'), 'common.idempotency_conflict', ErrorCategory::Conflict, CommerzErrorCode::IdempotencyConflict, PackmanErrorCategory::Conflict, ['operation' => 'place_order', 'key' => 'k1']],
-    'configuration' => [new InvalidConfiguration('commerz.stock', 'bad'), 'config.invalid', ErrorCategory::Configuration, CommerzErrorCode::InvalidConfiguration, PackmanErrorCategory::Validation, ['path' => 'commerz.stock', 'reason' => 'bad']],
     'currency mismatch' => [new CurrencyMismatch('RUB', 'USD'), 'money.currency_mismatch', ErrorCategory::Validation, CommerzErrorCode::CurrencyMismatch, PackmanErrorCategory::Validation, ['field' => 'currency', 'reason' => 'RUB and USD cannot be combined']],
     'invalid currency' => [new InvalidCurrency('XXX'), 'money.invalid_currency', ErrorCategory::Validation, CommerzErrorCode::InvalidCurrency, PackmanErrorCategory::Validation, ['field' => 'currency', 'reason' => "'XXX' is not a known ISO 4217 code"]],
     'quote failed' => [new QuoteFailed('tax', 'stage_error', 'boom'), 'quotes.failed', ErrorCategory::Conflict, CommerzErrorCode::QuoteFailed, PackmanErrorCategory::Conflict, ['stage' => 'tax', 'reason' => 'stage_error', 'cause' => null]],

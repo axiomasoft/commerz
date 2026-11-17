@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 use Commerz\Pagination\Cursor;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
+use Packman\Attributes\Api;
 
 /** Carts, newest first. */
 #[Api(since: '0.1')]

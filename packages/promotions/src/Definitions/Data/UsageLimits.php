@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** How many orders may use a promotion in all and per customer; null is no limit. Counted when an order is placed. */
 #[Api(since: '0.1')]

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** The answer of a condition: pass, with the lines that stay eligible for a line filter, or fail with a reason. */
 #[Api(since: '0.1')]

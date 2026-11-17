@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Payments\Enums\PaymentEventOutcome;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
+use Packman\Attributes\Api;
 
 /** How a provider event about a refund was taken: `duplicate` when it was recorded before (with the outcome it had then). */
 #[Api(since: '0.1')]

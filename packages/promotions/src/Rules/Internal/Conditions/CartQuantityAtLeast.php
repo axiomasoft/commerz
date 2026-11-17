@@ -12,8 +12,10 @@ use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** The number of units reaches the quantity; `lines` picks all the lines or the eligible ones. */
+#[Internal]
 final readonly class CartQuantityAtLeast implements PromotionCondition
 {
     public function key(): string

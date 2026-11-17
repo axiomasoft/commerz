@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Gateways\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Sales\Gateways\Internal\GatewayMeta;
+use Packman\Attributes\Api;
 
 /** One refund attempt the gateway is asked to make against a payment. */
 #[Api(since: '0.1')]

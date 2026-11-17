@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** Generation kept meeting codes that already exist: the pattern is used up. Nothing was created. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CodeSpaceExhausted extends CommerzException
     public function context(): array
     {
         return ['pattern' => $this->pattern, 'missing' => $this->missing];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PromotionsErrorCode::CodeSpaceExhausted,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

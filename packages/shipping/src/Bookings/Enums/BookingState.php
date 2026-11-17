@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Bookings\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * `pending` while one process talks to the carrier under a lease; then `booked` (final), `rejected` (the carrier

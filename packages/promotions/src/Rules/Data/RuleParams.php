@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Rules\Data;
 
 use BackedEnum;
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Packman\Attributes\Api;
 
 /**
  * The parameters of a rule as a canonical JSON-safe map: keys sorted, `Money` as `{amount_minor, currency}`, enums as

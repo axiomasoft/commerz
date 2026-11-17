@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Evaluation\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
 use Commerz\Promotions\Common\Internal\Rows;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Enums\Stacking;
@@ -27,10 +26,12 @@ use Commerz\Promotions\Rules\Internal\LoadedRule;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
 use Commerz\Quotes\Data\Rejection;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -38,17 +39,18 @@ use RuntimeException;
  * a fourth for the customer's usage), then every activator asked once about its candidates and the presented codes.
  * Reads only. An activator's answer is checked against what it was asked; one that cannot be trusted fails the quote.
  */
+#[Internal]
 final readonly class ActivePromotions
 {
     private const string SOURCE = 'promotions.catalog';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private RuleCodec $codec,
         private Contributions $contributions,
-        private PromotionsConfig $promotionsConfig,
+        private PromotionsOptions $promotionsConfig,
     ) {}
 
     /**

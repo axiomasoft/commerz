@@ -37,12 +37,14 @@ use Commerz\Sales\Returns\Exceptions\RestockExceedsReceived;
 use Commerz\Sales\Returns\Exceptions\ReturnExceedsFulfilled;
 use Commerz\Sales\Returns\Exceptions\ReturnNotOpen;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * Returns of orders (sales-design#returns-refunds). Every change runs under the lock of the order, then of the return
  * (sales-design#locks). Receiving counts the units on the ledger and restocks exactly the listed physical units in one
  * transaction; nothing else ever puts stock back (REF-01).
  */
+#[Internal]
 final readonly class DatabaseReturns implements Returns
 {
     private const string SCOPE = 'sales.request_return';

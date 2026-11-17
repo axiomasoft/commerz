@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping;
 
-use Commerz\Attributes\Api;
 use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Options\Contracts\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
+use Packman\Attributes\Api;
 
 /** Root of the shipping API: accessors of the module contracts. */
 #[Api(since: '0.1')]

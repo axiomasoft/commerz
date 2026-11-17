@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Internal;
 
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Common\Internal\Lease;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderRow;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Gateways\Data\GatewayRefundRequest;
 use Commerz\Sales\Gateways\Data\GatewayRefundResult;
@@ -28,6 +26,9 @@ use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Refunds\Exceptions\RefundInProgress;
 use Commerz\Sales\Refunds\Exceptions\RefundOutcomeUnknown;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Throwable;
 
 /**
@@ -36,6 +37,7 @@ use Throwable;
  * `unknown` (never `failed`, so its amount is not refunded twice), and the answer is written in its own transaction
  * fenced by the attempt. `findRefund` recovers an unknown outcome at the gateway of the payment.
  */
+#[Internal]
 final readonly class RefundWorkflow
 {
     private const string SCOPE = 'sales.issue_refund';
@@ -46,7 +48,7 @@ final readonly class RefundWorkflow
         private Contributions $contributions,
         private OrderLocks $locks,
         private RefundJournal $journal,
-        private SalesConfig $config,
+        private SalesOptions $config,
     ) {}
 
     public function issue(IssueRefund $command): RefundView

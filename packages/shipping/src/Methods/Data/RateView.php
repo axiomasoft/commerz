@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Zones\Data\ZoneId;
+use Packman\Attributes\Api;
 
 /**
  * A stored tariff. `$rate` carries the canonical parameters the rule prices with; when the rule cannot be loaded

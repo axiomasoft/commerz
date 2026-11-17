@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
+use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Ports\Sellables\Contracts\Sellables;
@@ -16,11 +17,13 @@ use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Sales\Carts\Exceptions\ShippingAddressRequired;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /**
  * The only way a cart is quoted: `Carts::quote`, `Carts::deliveryOptions` and the placement of the order all build
  * their `QuoteInput` here, so the total the buyer saw is the total that is checked.
  */
+#[Internal]
 final readonly class CartQuoter
 {
     public function __construct(private Sellables $sellables, private QuotePipeline $pipeline) {}
@@ -36,7 +39,7 @@ final readonly class CartQuoter
     {
         $context = $cart->context($at);
         $snapshots = $this->sellables->resolveMany(
-            array_map(static fn (CartLineRow $line) => $line->sellable, $cart->lines),
+            array_map(static fn (CartLineRow $line): SellableRef => $line->sellable, $cart->lines),
             $context,
         );
 

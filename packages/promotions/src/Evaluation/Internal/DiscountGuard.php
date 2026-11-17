@@ -11,12 +11,14 @@ use Commerz\Promotions\Rules\Exceptions\InvalidRuleResult;
 use Commerz\Promotions\Rules\Internal\Effects\OrderNet;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Packman\Attributes\Internal;
 
 /**
  * An effect is never trusted (PRM-05): every discount must be a `Discount` in the quote's currency, aimed at a target
  * its stage may change, at a line the conditions left eligible, and not negative. What passes is clamped to what is
  * left of its target, so a line, the order or the delivery never goes below zero.
  */
+#[Internal]
 final class DiscountGuard
 {
     /**

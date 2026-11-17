@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
@@ -18,17 +18,19 @@ use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\CartNotOpen;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** The only reader and writer of the `carts` row; the lines are written by `CartLines`. */
+#[Internal]
 final readonly class CartRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

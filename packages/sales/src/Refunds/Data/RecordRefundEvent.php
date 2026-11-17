@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * An event of a provider about a refund, recorded once per `(gateway, externalEventId)` in the same inbox as payment

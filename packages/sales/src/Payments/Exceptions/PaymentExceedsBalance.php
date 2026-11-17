@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 use Commerz\Money\Money;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /**
  * The order owes less than asked: its balance is the amount due less every payment that is not failed or cancelled
@@ -39,5 +43,16 @@ final class PaymentExceedsBalance extends CommerzException
             'balance_minor' => $this->balance->amountMinor,
             'currency' => $this->balance->currency->code,
         ];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::PaymentExceedsBalance,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

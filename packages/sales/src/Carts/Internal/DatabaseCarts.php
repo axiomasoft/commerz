@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Carts\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
@@ -40,23 +40,25 @@ use Commerz\Sales\Common\Internal\CartRow;
 use Commerz\Sales\Common\Internal\CartRows;
 use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Common\Internal\SalesCodec;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Every change takes the cart row `for update`, so it is the only writer of its cart and of its lines; sellables are
  * read before the transaction. A change that finds nothing to change leaves the version alone.
  */
+#[Internal]
 final readonly class DatabaseCarts implements Carts
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private Channels $channels,

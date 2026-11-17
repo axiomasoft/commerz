@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
@@ -13,6 +12,7 @@ use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class CartView

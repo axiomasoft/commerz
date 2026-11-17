@@ -9,8 +9,10 @@ use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** A stored order with its lines in position order, as read under its lock (`OrderLocks`). */
+#[Internal]
 final readonly class OrderRow
 {
     /** @param  list<OrderLineRow>  $lines */

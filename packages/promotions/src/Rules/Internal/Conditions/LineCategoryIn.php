@@ -12,8 +12,10 @@ use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** Keeps the lines whose sellable belongs to one of the listed category codes (a snapshot lists its ancestors too). */
+#[Internal]
 final readonly class LineCategoryIn implements PromotionCondition
 {
     private const string CODE = '/\A[a-z0-9][a-z0-9_.\-]{0,63}\z/';

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
+use Packman\Attributes\Api;
 
 /** Marks a created fulfillment as shipped, with the carrier and tracking number the operator hands over (or neither). */
 #[Api(since: '0.1')]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Replaces all the tariffs of the method. */
 #[Api(since: '0.1')]

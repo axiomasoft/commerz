@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\Uuid7;
@@ -17,8 +17,8 @@ use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Data\PromotionCodes;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Common\Internal\Clock;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
 use Commerz\Promotions\Common\Internal\Rows;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Coupons\Data\CouponBatchId;
 use Commerz\Promotions\Coupons\Data\CouponBatchView;
@@ -39,11 +39,12 @@ use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Exceptions\PromotionArchived;
 use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use UnexpectedValueException;
 
 /**
@@ -52,6 +53,7 @@ use UnexpectedValueException;
  * transaction advisory lock before a promotion or receipt: retries in later generation rounds must not cycle over
  * codes inserted by another uncommitted batch. A change of a coupon takes no promotion row or code-creation lock.
  */
+#[Internal]
 final readonly class DatabaseCoupons implements Coupons
 {
     private const string RECEIPT_SCOPE = 'promotions.generate_coupons';
@@ -62,8 +64,8 @@ final readonly class DatabaseCoupons implements Coupons
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
-        private PromotionsConfig $promotions,
+        private CommerzOptions $config,
+        private PromotionsOptions $promotions,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,
@@ -288,7 +290,13 @@ final readonly class DatabaseCoupons implements Coupons
 
             foreach ($chunk as $code) {
                 $rows[] = '(?, ?, ?, ?, ?, 0, ?, ?)';
-                array_push($bindings, Uuid7::generate(), $command->promotion->value, $batch, $code, $command->usageLimit, $now, $now);
+                $bindings[] = Uuid7::generate();
+                $bindings[] = $command->promotion->value;
+                $bindings[] = $batch;
+                $bindings[] = $code;
+                $bindings[] = $command->usageLimit;
+                $bindings[] = $now;
+                $bindings[] = $now;
             }
 
             $inserted += count($db->select(

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /**
  * The operation calls a payment gateway or a carrier and must run outside any database transaction (PAY-02): a
@@ -34,5 +38,16 @@ final class OperationInsideTransaction extends CommerzException
     public function context(): array
     {
         return ['operation' => $this->operation];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::OperationInsideTransaction,
+            category: PackmanErrorCategory::Validation,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Rates\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
+use Packman\Attributes\Api;
 
 /** The answer of a rate: an amount of zero or more, or "cannot deliver this" with a snake_case reason. */
 #[Api(since: '0.1')]

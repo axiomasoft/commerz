@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Numbering\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Data\StoreView;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** What a generator may use to number the order being placed. */
 #[Api(since: '0.1')]

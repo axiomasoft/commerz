@@ -19,6 +19,7 @@ use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Shipping\Options\Exceptions\DeliveryUnavailable;
 use Illuminate\Contracts\Container\Container;
+use Packman\Attributes\Internal;
 
 /**
  * Prices the selected delivery method with `MethodPricer`, the price the options show (SHP-01). The parcel keeps the
@@ -27,6 +28,7 @@ use Illuminate\Contracts\Container\Container;
  * `method_unavailable` (SHP-02): a quote never silently drops the delivery. Pure: it reads, writes nothing, takes the
  * time from the context. The pricer is resolved per run, so a binding changed after the registry froze is still used.
  */
+#[Internal]
 final readonly class DeliveryStage implements QuoteStage
 {
     public function __construct(private Container $container) {}

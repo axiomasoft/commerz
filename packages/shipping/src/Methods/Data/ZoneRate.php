@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Zones\Data\ZoneId;
+use Packman\Attributes\Api;
 
 /**
  * The tariff of a method in a zone and a currency. `$freeAbove` is the value of the goods after discounts from which

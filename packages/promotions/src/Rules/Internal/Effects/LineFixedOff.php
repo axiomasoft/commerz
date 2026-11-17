@@ -13,8 +13,10 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** A fixed amount off every eligible line, per unit or per line, never more than the line's current net. */
+#[Internal]
 final readonly class LineFixedOff implements PromotionEffect
 {
     public function key(): string

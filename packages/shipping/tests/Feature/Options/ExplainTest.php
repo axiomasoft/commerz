@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 // Every explain verdict of knowledge/shipping-design#api.
 
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Methods\Data\ArchiveMethod;
 use Commerz\Shipping\Options\Internal\MethodPricer;
 use Commerz\Shipping\Options\Internal\PricedMethod;
@@ -13,6 +12,7 @@ use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 require_once __DIR__.'/Helpers.php';
 

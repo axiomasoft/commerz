@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The zone is archived: restore it before changing it. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class ZoneArchived extends CommerzException
     public function context(): array
     {
         return ['zone' => $this->zone];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: ShippingErrorCode::ZoneArchived,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

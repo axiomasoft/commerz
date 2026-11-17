@@ -86,5 +86,5 @@ it('offers only what the port offers in the currency of the cart', function (): 
     $cart = doCart(['sku:heavy' => 1]);
     $this->commerce->delivery->offer(new DeliveryOption('abroad', 'Abroad', Money::of('10.00', 'USD'), 'dhl'));
 
-    expect(array_map(fn ($option) => $option->methodCode, ctCarts()->deliveryOptions($cart->id)))->toBe(['courier']);
+    expect(array_map(fn (DeliveryOption $option) => $option->methodCode, ctCarts()->deliveryOptions($cart->id)))->toBe(['courier']);
 });

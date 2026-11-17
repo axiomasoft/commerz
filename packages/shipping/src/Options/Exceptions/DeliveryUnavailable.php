@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Options\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /**
  * The selected delivery method cannot deliver this quote; `$verdict` is the explain verdict that says why. The
@@ -36,5 +40,16 @@ final class DeliveryUnavailable extends CommerzException
     public function context(): array
     {
         return ['method' => $this->method, 'verdict' => $this->verdict];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: ShippingErrorCode::DeliveryUnavailable,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

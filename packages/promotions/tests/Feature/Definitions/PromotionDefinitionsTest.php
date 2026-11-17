@@ -23,6 +23,7 @@ use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
 use Commerz\Promotions\Facades\Promotions;
 use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
+use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +64,7 @@ it('creates a promotion and derives the currency from the budget and the rules',
         ->and($promotion->status)->toBe(PromotionStatus::Active)
         ->and($promotion->startsAt)->toEqual(pdfAt('2026-10-01'))
         ->and($promotion->endsAt)->toEqual(pdfAt('2026-11-01'))
-        ->and(array_map(static fn ($channel): string => $channel->value, $promotion->channels))->toBe($channels)
+        ->and(array_map(static fn (ChannelId $channel): string => $channel->value, $promotion->channels))->toBe($channels)
         ->and($promotion->limits->total)->toBe(1000)
         ->and($promotion->limits->perCustomer)->toBe(1)
         ->and($promotion->budget?->equals(Money::of('500000.00', 'RUB')))->toBeTrue()
@@ -205,7 +206,7 @@ it('refuses rules that break the promotion on update', function (): void {
 it('changes limits, budget and window and lifts them again', function (): void {
     $promotion = pdfPromotion('autumn', ['budget' => Money::of('100.00', 'RUB'), 'limits' => new UsageLimits(total: 5, perCustomer: 1), 'startsAt' => pdfAt('2026-01-01'), 'endsAt' => pdfAt('2026-02-01')]);
 
-    $limited = Promotions::promotions()->update(new UpdatePromotion($promotion->id, limits: new UsageLimits(total: 2000), budget: Money::of('250.00', 'RUB'), window: new PromotionWindow(pdfAt('2026-03-01'), null)));
+    $limited = Promotions::promotions()->update(new UpdatePromotion($promotion->id, limits: new UsageLimits(total: 2000), budget: Money::of('250.00', 'RUB'), window: new PromotionWindow(pdfAt('2026-03-01'))));
 
     expect($limited->limits->total)->toBe(2000)
         ->and($limited->limits->perCustomer)->toBeNull()

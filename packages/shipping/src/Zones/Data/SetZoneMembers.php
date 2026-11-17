@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** Replaces the whole member set of the zone. */
 #[Api(since: '0.1')]

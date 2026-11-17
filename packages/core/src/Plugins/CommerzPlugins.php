@@ -4,35 +4,28 @@ declare(strict_types=1);
 
 namespace Commerz\Plugins;
 
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\Internal\LegacyPluginBridge;
+use Commerz\Plugins\Internal\BuiltInPluginCatalog;
 use Illuminate\Container\Container;
 use Packman\Attributes\Api;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Laravel\ExtensionRegistrar;
 
 /**
- * Entry point for registering built-in Commerz plugins. Routes ExtensionPlugin subclasses directly
- * to Packman and buffers legacy CommerzPlugin classes during Slice A transition.
- *
- * @deprecated Call Packman\Plugins\Laravel\ExtensionRegistrar::builtIn() for migrated ExtensionPlugin classes.
+ * Entry point for registering built-in Commerz extension plugins with both Packman and the Commerz catalog.
  */
 #[Api(since: '0.1')]
 final class CommerzPlugins
 {
-    /** @param class-string<CommerzPlugin|ExtensionPlugin> ...$plugins */
+    /** @param class-string<ExtensionPlugin> ...$plugins */
     public static function builtIn(string ...$plugins): void
     {
         $container = Container::getInstance();
-        $container->singletonIf(LegacyPluginBridge::class, static fn (): LegacyPluginBridge => new LegacyPluginBridge);
-        $bridge = $container->make(LegacyPluginBridge::class);
+        $container->singletonIf(BuiltInPluginCatalog::class, static fn (): BuiltInPluginCatalog => new BuiltInPluginCatalog);
+        $catalog = $container->make(BuiltInPluginCatalog::class);
 
         foreach ($plugins as $plugin) {
-            if (is_subclass_of($plugin, ExtensionPlugin::class)) {
-                ExtensionRegistrar::builtIn($plugin);
-            }
-
-            $bridge->builtIn($plugin);
+            ExtensionRegistrar::builtIn($plugin);
+            $catalog->add($plugin);
         }
     }
 }

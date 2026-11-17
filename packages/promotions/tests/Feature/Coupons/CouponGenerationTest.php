@@ -55,7 +55,7 @@ it('lists a batch and takes the defaults of one use per code', function (): void
 
     expect($batch->usageLimit)->toBe(1)
         ->and($page->items)->toHaveCount(5)
-        ->and(array_unique(array_map(static fn ($coupon): ?int => $coupon->usageLimit, $page->items)))->toBe([1])
+        ->and(array_unique(array_map(static fn (object $coupon): ?int => $coupon->usageLimit, $page->items)))->toBe([1])
         ->and($page->items[0]->batch?->equals($batch->id))->toBeTrue();
 });
 

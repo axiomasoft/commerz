@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /** Asks to return fulfilled units of the lines of an order; no stock moves until the return is received. */
 #[Api(since: '0.1')]

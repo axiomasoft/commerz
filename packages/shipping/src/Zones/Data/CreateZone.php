@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Shipping\Common\Data\ShippingCodes;
+use Packman\Attributes\Api;
 
 /** A zone with a unique code. Zones may overlap: the same member can belong to several zones. */
 #[Api(since: '0.1')]

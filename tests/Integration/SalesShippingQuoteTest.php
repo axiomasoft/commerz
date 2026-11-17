@@ -6,14 +6,13 @@ use Commerz\CommerzServiceProvider;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Carts\Data\SelectDelivery;
-use Commerz\Sales\Internal\SalesPlugin;
+use Commerz\Sales\Plugins\SalesPlugin;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Sales\Tests\Fixtures\PromotionAdjustmentStage;
 use Commerz\Sales\Tests\TestCase as SalesTestCase;
@@ -28,6 +27,9 @@ use Commerz\Shipping\Zones\Data\CreateZone;
 use Commerz\Shipping\Zones\Data\ZoneMember;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 require_once __DIR__.'/../../packages/sales/tests/Feature/Helpers.php';
 
@@ -46,16 +48,18 @@ trait SalesShippingEnvironment
     }
 }
 
-final class SalesShippingDiscountPlugin implements CommerzPlugin
+final class SalesShippingDiscountPlugin implements ExtensionPlugin
 {
+    #[Override]
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('tests.sales-shipping', '1.0.0', [SalesPlugin::ID]);
+        return new PluginManifest('tests.sales-shipping', '1.0.0', [CorePlugin::ID, SalesPlugin::ID]);
     }
 
+    #[Override]
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(PromotionAdjustmentStage::class);
+        $registrar->contribute(QuoteStage::KIND, PromotionAdjustmentStage::class);
     }
 }
 

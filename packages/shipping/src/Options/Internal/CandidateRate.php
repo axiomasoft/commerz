@@ -6,12 +6,14 @@ namespace Commerz\Shipping\Options\Internal;
 
 use Commerz\Measures\LocalizedText;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
+use Packman\Attributes\Internal;
 
 /**
  * A method that is not archived with one of its tariffs (or with none: `$rateId` null) and how well the tariff's zone
  * matches the address: `$rank` is the highest rank of the zone's matching members, null when the zone is archived or
  * none of its members matches.
  */
+#[Internal]
 final readonly class CandidateRate
 {
     /** @param  array<array-key, mixed>  $params  the raw `params` column */

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\InvalidConfiguration;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Facades\Sales as SalesFacade;
@@ -11,6 +10,7 @@ use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
+use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('hands out the module contracts from the root', function (): void {
     config(['commerz.stock' => 'unlimited']);

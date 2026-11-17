@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Sets the quantity of a line; 0 removes the line. */
 #[Api(since: '0.1')]

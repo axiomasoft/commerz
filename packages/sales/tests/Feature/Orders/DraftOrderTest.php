@@ -6,19 +6,20 @@ use Commerz\Identity\ActorRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Sales\Carts\Data\AddCartLine;
+use Commerz\Sales\Carts\Data\CartLineView;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Checkout\Data\PlaceOrder;
 use Commerz\Sales\Orders\Data\DraftLine;
 use Commerz\Sales\Orders\Data\DraftOrder;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ArchiveChannel;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -52,7 +53,7 @@ it('opens a draft as a cart of kind draft, adding up lines of one sellable', fun
     ));
 
     expect([$draft->kind, $draft->state, $draft->version, $draft->createdBy])->toEqual([CartKind::Draft, CartState::Open, 1, $manager])
-        ->and(array_map(static fn ($line): array => [(string) $line->sellable, $line->quantity], $draft->lines))
+        ->and(array_map(static fn (CartLineView $line): array => [(string) $line->sellable, $line->quantity], $draft->lines))
         ->toBe([['crm:consult', 3], ['fake:a', 2]])
         ->and($draft->codes)->toBe(['promo:p1'])
         ->and($draft->shippingAddress)->toEqual(slsAddress())

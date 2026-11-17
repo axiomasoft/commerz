@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Pagination\Page;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
@@ -19,6 +18,7 @@ use Commerz\Sales\Returns\Exceptions\RestockExceedsReceived;
 use Commerz\Sales\Returns\Exceptions\ReturnExceedsFulfilled;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
 use Commerz\Sales\Returns\Exceptions\ReturnNotOpen;
+use Packman\Attributes\Api;
 
 /**
  * Returns of fulfilled goods (REF-01). A request only reserves the units against further returns; accepting the goods

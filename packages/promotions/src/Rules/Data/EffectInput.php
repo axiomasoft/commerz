@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\RoundingMode;
 use Commerz\Quotes\Data\QuoteState;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class EffectInput

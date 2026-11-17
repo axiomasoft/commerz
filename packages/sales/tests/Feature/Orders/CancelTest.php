@@ -11,6 +11,7 @@ use Commerz\Ports\Stock\Data\ReleaseReservation;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Orders\Data\CancelOrder;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineView;
 use Commerz\Sales\Orders\Enums\CancelReason;
@@ -21,11 +22,11 @@ use Commerz\Sales\Orders\Events\OrderCancelled;
 use Commerz\Sales\Orders\Events\PaymentRequiresRefund;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -76,7 +77,7 @@ it('cancels every unit, releases the demand and gives the usage back as cancelle
         ]])
         ->and(cnlOutbox('sales.payment_requires_refund'))->toBe([])
         ->and(cnlOutbox('sales.payment_state_changed'))->toBe([])
-        ->and(array_map(static fn ($event): array => [$event->type, $event->actor === null ? null : (string) $event->actor, $event->data], array_slice(slsOrders()->history($order->id), 1)))
+        ->and(array_map(static fn (OrderEventView $event): array => [$event->type, $event->actor === null ? null : (string) $event->actor, $event->data], array_slice(slsOrders()->history($order->id), 1)))
         ->toEqual([['cancelled', 'user:5', ['reason' => 'customer']]]);
     Event::assertDispatched(OrderCancelled::class, static fn (OrderCancelled $event): bool => $event->order->equals($order->id) && $event->reason === CancelReason::Customer);
     Event::assertNotDispatched(PaymentRequiresRefund::class);
@@ -100,7 +101,7 @@ it('changes nothing when the order is cancelled again', function (): void {
         ->and($this->commerce->stock->released)->toHaveCount(1)
         ->and($this->commerce->promotions->restored)->toBe([])
         ->and(cnlOutbox('sales.order_cancelled'))->toHaveCount(1)
-        ->and(array_map(static fn ($event): string => $event->type, slsOrders()->history($placed->id)))->toBe(['placed', 'cancelled']);
+        ->and(array_map(static fn (OrderEventView $event): string => $event->type, slsOrders()->history($placed->id)))->toBe(['placed', 'cancelled']);
 });
 
 it('refuses a completed order', function (): void {

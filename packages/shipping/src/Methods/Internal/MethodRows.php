@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Methods\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Internal\Clock;
 use Commerz\Shipping\Common\Internal\Rows;
-use Commerz\Shipping\Common\Internal\ShippingConfig;
+use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Methods\Data\MethodId;
 use Commerz\Shipping\Methods\Data\MethodView;
 use Commerz\Shipping\Methods\Data\RateView;
@@ -28,15 +27,18 @@ use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads and writes the channel and tariff rows of methods and turns method rows into views. */
+#[Internal]
 final readonly class MethodRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
-        private ShippingConfig $shipping,
+        private ShippingOptions $shipping,
         private RateCodec $codec,
     ) {}
 

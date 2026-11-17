@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
@@ -25,6 +24,7 @@ use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
+use Packman\Attributes\Api;
 
 /**
  * Promotion definitions: the one way to write them. Every change locks the promotion row, so it waits for the orders

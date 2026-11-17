@@ -21,11 +21,13 @@ use Commerz\Sales\Refunds\Data\RefundId;
 use Commerz\Sales\Refunds\Data\RefundView;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
+use Packman\Attributes\Internal;
 
 /**
  * Refunds of orders (sales-design#returns-refunds): money only. Nothing here reserves, releases or restocks goods
  * (REF-01); a return of goods is `Returns::receive`.
  */
+#[Internal]
 final readonly class DatabaseRefunds implements Refunds
 {
     public function __construct(

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Ports\Sellables\Enums\SellableKind;
@@ -13,20 +13,22 @@ use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The lock every mutation of an order starts with: the order row `for update`, the resource class "order" of the
  * global lock order (sales-design#locks). Its lines, documents and payments are changed only under it.
  */
+#[Internal]
 final readonly class OrderLocks
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

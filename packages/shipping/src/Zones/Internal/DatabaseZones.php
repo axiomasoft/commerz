@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
 use Commerz\Shipping\Common\Internal\Clock;
 use Commerz\Shipping\Common\Internal\Rows;
-use Commerz\Shipping\Common\Internal\ShippingConfig;
+use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Commerz\Shipping\Zones\Data\ArchiveZone;
 use Commerz\Shipping\Zones\Data\CreateZone;
@@ -33,14 +32,17 @@ use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Lock order: the zone row `for update` first, then its member rows. */
+#[Internal]
 final readonly class DatabaseZones implements Zones
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
-        private ShippingConfig $shipping,
+        private CommerzOptions $config,
+        private ShippingOptions $shipping,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

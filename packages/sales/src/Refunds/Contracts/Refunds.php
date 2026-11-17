@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
@@ -27,6 +25,8 @@ use Commerz\Sales\Refunds\Exceptions\RefundInProgress;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
 use Commerz\Sales\Refunds\Exceptions\RefundOutcomeUnknown;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
+use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Money given back through the gateway of a captured payment (REF-01, D33): the same journal as payments — the attempt

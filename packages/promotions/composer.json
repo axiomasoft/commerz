@@ -10,12 +10,16 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": ">=8.4 <8.6",
+        "axiomasoft/commerz": "^0.1",
+        "axiomasoft/packman": "^0.1",
+        "axiomasoft/packman-panels": "^0.1",
+        "axiomasoft/packman-plugins": "^0.1",
+        "axiomasoft/packman-schema": "^0.1",
         "illuminate/console": "^13.0",
         "illuminate/contracts": "^13.0",
-        "illuminate/support": "^13.0",
-        "axiomasoft/commerz": "^0.1",
-        "illuminate/database": "^13.0"
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,6 +35,29 @@
         "laravel": {
             "providers": [
                 "Commerz\\Promotions\\PromotionsServiceProvider"
+            ]
+        },
+        "packman": {
+            "schema-version": 1,
+            "package-type": "addon",
+            "stability": "stable",
+            "error-prefix": "promotions",
+            "owns": [
+                "Common",
+                "Configuration",
+                "Coupons",
+                "Definitions",
+                "Diagnostics",
+                "Errors",
+                "Evaluation",
+                "Facades",
+                "Internal",
+                "Laravel",
+                "Panels",
+                "Plugins",
+                "Rules",
+                "Schema",
+                "Usage"
             ]
         },
         "branch-alias": {

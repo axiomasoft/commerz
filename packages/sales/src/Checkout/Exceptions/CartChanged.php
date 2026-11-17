@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Checkout\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The cart changed between its quote and the placement; quote it again. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class CartChanged extends CommerzException
     public function context(): array
     {
         return ['cart' => $this->cart, 'expected_version' => $this->expectedVersion, 'actual_version' => $this->actualVersion];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::CartChanged,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

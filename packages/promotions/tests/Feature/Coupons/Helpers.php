@@ -5,7 +5,7 @@ declare(strict_types=1);
 // Shared fixtures of the coupon tests.
 
 use Commerz\Identity\Uuid7;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Coupons\Data\CouponId;
 use Commerz\Promotions\Coupons\Data\CouponView;
@@ -60,7 +60,7 @@ function cpnRedeem(CouponId $coupon, string $order, string $state = 'consumed'):
 /** Makes the next coupon call read `commerz-promotions.*` again, after a test changed it. */
 function cpnReloadConfig(): void
 {
-    app()->forgetInstance(PromotionsConfig::class);
+    app()->forgetInstance(PromotionsOptions::class);
     app()->forgetInstance(Coupons::class);
     app()->forgetInstance(PromotionsRoot::class);
     Promotions::clearResolvedInstances();

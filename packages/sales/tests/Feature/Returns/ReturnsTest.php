@@ -236,7 +236,7 @@ it('finds and lists returns, and refuses an unknown one', function (): void {
     slsReturns()->cancel(new CancelReturn($two->id));
 
     $page = slsReturns()->list(new ListReturns($this->order->id, limit: 1));
-    $next = slsReturns()->list(new ListReturns($this->order->id, limit: 1, after: $page->next));
+    $next = slsReturns()->list(new ListReturns($this->order->id, after: $page->next, limit: 1));
 
     expect($page->items)->toHaveCount(1)
         ->and($page->items[0]->id->equals($two->id))->toBeTrue()

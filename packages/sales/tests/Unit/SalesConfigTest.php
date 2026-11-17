@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
+use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('defaults to the shipped values', function (): void {
-    $config = SalesConfig::fromArray([]);
+    $config = SalesOptions::fromArray([]);
 
     expect($config->maxCartLines)->toBe(250)
         ->and($config->maxLineQuantity)->toBe(100_000)
@@ -18,11 +18,11 @@ it('defaults to the shipped values', function (): void {
 });
 
 it('reads the shipped config file', function (): void {
-    expect(SalesConfig::fromArray(require __DIR__.'/../../config/commerz-sales.php'))->toEqual(SalesConfig::fromArray([]));
+    expect(SalesOptions::fromArray(require __DIR__.'/../../config/commerz-sales.php'))->toEqual(SalesOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {
-    $config = SalesConfig::fromArray([
+    $config = SalesOptions::fromArray([
         'carts' => ['max_lines' => 10, 'max_quantity' => 5],
         'checkout' => ['require_delivery' => false, 'number_generator' => 'acme.numbers'],
         'orders' => ['payment_due_minutes' => 60, 'expire_batch' => 7],
@@ -39,12 +39,19 @@ it('reads every key', function (): void {
 });
 
 it('lets the payment deadline be switched off with null', function (): void {
-    expect(SalesConfig::fromArray(['orders' => ['payment_due_minutes' => null]])->paymentDueMinutes)->toBeNull();
+    expect(SalesOptions::fromArray(['orders' => ['payment_due_minutes' => null]])->paymentDueMinutes)->toBeNull();
+});
+
+it('rejects unknown keys under closed schema validation', function (): void {
+    expect(fn () => SalesOptions::fromArray(['unknown_key' => 1], 'app.sales'))
+        ->toThrow(InvalidConfiguration::class, 'app.sales.unknown_key')
+        ->and(fn () => SalesOptions::fromArray(['orders' => ['extra' => 1]], 'app.sales'))
+        ->toThrow(InvalidConfiguration::class, 'app.sales.orders.extra');
 });
 
 it('names the key of a wrong value', function (array $config, string $key): void {
-    expect(fn () => SalesConfig::fromArray($config))
-        ->toThrow(fn (InvalidConfiguration $e) => expect($e->getMessage())->toContain($key));
+    expect(fn () => SalesOptions::fromArray($config))
+        ->toThrow(InvalidConfiguration::class, $key);
 })->with([
     'carts not an array' => [['carts' => 1], 'commerz-sales.carts'],
     'no lines allowed' => [['carts' => ['max_lines' => 0]], 'commerz-sales.carts.max_lines'],
@@ -66,12 +73,12 @@ it('names the key of a wrong value', function (array $config, string $key): void
 ]);
 
 it('accepts the bounds', function (): void {
-    $low = SalesConfig::fromArray([
+    $low = SalesOptions::fromArray([
         'carts' => ['max_lines' => 1, 'max_quantity' => 1],
         'orders' => ['payment_due_minutes' => 1, 'expire_batch' => 1],
         'payments' => ['lease_seconds' => 10],
     ]);
-    $high = SalesConfig::fromArray([
+    $high = SalesOptions::fromArray([
         'carts' => ['max_lines' => 10_000, 'max_quantity' => 1_000_000],
         'orders' => ['payment_due_minutes' => 525_600, 'expire_batch' => 1000],
         'payments' => ['lease_seconds' => 3600],

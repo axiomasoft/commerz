@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Rules\Data\RuleSpec;
+use Packman\Attributes\Api;
 
 /**
  * Changes a promotion; a null field stays as it is. Rules are replaced as a whole list. `new UsageLimits()` lifts the

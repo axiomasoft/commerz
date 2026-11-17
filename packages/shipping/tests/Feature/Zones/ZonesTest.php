@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Commerz\Errors\InvalidCommand;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
-use Commerz\Shipping\Common\Internal\ShippingConfig;
+use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Commerz\Shipping\Zones\Data\ArchiveZone;
 use Commerz\Shipping\Zones\Data\ListZones;
@@ -74,7 +74,7 @@ it('lets zones overlap', function (): void {
 
 it('limits the members of a zone', function (): void {
     config()->set('commerz-shipping.max_zone_members', 2);
-    app()->forgetInstance(ShippingConfig::class);
+    app()->forgetInstance(ShippingOptions::class);
     app()->forgetInstance(Zones::class);
 
     $zone = znCreate('two', [ZoneMember::country('RU'), ZoneMember::country('DE')]);
@@ -161,7 +161,7 @@ it('lists by code with filters and a cursor', function (): void {
     $codes = static fn ($page): array => array_map(static fn ($view): string => $view->code, $page->items);
 
     $first = znZones()->list(new ListZones(limit: 2));
-    $second = znZones()->list(new ListZones(limit: 2, after: $first->next));
+    $second = znZones()->list(new ListZones(after: $first->next, limit: 2));
 
     expect($codes($first))->toBe(['a', 'b'])
         ->and($first->hasMore())->toBeTrue()
@@ -169,7 +169,7 @@ it('lists by code with filters and a cursor', function (): void {
         ->and($second->hasMore())->toBeFalse()
         ->and($codes(znZones()->list(new ListZones(status: ZoneStatus::Active))))->toBe(['a', 'b', 'c'])
         ->and($codes(znZones()->list(new ListZones(status: ZoneStatus::Archived))))->toBe(['d'])
-        ->and($codes(znZones()->list(new ListZones(country: 'RU', status: ZoneStatus::Active))))->toBe(['a', 'c'])
+        ->and($codes(znZones()->list(new ListZones(status: ZoneStatus::Active, country: 'RU'))))->toBe(['a', 'c'])
         ->and($codes(znZones()->list(new ListZones(country: 'FR'))))->toBe([])
         ->and($first->items[0]->members)->toEqual([ZoneMember::country('RU')]);
 });

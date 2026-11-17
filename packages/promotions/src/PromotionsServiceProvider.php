@@ -4,53 +4,32 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions;
 
-use Commerz\Attributes\Api;
-use Commerz\Plugins\CommerzPlugins;
-use Commerz\Ports\Promotions\Contracts\PromotionUsage;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
-use Commerz\Promotions\Coupons\Contracts\Coupons;
-use Commerz\Promotions\Coupons\Internal\DatabaseCoupons;
-use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
-use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
-use Commerz\Promotions\Definitions\Internal\PromotionRows;
-use Commerz\Promotions\Definitions\Internal\UsageCounters;
-use Commerz\Promotions\Evaluation\Internal\PromotionSessions;
-use Commerz\Promotions\Internal\Console\ReconcilePromotionsCommand;
-use Commerz\Promotions\Internal\PromotionsPlugin;
-use Commerz\Promotions\Usage\Internal\DatabasePromotionUsage;
-use Commerz\Schema\Contracts\SchemaOwnership;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Foundation\Application;
+use Commerz\Promotions\Laravel\Registrars\PromotionsRegistrar;
 use Illuminate\Support\ServiceProvider;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Foundation\Concerns\RegistersPackageRegistrars;
+use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
 final class PromotionsServiceProvider extends ServiceProvider
 {
+    use RegistersPackageRegistrars {
+        register as protected registerRegistrars;
+        boot as protected bootRegistrars;
+    }
+
     public const array NOUNS = ['promotion', 'coupon'];
 
+    /** @var list<class-string<PackageRegistrar>> */
+    protected const array REGISTRARS = [
+        PromotionsRegistrar::class,
+    ];
+
+    #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/commerz-promotions.php', 'commerz-promotions');
-
-        $this->app->singleton(PromotionsConfig::class, static function (Application $app): PromotionsConfig {
-            $config = $app->make(Repository::class)->get('commerz-promotions', []);
-
-            return PromotionsConfig::fromArray(is_array($config) ? $config : []);
-        });
-
-        $this->app->singleton(PromotionRows::class);
-        $this->app->singleton(UsageCounters::class);
-        $this->app->singleton(PromotionDefinitions::class, DatabasePromotionDefinitions::class);
-        $this->app->singleton(Coupons::class, DatabaseCoupons::class);
-        $this->app->singleton(Promotions::class);
-        $this->app->singleton(PromotionSessions::class); // holds the quote sessions of the process
-        $this->app->singleton(PromotionUsage::class, DatabasePromotionUsage::class); // replaces the kernel's singletonIf null default
-
-        CommerzPlugins::builtIn(PromotionsPlugin::class);
-
-        $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
-            $ownership->declare('commerz.promotions', self::NOUNS);
-        });
+        $this->registerRegistrars();
     }
 
     public function boot(): void
@@ -58,11 +37,11 @@ final class PromotionsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ReconcilePromotionsCommand::class]);
-
             $this->publishes([
-                __DIR__.'/../config/commerz-promotions.php' => config_path('commerz-promotions.php'),
+                __DIR__.'/../config/commerz-promotions.php' => $this->app->configPath('commerz-promotions.php'),
             ], 'commerz-promotions-config');
         }
+
+        $this->bootRegistrars();
     }
 }

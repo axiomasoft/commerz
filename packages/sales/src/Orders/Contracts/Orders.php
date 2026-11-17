@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
@@ -28,6 +27,7 @@ use Commerz\Stores\Data\StoreId;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
+use Packman\Attributes\Api;
 
 /** Placed orders, and the drafts an operator assembles before placing them. */
 #[Api(since: '0.1')]

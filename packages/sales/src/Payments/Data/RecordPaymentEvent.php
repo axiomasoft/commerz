@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Sales\Payments\Enums\PaymentEventType;
 use Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * An event of a provider about a payment (PAY-01), recorded once per `(gateway, externalEventId)`. The adapter passes

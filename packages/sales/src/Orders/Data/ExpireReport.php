@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** The outcome of one expiry pass. */
 #[Api(since: '0.1')]

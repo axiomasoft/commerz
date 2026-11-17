@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
@@ -27,18 +27,20 @@ use Commerz\Sales\Orders\Data\ListOrders;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\StoreId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
+#[Internal]
 final readonly class DatabaseOrders implements Orders
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private Channels $channels,

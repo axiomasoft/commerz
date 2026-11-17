@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Data\Rejection;
+use Packman\Attributes\Api;
 
 /**
  * Why the promotions did what they did in a quote: the quote itself (or the failure that stopped it), a verdict for

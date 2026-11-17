@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Common\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** The only normalization of a postal code in the package, for zone members and for addresses alike. */
 #[Api(since: '0.1')]

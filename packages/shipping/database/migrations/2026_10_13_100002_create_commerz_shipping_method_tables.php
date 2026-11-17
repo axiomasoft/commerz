@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Commerz\Schema\CommerzMigration;
 use Illuminate\Database\Schema\Blueprint;
+use Packman\Schema\Laravel\PackmanMigration;
 
-return new class extends CommerzMigration
+return new class extends PackmanMigration
 {
     private const string CODE = "'^[a-z0-9][a-z0-9_.-]{0,63}$'";
 

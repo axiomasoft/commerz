@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Money;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Returns\Data\ReturnId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** One refund attempt against a payment of an order. */
 #[Api(since: '0.1')]

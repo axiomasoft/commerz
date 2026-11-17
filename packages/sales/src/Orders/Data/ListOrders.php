@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 use Commerz\Pagination\Cursor;
@@ -12,6 +11,7 @@ use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** Orders, newest placed first. */
 #[Api(since: '0.1')]

@@ -9,7 +9,7 @@ use Commerz\Money\Money;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
-use Commerz\Shipping\Common\Internal\ShippingConfig;
+use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Methods\Data\ArchiveMethod;
 use Commerz\Shipping\Methods\Data\AssignMethodChannels;
@@ -17,6 +17,7 @@ use Commerz\Shipping\Methods\Data\DisableMethod;
 use Commerz\Shipping\Methods\Data\EnableMethod;
 use Commerz\Shipping\Methods\Data\ListMethods;
 use Commerz\Shipping\Methods\Data\MethodId;
+use Commerz\Shipping\Methods\Data\RateView;
 use Commerz\Shipping\Methods\Data\SetMethodRates;
 use Commerz\Shipping\Methods\Data\UnassignMethodChannels;
 use Commerz\Shipping\Methods\Data\UpdateMethod;
@@ -71,7 +72,7 @@ it('creates a method with channels and tariffs', function (): void {
         ->and($method->carrier)->toBe('manual')
         ->and($method->status)->toBe(MethodStatus::Active)
         ->and($method->position)->toBe(5)
-        ->and(array_map(static fn ($channel): string => $channel->value, $method->channels))->toBe($channels)
+        ->and(array_map(static fn (ChannelId $channel): string => $channel->value, $method->channels))->toBe($channels)
         ->and($method->rates)->toHaveCount(2)
         ->and($method->rates[0]->zoneCode)->toBe('msk')
         ->and($method->rates[0]->rate->key)->toBe('flat')
@@ -93,7 +94,7 @@ it('takes the default of tax_included from the configuration', function (): void
     $default = mtMethod('plain', ['rates' => [mtRate($zone->id)]]);
 
     config()->set('commerz-shipping.tax_included', true);
-    app()->forgetInstance(ShippingConfig::class);
+    app()->forgetInstance(ShippingOptions::class);
     app()->forgetInstance(MethodRows::class);
     app()->forgetInstance(Methods::class);
 
@@ -140,7 +141,7 @@ it('keeps a tariff in each currency of one zone', function (): void {
         mtRate($zone->id, ['currency' => Currency::of('USD'), 'rate' => mtFlat('5.00', 'USD')]),
     ]]);
 
-    expect(array_map(static fn ($rate): string => $rate->currency->code, $method->rates))->toBe(['RUB', 'USD']);
+    expect(array_map(static fn (RateView $rate): string => $rate->currency->code, $method->rates))->toBe(['RUB', 'USD']);
 });
 
 it('refuses a free_above in another currency or a negative one', function (): void {
@@ -252,7 +253,7 @@ it('assigns and unassigns channels idempotently', function (): void {
     Event::assertDispatchedTimes(MethodChanged::class, 2);
 
     expect($both->channels)->toHaveCount(2)
-        ->and(array_map(static fn ($channel): string => $channel->value, $one->channels))->toBe([$pos->value])
+        ->and(array_map(static fn (ChannelId $channel): string => $channel->value, $one->channels))->toBe([$pos->value])
         ->and(mtMethods()->unassignChannels(new UnassignMethodChannels($method->id, [$pos]))->channels)->toBe([]);
 });
 
@@ -307,7 +308,7 @@ it('lists by status, channel and zone with a keyset cursor', function (): void {
     mtMethod('c', ['position' => 0, 'status' => MethodStatus::Disabled]);
     mtMethod('d', ['position' => -3]);
 
-    $codes = static fn (Page $page): array => array_map(static fn ($method): string => $method->code, $page->items);
+    $codes = static fn (Page $page): array => array_map(static fn (object $method): string => $method->code, $page->items);
 
     $first = mtMethods()->list(new ListMethods(limit: 2));
     $second = mtMethods()->list(new ListMethods(after: $first->next, limit: 2));

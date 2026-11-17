@@ -12,12 +12,14 @@ use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
 use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
+use Packman\Attributes\Internal;
 
 /**
  * A price per weight step: `steps` is a list of `{up_to_grams, amount}`, ascending; the first step the parcel fits
  * (its weight is at most `up_to_grams`, the bound included) sets the price. The last step may be open (`up_to_grams`
  * null). Without an open step the last finite bound is the limit of the method and a heavier parcel is not delivered.
  */
+#[Internal]
 final readonly class WeightTableRate implements DeliveryRate
 {
     private const int MAX_STEPS = 100;

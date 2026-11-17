@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A condition, effect or activator answered with something the engine cannot trust. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class InvalidRuleResult extends CommerzException
     public function context(): array
     {
         return ['rule' => $this->rule, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PromotionsErrorCode::InvalidRuleResult,
+            category: PackmanErrorCategory::Unavailable,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

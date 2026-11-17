@@ -6,8 +6,10 @@ namespace Commerz\Sales\Common\Internal;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Packman\Attributes\Internal;
 
 /** D33: a journal row's `claimed_at` is a lease; the network operation behind it is owned by one process while it is fresh. */
+#[Internal]
 final class Lease
 {
     public static function isFresh(string|DateTimeImmutable $claimedAt, int $seconds): bool

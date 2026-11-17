@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /**
  * Decides which promotions of the activator are switched on for a quote: `automatic` always, `coupon` by a presented

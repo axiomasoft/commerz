@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Promotions\Coupons\Enums\CouponStatus;
 use Commerz\Promotions\Definitions\Data\PromotionId;
+use Packman\Attributes\Api;
 
 /** The coupons of a promotion ordered by code, optionally of one batch or status. */
 #[Api(since: '0.1')]

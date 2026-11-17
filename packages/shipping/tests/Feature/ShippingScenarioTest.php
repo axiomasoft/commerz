@@ -5,11 +5,11 @@ declare(strict_types=1);
 // The package end to end, as P7 sales and a storefront use it (knowledge/shipping-design#api): zones → a method with
 // tariffs → options and explain → a quote with delivery → booking through the core port, and the repeat. Booking
 // refuses to run inside a transaction (SHP-04), so the test commits and empties the tables itself.
-
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
+use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use Commerz\Shipping\Bookings\Events\ShipmentBooked;
 use Commerz\Shipping\Facades\Shipping;
@@ -63,7 +63,7 @@ it('takes a store from zones and tariffs to a booked shipment', function (): voi
         ->and(opList(opRequest($web, 'RU-SPE')))->toBe(['courier 300.00 ru 3', 'pickup 0.00 ru -'])
         ->and(opList(opRequest($web, 'RU-MOW', value: '5000.00')))->toBe(['courier 0.00 msk 1', 'pickup 0.00 ru -'])
         ->and(array_map(
-            static fn ($o): string => "{$o->methodCode} {$o->price->toDecimal()}",
+            static fn (DeliveryOption $o): string => "{$o->methodCode} {$o->price->toDecimal()}",
             app(DeliveryOptions::class)->options(opRequest($web, 'RU-MOW')),
         ))->toBe(['courier 250.00', 'pickup 0.00']);
 

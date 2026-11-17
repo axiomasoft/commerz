@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Usage\Internal;
 
+use Packman\Attributes\Internal;
+
 /** One disagreement `commerz:promotions:reconcile` found. */
+#[Internal]
 final readonly class Discrepancy
 {
     public const string PROMOTION_USED = 'promotion_used';

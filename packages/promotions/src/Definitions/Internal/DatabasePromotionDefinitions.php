@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Currency;
@@ -13,7 +13,6 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Common\Internal\Clock;
 use Commerz\Promotions\Common\Internal\Rows;
@@ -44,7 +43,6 @@ use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
@@ -52,17 +50,21 @@ use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the promotion row `for update` first, in every change (D27: it waits for the orders being placed with the
  * promotion, which hold `for key share`, and keeps new ones out until the counters are recomputed), then its channel,
  * rule and counter rows. Nothing here takes a coupon or a customer row.
  */
+#[Internal]
 final readonly class DatabasePromotionDefinitions implements PromotionDefinitions
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,

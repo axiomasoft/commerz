@@ -23,9 +23,9 @@ use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Products: what is sold, described by attributes of its type. Every change is one transaction; a failed attribute

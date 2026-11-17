@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Refunds\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
@@ -37,10 +37,12 @@ use Commerz\Sales\Refunds\Events\RefundStatusChanged;
 use Commerz\Sales\Refunds\Exceptions\RefundExceedsBalance;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**
@@ -50,11 +52,12 @@ use Throwable;
  * was asked under. Every write follows sales-design#locks: the order, then the promotion usage given back when the
  * refund leaves the order fully refunded, then the payment, then the refund.
  */
+#[Internal]
 final readonly class RefundJournal
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private OrderLocks $locks,
@@ -407,7 +410,7 @@ final readonly class RefundJournal
             ->first();
         $captured = $payments === null ? 0 : Rows::int($payments, 'captured');
         $row = $this->db()->table($this->tables->table('orders'))->where('id', $order->id->value)->first(['amount_due_minor']);
-        $amountDue = Rows::int($row ?? throw new \LogicException('Locked order disappeared.'), 'amount_due_minor');
+        $amountDue = Rows::int($row ?? throw new LogicException('Locked order disappeared.'), 'amount_due_minor');
 
         return $captured > 0 && $captured >= $amountDue
             && $this->succeeded('order_id', $order->id->value) + $refund->amount >= $captured;

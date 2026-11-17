@@ -9,6 +9,7 @@ use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
 use Commerz\Promotions\Rules\Internal\LoadedRule;
+use Packman\Attributes\Internal;
 
 /**
  * A promotion live for one quote, as loaded once for its session: the summary rules and activators see, how it stacks,
@@ -16,6 +17,7 @@ use Commerz\Promotions\Rules\Internal\LoadedRule;
  * to their plugins' versions, and how it was switched on. Not switched on (`$activation` null and no unsupported
  * activator) means it is not tried at all.
  */
+#[Internal]
 final readonly class CandidatePromotion
 {
     /**

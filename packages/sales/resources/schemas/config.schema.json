@@ -1,0 +1,66 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-sales configuration",
+    "type": "object",
+    "properties": {
+        "commerz-sales": {
+            "type": "object",
+            "properties": {
+                "carts": {
+                    "type": "object",
+                    "properties": {
+                        "max_lines": {
+                            "type": "integer",
+                            "default": 250
+                        },
+                        "max_quantity": {
+                            "type": "integer",
+                            "default": 100000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "checkout": {
+                    "type": "object",
+                    "properties": {
+                        "number_generator": {
+                            "type": "string",
+                            "default": "sequence"
+                        },
+                        "require_delivery": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "orders": {
+                    "type": "object",
+                    "properties": {
+                        "expire_batch": {
+                            "type": "integer",
+                            "default": 100
+                        },
+                        "payment_due_minutes": {
+                            "type": "integer",
+                            "default": 4320
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "payments": {
+                    "type": "object",
+                    "properties": {
+                        "lease_seconds": {
+                            "type": "integer",
+                            "default": 120
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

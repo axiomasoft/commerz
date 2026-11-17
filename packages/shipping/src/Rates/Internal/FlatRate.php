@@ -10,8 +10,10 @@ use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
 use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
+use Packman\Attributes\Internal;
 
 /** The same amount for every parcel: `{amount}` in the currency of the tariff. */
+#[Internal]
 final readonly class FlatRate implements DeliveryRate
 {
     public function key(): string

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The line has fewer fulfilled units left to return (fulfilled − returned − in open returns) than asked; none for a cancelled order. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class ReturnExceedsFulfilled extends CommerzException
     public function context(): array
     {
         return ['line' => $this->lineId, 'requested' => $this->requested, 'available' => $this->available];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::ReturnExceedsFulfilled,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

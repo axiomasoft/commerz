@@ -16,6 +16,7 @@ use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Quotes\Data\QuotedLine;
+use Commerz\Quotes\Data\TaxLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
@@ -35,12 +36,12 @@ use Commerz\Sales\Checkout\Exceptions\CartEmpty;
 use Commerz\Sales\Checkout\Exceptions\DeliveryRequired;
 use Commerz\Sales\Checkout\Exceptions\DuplicateOrderNumber;
 use Commerz\Sales\Checkout\Exceptions\QuoteChanged;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderLineView;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Events\OrderPlaced;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ArchiveChannel;
 use Commerz\Stores\Exceptions\ChannelArchived;
@@ -48,6 +49,7 @@ use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -112,7 +114,7 @@ it('snapshots the quote: lines, adjustments, taxes, delivery and totals', functi
         ->and($order->orderAdjustments)->toEqual($quote->orderAdjustments)->not->toBe([])
         ->and($order->delivery)->toEqual($quote->delivery)
         ->and($order->deliveryAdjustments)->toEqual($quote->deliveryAdjustments)
-        ->and($order->deliveryTaxLines)->toEqual(array_values(array_filter($quote->taxLines, static fn ($tax): bool => $tax->target === AdjustmentTarget::Delivery)))
+        ->and($order->deliveryTaxLines)->toEqual(array_values(array_filter($quote->taxLines, static fn (TaxLine $tax): bool => $tax->target === AdjustmentTarget::Delivery)))
         ->and($order->deliveryTaxLines)->toHaveCount(1)
         ->and($order->totals)->toEqual($quote->totals)
         ->and($order->total)->toEqual($quote->total)
@@ -304,7 +306,7 @@ it('records the placement in the journal and the outbox and announces it after c
             'total_minor' => 20000,
             'currency' => 'RUB',
         ])
-        ->and(array_map(static fn ($event): array => [$event->type, $event->data], slsOrders()->history($order->id)))
+        ->and(array_map(static fn (OrderEventView $event): array => [$event->type, $event->data], slsOrders()->history($order->id)))
         ->toEqual([['placed', ['number' => $order->number, 'total_minor' => 20000, 'currency' => 'RUB']]]);
     Event::assertDispatched(OrderPlaced::class, static fn (OrderPlaced $event): bool => $event->order->equals($order->id) && $event->number === $order->number);
 });

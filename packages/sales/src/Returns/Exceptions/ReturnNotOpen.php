@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A received return cannot be cancelled, nor a cancelled one received. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class ReturnNotOpen extends CommerzException
     public function context(): array
     {
         return ['return' => $this->return, 'status' => $this->status];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::ReturnNotOpen,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
@@ -19,23 +19,25 @@ use Commerz\Sales\Returns\Data\ReturnLineView;
 use Commerz\Sales\Returns\Data\ReturnView;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `returns` and `return_lines`. Every write is made under the lock of the order the document
  * belongs to (sales-design#locks); the rows are read into views.
  */
+#[Internal]
 final readonly class ReturnRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 use Throwable;
 
 /**
@@ -35,5 +39,16 @@ final class RefundOutcomeUnknown extends CommerzException
     public function context(): array
     {
         return ['refund' => $this->refund, 'gateway' => $this->gateway];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::RefundOutcomeUnknown,
+            category: PackmanErrorCategory::Unavailable,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

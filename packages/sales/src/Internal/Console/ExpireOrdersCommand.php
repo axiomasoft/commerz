@@ -9,8 +9,10 @@ use Commerz\Sales\Orders\Data\ExpireOrders;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Packman\Attributes\Internal;
 
 /** One expiry pass over the unpaid orders past their payment deadline (D32); schedule it, e.g. every minute. */
+#[Internal]
 #[Description('Expire unpaid Commerz orders whose payment deadline has passed.')]
 #[Signature('commerz:sales:expire-orders {--limit= : Orders to expire in this pass, 1..1000 (default commerz-sales.orders.expire_batch)}')]
 final class ExpireOrdersCommand extends Command
@@ -19,7 +21,7 @@ final class ExpireOrdersCommand extends Command
     {
         $limit = $this->option('limit');
 
-        if ($limit !== null && (preg_match('/\A[1-9]\d{0,3}\z/', $limit) !== 1 || (int) $limit > 1000)) {
+        if ($limit !== null && (! is_string($limit) || preg_match('/\A[1-9]\d{0,3}\z/', $limit) !== 1 || (int) $limit > 1000)) {
             $this->components->error('--limit must be an integer from 1 to 1000.');
 
             return self::FAILURE;

@@ -32,9 +32,9 @@ use Commerz\Sales\Payments\Data\RecordPaymentEvent;
 use Commerz\Sales\Payments\Enums\PaymentEventType;
 use Commerz\Sales\Refunds\Data\IssueRefund;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 // E4–E7 of assembly-design#concurrency: the life of placed orders against the stock, the money and the promotion
 // counters of the real packages, two operations at a time over one shared resource. The world is committed in the

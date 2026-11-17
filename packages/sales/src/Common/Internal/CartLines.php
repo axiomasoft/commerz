@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
@@ -14,24 +14,27 @@ use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Sales\Carts\Exceptions\CartLineNotFound;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\TooManyCartLines;
-use Commerz\Schema\TableNames;
+use Commerz\Sales\Configuration\SalesOptions;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `cart_lines`: one line per sellable, the limits of `commerz-sales.carts.*`, and a sellable that is
  * purchasable now. A caller reads the sellable before its transaction (`assertPurchasable`) and writes the line under
  * the lock of the cart.
  */
+#[Internal]
 final readonly class CartLines
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
-        private SalesConfig $sales,
+        private SalesOptions $sales,
         private Sellables $sellables,
     ) {}
 

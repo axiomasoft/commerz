@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Commerz\Sales\Gateways\Internal;
 
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Internal;
 
 /** Shape checks shared by the gateway DTOs. */
+#[Internal]
 final class GatewayMeta
 {
     /** @param  array<array-key, mixed>  $meta */

@@ -19,9 +19,9 @@ use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Payments\Data\InitiatePayment;
 use Commerz\Sales\Payments\Data\RecordPaymentEvent;
 use Commerz\Sales\Payments\Enums\PaymentEventType;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/Helpers.php';
 

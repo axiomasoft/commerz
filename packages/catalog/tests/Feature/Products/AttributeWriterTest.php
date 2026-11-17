@@ -14,12 +14,12 @@ use Commerz\Catalog\Products\Data\ProductView;
 use Commerz\Catalog\Products\Data\SetProductAttributes;
 use Commerz\Catalog\ProductTypes\Data\CreateProductType;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeView;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Measures\Measure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 uses(RefreshDatabase::class);
 

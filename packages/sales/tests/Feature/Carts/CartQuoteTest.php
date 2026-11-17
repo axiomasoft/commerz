@@ -6,6 +6,7 @@ use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Carts\Data\RemoveCartLine;
@@ -33,7 +34,7 @@ it('quotes the lines with the prices of the price port, in the order of the cart
 
     $quote = ctCarts()->quote($cart->id);
 
-    expect(array_map(fn ($line) => [$line->lineId, $line->quantity, $line->unitPrice->toDecimal(), $line->total->toDecimal()], $quote->lines))
+    expect(array_map(fn (QuotedLine $line) => [$line->lineId, $line->quantity, $line->unitPrice->toDecimal(), $line->total->toDecimal()], $quote->lines))
         ->toBe([[$cart->lines[0]->id, 2, '50.00', '100.00'], [$cart->lines[1]->id, 1, '120.00', '120.00']])
         ->and($quote->total->toDecimal())->toBe('220.00')
         ->and($quote->context->channel)->toEqual($this->web)

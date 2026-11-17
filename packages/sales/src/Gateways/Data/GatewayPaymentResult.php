@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Gateways\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Sales\Gateways\Enums\GatewayPaymentStatus;
 use Commerz\Sales\Gateways\Internal\GatewayMeta;
+use Packman\Attributes\Api;
 
 /**
  * What the gateway knows about a payment attempt. The DTO checks its own shape; whether the result fits the attempt

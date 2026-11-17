@@ -15,6 +15,8 @@ use Commerz\Quotes\Data\TaxLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use JsonException;
 use LogicException;
+use Packman\Attributes\Internal;
+use ValueError;
 
 /**
  * The only (de)serialization of the sales JSONB columns. The package is their only writer, so a stored value that
@@ -22,6 +24,7 @@ use LogicException;
  * its currency is the one of the owning row. `lineId` of an adjustment or a tax is not stored: the line that owns the
  * list supplies it (the order line id equals the cart line id the quote was made for).
  */
+#[Internal]
 final class SalesCodec
 {
     public static function addressToJson(Address $address): string
@@ -308,7 +311,7 @@ final class SalesCodec
             return $decode();
         } catch (LogicException $e) {
             throw new LogicException("Stored {$what} is corrupt: {$e->getMessage()}.", previous: $e);
-        } catch (CommerzException|\ValueError $e) {
+        } catch (CommerzException|ValueError $e) {
             throw new LogicException("Stored {$what} is corrupt: {$e->getMessage()}", previous: $e);
         }
     }

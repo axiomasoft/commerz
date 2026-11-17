@@ -9,24 +9,23 @@ use Commerz\Facades\Commerz;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\DeliverySelection;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Shipping\Facades\Shipping;
-use Commerz\Shipping\Internal\ShippingPlugin;
 use Commerz\Shipping\Methods\Data\DisableMethod;
 use Commerz\Shipping\Methods\Data\MethodView;
 use Commerz\Shipping\Methods\Data\ZoneRate;
 use Commerz\Shipping\Options\Data\MethodVerdict;
+use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
@@ -43,6 +42,9 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 require_once __DIR__.'/../Methods/Helpers.php';
 
@@ -57,20 +59,22 @@ trait OpEnvironment
     }
 }
 
-final class OpPlugin implements CommerzPlugin
+final class OpPlugin implements ExtensionPlugin
 {
+    #[Override]
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.shipping-options', '1.0.0', [ShippingPlugin::ID]);
+        return new PluginManifest('test.shipping-options', '1.0.0', [CorePlugin::ID, ShippingPlugin::ID]);
     }
 
+    #[Override]
     public function register(PluginRegistrar $registrar): void
     {
         $registrar->contribute(DeliveryRate::KIND, ThrowingRate::class);
         $registrar->contribute(DeliveryRate::KIND, ForeignCurrencyRate::class);
         $registrar->contribute(DeliveryRate::KIND, FixedRate::class);
         $registrar->contribute(DeliveryRate::KIND, BrokenLoadingRate::class);
-        $registrar->quoteStage(OrderDiscountStage::class);
+        $registrar->contribute(QuoteStage::KIND, OrderDiscountStage::class);
     }
 }
 

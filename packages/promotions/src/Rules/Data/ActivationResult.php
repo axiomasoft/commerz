@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * The answer of an activator. The shape is checked here; the engine checks the answer against the request

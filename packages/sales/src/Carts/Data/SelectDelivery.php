@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Chooses a delivery method by its code; the quote prices it and rejects a method that cannot deliver. */
 #[Api(since: '0.1')]

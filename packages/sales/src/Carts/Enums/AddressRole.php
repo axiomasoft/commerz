@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 enum AddressRole: string

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 use Commerz\Money\Money;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /**
  * A payment holds less than asked: what can still be refunded is what it captured less every refund of it that has not
@@ -39,5 +43,16 @@ final class RefundExceedsBalance extends CommerzException
             'refundable_minor' => $this->refundable->amountMinor,
             'currency' => $this->refundable->currency->code,
         ];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::RefundExceedsBalance,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

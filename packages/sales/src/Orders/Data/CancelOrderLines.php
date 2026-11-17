@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Orders\Enums\CancelReason;
+use Packman\Attributes\Api;
 
 /** Cancels units of some lines of a placed order; cancelling every unit left cancels the order. */
 #[Api(since: '0.1')]

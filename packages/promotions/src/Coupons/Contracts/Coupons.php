@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
@@ -23,6 +22,7 @@ use Commerz\Promotions\Coupons\Exceptions\CouponNotFound;
 use Commerz\Promotions\Coupons\Exceptions\NotACouponPromotion;
 use Commerz\Promotions\Definitions\Exceptions\PromotionArchived;
 use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
+use Packman\Attributes\Api;
 
 /**
  * Coupons of the `coupon` promotions. A code has one form, trimmed and upper-cased, whether it is written, looked up or

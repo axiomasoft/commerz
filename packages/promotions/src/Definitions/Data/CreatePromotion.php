@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
@@ -15,6 +14,7 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * A promotion. The code, the stage, the activator and the currency never change afterwards. The currency is `$currency`

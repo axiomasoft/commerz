@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Coupons\Internal;
 
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Internal;
 
 /**
  * A generation pattern: `#` is a character of the alphabet, every other character stays as written. Parsed once;
  * characters come from `random_int`, so a code cannot be guessed from the ones before it.
  */
+#[Internal]
 final readonly class CouponPattern
 {
     public const int MIN_SLOTS = 4;

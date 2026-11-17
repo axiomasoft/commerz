@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Carts\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Api;
 
 /** Presents a code (a coupon) with the cart. Whether it applies is up to the quote stages; entering it uses no limit. */
 #[Api(since: '0.1')]

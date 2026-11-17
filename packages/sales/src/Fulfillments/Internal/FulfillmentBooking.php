@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Money\MoneyAllocator;
@@ -17,20 +17,22 @@ use Commerz\Sales\Common\Internal\SalesCodec;
 use Commerz\Sales\Fulfillments\Data\BookFulfillment;
 use Commerz\Sales\Fulfillments\Data\FulfillmentView;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotBookable;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only caller of `ShipmentBooking` (PAY-02's twin, D14/D29/D30): builds the booking of a fulfillment from the order
  * as it was placed and sends it. Called outside any transaction, without a lock; the journal of the shipping package
  * deduplicates by the reference `fulfillment:{id}`, so a repeat after a lost answer is safe.
  */
+#[Internal]
 final readonly class FulfillmentBooking
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private ShipmentBooking $carriers,
     ) {}

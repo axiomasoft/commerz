@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Gateways\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
 use Commerz\Sales\Gateways\Data\GatewayPaymentResult;
 use Commerz\Sales\Gateways\Data\GatewayRefundRequest;
 use Commerz\Sales\Gateways\Data\GatewayRefundResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /** A payment gateway, a contribution of kind `payment_gateway`. Called only by sales and only outside a database transaction. */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]

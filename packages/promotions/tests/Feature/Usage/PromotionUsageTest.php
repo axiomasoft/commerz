@@ -6,9 +6,10 @@ use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
+use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
 use Commerz\Ports\Promotions\Enums\RestoreReason;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Data\DisableCoupon;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
 use Commerz\Promotions\Definitions\Data\PausePromotion;
@@ -107,17 +108,17 @@ it('refuses a promotion that is no longer active or a coupon that is gone', func
         ->and(usgPromotionCounters($promotion)['used'])->toBe(0)
         ->and(usgCouponUsed('HELLO'))->toBe(0);
 })->with([
-    'paused' => [function ($promotion) {
+    'paused' => [function ($promotion): AppliedPromotion {
         Promotions::promotions()->pause(new PausePromotion($promotion->id));
 
         return usgApplied($promotion, coupon: 'HELLO');
     }, 'unavailable:promotion_not_active'],
-    'archived' => [function ($promotion) {
+    'archived' => [function ($promotion): AppliedPromotion {
         Promotions::promotions()->archive(new ArchivePromotion($promotion->id));
 
         return usgApplied($promotion, coupon: 'HELLO');
     }, 'unavailable:promotion_not_active'],
-    'coupon disabled' => [function ($promotion) {
+    'coupon disabled' => [function ($promotion): AppliedPromotion {
         Promotions::coupons()->disable(new DisableCoupon(Promotions::coupons()->findByCode('HELLO')->id));
 
         return usgApplied($promotion, coupon: 'HELLO');
@@ -221,7 +222,7 @@ it('keeps the usage of a refunded order unless the policy lists refunds', functi
         ->and(DB::table('cmz_promotion_redemptions')->value('state'))->toBe('consumed');
 
     config()->set('commerz-promotions.restore_on', ['refunded']);
-    app()->forgetInstance(PromotionsConfig::class);
+    app()->forgetInstance(PromotionsOptions::class);
     app()->forgetInstance(PromotionUsage::class);
 
     usgRestore('order:1', RestoreReason::Refunded);

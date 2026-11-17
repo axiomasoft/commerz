@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 use Throwable;
 
 /**
@@ -34,5 +38,16 @@ final class PaymentOutcomeUnknown extends CommerzException
     public function context(): array
     {
         return ['payment' => $this->payment, 'gateway' => $this->gateway];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::PaymentOutcomeUnknown,
+            category: PackmanErrorCategory::Unavailable,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

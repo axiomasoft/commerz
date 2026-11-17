@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The order cannot be cancelled: it is completed or cancelled, or (for a whole cancellation) partly fulfilled. */
 #[Api(since: '0.1')]
@@ -31,5 +35,16 @@ final class OrderNotCancellable extends CommerzException
     public function context(): array
     {
         return ['order' => $this->order, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::OrderNotCancellable,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

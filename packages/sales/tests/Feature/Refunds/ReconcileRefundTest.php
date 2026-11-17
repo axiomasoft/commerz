@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
@@ -18,6 +17,7 @@ use Commerz\Sales\Refunds\Exceptions\RefundOutcomeUnknown;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 require_once __DIR__.'/Helpers.php';
 

@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Internal;
 
-use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Shipping\Zones\Data\ZoneMember;
 use Commerz\Shipping\Zones\Data\ZoneView;
 use Commerz\Shipping\Zones\Enums\ZoneStatus;
 use Illuminate\Database\ConnectionInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads and writes the member rows of zones and turns zone rows into views. */
+#[Internal]
 final readonly class ZoneRows
 {
     public function __construct(private TableNames $tables) {}

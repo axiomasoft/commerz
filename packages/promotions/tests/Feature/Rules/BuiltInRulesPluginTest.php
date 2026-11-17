@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
+use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Internal\Activators\AutomaticActivator;
 use Commerz\Promotions\Tests\Support\RuleStates;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 it('contributes the built-in conditions, effects and activator under their keys', function (): void {
     $contributions = app(Contributions::class);
@@ -63,7 +64,7 @@ it('switches on every candidate of the automatic activator and rejects nothing',
     $result = (new AutomaticActivator)->activate(new ActivationRequest($context, ['IGNORED'], $summaries));
 
     expect($result->rejections)->toBe([])
-        ->and(array_map(static fn ($a): string => (string) $a->promotion, $result->activations))->toBe([(string) $first, (string) $second])
+        ->and(array_map(static fn (Activation $a): string => (string) $a->promotion, $result->activations))->toBe([(string) $first, (string) $second])
         ->and($result->activations[0]->couponCode)->toBeNull()
         ->and($result->activations[0]->presentedCode)->toBeNull();
 

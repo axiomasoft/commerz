@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Gateways\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** A gateway answered with something that breaks its contract; the outcome of the attempt is treated as unknown. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class InvalidGatewayResult extends CommerzException
     public function context(): array
     {
         return ['gateway' => $this->gateway, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::InvalidGatewayResult,
+            category: PackmanErrorCategory::Unavailable,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

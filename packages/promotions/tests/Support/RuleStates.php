@@ -72,7 +72,7 @@ final class RuleStates
             $inputs[] = new QuoteLineInput((string) $line['id'], $snapshots[$line['id']], $line['qty'] ?? 1);
         }
 
-        $state = QuoteState::start(new QuoteInput($context, $inputs, delivery: null));
+        $state = QuoteState::start(new QuoteInput($context, $inputs));
 
         foreach ($lines as $line) {
             $state = $state->withLine(new QuoteLine(

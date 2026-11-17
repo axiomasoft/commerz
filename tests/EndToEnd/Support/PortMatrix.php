@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\EndToEnd\Support;
 
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Ports\Prices\Contracts\PriceResolver;
@@ -16,6 +14,8 @@ use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Quotes\Contracts\QuoteStage;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
 
 /** What the full family binds to every cross-package port, as class names: the tests never import `Internal`. */
 final class PortMatrix

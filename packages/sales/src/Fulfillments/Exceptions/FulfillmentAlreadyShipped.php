@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
 use Commerz\Ports\Delivery\Data\BookedShipment;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The fulfillment already left with another carrier or tracking number; a shipment is never overwritten. */
 #[Api(since: '0.1')]
@@ -44,5 +48,16 @@ final class FulfillmentAlreadyShipped extends CommerzException
         }
 
         return $context;
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::FulfillmentAlreadyShipped,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Ports\Stock\Data\StockLines;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /**
  * Fulfils units of lines of a placed order: the units leave the ledger's outstanding, and the held stock of the

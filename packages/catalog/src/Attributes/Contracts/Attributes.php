@@ -14,9 +14,9 @@ use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
 use Commerz\Catalog\Attributes\Exceptions\InvalidStatusTransition;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /** Attribute definitions: the vocabulary product types, products and filters refer to. */
 #[Api(since: '0.1')]

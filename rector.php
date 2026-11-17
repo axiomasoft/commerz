@@ -10,7 +10,6 @@ use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
-use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 use Rector\Php82\Rector\Class_\ReadOnlyClassRector;
 use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
@@ -30,10 +29,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets([LaravelSetList::LARAVEL_130]);
 
     PackmanRectorSet::configure($rectorConfig, [
-        __DIR__.'/packages/core/src/aliases.php',
-        StringClassNameToClassConstantRector::class => [
-            __DIR__.'/packages/core/src/aliases.php',
-        ],
         ReadOnlyClassRector::class,
         ReadOnlyPropertyRector::class,
         ReadOnlyAnonymousClassRector::class,

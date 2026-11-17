@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
@@ -16,6 +15,7 @@ use Commerz\Shipping\Rates\Internal\RateCodec;
 use Commerz\Shipping\Rates\Internal\StoredRate;
 use Commerz\Shipping\Tests\Fixtures\BrokenLoadingRate;
 use Commerz\Shipping\Tests\Fixtures\FixturePlugin;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 beforeEach(function (): void {
     config(['commerz.plugins' => [FixturePlugin::class]]);

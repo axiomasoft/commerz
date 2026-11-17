@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Bookings\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /** A journal entry of a shipment booking; `errorCode` and `errorMessage` describe the last rejection or unknown outcome. */
 #[Api(since: '0.1')]

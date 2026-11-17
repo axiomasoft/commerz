@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Shipping\Common\Data\PostalCode;
 use Commerz\Shipping\Zones\Enums\MemberKind;
+use Packman\Attributes\Api;
 
 /** What a zone covers: a country, one region of it, or the postal codes of a country that start with a prefix. */
 #[Api(since: '0.1')]

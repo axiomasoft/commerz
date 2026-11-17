@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Coupons\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class CouponBatchView

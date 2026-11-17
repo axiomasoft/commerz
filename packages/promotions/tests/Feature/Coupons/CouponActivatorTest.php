@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
 use Commerz\Money\Currency;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Coupons\Data\DisableCoupon;
 use Commerz\Promotions\Coupons\Data\SetCouponLimit;
 use Commerz\Promotions\Coupons\Internal\CouponActivator;
@@ -12,11 +11,14 @@ use Commerz\Promotions\Definitions\Data\PausePromotion;
 use Commerz\Promotions\Definitions\Data\PromotionView;
 use Commerz\Promotions\Facades\Promotions;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
+use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
+use Commerz\Promotions\Rules\Data\CodeRejection;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 uses(RefreshDatabase::class);
 
@@ -45,7 +47,7 @@ function cpaActivate(array $codes, array $candidates): ActivationResult
 /** @return list<string> reason@code of each rejection */
 function cpaRejections(ActivationResult $result): array
 {
-    return array_map(static fn ($rejection): string => $rejection->reason.'@'.$rejection->code, $result->rejections);
+    return array_map(static fn (CodeRejection $rejection): string => $rejection->reason.'@'.$rejection->code, $result->rejections);
 }
 
 it('is the coupon activator of the plugin', function (): void {
@@ -143,7 +145,7 @@ it('lets one code switch a promotion on and rejects a second code of the same pr
 
     $result = cpaActivate(['ONE', 'TWO', 'THREE'], [$promotion, $other]);
 
-    expect(array_map(static fn ($activation): string => (string) $activation->couponCode, $result->activations))->toBe(['ONE', 'THREE'])
+    expect(array_map(static fn (Activation $activation): string => (string) $activation->couponCode, $result->activations))->toBe(['ONE', 'THREE'])
         ->and(cpaRejections($result))->toBe(['duplicate_promotion@TWO']);
 });
 

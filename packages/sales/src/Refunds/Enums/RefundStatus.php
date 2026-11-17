@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Refunds\Enums;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /**
  * The status of one refund attempt (D33). `initiating` while the gateway is being asked, `pending` while the provider

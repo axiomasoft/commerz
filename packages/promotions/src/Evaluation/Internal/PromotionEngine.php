@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Evaluation\Internal;
 
 use Commerz\Money\Money;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Definitions\Data\PromotionVerdict;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Definitions\Enums\VerdictKind;
@@ -24,6 +24,7 @@ use Commerz\Quotes\Data\QuoteLine;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Data\Rejection;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * Runs the promotions of one stage (D15, D26): the switched-on candidates in priority DESC, code ASC order, each
@@ -34,11 +35,12 @@ use LogicException;
  * order is placed. Exceptions of rules other than the refusals described here are not swallowed: the pipeline fails
  * the quote.
  */
+#[Internal]
 final readonly class PromotionEngine
 {
     public function __construct(
         private PromotionSessions $sessions,
-        private PromotionsConfig $config,
+        private PromotionsOptions $config,
         private DiscountGuard $guard,
     ) {}
 

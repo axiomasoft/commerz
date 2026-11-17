@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
-use Commerz\PluginGraph;
-use Commerz\Plugins\Contracts\PluginInspector;
-use Commerz\Promotions\Internal\PromotionsPlugin;
+use Commerz\Plugins\CorePlugin;
+use Commerz\Promotions\Plugins\PromotionsPlugin;
 use Commerz\Promotions\PromotionsServiceProvider;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
@@ -16,6 +15,8 @@ use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Testing\PluginGraph;
 use PHPUnit\Framework\Attributes\Test;
 
 final class PromotionsPluginTest extends PackageTestCase
@@ -35,7 +36,7 @@ final class PromotionsPluginTest extends PackageTestCase
     #[Test]
     public function declares_the_condition_effect_and_activator_kinds(): void
     {
-        $registry = PluginGraph::compile(app(), [PromotionsPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, PromotionsPlugin::class]);
 
         self::assertInstanceOf(PluginInspector::class, $registry);
 
@@ -61,7 +62,7 @@ final class PromotionsPluginTest extends PackageTestCase
     {
         $contributed = [];
 
-        foreach (PluginGraph::compile(app(), [PromotionsPlugin::class])->describe() as $plugin) {
+        foreach (PluginGraph::compile(app(), [CorePlugin::class, PromotionsPlugin::class])->describe() as $plugin) {
             foreach ($plugin->contributions as $contribution) {
                 if ($contribution->kind === PromotionActivator::KIND) {
                     $contributed[] = $contribution->key;
@@ -77,7 +78,7 @@ final class PromotionsPluginTest extends PackageTestCase
     #[Test]
     public function adds_the_three_promotion_stages_at_their_anchors(): void
     {
-        $registry = PluginGraph::compile(app(), [PromotionsPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, PromotionsPlugin::class]);
         $stages = [];
 
         foreach ($registry->describe() as $plugin) {

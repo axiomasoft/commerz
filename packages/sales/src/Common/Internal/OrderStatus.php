@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\ActorRef;
 use Commerz\Money\Money;
 use Commerz\Money\MoneyAllocator;
@@ -20,10 +20,11 @@ use Commerz\Sales\Orders\Events\OrderCompleted;
 use Commerz\Sales\Orders\Events\OrderPaymentStateChanged;
 use Commerz\Sales\Orders\Events\PaymentRequiresRefund;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the states and amounts of an order (D31): `amount_due`, `authorized`, `captured`, `refunded`, the
@@ -31,11 +32,12 @@ use LogicException;
  * ends with `refresh`, under the lock of the order and in the same transaction, so the states never drift from the money
  * and the lines. A change of state is journalled, recorded in the outbox and announced after commit.
  */
+#[Internal]
 final readonly class OrderStatus
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private OrderJournal $journal,
         private Outbox $outbox,

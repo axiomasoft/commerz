@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Usage\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
@@ -18,15 +18,16 @@ use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
 use Commerz\Promotions\Common\Data\PromotionCodes;
 use Commerz\Promotions\Common\Internal\Clock;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
 use Commerz\Promotions\Common\Internal\Rows;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Enums\CouponStatus;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Usage\Exceptions\PromotionUnavailable;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -36,14 +37,15 @@ use RuntimeException;
  * update`) only when its limit is set, so an unlimited promotion is never a row all placements queue on. Each limit is
  * enforced by the database in one conditional statement, never read and then written from PHP.
  */
+#[Internal]
 final readonly class DatabasePromotionUsage implements PromotionUsage
 {
     private const string SCOPE = 'promotions.consume';
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
-        private PromotionsConfig $promotions,
+        private CommerzOptions $config,
+        private PromotionsOptions $promotions,
         private TableNames $tables,
         private Transactions $transactions,
     ) {}

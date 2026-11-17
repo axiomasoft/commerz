@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Rules\Internal\Effects;
 
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Internal;
 
 /**
  * The units of several lines as groups of equal value, so a quantity of a million costs two groups and not a million
  * units. A line's net is split the way `MoneyAllocator` splits it over equal weights: `net mod quantity` units cost one
  * minor unit more than the rest, and the values add up to the net exactly.
  */
+#[Internal]
 final readonly class UnitPool
 {
     /** @param  list<array{int, int, int}>  $groups  (value, line index, count), sorted by value then line index */

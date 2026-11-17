@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
@@ -19,21 +19,23 @@ use Commerz\Sales\Fulfillments\Enums\FulfillmentStatus;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineId;
-use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `fulfillments` and `fulfillment_lines`. Every write is made under the lock of the order the
  * document belongs to (sales-design#locks); the rows are read into views.
  */
+#[Internal]
 final readonly class FulfillmentRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

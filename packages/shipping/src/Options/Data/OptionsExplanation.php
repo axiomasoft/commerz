@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Options\Data;
 
-use Commerz\Attributes\Api;
+use Packman\Attributes\Api;
 
 /** The verdict of every method that is not archived for one delivery request, by method code. */
 #[Api(since: '0.1')]

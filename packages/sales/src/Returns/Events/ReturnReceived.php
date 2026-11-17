@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Returns\Data\ReturnId;
+use Packman\Attributes\Api;
 
 /** Dispatched after the acceptance of a return commits. */
 #[Api(since: '0.1')]

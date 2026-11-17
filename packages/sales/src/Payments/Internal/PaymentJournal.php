@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Payments\Internal;
 
 use Closure;
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
@@ -32,10 +32,11 @@ use Commerz\Sales\Payments\Events\PaymentStatusChanged;
 use Commerz\Sales\Payments\Exceptions\OrderNotPayable;
 use Commerz\Sales\Payments\Exceptions\PaymentExceedsBalance;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**
@@ -46,6 +47,7 @@ use Throwable;
  * off: `PaymentTransitions` never moves a payment back, and a captured answer must never be lost. Every change of status is
  * journalled on the order, announced after commit and followed by `OrderStatus::refresh`.
  */
+#[Internal]
 final readonly class PaymentJournal
 {
     /** Statuses whose money no longer counts against the balance of the order. */
@@ -53,7 +55,7 @@ final readonly class PaymentJournal
 
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private Transactions $transactions,
         private OrderLocks $locks,

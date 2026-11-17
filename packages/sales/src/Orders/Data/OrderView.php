@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
@@ -22,6 +21,7 @@ use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Data\StoreId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 /**
  * A placed order: an immutable snapshot of the accepted quote (ORD-02) with its three states, which are derived from

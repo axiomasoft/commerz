@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The fulfillment has nothing to book with a carrier. */
 #[Api(since: '0.1')]
@@ -31,5 +35,16 @@ final class FulfillmentNotBookable extends CommerzException
     public function context(): array
     {
         return ['fulfillment' => $this->fulfillment, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::FulfillmentNotBookable,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

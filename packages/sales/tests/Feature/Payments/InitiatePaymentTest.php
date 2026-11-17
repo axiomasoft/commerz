@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Data\LineQuantity;
@@ -13,6 +12,7 @@ use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Orders\Data\CancelOrder;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
@@ -28,6 +28,7 @@ use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -57,7 +58,7 @@ it('starts a manual payment of the balance as pending without the network', func
         ->and($payment->reference)->toBe('payment:'.$payment->id->value)
         ->and([$payment->externalId, $payment->meta, $payment->errorCode])->toBe([null, ['instructions' => 'offline'], null])
         ->and($order->paymentState)->toBe(PaymentState::Unpaid)
-        ->and(array_map(static fn ($event): string => $event->type, slsOrders()->history($this->order->id)))
+        ->and(array_map(static fn (OrderEventView $event): string => $event->type, slsOrders()->history($this->order->id)))
         ->toBe(['placed', 'payment_initiated', 'payment_status_changed'])
         ->and(slsPayments()->find($payment->id))->toEqual($payment)
         ->and(slsPayments()->list(new ListPayments($this->order->id))->items)->toEqual([$payment]);

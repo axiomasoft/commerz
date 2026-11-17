@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Checkout\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
-use Commerz\Errors\InvalidConfiguration;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
@@ -27,6 +24,9 @@ use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
+use Packman\Attributes\Api;
+use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /** Turns a cart into an order. */
 #[Api(since: '0.1')]

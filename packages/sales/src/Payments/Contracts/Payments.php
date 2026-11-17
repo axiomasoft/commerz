@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Payments\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
@@ -26,6 +24,8 @@ use Commerz\Sales\Payments\Exceptions\PaymentExceedsBalance;
 use Commerz\Sales\Payments\Exceptions\PaymentInProgress;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
+use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Payments of orders at payment gateways (PAY-01, PAY-02, D33). An attempt is written before the gateway is called,

@@ -12,8 +12,10 @@ use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Stores\Data\ChannelView;
 use Commerz\Stores\Data\StoreView;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 
 /** What the placement read before its transaction: the cart as quoted and everything the snapshot takes from ports. */
+#[Internal]
 final readonly class Placement
 {
     /** @param  list<AppliedPromotion>  $applied */

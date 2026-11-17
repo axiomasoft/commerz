@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
+use Packman\Attributes\Api;
 
 /** The part of a promotion a rule or an activator may look at. */
 #[Api(since: '0.1')]

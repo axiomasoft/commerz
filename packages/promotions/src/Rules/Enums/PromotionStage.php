@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Enums;
 
-use Commerz\Attributes\Api;
 use Commerz\Quotes\Enums\QuoteAnchor;
+use Packman\Attributes\Api;
 
 /** Where in the quote a promotion works. Fixed when the promotion is created. */
 #[Api(since: '0.1')]

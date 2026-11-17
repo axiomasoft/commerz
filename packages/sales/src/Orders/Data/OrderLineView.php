@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Orders\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\TaxLine;
+use Packman\Attributes\Api;
 
 /** A line of a placed order: the snapshot of the sellable and its price as quoted, and the ledger of the line (ORD-03). */
 #[Api(since: '0.1')]

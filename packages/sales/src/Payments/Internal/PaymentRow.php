@@ -12,9 +12,11 @@ use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Payments\Data\PaymentView;
 use Commerz\Sales\Payments\Enums\PaymentStatus;
 use DateTimeImmutable;
+use Packman\Attributes\Internal;
 use RuntimeException;
 
 /** A stored payment attempt; amounts in minor units of `$currency`. */
+#[Internal]
 final readonly class PaymentRow
 {
     /** @param  array<string, scalar>  $meta */

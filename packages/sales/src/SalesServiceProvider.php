@@ -4,59 +4,32 @@ declare(strict_types=1);
 
 namespace Commerz\Sales;
 
-use Commerz\Attributes\Api;
-use Commerz\Plugins\CommerzPlugins;
-use Commerz\Sales\Carts\Contracts\Carts;
-use Commerz\Sales\Carts\Internal\DatabaseCarts;
-use Commerz\Sales\Checkout\Contracts\Checkout;
-use Commerz\Sales\Checkout\Internal\OrderPlacement;
-use Commerz\Sales\Common\Internal\SalesConfig;
-use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
-use Commerz\Sales\Fulfillments\Internal\DatabaseFulfillments;
-use Commerz\Sales\Internal\Console\ExpireOrdersCommand;
-use Commerz\Sales\Internal\SalesPlugin;
-use Commerz\Sales\Orders\Contracts\Orders;
-use Commerz\Sales\Orders\Internal\DatabaseOrders;
-use Commerz\Sales\Payments\Contracts\Payments;
-use Commerz\Sales\Payments\Internal\DatabasePayments;
-use Commerz\Sales\Refunds\Contracts\Refunds;
-use Commerz\Sales\Refunds\Internal\DatabaseRefunds;
-use Commerz\Sales\Returns\Contracts\Returns;
-use Commerz\Sales\Returns\Internal\DatabaseReturns;
-use Commerz\Schema\Contracts\SchemaOwnership;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Foundation\Application;
+use Commerz\Sales\Laravel\Registrars\SalesRegistrar;
 use Illuminate\Support\ServiceProvider;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Foundation\Concerns\RegistersPackageRegistrars;
+use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
 final class SalesServiceProvider extends ServiceProvider
 {
+    use RegistersPackageRegistrars {
+        register as protected registerRegistrars;
+        boot as protected bootRegistrars;
+    }
+
     public const array NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'];
 
+    /** @var list<class-string<PackageRegistrar>> */
+    protected const array REGISTRARS = [
+        SalesRegistrar::class,
+    ];
+
+    #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/commerz-sales.php', 'commerz-sales');
-
-        $this->app->singleton(SalesConfig::class, static function (Application $app): SalesConfig {
-            $config = $app->make(Repository::class)->get('commerz-sales', []);
-
-            return SalesConfig::fromArray(is_array($config) ? $config : []);
-        });
-
-        $this->app->singleton(Carts::class, DatabaseCarts::class);
-        $this->app->singleton(Checkout::class, OrderPlacement::class);
-        $this->app->singleton(Orders::class, DatabaseOrders::class);
-        $this->app->singleton(Payments::class, DatabasePayments::class);
-        $this->app->singleton(Fulfillments::class, DatabaseFulfillments::class);
-        $this->app->singleton(Returns::class, DatabaseReturns::class);
-        $this->app->singleton(Refunds::class, DatabaseRefunds::class);
-        $this->app->singleton(Sales::class);
-
-        CommerzPlugins::builtIn(SalesPlugin::class);
-
-        $this->callAfterResolving(SchemaOwnership::class, static function (SchemaOwnership $ownership): void {
-            $ownership->declare('commerz.sales', self::NOUNS);
-        });
+        $this->registerRegistrars();
     }
 
     public function boot(): void
@@ -64,10 +37,11 @@ final class SalesServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ExpireOrdersCommand::class]);
             $this->publishes([
-                __DIR__.'/../config/commerz-sales.php' => config_path('commerz-sales.php'),
+                __DIR__.'/../config/commerz-sales.php' => $this->app->configPath('commerz-sales.php'),
             ], 'commerz-sales-config');
         }
+
+        $this->bootRegistrars();
     }
 }

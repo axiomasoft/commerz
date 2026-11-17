@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Context\CommerceContext;
+use Packman\Attributes\Api;
 
 /** What an activator is asked: the codes presented with the quote and its own candidate promotions. */
 #[Api(since: '0.1')]

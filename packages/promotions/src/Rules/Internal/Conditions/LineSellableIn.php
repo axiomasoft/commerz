@@ -14,8 +14,10 @@ use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Internal;
 
 /** Keeps the lines whose sellable is one of the listed refs. */
+#[Internal]
 final readonly class LineSellableIn implements PromotionCondition
 {
     public function key(): string

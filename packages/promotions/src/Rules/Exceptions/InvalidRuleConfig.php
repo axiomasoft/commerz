@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** The parameters of a rule are wrong; `field` is the parameter, e.g. `min` or `amount`. */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class InvalidRuleConfig extends CommerzException
     public function context(): array
     {
         return ['field' => $this->field, 'reason' => $this->reason];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: PromotionsErrorCode::InvalidRuleConfig,
+            category: PackmanErrorCategory::Validation,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -27,12 +27,14 @@ use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
+use Packman\Attributes\Internal;
 
 /**
  * Cancellation of a whole order and of some of its units (sales-design#lifecycle). In the global lock order: the order
  * `for update` → the ledger → stock (release) → promotion usage (restore) → the state, which also announces the refund
  * a paid order now needs. Nothing is refunded automatically.
  */
+#[Internal]
 final readonly class OrderCancellation
 {
     public function __construct(

@@ -9,8 +9,10 @@ use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
+use Packman\Attributes\Internal;
 
 /** Switches on every candidate; presented codes are not its business. */
+#[Internal]
 final readonly class AutomaticActivator implements PromotionActivator
 {
     public function key(): string

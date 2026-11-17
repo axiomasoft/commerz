@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\ActorRef;
 use Commerz\Ports\Stock\Data\StockLines;
 use Commerz\Sales\Common\Data\LineQuantity;
+use Packman\Attributes\Api;
 
 /**
  * Accepts the goods of a return. Accepting is not restocking (REF-01): only the units listed in `$restock` go back on

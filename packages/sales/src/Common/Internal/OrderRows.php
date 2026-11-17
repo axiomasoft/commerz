@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Common\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
@@ -22,19 +22,21 @@ use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Data\StoreId;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads orders with their lines into views; the snapshot is decoded as it was written (ORD-02), nothing is re-read from its sources. */
+#[Internal]
 final readonly class OrderRows
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
     ) {}
 

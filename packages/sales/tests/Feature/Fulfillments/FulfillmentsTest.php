@@ -31,12 +31,12 @@ use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeStock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -295,7 +295,7 @@ it('finds and lists fulfillments newest first, by order and status', function ()
     $ids = static fn ($page): array => array_map(static fn ($view): string => $view->id->value, $page->items);
 
     $page = slsFulfillments()->list(new ListFulfillments($this->order->id, limit: 2));
-    $rest = slsFulfillments()->list(new ListFulfillments($this->order->id, limit: 2, after: $page->next));
+    $rest = slsFulfillments()->list(new ListFulfillments($this->order->id, after: $page->next, limit: 2));
 
     expect(slsFulfillments()->find($first->id))->toEqual($first)
         ->and($ids($page))->toBe([$third->id->value, $second->id->value])

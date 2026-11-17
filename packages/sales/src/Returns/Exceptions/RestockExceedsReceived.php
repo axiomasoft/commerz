@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Exceptions;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\ErrorCategory;
+use Commerz\Sales\Errors\Enums\SalesErrorCode;
+use Override;
+use Packman\Attributes\Api;
+use Packman\Errors\Data\ErrorDescriptor;
+use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
 
 /** More units were to go back on hand than the return holds for the line (REF-01). */
 #[Api(since: '0.1')]
@@ -30,5 +34,16 @@ final class RestockExceedsReceived extends CommerzException
     public function context(): array
     {
         return ['line' => $this->lineId, 'restock' => $this->restock, 'received' => $this->received];
+    }
+
+    #[Override]
+    public function errorDescriptor(): ErrorDescriptor
+    {
+        return new ErrorDescriptor(
+            code: SalesErrorCode::RestockExceedsReceived,
+            category: PackmanErrorCategory::Conflict,
+            retryable: false,
+            details: $this->context(),
+        );
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Rules\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Packman\Attributes\Api;
 
 /** What a rule is validated against: the stage of its promotion and the promotion's currency, if it has one. */
 #[Api(since: '0.1')]

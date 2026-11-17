@@ -26,9 +26,9 @@ use Commerz\Catalog\Variants\Exceptions\InvalidAxes;
 use Commerz\Catalog\Variants\Exceptions\TooManyVariants;
 use Commerz\Catalog\Variants\Exceptions\VariantNotFound;
 use Commerz\Errors\InvalidCommand;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Variants: what is sold. Every sellable is a variant; a combination of axis values is unique within its product

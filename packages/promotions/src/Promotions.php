@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions;
 
-use Commerz\Attributes\Api;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
+use Packman\Attributes\Api;
 
 /** Root of the promotions API: accessors of the module contracts. */
 #[Api(since: '0.1')]

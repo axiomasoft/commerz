@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\ActorRef;
+use Packman\Attributes\Api;
 
 /** Withdraws a requested return; its units become available to return again. */
 #[Api(since: '0.1')]

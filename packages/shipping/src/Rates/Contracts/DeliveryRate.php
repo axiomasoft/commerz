@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Rates\Contracts;
 
-use Commerz\Attributes\Spi;
-use Commerz\Attributes\SpiKind;
 use Commerz\Shipping\Rates\Data\RateInput;
 use Commerz\Shipping\Rates\Data\RateParams;
 use Commerz\Shipping\Rates\Data\RatePrice;
 use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 
 /** How much a method charges for a parcel in a zone. */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]

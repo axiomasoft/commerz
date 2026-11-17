@@ -76,47 +76,24 @@ it('refuses a type without a marker', function (): void {
 
 it('keeps every php-api.json manifest in sync with the code', function (): void {
     $root = dirname(__DIR__, 2);
-    $manifests = (new ApiManifest(ApiSurface::fromRoot($root)))->build();
     $update = getenv('COMMERZ_UPDATE_API_MANIFEST') === '1';
 
-    $packmanSync = (new ApiManifestGenerator)->sync(
-        $root,
-        [
-            ['name' => 'axiomasoft/commerz', 'path' => 'packages/core'],
-            ['name' => 'axiomasoft/commerz-testkit', 'path' => 'packages/testkit'],
-            ['name' => 'axiomasoft/commerz-catalog', 'path' => 'packages/catalog'],
-            ['name' => 'axiomasoft/commerz-inventory', 'path' => 'packages/inventory'],
-            ['name' => 'axiomasoft/commerz-pricing', 'path' => 'packages/pricing'],
-        ],
-        write: $update,
-    );
+    $packages = [
+        ['name' => 'axiomasoft/commerz', 'path' => 'packages/core'],
+        ['name' => 'axiomasoft/commerz-testkit', 'path' => 'packages/testkit'],
+        ['name' => 'axiomasoft/commerz-catalog', 'path' => 'packages/catalog'],
+        ['name' => 'axiomasoft/commerz-inventory', 'path' => 'packages/inventory'],
+        ['name' => 'axiomasoft/commerz-pricing', 'path' => 'packages/pricing'],
+        ['name' => 'axiomasoft/commerz-promotions', 'path' => 'packages/promotions'],
+        ['name' => 'axiomasoft/commerz-shipping', 'path' => 'packages/shipping'],
+        ['name' => 'axiomasoft/commerz-sales', 'path' => 'packages/sales'],
+    ];
+
+    $packmanSync = (new ApiManifestGenerator)->sync($root, $packages, write: $update);
     expect($packmanSync['ok'])->toBeTrue(implode("\n", $packmanSync['diagnostics']));
 
-    foreach ($manifests as $package => $manifest) {
-        if (in_array($package, ['core', 'testkit', 'catalog', 'inventory', 'pricing'], true)) {
-            continue;
-        }
-
-        $path = ApiManifest::path($root, $package);
-        $encoded = ApiManifest::encode($manifest);
-
-        if ($update) {
-            if (! is_dir(dirname($path))) {
-                mkdir(dirname($path), 0755, true);
-            }
-
-            file_put_contents($path, $encoded);
-
-            continue;
-        }
-
-        expect(is_file($path))->toBeTrue("Missing {$path}: run composer api:manifest")
-            ->and((string) file_get_contents($path))->toBe($encoded, "Stale {$path}: run composer api:manifest");
-    }
-
     // No orphan manifest for a package that has no code any more.
-    $expected = array_map(static fn (string $package): string => ApiManifest::path($root, $package), array_keys($manifests));
+    $expected = array_map(static fn (array $package): string => $root.'/'.$package['path'].'/resources/contracts/php-api.json', $packages);
 
-    expect(array_keys($manifests))->toBe(['catalog', 'core', 'inventory', 'pricing', 'promotions', 'sales', 'shipping', 'testkit'])
-        ->and(array_values(array_diff(glob($root.'/packages/*/resources/contracts/php-api.json') ?: [], $expected)))->toBe([]);
+    expect(array_values(array_diff(glob($root.'/packages/*/resources/contracts/php-api.json') ?: [], $expected)))->toBe([]);
 });

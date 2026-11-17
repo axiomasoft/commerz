@@ -13,7 +13,7 @@ use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
-use Commerz\Promotions\Common\Internal\PromotionsConfig;
+use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Definitions\Data\ExplainPromotions;
 use Commerz\Promotions\Definitions\Data\PromotionVerdict;
 use Commerz\Promotions\Definitions\Data\PromotionView;
@@ -207,7 +207,7 @@ function evFailure(QuoteInput $input): string
 function evRounding(string $mode): void
 {
     config()->set('commerz-promotions.rounding', $mode);
-    app()->forgetInstance(PromotionsConfig::class);
+    app()->forgetInstance(PromotionsOptions::class);
 }
 
 /** @param  array<string, mixed>  $columns */

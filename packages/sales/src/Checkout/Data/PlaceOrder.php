@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Checkout\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Money\Money;
 use Commerz\Sales\Carts\Data\CartId;
+use Packman\Attributes\Api;
 
 /**
  * Places the cart as an order. `$expectedTotal` is the total the buyer accepted (`Carts::quote`); the order is placed

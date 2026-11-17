@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
+use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
 use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Enums\RestoreReason;
@@ -38,7 +39,7 @@ function pscnApplied(QuoteResult $quote): array
     $codes = DB::table('cmz_promotions')->pluck('code', 'id')->all();
 
     return array_map(
-        static fn ($a): string => $codes[$a->promotionId].'|'.($a->couponCode ?? '-').'|'.$a->discount->toDecimal(),
+        static fn (AppliedPromotion $a): string => $codes[$a->promotionId].'|'.($a->couponCode ?? '-').'|'.$a->discount->toDecimal(),
         $quote->appliedPromotions(),
     );
 }

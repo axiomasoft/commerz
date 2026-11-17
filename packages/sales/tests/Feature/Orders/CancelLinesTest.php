@@ -16,6 +16,7 @@ use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Fulfillments\Data\CreateFulfillment;
 use Commerz\Sales\Orders\Data\CancelOrder;
 use Commerz\Sales\Orders\Data\CancelOrderLines;
+use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
@@ -23,11 +24,11 @@ use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Events\OrderCompleted;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
-use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -68,7 +69,7 @@ it('cancels some units, releases their stock and lowers the amount due by their 
         ->and($this->commerce->stock->held($demand))->toBe(['fake:a' => 2])
         ->and($this->commerce->promotions->restored)->toBe([])
         ->and(clnOutbox('sales.order_cancelled'))->toBe(0)
-        ->and(array_map(static fn ($event): array => [$event->type, $event->data], array_slice(slsOrders()->history($order->id), 1)))
+        ->and(array_map(static fn (OrderEventView $event): array => [$event->type, $event->data], array_slice(slsOrders()->history($order->id), 1)))
         ->toEqual(array_map(static fn (string $ref): array => ['line_cancelled', [
             'line_id' => slsLine($placed, $ref)->value,
             'quantity' => 1,
@@ -116,7 +117,7 @@ it('completes a paid order whose units left after a fulfillment are cancelled (O
         ->and($order->line($line)?->outstanding())->toBe(0)
         ->and(clnOutbox('sales.order_completed'))->toBe(1)
         ->and(clnOutbox('sales.payment_requires_refund'))->toBe(0)
-        ->and(array_map(static fn ($event): string => $event->type, slsOrders()->history($order->id)))
+        ->and(array_map(static fn (OrderEventView $event): string => $event->type, slsOrders()->history($order->id)))
         ->toBe(['placed', 'fulfillment_state_changed', 'payment_state_changed', 'line_cancelled', 'fulfillment_state_changed', 'payment_state_changed', 'completed']);
     Event::assertDispatched(OrderCompleted::class, static fn (OrderCompleted $event): bool => $event->order->equals($order->id));
 });

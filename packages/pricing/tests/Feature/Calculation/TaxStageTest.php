@@ -8,9 +8,7 @@ use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\Parcel;
@@ -19,6 +17,7 @@ use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
 use Commerz\Pricing\Configuration\PricingOptions;
+use Commerz\Pricing\Plugins\PricingPlugin;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
@@ -37,6 +36,9 @@ use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 trait TsEnvironment
 {
@@ -101,16 +103,18 @@ final class TsJunkCalculator implements TaxCalculator
     }
 }
 
-final class TsPlugin implements CommerzPlugin
+final class TsPlugin implements ExtensionPlugin
 {
+    #[Override]
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.tax-stage', '1.0.0', ['commerz.pricing']);
+        return new PluginManifest('test.tax-stage', '1.0.0', [CorePlugin::ID, PricingPlugin::ID]);
     }
 
+    #[Override]
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->quoteStage(TsCodeStage::class);
+        $registrar->contribute(QuoteStage::KIND, TsCodeStage::class);
         $registrar->contribute(TaxCalculator::KIND, TsJunkCalculator::class);
     }
 }

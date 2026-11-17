@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
@@ -13,6 +12,7 @@ use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Refunds\Contracts\Refunds;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Illuminate\Contracts\Container\Container;
+use Packman\Attributes\Api;
 
 /**
  * Root of the sales API: accessors of the module contracts. A module is resolved when it is first asked for, so the

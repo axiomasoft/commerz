@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
@@ -13,6 +12,7 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
+use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
 final readonly class PromotionView

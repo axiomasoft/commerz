@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Definitions\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Attributes\Api;
 
 /** Promotions ordered by code, optionally of one status or stage or assigned to one channel. */
 #[Api(since: '0.1')]

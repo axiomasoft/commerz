@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 use Commerz\Errors\CommerzException;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\BookedShipment;
@@ -17,10 +15,14 @@ use Commerz\Ports\Delivery\Data\BookShipment;
 use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
-use Commerz\Shipping\Internal\ShippingPlugin;
+use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Tests\Fixtures\RecordingCarrier;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Packman\Errors\Exceptions\CodedException;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
 require_once __DIR__.'/../Methods/Helpers.php';
 
@@ -35,13 +37,15 @@ trait BkEnvironment
     }
 }
 
-final class BkPlugin implements CommerzPlugin
+final class BkPlugin implements ExtensionPlugin
 {
+    #[Override]
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.shipping-bookings', '1.0.0', [ShippingPlugin::ID]);
+        return new PluginManifest('test.shipping-bookings', '1.0.0', [CorePlugin::ID, ShippingPlugin::ID]);
     }
 
+    #[Override]
     public function register(PluginRegistrar $registrar): void
     {
         $registrar->contribute(Carrier::KIND, RecordingCarrier::class);
@@ -91,6 +95,8 @@ function bkOutcome(BookShipment $command): string
         return 'in_progress';
     } catch (CommerzException $e) {
         return $e->code();
+    } catch (CodedException $e) {
+        return $e->errorDescriptor()->errorCode->value();
     }
 }
 

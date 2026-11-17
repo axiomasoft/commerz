@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
@@ -24,6 +23,7 @@ use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotBookable;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Sales;
 use Commerz\Testkit\Commerce;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 require_once __DIR__.'/Helpers.php';
 

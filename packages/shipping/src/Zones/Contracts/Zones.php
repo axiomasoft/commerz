@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Page;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
@@ -18,6 +17,7 @@ use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Shipping\Zones\Data\ZoneView;
 use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
 use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
+use Packman\Attributes\Api;
 
 /** Delivery zones: sets of countries, regions and postal prefixes. Zones may overlap; the most specific match wins. */
 #[Api(since: '0.1')]

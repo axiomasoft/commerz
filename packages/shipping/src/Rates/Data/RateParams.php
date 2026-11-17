@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Rates\Data;
 
 use BackedEnum;
-use Commerz\Attributes\Api;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Packman\Attributes\Api;
 
 /**
  * The parameters of a rate as a canonical JSON-safe map: keys sorted, `Money` as `{amount_minor, currency}`, enums as

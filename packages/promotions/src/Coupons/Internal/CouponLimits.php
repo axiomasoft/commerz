@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Coupons\Internal;
 
 use Commerz\Errors\InvalidCommand;
+use Packman\Attributes\Internal;
 
 /** The one check of a coupon's usage limit shared by the coupon commands. */
+#[Internal]
 final class CouponLimits
 {
     private const int MAX = 2_147_483_647;

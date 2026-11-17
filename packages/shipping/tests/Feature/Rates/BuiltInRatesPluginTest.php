@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Carriers\Internal\ManualCarrier;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
@@ -13,6 +12,7 @@ use Commerz\Shipping\Rates\Data\RateSpec;
 use Commerz\Shipping\Rates\Internal\FlatRate;
 use Commerz\Shipping\Rates\Internal\RateCodec;
 use Commerz\Shipping\Rates\Internal\WeightTableRate;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 
 it('contributes the built-in rates and the manual carrier under their keys', function (): void {
     $contributions = app(Contributions::class);

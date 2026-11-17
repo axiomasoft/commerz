@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Commerz\Sales\Tests\Feature;
 
 use Commerz\CommerzServiceProvider;
-use Commerz\PluginGraph;
-use Commerz\Plugins\Contracts\Contributions;
-use Commerz\Plugins\Contracts\PluginInspector;
+use Commerz\Plugins\CorePlugin;
 use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Gateways\Internal\ManualGateway;
-use Commerz\Sales\Internal\SalesPlugin;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Internal\SequenceOrderNumbers;
+use Commerz\Sales\Plugins\SalesPlugin;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Plugins\Contracts\Registry\PluginInspector;
+use Packman\Plugins\Testing\PluginGraph;
 use PHPUnit\Framework\Attributes\Test;
 
 final class SalesPluginTest extends PackageTestCase
@@ -43,7 +44,7 @@ final class SalesPluginTest extends PackageTestCase
     #[Test]
     public function declares_the_payment_gateway_and_order_number_generator_kinds(): void
     {
-        $registry = PluginGraph::compile(app(), [SalesPlugin::class]);
+        $registry = PluginGraph::compile(app(), [CorePlugin::class, SalesPlugin::class]);
 
         self::assertInstanceOf(PluginInspector::class, $registry);
 

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Contracts;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\IdempotencyConflict;
-use Commerz\Errors\UnsupportedContribution;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
@@ -25,6 +23,8 @@ use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotShipped;
 use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Packman\Attributes\Api;
+use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 /**
  * Fulfillments of orders (ORD-03, D14): what left the warehouse, and with whom. Units are fulfilled once (the ledger of

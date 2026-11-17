@@ -6,6 +6,7 @@ namespace Commerz\Sales\Payments\Internal;
 
 use Commerz\Sales\Payments\Enums\PaymentStatus;
 use LogicException;
+use Packman\Attributes\Internal;
 
 /**
  * The status of a payment only moves forward (sales-design#payments, D33). Ranks: `initiating` and `unknown` 0,
@@ -13,6 +14,7 @@ use LogicException;
  * is the strongest fact: it applies from any status, a final one included, and only grows. Anything else that does
  * not move the payment forward is ignored, so a late or repeated observation never undoes a newer one.
  */
+#[Internal]
 final class PaymentTransitions
 {
     /**

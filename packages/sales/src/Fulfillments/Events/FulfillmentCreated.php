@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Fulfillments\Events;
 
-use Commerz\Attributes\Api;
 use Commerz\Sales\Fulfillments\Data\FulfillmentId;
 use Commerz\Sales\Orders\Data\OrderId;
+use Packman\Attributes\Api;
 
 /** Dispatched after the creation of a fulfillment commits. */
 #[Api(since: '0.1')]

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Promotions\Usage\Internal;
 
-use Commerz\Configuration\CommerzConfig;
+use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
-use Commerz\Plugins\Contracts\Contributions;
 use Commerz\Promotions\Common\Internal\Rows;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Rules\Contracts\PromotionActivator;
@@ -16,9 +15,11 @@ use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
-use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Packman\Attributes\Internal;
+use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**
@@ -26,11 +27,12 @@ use RuntimeException;
  * promotion (redemption `consumed`), a counter without a limit is zero, and every rule and activator of a promotion that
  * can still apply loads. All reads share one `repeatable read` read-only snapshot, so traffic cannot fake a discrepancy.
  */
+#[Internal]
 final readonly class UsageReconciler
 {
     public function __construct(
         private ConnectionResolverInterface $connections,
-        private CommerzConfig $config,
+        private CommerzOptions $config,
         private TableNames $tables,
         private RuleCodec $codec,
         private Contributions $contributions,

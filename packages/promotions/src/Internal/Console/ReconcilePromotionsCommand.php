@@ -9,11 +9,13 @@ use Commerz\Promotions\Usage\Internal\UsageReconciler;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Packman\Attributes\Internal;
 
 /**
  * Compares the usage counters with the usage log and lists the rules no plugin can run; exit 1 when anything is off.
  * Read-only: a counter is rebuilt by changing the limit (UpdatePromotion, SetCouponLimit), which recomputes it.
  */
+#[Internal]
 #[Description('Reconcile Commerz promotion and coupon usage counters with the usage log.')]
 #[Signature('commerz:promotions:reconcile')]
 final class ReconcilePromotionsCommand extends Command

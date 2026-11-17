@@ -14,9 +14,8 @@ use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
 use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Data\CreateCart;
-use Commerz\Sales\Common\Internal\SalesConfig;
+use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Sales;
-use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -24,6 +23,7 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Support\Facades\DB;
+use Packman\Schema\Data\Compiler\TableNames;
 
 function ctCarts(): Carts
 {
@@ -34,7 +34,7 @@ function ctCarts(): Carts
 function ctConfig(array $carts): void
 {
     config(['commerz-sales.carts' => $carts + config('commerz-sales.carts')]);
-    app()->forgetInstance(SalesConfig::class);
+    app()->forgetInstance(SalesOptions::class);
     app()->forgetInstance(Carts::class);
     app()->forgetInstance(Sales::class);
 }

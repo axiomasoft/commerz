@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Bookings\Data;
 
-use Commerz\Attributes\Api;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Shipping\Bookings\Enums\BookingState;
+use Packman\Attributes\Api;
 
 /** Bookings oldest first, optionally in one state, e.g. the `unknown` ones an operator has to sort out. */
 #[Api(since: '0.1')]

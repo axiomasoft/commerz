@@ -1,0 +1,32 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-shipping configuration",
+    "type": "object",
+    "properties": {
+        "commerz-shipping": {
+            "type": "object",
+            "properties": {
+                "booking": {
+                    "type": "object",
+                    "properties": {
+                        "lease_seconds": {
+                            "type": "integer",
+                            "default": 120
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "max_zone_members": {
+                    "type": "integer",
+                    "default": 2000
+                },
+                "tax_included": {
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
