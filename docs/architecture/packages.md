@@ -37,7 +37,7 @@ public categories it needs (see [Code layout](#code-layout)).
 | `Measures` | `Quantity` (int + unit), `Measure` (decimal string + unit, for attributes), `LocalizedText` |
 | `Identity` | `EntityId` (abstract, UUIDv7), `Uuid7` (generator, test seam), `SellableRef`, `CustomerRef`, `ActorRef`, `IdempotencyKey` |
 | `Context` | `CommerceContext`, `Contracts\ContextResolver` (SPI for hosts) |
-| `Errors` | `CommerzException`, `ErrorCategory`, `InvalidCommand`, `NotFound`, `IdempotencyConflict`, `InvalidConfiguration`, `UnsupportedContribution` |
+| `Errors` | `CommerzException`, `Packman\Errors\Enums\ErrorCategory`, `InvalidCommand`, `NotFound`, `IdempotencyConflict`, `InvalidConfiguration`, `UnsupportedContribution` |
 | `Configuration` | `CommerzConfig`, `StockMode`, `CustomersMode` |
 | `Schema` | `TableNames`, `CommerzMigration`, `ConstraintNames`, `Contracts\SchemaOwnership` |
 | `Operations` | `Contracts\Transactions`, `Contracts\OperationReceipts` |
@@ -79,7 +79,7 @@ Enforced by architecture tests in `tests/Arch`.
 
 ## Code layout
 
-Canon from CoreX (STR-002/005/006) and Chatom:
+Canon from legacy-platform (STR-002/005/006) and Chatom:
 
 ```text
 packages/inventory/
@@ -115,7 +115,7 @@ packages/inventory/
 Not part of release 0.1; each gets its own plan:
 
 - Transports: `commerz-http` (REST + problem+json), `commerz-filament` (admin).
-- Ecosystem bridges: `commerz-corex` (Flex/CoreX module, custom fields,
+- Ecosystem bridges: `commerz-legacy-platform` (Flex/legacy-platform module, custom fields,
   tenancy), `commerz-azguard` (permissions), `commerz-vaulter` (media),
   `commerz-chatom` (order chat).
 - Adapters: payment (`commerz-payment-yookassa`, `-stripe`), carriers

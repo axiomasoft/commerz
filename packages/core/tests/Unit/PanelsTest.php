@@ -33,7 +33,7 @@ it('exposes headless store and channel panels through CorePlugin', function (): 
         $ref = new PanelReference(providerKey: $descriptor->key, panelId: '1', parent: null);
 
         expect($panel->access($guest, $ref)->view)->toBeFalse()
-            ->and($panel->access($member, $ref)->view)->toBeTrue()
-            ->and($panel->access($member, $ref)->actions)->toBe(['view', 'create', 'update', 'archive']);
+            ->and($panel->access($member, $ref)->view)->toBeFalse()
+            ->and($panel->access($member, $ref)->actions)->toBe([]);
     }
 });

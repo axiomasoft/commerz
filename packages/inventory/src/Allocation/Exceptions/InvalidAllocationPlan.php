@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Allocation\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** An allocation strategy proposed a plan the sources cannot honour; the whole command is rolled back. */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class InvalidAllocationPlan extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Integration;
+        return ErrorCategory::Unavailable;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class InvalidAllocationPlan extends CommerzException
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::InvalidAllocationPlan,
-            category: PackmanErrorCategory::Unavailable,
+            category: ErrorCategory::Unavailable,
             retryable: false,
             details: $this->context(),
         );

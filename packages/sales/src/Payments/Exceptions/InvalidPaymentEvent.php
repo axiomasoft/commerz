@@ -9,7 +9,7 @@ use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A provider event is malformed or does not fit its payment (another currency, more than the payment); it is not recorded. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class InvalidPaymentEvent extends InvalidCommand
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::InvalidPaymentEvent,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

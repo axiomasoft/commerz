@@ -30,8 +30,6 @@ use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Concerns\RegistersNothingOnBoot;
 use Packman\Foundation\Contracts\PackageRegistrar;
 use Packman\PackmanServiceProvider;
-use Packman\Panels\Internal\Configuration\PanelsOptions;
-use Packman\Panels\Laravel\PanelExtensionBridge;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Laravel\PluginsServiceProvider;
 use Packman\Schema\Laravel\SchemaExtensions;
@@ -76,14 +74,6 @@ final class PricingRegistrar implements PackageRegistrar
             );
 
             SchemaExtensions::register($app, PricingPlugin::class, PricingPlugin::ID);
-        }
-
-        if ($app->bound(PanelsOptions::class)) {
-            PanelExtensionBridge::registerExtension($app, $app->make(PricingPlugin::class));
-        } else {
-            $app->afterResolving(PanelsOptions::class, static function (mixed $_, Application $app): void {
-                PanelExtensionBridge::registerExtension($app, $app->make(PricingPlugin::class));
-            });
         }
 
         $app->singleton(PriceWrites::class);

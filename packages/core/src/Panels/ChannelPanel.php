@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Panels;
 
+use Illuminate\Contracts\Container\Container;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
@@ -22,6 +23,8 @@ final readonly class ChannelPanel implements PanelProvider
     /** @var list<string> */
     private const array SUPPORTED_ACTIONS = ['view', 'create', 'update', 'archive'];
 
+    public function __construct(private ?Container $container = null) {}
+
     #[Override]
     public function descriptor(): PanelDescriptor
     {
@@ -38,14 +41,6 @@ final readonly class ChannelPanel implements PanelProvider
     #[Override]
     public function access(PanelContext $context, PanelReference $panel): PanelAccess
     {
-        if ($context->actorKind === 'guest') {
-            return PanelAccess::deny('unauthenticated_actor');
-        }
-
-        return new PanelAccess(
-            view: true,
-            actions: self::SUPPORTED_ACTIONS,
-            reason: null,
-        );
+        return PanelAuthorization::evaluate($this->container, $context, $panel, $this->descriptor());
     }
 }

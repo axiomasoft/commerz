@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Panels;
 
-use Commerz\Pricing\Panels\Internal\PricingPanelGate;
+use Commerz\Panels\PanelAuthorization;
+use Illuminate\Contracts\Container\Container;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
@@ -23,6 +24,8 @@ final readonly class TaxRatesPanel implements PanelProvider
     /** @var list<string> */
     private const array SUPPORTED_ACTIONS = ['view', 'set', 'reschedule', 'remove'];
 
+    public function __construct(private ?Container $container = null) {}
+
     #[Override]
     public function descriptor(): PanelDescriptor
     {
@@ -39,6 +42,6 @@ final readonly class TaxRatesPanel implements PanelProvider
     #[Override]
     public function access(PanelContext $context, PanelReference $panel): PanelAccess
     {
-        return PricingPanelGate::evaluate($context, self::SUPPORTED_ACTIONS);
+        return PanelAuthorization::evaluate($this->container, $context, $panel, $this->descriptor());
     }
 }

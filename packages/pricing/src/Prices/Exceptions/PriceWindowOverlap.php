@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Prices\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Pricing\Errors\Enums\PricingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The window overlaps another window of the same price key (list, sellable, group, quantity step) (PRC-01). */
 #[Api(since: '0.1')]
@@ -48,7 +47,7 @@ final class PriceWindowOverlap extends CommerzException
     {
         return new ErrorDescriptor(
             code: PricingErrorCode::PriceWindowOverlap,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

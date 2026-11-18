@@ -9,7 +9,7 @@ use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 #[Api(since: '0.1')]
 final class LocationNotFound extends NotFound
@@ -25,7 +25,7 @@ final class LocationNotFound extends NotFound
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::LocationNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

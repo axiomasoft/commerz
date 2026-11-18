@@ -6,11 +6,10 @@ namespace Commerz\Catalog\Variants\Exceptions;
 
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A generation plans more combinations than `commerz-catalog.max_generated_variants` allows; nothing was written. */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class TooManyVariants extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Limit;
+        return ErrorCategory::RateLimit;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class TooManyVariants extends CommerzException
     {
         return new ErrorDescriptor(
             code: CatalogErrorCode::TooManyVariants,
-            category: PackmanErrorCategory::RateLimit,
+            category: ErrorCategory::RateLimit,
             retryable: false,
             details: $this->context(),
         );

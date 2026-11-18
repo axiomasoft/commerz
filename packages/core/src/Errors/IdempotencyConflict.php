@@ -8,7 +8,7 @@ use Commerz\Errors\Enums\CommerzErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The same idempotency key was reused for a different request payload. */
 #[Api(since: '0.1')]
@@ -39,7 +39,7 @@ final class IdempotencyConflict extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::IdempotencyConflict,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

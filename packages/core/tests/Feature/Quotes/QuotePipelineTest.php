@@ -133,7 +133,7 @@ final class QtCodePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.codes', '1.0.0');
+        return new PluginManifest('test.codes', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void
@@ -147,7 +147,7 @@ final class QtOrderPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.order', '1.0.0');
+        return new PluginManifest('test.order', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void
@@ -171,7 +171,7 @@ final class QtTwoAtPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.two-at', '1.0.0');
+        return new PluginManifest('test.two-at', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void
@@ -185,7 +185,7 @@ final class QtBaseAtPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.base-at', '1.0.0');
+        return new PluginManifest('test.base-at', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void

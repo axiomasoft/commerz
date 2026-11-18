@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Panels;
 
-use Commerz\Shipping\Panels\Internal\ShippingPanelGate;
+use Commerz\Panels\PanelAuthorization;
+use Illuminate\Contracts\Container\Container;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
@@ -23,6 +24,8 @@ final readonly class ShippingZonesPanel implements PanelProvider
     /** @var list<string> */
     private const array SUPPORTED_ACTIONS = ['view', 'create', 'update', 'set_members', 'archive', 'restore'];
 
+    public function __construct(private ?Container $container = null) {}
+
     #[Override]
     public function descriptor(): PanelDescriptor
     {
@@ -39,6 +42,6 @@ final readonly class ShippingZonesPanel implements PanelProvider
     #[Override]
     public function access(PanelContext $context, PanelReference $panel): PanelAccess
     {
-        return ShippingPanelGate::evaluate($context, self::SUPPORTED_ACTIONS);
+        return PanelAuthorization::evaluate($this->container, $context, $panel, $this->descriptor());
     }
 }

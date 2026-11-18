@@ -16,6 +16,7 @@ use Packman\Plugins\Data\Plugin\PluginDescription;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Enums\Plugin\PluginSource;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use Packman\Plugins\Laravel\ExtensionRegistrar;
 use Packman\Plugins\Laravel\PluginRegistrar;
 use Packman\Plugins\Testing\PluginGraph;
 
@@ -380,7 +381,7 @@ it('builds the registry lazily, once, and freezes the catalog', function (): voi
     expect($registry)->toBe(app(Contributions::class))->toBe(app(PluginInspector::class))
         ->and($registry->keys('greeter'))->toBe(['test.hello'])
         ->and(array_map(fn ($p): array => [$p->id, $p->source], $registry->describe()))->toBe([['commerz.core', PluginSource::BuiltIn], ['test.owner', PluginSource::BuiltIn]])
-        ->and(fn () => CommerzPlugins::builtIn(PlgExtension::class))->toThrow(LogicException::class, 'already compiled');
+        ->and(fn () => CommerzPlugins::builtIn(PlgExtension::class))->toThrow(LogicException::class, 'frozen');
 });
 
 it('keeps the built-in plugins of a provider that registered before the core', function (): void {
@@ -458,3 +459,26 @@ it('does not grant contribution ownership through an optional load-order depende
     expect(fn () => compilePlugins(PlgOptionalExtension::class, PlgOwner::class))
         ->toThrow(InvalidConfiguration::class, 'which this plugin does not require');
 });
+
+it('shares native Packman registrations and configuration with Commerz', function (): void {
+    ExtensionRegistrar::builtIn(PlgOwner::class);
+    config(['packman.plugins' => [PlgExtension::class], 'commerz.plugins' => [PlgOptional::class]]);
+
+    $registry = app(PluginInspector::class);
+    expect(array_column($registry->describe(), 'id'))->toBe(['commerz.core', 'test.owner', 'test.extension', 'test.optional'])
+        ->and(app(Contributions::class)->keys('greeter'))->toBe(['test.hello', 'test.hola']);
+});
+
+it('applies disabled plugins from both configuration roots to the shared graph', function (string $root): void {
+    CommerzPlugins::builtIn(PlgOwner::class);
+    config(['commerz.plugins' => [PlgOptional::class], $root.'.disabled_plugins' => ['test.optional']]);
+
+    expect(array_column(app(PluginInspector::class)->describe(), 'id'))->toBe(['commerz.core', 'test.owner'])
+        ->and(app(PluginInspector::class)->disabledIds())->toBe(['test.optional']);
+})->with(['commerz', 'packman']);
+
+it('rejects duplicate configured plugins instead of hiding them during composition', function (string $root): void {
+    config([$root.'.plugins' => [PlgOwner::class, PlgOwner::class]]);
+
+    expect(fn () => app(PluginInspector::class))->toThrow(InvalidConfiguration::class, 'already registered');
+})->with(['commerz', 'packman']);

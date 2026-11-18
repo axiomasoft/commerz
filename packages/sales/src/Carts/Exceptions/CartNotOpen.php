@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Carts\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The cart was converted into an order and is no longer edited. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class CartNotOpen extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::CartNotOpen,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

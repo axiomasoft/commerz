@@ -6,11 +6,10 @@ namespace Commerz\Ports\Promotions\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A usage limit or budget is exhausted; `$limit` names which: `total`, `per_customer`, `coupon` or `budget`. */
 #[Api(since: '0.1')]
@@ -31,7 +30,7 @@ final class UsageLimitReached extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Limit;
+        return ErrorCategory::RateLimit;
     }
 
     public function context(): array
@@ -44,7 +43,7 @@ final class UsageLimitReached extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::UsageLimitReached,
-            category: PackmanErrorCategory::RateLimit,
+            category: ErrorCategory::RateLimit,
             retryable: false,
             details: $this->context(),
         );

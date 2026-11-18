@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// Пакет commerz-inventory. Нет FK на каталог (inventory не зависит от catalog — CoreX DATA-004).
+// Пакет commerz-inventory. Нет FK на каталог (inventory не зависит от catalog — legacy-platform DATA-004).
 return new class extends CommerzMigration
 {
     public function up(): void

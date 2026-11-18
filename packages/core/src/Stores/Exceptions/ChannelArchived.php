@@ -6,11 +6,10 @@ namespace Commerz\Stores\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** An archived channel was used where an active one is required (a new context, a channel update). */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class ChannelArchived extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::ChannelArchived,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

@@ -85,7 +85,7 @@ it('lets backorder components go beyond free stock but not tracked ones', functi
 it('reports an integration error with a stable code', function (): void {
     expect(fn () => validated([planned('car', 'main', 1)]))->toThrow(function (InvalidAllocationPlan $e): void {
         expect($e->code())->toBe('inventory.invalid_allocation_plan')
-            ->and($e->category()->value)->toBe('integration')
+            ->and($e->category()->value)->toBe('unavailable')
             ->and($e->context())->toHaveKey('reason');
     });
 });

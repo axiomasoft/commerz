@@ -18,7 +18,7 @@ composer require axiomasoft/commerz axiomasoft/commerz-pricing axiomasoft/commer
 | `CustomerDirectory` | turns a `CustomerRef` (`crm.account:acme`) into a profile with customer groups | `commerz.customers` |
 
 The ports of absent packages stay on the core defaults: unlimited stock, no
-promotions, no delivery. `commerz:doctor` confirms the installation.
+promotions, no delivery. `packman:doctor` confirms the installation.
 
 ## Configuration
 

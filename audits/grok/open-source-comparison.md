@@ -103,5 +103,5 @@ Aimeos `coupon_code`, commercetools Discount Codes). Мы идём на шаг �
 | Medusa / Saleor | без префикса | text id с префиксом типа (`prod_…`) / int+uuid |
 
 Один короткий префикс + существительное модуля — устоявшаяся практика (Aimeos `mshop_`, Lunar `lunar_`, Sylius `sylius_`);
-трёхбуквенные префиксы на каждый модуль (как в CoreX для продуктов) для одного пакета-семейства избыточны —
+трёхбуквенные префиксы на каждый модуль (как в legacy-platform для продуктов) для одного пакета-семейства избыточны —
 обоснование в [ecosystem-alignment.md](ecosystem-alignment.md) §5.

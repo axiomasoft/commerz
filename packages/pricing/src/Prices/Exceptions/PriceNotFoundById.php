@@ -9,7 +9,7 @@ use Commerz\Pricing\Errors\Enums\PricingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** No price row has this id. Not the core's `prices.price_not_found`: that one says no price applies to a sellable. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class PriceNotFoundById extends NotFound
     {
         return new ErrorDescriptor(
             code: PricingErrorCode::PriceNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

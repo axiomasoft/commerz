@@ -6,11 +6,10 @@ namespace Commerz\Quotes\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 use Throwable;
 
 /**
@@ -66,7 +65,7 @@ final class QuoteFailed extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::QuoteFailed,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

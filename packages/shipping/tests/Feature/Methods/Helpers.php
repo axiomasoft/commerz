@@ -107,10 +107,11 @@ function mtTable(string $logical): string
 /** @param  list<class-string>  $plugins */
 function mtUsePlugins(array $plugins): void
 {
-    config(['commerz.plugins' => $plugins]);
+    config(['commerz.plugins' => $plugins, 'packman.plugins' => $plugins]);
 
-    // These captured the configuration or the contribution registry built from it.
+    // Simulate a fresh worker without changing the test database. Resolve aliases
+    // through the public container API so the shared Packman singleton is reset too.
     foreach ([CommerzOptions::class, Contributions::class, PluginInspector::class, RateCodec::class, MethodRows::class, Methods::class, Shipping::class] as $abstract) {
-        app()->forgetInstance($abstract);
+        app()->forgetInstance(app()->getAlias($abstract));
     }
 }

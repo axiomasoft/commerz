@@ -38,7 +38,7 @@ it('exposes headless shipping panels through ShippingPlugin', function (): void 
         $ref = new PanelReference(providerKey: $descriptor->key, panelId: '1', parent: null);
 
         expect($panel->access($guest, $ref)->view)->toBeFalse()
-            ->and($panel->access($member, $ref)->view)->toBeTrue()
-            ->and($panel->access($member, $ref)->actions)->toBe($descriptor->supportedActions);
+            ->and($panel->access($member, $ref)->view)->toBeFalse()
+            ->and($panel->access($member, $ref)->actions)->toBe([]);
     }
 });

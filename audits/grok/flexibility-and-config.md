@@ -94,7 +94,7 @@ interface CommerzPlugin
 Chatom (`config/chatom.php:53`) и Lunar (`ModelManifest`) разрешают заменить Eloquent-модель пакета своей.
 Для commerce отказываемся:
 
-1. Модели — `Internal/` (CoreX STR-006): заменяемая модель делает публичным весь её контракт, включая колонки.
+1. Модели — `Internal/` (legacy-platform STR-006): заменяемая модель делает публичным весь её контракт, включая колонки.
 2. Два плагина, заменяющие одну модель, — last-wins без диагностики (design-hypotheses §11 отмечает тот же риск).
 3. Всё, ради чего модели подменяют, покрыто иначе: доп. данные — `attributes`/`meta`/свои таблицы плагина с FK;
    доп. поведение — события и SPI; иные правила — реализация контракта ядра.
@@ -111,7 +111,7 @@ Chatom (`config/chatom.php:53`) и Lunar (`ModelManifest`) разрешают з
 
 Commerz не имеет переключателя `tenancy: shared|database`. Он работает на соединении, которое ему дают
 (`connection` или `ConnectionResolver` хоста), и не кэширует контекст в singletons — значит корректен в Octane/
-очередях при DB-per-tenant (CoreX ADR-004). Подробно — architecture.md §6.
+очередях при DB-per-tenant (legacy-platform ADR-004). Подробно — architecture.md §6.
 
 ## 8. Тестируемость гибкости
 

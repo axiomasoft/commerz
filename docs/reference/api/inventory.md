@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-inventory
 
-Public PHP surface of `packages/inventory` as recorded in `packages/inventory/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/inventory` as recorded in `packages/inventory/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -180,9 +180,10 @@ An allocation strategy proposed a plan the sources cannot honour; the whole comm
 final class InvalidAllocationPlan extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $reason;
     __construct(string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -236,9 +237,112 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventoryOptions`](#type-commerz-inventory-configuration-inventoryoptions) | class | api | 0.1 |
+
+### InventoryOptions {#type-commerz-inventory-configuration-inventoryoptions}
+
+`Commerz\Inventory\Configuration\InventoryOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-inventory`.
+
+```php
+final readonly class InventoryOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly string $allocationStrategy;
+    public readonly int $expiryBatch;
+    public readonly \Commerz\Inventory\Common\Enums\UnlinkedSellables $unlinkedSellables;
+    __construct(string $allocationStrategy = 'priority', \Commerz\Inventory\Common\Enums\UnlinkedSellables $unlinkedSellables = Commerz\Inventory\Common\Enums\UnlinkedSellables::Unavailable, int $expiryBatch = 500);
+    static fromArray(array $config, string $path = 'commerz-inventory'): self;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventoryDoctorCheck`](#type-commerz-inventory-diagnostics-inventorydoctorcheck) | class | api | 0.1 |
+
+### InventoryDoctorCheck {#type-commerz-inventory-diagnostics-inventorydoctorcheck}
+
+`Commerz\Inventory\Diagnostics\InventoryDoctorCheck`
+
+Verifies `axiomasoft/commerz-inventory` configuration and configured allocation strategy contribution.
+
+```php
+final readonly class InventoryDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventoryErrorCode`](#type-commerz-inventory-errors-enums-inventoryerrorcode) | enum | api | 0.1 |
+| [`InventoryProblemDefinitions`](#type-commerz-inventory-errors-inventoryproblemdefinitions) | class | api | 0.1 |
+
+### InventoryErrorCode {#type-commerz-inventory-errors-enums-inventoryerrorcode}
+
+`Commerz\Inventory\Errors\Enums\InventoryErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-inventory`.
+
+```php
+enum InventoryErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case DuplicateCode = 'inventory.duplicate_code';
+    case InvalidAllocation = 'inventory.invalid_allocation';
+    case InvalidAllocationPlan = 'inventory.invalid_allocation_plan';
+    case InvalidCode = 'inventory.invalid_code';
+    case InvalidFilter = 'inventory.invalid_filter';
+    case InvalidLimit = 'inventory.invalid_limit';
+    case InvalidPriority = 'inventory.invalid_priority';
+    case InvalidQuantity = 'inventory.invalid_quantity';
+    case InvalidReason = 'inventory.invalid_reason';
+    case InvalidReference = 'inventory.invalid_reference';
+    case InvalidSku = 'inventory.invalid_sku';
+    case InvalidTransfer = 'inventory.invalid_transfer';
+    case InvalidTransferState = 'inventory.invalid_transfer_state';
+    case LocationArchived = 'inventory.location_archived';
+    case LocationNotEmpty = 'inventory.location_not_empty';
+    case LocationNotFound = 'inventory.location_not_found';
+    case NegativeStock = 'inventory.negative_stock';
+    case NoStockSource = 'inventory.no_stock_source';
+    case ReservationConflict = 'inventory.reservation_conflict';
+    case StaleStockCount = 'inventory.stale_stock_count';
+    case StockItemArchived = 'inventory.stock_item_archived';
+    case StockItemNotEmpty = 'inventory.stock_item_not_empty';
+    case StockItemNotFound = 'inventory.stock_item_not_found';
+    case StockLinkMissing = 'inventory.stock_link_missing';
+    case TooManyComponents = 'inventory.too_many_components';
+    case TransferNotFound = 'inventory.transfer_not_found';
+    case UntrackedStockItem = 'inventory.untracked_stock_item';
+    value(): string;
+}
+```
+
+### InventoryProblemDefinitions {#type-commerz-inventory-errors-inventoryproblemdefinitions}
+
+`Commerz\Inventory\Errors\InventoryProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-inventory` error codes.
+
+```php
+final readonly class InventoryProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
 }
 ```
 
@@ -497,9 +601,10 @@ The item is archived: restore it before changing it, linking it or placing stock
 final class StockItemArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $sku;
     __construct(string $sku);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -513,9 +618,10 @@ A stock item that holds, reserves or has unresolved goods in a transfer cannot b
 final class StockItemNotEmpty extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $sku;
     __construct(string $sku);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -526,6 +632,7 @@ final class StockItemNotEmpty extends \Commerz\Errors\CommerzException implement
 ```php
 final class StockItemNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -540,9 +647,10 @@ final class TooManyComponents extends \Commerz\Errors\CommerzException implement
     const MAX = 20;
     public readonly string $sellable;
     __construct(string $sellable);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -556,11 +664,45 @@ An untracked item keeps no levels: stock cannot be placed on it, and the policy 
 final class UntrackedStockItem extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $sku;
     __construct(string $sku, ?string $message = null);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
     // Stock was placed on an untracked item.
     static keepsNoLevels(string $sku): self;
+}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventoryCoreRegistrar`](#type-commerz-inventory-laravel-registrars-inventorycoreregistrar) | class | spi (call) | 0.1 |
+| [`InventoryPortsRegistrar`](#type-commerz-inventory-laravel-registrars-inventoryportsregistrar) | class | spi (call) | 0.1 |
+
+### InventoryCoreRegistrar {#type-commerz-inventory-laravel-registrars-inventorycoreregistrar}
+
+`Commerz\Inventory\Laravel\Registrars\InventoryCoreRegistrar`
+
+Wires Commerz inventory plugin facets, options, schema ownership, diagnostics, panels, and console commands.
+
+```php
+final class InventoryCoreRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+### InventoryPortsRegistrar {#type-commerz-inventory-laravel-registrars-inventoryportsregistrar}
+
+`Commerz\Inventory\Laravel\Registrars\InventoryPortsRegistrar`
+
+Registers inventory repositories, stock port implementations, reconciler, and root Inventory facade target.
+
+```php
+final class InventoryPortsRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
 }
 ```
 
@@ -732,9 +874,10 @@ The location is archived: restore it before changing it or placing stock there.
 final class LocationArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $location;
     __construct(string $location);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -748,9 +891,10 @@ A location that still holds or reserves stock, or has a draft or in-transit tran
 final class LocationNotEmpty extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $location;
     __construct(string $location);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -761,6 +905,7 @@ final class LocationNotEmpty extends \Commerz\Errors\CommerzException implements
 ```php
 final class LocationNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -821,6 +966,73 @@ final readonly class MovementView {
     public readonly ?string $reason;
     public readonly ?string $reference;
     __construct(int $id, \Commerz\Inventory\Items\Data\StockItemId $item, \Commerz\Inventory\Locations\Data\LocationId $location, string $locationCode, \Commerz\Inventory\Stock\Enums\MovementKind $kind, int $delta, int $balanceAfter, ?string $reference, ?string $reason, ?\Commerz\Identity\ActorRef $actor, \DateTimeImmutable $occurredAt);
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`StockLevelsPanel`](#type-commerz-inventory-panels-stocklevelspanel) | class | spi (call) | 0.1 |
+| [`StockLocationsPanel`](#type-commerz-inventory-panels-stocklocationspanel) | class | spi (call) | 0.1 |
+
+### StockLevelsPanel {#type-commerz-inventory-panels-stocklevelspanel}
+
+`Commerz\Inventory\Panels\StockLevelsPanel`
+
+Headless Packman panel provider descriptor and admission gate for stock levels.
+
+```php
+final readonly class StockLevelsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### StockLocationsPanel {#type-commerz-inventory-panels-stocklocationspanel}
+
+`Commerz\Inventory\Panels\StockLocationsPanel`
+
+Headless Packman panel provider descriptor and admission gate for stock locations.
+
+```php
+final readonly class StockLocationsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventoryPlugin`](#type-commerz-inventory-plugins-inventoryplugin) | class | api | 0.1 |
+
+### InventoryPlugin {#type-commerz-inventory-plugins-inventoryplugin}
+
+`Commerz\Inventory\Plugins\InventoryPlugin`
+
+The inventory's code plugin: declares `allocation_strategy`, contributes built-in strategies, and exposes inventory configuration, schema, diagnostics, and panels.
+
+```php
+final class InventoryPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.inventory';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
 }
 ```
 
@@ -1001,9 +1213,28 @@ final class ReservationConflict extends \Commerz\Errors\CommerzException impleme
     public readonly string $channel;
     public readonly string $demand;
     __construct(string $demand, string $channel);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InventorySchemaSets`](#type-commerz-inventory-schema-inventoryschemasets) | class | spi (call) | 0.1 |
+
+### InventorySchemaSets {#type-commerz-inventory-schema-inventoryschemasets}
+
+`Commerz\Inventory\Schema\InventorySchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-inventory`.
+
+```php
+final readonly class InventorySchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -1281,9 +1512,10 @@ final class NegativeStock extends \Commerz\Errors\CommerzException implements \S
     public readonly int $onHand;
     public readonly string $sku;
     __construct(string $sku, string $location, int $onHand, int $delta);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1300,9 +1532,10 @@ final class StaleStockCount extends \Commerz\Errors\CommerzException implements 
     public readonly string $location;
     public readonly string $sku;
     __construct(string $sku, string $location, int $expected, int $actual);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1315,6 +1548,7 @@ The sellable is linked to no stock item, and `commerz-inventory.unlinked_sellabl
 ```php
 final class StockLinkMissing extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $sellable);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1546,9 +1780,10 @@ final class InvalidTransferState extends \Commerz\Errors\CommerzException implem
     public readonly \Commerz\Inventory\Transfers\Enums\TransferState $state;
     public readonly string $transfer;
     __construct(string $transfer, \Commerz\Inventory\Transfers\Enums\TransferState $state, string $action);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1559,5 +1794,6 @@ final class InvalidTransferState extends \Commerz\Errors\CommerzException implem
 ```php
 final class TransferNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

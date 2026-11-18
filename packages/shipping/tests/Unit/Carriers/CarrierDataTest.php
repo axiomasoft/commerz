@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\Address;
@@ -12,6 +11,7 @@ use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Shipping\Carriers\Data\CarrierBooking;
 use Commerz\Shipping\Carriers\Exceptions\CarrierRejected;
 use Commerz\Shipping\Carriers\Exceptions\InvalidCarrierResult;
+use Packman\Errors\Enums\ErrorCategory;
 
 function cdShipment(): BookShipment
 {
@@ -37,10 +37,10 @@ it('classifies the carrier errors', function (): void {
 
     expect($rejected)->toBeInstanceOf(CommerzException::class)
         ->and([$rejected->code(), $rejected->category(), $rejected->context()])->toBe([
-            'shipping.carrier_rejected', ErrorCategory::Integration, ['carrier' => 'cdek', 'reason' => 'address_not_served', 'detail' => 'No pickup point there.'],
+            'shipping.carrier_rejected', ErrorCategory::Unavailable, ['carrier' => 'cdek', 'reason' => 'address_not_served', 'detail' => 'No pickup point there.'],
         ])
         ->and($rejected->getMessage())->toContain('cdek')->toContain('address_not_served')
         ->and([$invalid->code(), $invalid->category(), $invalid->context()])->toBe([
-            'shipping.invalid_carrier_result', ErrorCategory::Integration, ['carrier' => 'cdek', 'reason' => 'no tracking number'],
+            'shipping.invalid_carrier_result', ErrorCategory::Unavailable, ['carrier' => 'cdek', 'reason' => 'no tracking number'],
         ]);
 });

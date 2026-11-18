@@ -87,7 +87,7 @@ Lunar `AbstractDiscountType` тоже меняет корзину внутри �
 
 **Конфиг** хранится как `jsonb` + `config_version`; плагин отдаёт `final readonly` DTO с `fromArray()` и миграцией
 `upgrade(int $fromVersion, array $raw): array`. Неизвестный `type` или невалидный конфиг при загрузке акции →
-акция получает статус `unsupported` и **не применяется**, админка показывает причину (fail-closed, урок CoreX —
+акция получает статус `unsupported` и **не применяется**, админка показывает причину (fail-closed, урок legacy-platform —
 [ecosystem-alignment.md](ecosystem-alignment.md) §8).
 
 ## 3. Алгоритм движка

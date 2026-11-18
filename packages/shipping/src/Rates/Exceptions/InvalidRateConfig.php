@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Rates\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The parameters of a rate are wrong; `field` is the parameter, e.g. `amount` or `steps.1.up_to_grams`. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class InvalidRateConfig extends CommerzException
     {
         return new ErrorDescriptor(
             code: ShippingErrorCode::InvalidRateConfig,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

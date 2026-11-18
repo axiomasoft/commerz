@@ -10,10 +10,10 @@ installation share the same `0.1` line, and inter-package requirements are
 ```bash
 composer update 'axiomasoft/commerz*'
 php artisan migrate
-php artisan commerz:doctor
+php artisan packman:doctor
 ```
 
-`commerz:doctor` compares the stored schema fingerprint with the installed
+`packman:doctor` compares the stored schema fingerprint with the installed
 version and tells you to run `migrate` when they differ.
 
 ## Migrations
@@ -33,7 +33,7 @@ Rules (promotion conditions and effects, shipping rates) are stored by key and
 the stored configuration on load. When a plugin is removed or cannot read a
 version, the rule becomes `unsupported` and fails closed.
 
-After an upgrade, run `commerz:plugins`, `commerz:promotions:reconcile` and, for
+After an upgrade, run `packman:plugins`, `commerz:promotions:reconcile` and, for
 shipping, check the methods in the admin for unsupported rates.
 
 ## Pre-1.0

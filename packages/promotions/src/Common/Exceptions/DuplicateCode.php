@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Common\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A promotion code or a coupon code is already taken in this installation. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class DuplicateCode extends CommerzException
     {
         return new ErrorDescriptor(
             code: PromotionsErrorCode::DuplicateCode,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

@@ -9,7 +9,7 @@ use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The cart would hold more lines than `commerz-sales.carts.max_lines`. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class TooManyCartLines extends InvalidCommand
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::TooManyCartLines,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

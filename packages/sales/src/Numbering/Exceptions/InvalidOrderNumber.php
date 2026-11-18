@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Numbering\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A generator produced a number that is not 1..64 characters of `A-Za-z0-9-` with at least one letter or digit: a configuration defect, the order is not placed. */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class InvalidOrderNumber extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Configuration;
+        return ErrorCategory::Validation;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class InvalidOrderNumber extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::InvalidOrderNumber,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

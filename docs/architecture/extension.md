@@ -16,34 +16,37 @@ stored in the database) is out by design.
 
 ## Plugins
 
-A plugin is a `CommerzPlugin`:
+A plugin implements `Packman\Plugins\Contracts\Registry\ExtensionPlugin`:
 
 ```php
-#[Spi(kind: SpiKind::Implement, since: '0.1')]
-interface CommerzPlugin
-{
-    public function manifest(): PluginManifest;                    // id 'vendor.name' [a-z0-9.-], version, requires, optional
-    public function register(PluginRegistrar $registrar): void;   // declarations only, no IO
-}
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
+
+public function manifest(): PluginManifest;
+public function register(PluginRegistrar $registrar): void;
 ```
 
-- `PluginRegistrar` (`#[Api]`): `declareKind(ContributionKind)`,
-  `contribute(string $kind, object|string $contribution)` (the key comes from
-  the contribution's `key()`), sugar `sellableProvider()` and `quoteStage()`.
-- Commerz packages register their built-in contributions through the same API
-  (dogfooding): `commerz.core`, `commerz.catalog`, … plus host plugins from
-  `config('commerz.plugins')`.
-- `PluginGraphCompiler` sorts plugins topologically by `requires`. Duplicate
-  plugin id or contribution key, unknown kind, wrong interface, unknown
-  required plugin or a cycle → `InvalidConfiguration` at boot.
-- The compiled registry is frozen (`Contributions`, `#[Api]`:
-  `get(kind, key, interface)`, `has()`, `keys()`). Compilation is lazy on first
-  access and immutable for the rest of the process; it survives
-  `config:cache` and long-running workers. No request state in singletons.
+- `PluginRegistrar` declares contribution kinds and registers implementations
+  through `declareKind()` and `contribute()`. The contribution supplies its stable
+  `key()`. Native Packman capabilities and slots use the same compiled graph.
+- Commerz packages forward their built-ins through `CommerzPlugins::builtIn()` to
+  Packman's `ExtensionRegistrar`. Host plugins may use either registration entry
+  point, `commerz.plugins`, or `packman.plugins`; register them before the graph
+  is first resolved.
+- Dependencies are explicit: a plugin contributing a core sellable provider,
+  outbox consumer or quote stage must require `commerz.core`. Feature contribution
+  kinds require their owning feature plugin (and inherit its core dependency).
+- Packman sorts the graph by `requires`. Duplicate plugin ids or contribution
+  keys, unknown kinds, wrong interfaces, missing requirements and cycles fail
+  compilation with `InvalidConfiguration`.
+- The compiled `Contributions` and `PluginInspector` share one frozen registry.
+  Panels, diagnostics, schema sets and capabilities use that registry. Compilation
+  is lazy on first access, including panel registration during application boot;
+  the result is immutable for the worker's lifetime. No request state lives in it.
 - Data stores the **stable contribution key** plus `config_version`, never a
   class name. A missing plugin makes the value or rule `unsupported`
   (fail-closed): the promotion does not apply, the attribute reads as a raw
-  read-only value, `commerz:doctor` reports it.
+  read-only value, `packman:doctor` reports it.
 - Plugins are trusted in-process code; no sandbox is promised.
 
 ## Contribution kinds

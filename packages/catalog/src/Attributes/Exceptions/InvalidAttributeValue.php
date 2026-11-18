@@ -6,11 +6,10 @@ namespace Commerz\Catalog\Attributes\Exceptions;
 
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A value does not fit the attribute's type or config. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class InvalidAttributeValue extends CommerzException
     {
         return new ErrorDescriptor(
             code: CatalogErrorCode::InvalidAttributeValue,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

@@ -9,7 +9,7 @@ use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The sellable is linked to no stock item, and `commerz-inventory.unlinked_sellables` is `unavailable`. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class StockLinkMissing extends NotFound
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::StockLinkMissing,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

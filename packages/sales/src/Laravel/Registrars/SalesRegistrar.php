@@ -34,8 +34,6 @@ use Packman\Attributes\SpiKind;
 use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Contracts\PackageRegistrar;
 use Packman\PackmanServiceProvider;
-use Packman\Panels\Internal\Configuration\PanelsOptions;
-use Packman\Panels\Laravel\PanelExtensionBridge;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Laravel\PluginsServiceProvider;
 use Packman\Schema\Laravel\SchemaExtensions;
@@ -78,14 +76,6 @@ final class SalesRegistrar implements PackageRegistrar
             );
 
             SchemaExtensions::register($app, SalesPlugin::class, SalesPlugin::ID);
-        }
-
-        if ($app->bound(PanelsOptions::class)) {
-            PanelExtensionBridge::registerExtension($app, $app->make(SalesPlugin::class));
-        } else {
-            $app->afterResolving(PanelsOptions::class, static function (mixed $_, Application $app): void {
-                PanelExtensionBridge::registerExtension($app, $app->make(SalesPlugin::class));
-            });
         }
 
         $app->singleton(Carts::class, DatabaseCarts::class);

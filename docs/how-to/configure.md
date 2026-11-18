@@ -18,7 +18,7 @@ policies. The full key list is the [configuration reference](../reference/config
 
 Every file works unpublished: the defaults are merged. Publish only what you
 change. Invalid values fail at boot with `InvalidConfiguration`; run
-`php artisan commerz:doctor` after changing them.
+`php artisan packman:doctor` after changing them.
 
 ## Common decisions
 

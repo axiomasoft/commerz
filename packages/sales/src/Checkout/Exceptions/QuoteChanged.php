@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Commerz\Sales\Checkout\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Money\Money;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The total of the cart is not the one the buyer accepted; quote it again and show the new total. */
 #[Api(since: '0.1')]
@@ -42,7 +41,7 @@ final class QuoteChanged extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::QuoteChanged,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

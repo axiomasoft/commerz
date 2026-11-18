@@ -6,11 +6,11 @@ Generated from the `php-api.json` manifests of each package (`composer api:manif
 
 | Package | Composer | Types |
 |---|---|---|
-| [catalog](./catalog.md) | `axiomasoft/commerz-catalog` | 109 |
-| [core](./core.md) | `axiomasoft/commerz` | 148 |
-| [inventory](./inventory.md) | `axiomasoft/commerz-inventory` | 92 |
-| [pricing](./pricing.md) | `axiomasoft/commerz-pricing` | 62 |
-| [promotions](./promotions.md) | `axiomasoft/commerz-promotions` | 64 |
-| [sales](./sales.md) | `axiomasoft/commerz-sales` | 137 |
-| [shipping](./shipping.md) | `axiomasoft/commerz-shipping` | 66 |
+| [catalog](./catalog.md) | `axiomasoft/commerz-catalog` | 120 |
+| [core](./core.md) | `axiomasoft/commerz` | 140 |
+| [inventory](./inventory.md) | `axiomasoft/commerz-inventory` | 102 |
+| [pricing](./pricing.md) | `axiomasoft/commerz-pricing` | 72 |
+| [promotions](./promotions.md) | `axiomasoft/commerz-promotions` | 73 |
+| [sales](./sales.md) | `axiomasoft/commerz-sales` | 148 |
+| [shipping](./shipping.md) | `axiomasoft/commerz-shipping` | 76 |
 | [testkit](./testkit.md) | `axiomasoft/commerz-testkit` | 11 |

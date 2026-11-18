@@ -19,7 +19,7 @@ interface AttributeConfig
 }
 
 /**
- * Тип атрибута — плагин. Ключи встроенных типов совпадают с corex-custom-fields.
+ * Тип атрибута — плагин. Ключи встроенных типов совпадают с legacy-platform-custom-fields.
  * Значение в документе cmz_products.attributes / cmz_variants.attributes — то, что вернул toDocument().
  */
 #[Spi(kind: SpiKind::Implement, since: '1.0')]

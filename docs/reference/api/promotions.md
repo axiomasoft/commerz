@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-promotions
 
-Public PHP surface of `packages/promotions` as recorded in `packages/promotions/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/promotions` as recorded in `packages/promotions/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -83,9 +83,35 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsOptions`](#type-commerz-promotions-configuration-promotionsoptions) | class | api | 0.1 |
+
+### PromotionsOptions {#type-commerz-promotions-configuration-promotionsoptions}
+
+`Commerz\Promotions\Configuration\PromotionsOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-promotions`.
+
+```php
+final readonly class PromotionsOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly string $couponAlphabet;
+    public readonly int $maxCodes;
+    public readonly int $maxGenerate;
+    public readonly array $restoreOn;
+    public readonly \Commerz\Money\RoundingMode $rounding;
+    __construct(\Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp, int $maxCodes = 5, array $restoreOn = [\Commerz\Ports\Promotions\Enums\RestoreReason::Cancelled, \Commerz\Ports\Promotions\Enums\RestoreReason::Expired], string $couponAlphabet = self::DEFAULT_ALPHABET, int $maxGenerate = 50000);
+    static fromArray(array $config, string $path = 'commerz-promotions'): self;
+    restores(\Commerz\Ports\Promotions\Enums\RestoreReason $reason): bool;
 }
 ```
 
@@ -308,9 +334,10 @@ final class CodeSpaceExhausted extends \Commerz\Errors\CommerzException implemen
     public readonly int $missing;
     public readonly string $pattern;
     __construct(string $pattern, int $missing);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -321,6 +348,7 @@ final class CodeSpaceExhausted extends \Commerz\Errors\CommerzException implemen
 ```php
 final class CouponNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -335,9 +363,10 @@ final class NotACouponPromotion extends \Commerz\Errors\CommerzException impleme
     public readonly string $activator;
     public readonly string $promotion;
     __construct(string $promotion, string $activator);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -720,9 +749,10 @@ The promotion is archived, which is final: it can no longer be changed, paused o
 final class PromotionArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $promotion;
     __construct(string $promotion);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -733,6 +763,96 @@ final class PromotionArchived extends \Commerz\Errors\CommerzException implement
 ```php
 final class PromotionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsDoctorCheck`](#type-commerz-promotions-diagnostics-promotionsdoctorcheck) | class | api | 0.1 |
+
+### PromotionsDoctorCheck {#type-commerz-promotions-diagnostics-promotionsdoctorcheck}
+
+`Commerz\Promotions\Diagnostics\PromotionsDoctorCheck`
+
+Verifies `axiomasoft/commerz-promotions` configuration, rule contributions, and promotion quote stages.
+
+```php
+final readonly class PromotionsDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsErrorCode`](#type-commerz-promotions-errors-enums-promotionserrorcode) | enum | api | 0.1 |
+| [`PromotionsProblemDefinitions`](#type-commerz-promotions-errors-promotionsproblemdefinitions) | class | api | 0.1 |
+
+### PromotionsErrorCode {#type-commerz-promotions-errors-enums-promotionserrorcode}
+
+`Commerz\Promotions\Errors\Enums\PromotionsErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-promotions`.
+
+```php
+enum PromotionsErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case CodeSpaceExhausted = 'promotions.code_space_exhausted';
+    case CouponNotFound = 'promotions.coupon_not_found';
+    case CurrencyMismatch = 'promotions.currency_mismatch';
+    case DuplicateCode = 'promotions.duplicate_code';
+    case InvalidActivation = 'promotions.invalid_activation';
+    case InvalidBudget = 'promotions.invalid_budget';
+    case InvalidChannels = 'promotions.invalid_channels';
+    case InvalidCode = 'promotions.invalid_code';
+    case InvalidConditionOutcome = 'promotions.invalid_condition_outcome';
+    case InvalidCount = 'promotions.invalid_count';
+    case InvalidCouponCode = 'promotions.invalid_coupon_code';
+    case InvalidDiscount = 'promotions.invalid_discount';
+    case InvalidGroup = 'promotions.invalid_group';
+    case InvalidLimits = 'promotions.invalid_limits';
+    case InvalidName = 'promotions.invalid_name';
+    case InvalidPattern = 'promotions.invalid_pattern';
+    case InvalidPriority = 'promotions.invalid_priority';
+    case InvalidRule = 'promotions.invalid_rule';
+    case InvalidRuleConfig = 'promotions.invalid_rule_config';
+    case InvalidRuleResult = 'promotions.invalid_rule_result';
+    case InvalidRules = 'promotions.invalid_rules';
+    case InvalidStatus = 'promotions.invalid_status';
+    case InvalidUnitPool = 'promotions.invalid_unit_pool';
+    case InvalidUpdate = 'promotions.invalid_update';
+    case InvalidUsage = 'promotions.invalid_usage';
+    case InvalidVerdict = 'promotions.invalid_verdict';
+    case InvalidWindow = 'promotions.invalid_window';
+    case NoChannels = 'promotions.no_channels';
+    case NotACouponPromotion = 'promotions.not_a_coupon_promotion';
+    case PatternTooSmall = 'promotions.pattern_too_small';
+    case PromotionArchived = 'promotions.promotion_archived';
+    case PromotionNotFound = 'promotions.promotion_not_found';
+    case PromotionUnavailable = 'promotions.promotion_unavailable';
+    case RuleNotAllowedInStage = 'promotions.rule_not_allowed_in_stage';
+    case UnknownActivator = 'promotions.unknown_activator';
+    case UnknownRule = 'promotions.unknown_rule';
+    value(): string;
+}
+```
+
+### PromotionsProblemDefinitions {#type-commerz-promotions-errors-promotionsproblemdefinitions}
+
+`Commerz\Promotions\Errors\PromotionsProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-promotions` error codes.
+
+```php
+final readonly class PromotionsProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
 }
 ```
 
@@ -748,6 +868,92 @@ final class PromotionNotFound extends \Commerz\Errors\NotFound implements \Strin
 
 ```php
 final class Promotions extends \Illuminate\Support\Facades\Facade {}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsRegistrar`](#type-commerz-promotions-laravel-registrars-promotionsregistrar) | class | spi (call) | 0.1 |
+
+### PromotionsRegistrar {#type-commerz-promotions-laravel-registrars-promotionsregistrar}
+
+`Commerz\Promotions\Laravel\Registrars\PromotionsRegistrar`
+
+Wires Commerz promotions services, extension plugin, options, schema ownership, diagnostics, and panels.
+
+```php
+final class PromotionsRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CouponsPanel`](#type-commerz-promotions-panels-couponspanel) | class | spi (call) | 0.1 |
+| [`PromotionsPanel`](#type-commerz-promotions-panels-promotionspanel) | class | spi (call) | 0.1 |
+
+### CouponsPanel {#type-commerz-promotions-panels-couponspanel}
+
+`Commerz\Promotions\Panels\CouponsPanel`
+
+Headless Packman panel provider descriptor and admission gate for coupons.
+
+```php
+final readonly class CouponsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### PromotionsPanel {#type-commerz-promotions-panels-promotionspanel}
+
+`Commerz\Promotions\Panels\PromotionsPanel`
+
+Headless Packman panel provider descriptor and admission gate for promotions.
+
+```php
+final readonly class PromotionsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsPlugin`](#type-commerz-promotions-plugins-promotionsplugin) | class | api | 0.1 |
+
+### PromotionsPlugin {#type-commerz-promotions-plugins-promotionsplugin}
+
+`Commerz\Promotions\Plugins\PromotionsPlugin`
+
+The promotions' code plugin: declares `promotion_condition`, `promotion_effect`, and `promotion_activator`, contributes the built-in rules, activators, and promotion quote stages, and exposes configuration, schema, diagnostics, and panels.
+
+```php
+final class PromotionsPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.promotions';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
+}
 ```
 
 ## Rules
@@ -1071,9 +1277,10 @@ final class InvalidRuleConfig extends \Commerz\Errors\CommerzException implement
     public readonly string $field;
     public readonly string $reason;
     __construct(string $field, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1088,9 +1295,28 @@ final class InvalidRuleResult extends \Commerz\Errors\CommerzException implement
     public readonly string $reason;
     public readonly string $rule;
     __construct(string $rule, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PromotionsSchemaSets`](#type-commerz-promotions-schema-promotionsschemasets) | class | spi (call) | 0.1 |
+
+### PromotionsSchemaSets {#type-commerz-promotions-schema-promotionsschemasets}
+
+`Commerz\Promotions\Schema\PromotionsSchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-promotions`.
+
+```php
+final readonly class PromotionsSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -1116,8 +1342,9 @@ final class PromotionUnavailable extends \Commerz\Errors\CommerzException implem
     public readonly string $promotionId;
     public readonly string $reason;
     __construct(string $promotionId, ?string $couponCode, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

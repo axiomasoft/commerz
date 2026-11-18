@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\InvalidCommand;
+use Packman\Errors\Enums\ErrorCategory;
 
 it('accepts and rejects codes', function (string $value, bool $valid): void {
     if ($valid) {

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Stock\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** On-hand never goes below zero: the change would take more units than the level holds. */
 #[Api(since: '0.1')]
@@ -45,7 +44,7 @@ final class NegativeStock extends CommerzException
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::NegativeStock,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

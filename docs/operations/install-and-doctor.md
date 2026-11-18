@@ -26,7 +26,7 @@ workers restart. Migrations are transactional DDL on PostgreSQL.
 ## Doctor
 
 ```bash
-php artisan commerz:doctor
+php artisan packman:doctor
 ```
 
 Three checks, each printed `OK` or `FAIL`; the exit code is non-zero if any
@@ -43,8 +43,8 @@ Run it in CI after `migrate`, and after every deploy. It is safe: it only reads.
 ## Plugins
 
 ```bash
-php artisan commerz:plugins          # table of plugins in load order, with their contributions
-php artisan commerz:plugins --json   # machine-readable
+php artisan packman:plugins          # table of plugins in load order, with their contributions
+php artisan packman:plugins --json   # machine-readable
 ```
 
 Use it to confirm which plugins and contribution keys a host actually loaded.

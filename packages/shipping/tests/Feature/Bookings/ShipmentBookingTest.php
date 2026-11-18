@@ -197,7 +197,7 @@ it('turns an error of the carrier into an unknown outcome', function (): void {
         $this->fail('The booking did not fail.');
     } catch (BookingOutcomeUnknown $e) {
         expect($e->code())->toBe('shipping.booking_outcome_unknown')
-            ->and($e->category()->value)->toBe('integration')
+            ->and($e->category()->value)->toBe('unavailable')
             ->and($e->context())->toBe(['reference' => 'fulfillment:1', 'carrier' => RecordingCarrier::KEY])
             ->and($e->getPrevious())->toBeInstanceOf(RuntimeException::class);
     }

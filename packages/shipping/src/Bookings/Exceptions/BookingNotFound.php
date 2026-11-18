@@ -9,7 +9,7 @@ use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 #[Api(since: '0.1')]
 final class BookingNotFound extends NotFound
@@ -24,7 +24,7 @@ final class BookingNotFound extends NotFound
     {
         return new ErrorDescriptor(
             code: ShippingErrorCode::BookingNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

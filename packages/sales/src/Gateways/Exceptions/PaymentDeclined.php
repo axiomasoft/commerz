@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Gateways\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The gateway refused for good and certainly did nothing: the attempt becomes `failed`. Any other exception from a gateway leaves the outcome unknown. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class PaymentDeclined extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::PaymentDeclined,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

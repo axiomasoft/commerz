@@ -11,7 +11,7 @@ use Commerz\Money\Enums\RoundingMode;
 use InvalidArgumentException;
 
 /**
- * Деньги в целых минорных единицах. Тот же формат, что `money` в corex-custom-fields: {minor:int, currency}.
+ * Деньги в целых минорных единицах. Тот же формат, что `money` в legacy-platform-custom-fields: {minor:int, currency}.
  * Промежуточная арифметика — brick/math; наружу — только int.
  */
 #[Api(since: '1.0')]

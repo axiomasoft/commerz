@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * База миграций commerz: своё соединение (commerz.connection) и имена через TableNames (префикс из cmz_schema_state).
- * Имена ограничений — CoreX: {table}_{cols}_{uq|ix|fk|ck} и {table}_pk; > 63 байт — хэш-суффикс (как SchemaNames Chatom).
- * Регистрация — publishesMigrations/PluginRegistrar::migrations, не loadMigrationsFrom (CoreX dev-doctrine :99).
+ * Имена ограничений — legacy-platform: {table}_{cols}_{uq|ix|fk|ck} и {table}_pk; > 63 байт — хэш-суффикс (как SchemaNames Chatom).
+ * Регистрация — publishesMigrations/PluginRegistrar::migrations, не loadMigrationsFrom (legacy-platform dev-doctrine :99).
  */
 abstract class CommerzMigration extends Migration
 {
@@ -26,7 +26,7 @@ abstract class CommerzMigration extends Migration
         return app(TableNames::class)->of($logical);
     }
 
-    /** Laravel на PostgreSQL игнорирует имя в primary() — переименовываем, как CoreX (tsk_stages_pkey → tsk_stages_pk). */
+    /** Laravel на PostgreSQL игнорирует имя в primary() — переименовываем, как legacy-platform (tsk_stages_pkey → tsk_stages_pk). */
     protected function namePrimaryKey(string $table): void
     {
         DB::connection($this->getConnection())->statement("ALTER TABLE {$table} RENAME CONSTRAINT {$table}_pkey TO {$table}_pk");

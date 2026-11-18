@@ -86,7 +86,7 @@ foreach ($expected['providers'] as $package => $provider) {
     }
 }
 
-// commerz:doctor only fingerprints the core schema; every package's own migrations must be in the archive and ran.
+// Every package must ship and run its migrations in the isolated consumer.
 $ran = array_flip(DB::table('migrations')->pluck('migration')->all());
 
 foreach (array_keys($expected['providers']) as $package) {

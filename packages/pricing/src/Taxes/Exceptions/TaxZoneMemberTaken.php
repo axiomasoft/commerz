@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Taxes\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Pricing\Errors\Enums\PricingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A country, or a region of it, already belongs to another tax zone (TAX-01). */
 #[Api(since: '0.1')]
@@ -46,7 +45,7 @@ final class TaxZoneMemberTaken extends CommerzException
     {
         return new ErrorDescriptor(
             code: PricingErrorCode::TaxZoneMemberTaken,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

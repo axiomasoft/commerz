@@ -72,7 +72,7 @@ final class AcmePlugin implements CommerzPlugin
 Data stores the **contribution key** and a `config_version`, never a class
 name. When a plugin is removed, the rule that used it becomes `unsupported` and
 fails closed: the promotion does not apply, a shipping rate is not offered, an
-attribute reads as a raw read-only value. `commerz:doctor` and the
+attribute reads as a raw read-only value. `packman:doctor` and the
 reconcile commands report it. Nothing is silently dropped or half-applied.
 
 The closed set of kinds and their SPIs: [extension kinds](../reference/extension-kinds).

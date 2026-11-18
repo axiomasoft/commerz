@@ -70,7 +70,7 @@ prices never changes a placed order (ORD-02).
 
 | Concept | Meaning | Where |
 |---|---|---|
-| Tenant | data isolation boundary | **no column**: a separate connection or database chosen by the host (D6, CoreX ADR-004) |
+| Tenant | data isolation boundary | **no column**: a separate connection or database chosen by the host (D6, legacy-platform ADR-004) |
 | Store | business unit: seller, default currency, order numbering | `cmz_stores` (core) |
 | Channel | point of sale: website, POS, marketplace, B2B, CRM manager | `cmz_channels` (core): store, currencies, locales, `prices_include_tax`, status |
 | Stock location | warehouse, shop, pickup point | `cmz_stock_locations` (inventory); channel ↔ locations with priority in `cmz_stock_sources` |

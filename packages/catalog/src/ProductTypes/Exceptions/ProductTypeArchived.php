@@ -6,11 +6,10 @@ namespace Commerz\Catalog\ProductTypes\Exceptions;
 
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The product type is archived and takes no new products or slots. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class ProductTypeArchived extends CommerzException
     {
         return new ErrorDescriptor(
             code: CatalogErrorCode::ProductTypeArchived,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

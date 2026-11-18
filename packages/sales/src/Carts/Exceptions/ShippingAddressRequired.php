@@ -9,7 +9,7 @@ use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** Delivery is priced or offered for a destination, and the cart has no shipping address yet. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class ShippingAddressRequired extends InvalidCommand
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::ShippingAddressRequired,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

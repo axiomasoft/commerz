@@ -78,7 +78,7 @@ interface AttributeType
 }
 ```
 
-Встроенные ключи совпадают с `corex-custom-fields` (`FieldValueValidator.php:189–205`): `text`, `int`, `decimal`,
+Встроенные ключи совпадают с `legacy-platform-custom-fields` (`FieldValueValidator.php:189–205`): `text`, `int`, `decimal`,
 `bool`, `date`, `datetime`, `select`, `multiselect`, `reference`, `money`, `url`, `email`, плюс специфичные для
 каталога `measure` (число + каноническая единица: длина/масса/объём/мощность, конверсия в каноническую при записи)
 и `localized_text`. Разделение «тип хранения / смысл / виджет» (ecosystem-conventions §7) соблюдено: `measure` —
@@ -102,9 +102,9 @@ interface AttributeType
 | `retired` | скрыт везде, значения остаются в документе (история), проекция удалена |
 | Плагин типа удалён | атрибуты типа → `unsupported`, документ не трогается, загрузка не падает, запись запрещена |
 
-## 5. Почему не typed EAV и не corex-custom-fields «как есть»
+## 5. Почему не typed EAV и не legacy-platform-custom-fields «как есть»
 
-| Вопрос | Typed EAV (ChatGPT §6.3, Magento, Bagisto) | `corex-custom-fields` | Наш гибрид |
+| Вопрос | Typed EAV (ChatGPT §6.3, Magento, Bagisto) | `legacy-platform-custom-fields` | Наш гибрид |
 |---|---|---|---|
 | Карточка товара | N строк × JOIN | 1 строка JSONB | 1 строка + опции |
 | Импорт 100k товаров × 30 атрибутов | 3 млн строк значений | 100k документов | 100k документов + строки проекции только фильтруемых |
@@ -112,11 +112,11 @@ interface AttributeType
 | Оси вариантов, уникальность комбинации | не выражаются | не выражаются | составные FK + UNIQUE |
 | Локализация значений | отдельный scope-ключ на строку | нет | карта локалей в значении |
 | Целостность выбора `select` | FK на option | строка без FK | код проверяется типом; проекция хранит `choice_id` (FK) |
-| Зависимость | — | требует CoreX, PG, ключ `(entity, record_id)` строками | — |
+| Зависимость | — | требует legacy-platform, PG, ключ `(entity, record_id)` строками | — |
 
-`corex-custom-fields` остаётся отличным решением для **доп. полей заказов, покупателей, складов** в Flex-продуктах —
-через мост `commerz-corex`. Для каталога нужна семантика (оси, типы товаров, фасеты), которой у него нет и не должно быть
-на уровне L0 CoreX.
+`legacy-platform-custom-fields` остаётся отличным решением для **доп. полей заказов, покупателей, складов** в Flex-продуктах —
+через мост `commerz-legacy-platform`. Для каталога нужна семантика (оси, типы товаров, фасеты), которой у него нет и не должно быть
+на уровне L0 legacy-platform.
 
 ## 6. Unbox и «не больше шести сложных свойств»
 

@@ -32,8 +32,8 @@ use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Laravel\PluginRegistrar;
 
 /**
- * The Commerz core code plugin. Every downstream plugin implicitly loads after it,
- * making core contribution kinds, schema, configuration, panels, and diagnostics available.
+ * The Commerz core code plugin. Downstream plugins require it explicitly to use its
+ * contribution kinds, schema, configuration, panels, and diagnostics.
  */
 #[Api(since: '0.1')]
 final class CorePlugin implements ExtensionPlugin, WithConfiguration, WithDiagnostics, WithPanels, WithSchema

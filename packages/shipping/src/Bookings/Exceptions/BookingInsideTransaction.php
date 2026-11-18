@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Bookings\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A shipment was booked inside a database transaction, which could roll back after the carrier created it (SHP-04). */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class BookingInsideTransaction extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Configuration;
+        return ErrorCategory::Validation;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class BookingInsideTransaction extends CommerzException
     {
         return new ErrorDescriptor(
             code: ShippingErrorCode::BookingInsideTransaction,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

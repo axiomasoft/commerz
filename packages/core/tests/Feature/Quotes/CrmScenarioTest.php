@@ -70,7 +70,7 @@ final class CrmPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('flex.crm-commerce', '1.0.0');
+        return new PluginManifest('flex.crm-commerce', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void

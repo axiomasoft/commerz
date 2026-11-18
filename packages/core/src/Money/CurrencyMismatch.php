@@ -9,7 +9,7 @@ use Commerz\Errors\InvalidCommand;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 #[Api(since: '0.1')]
 final class CurrencyMismatch extends InvalidCommand
@@ -24,7 +24,7 @@ final class CurrencyMismatch extends InvalidCommand
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::CurrencyMismatch,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: [
                 'field' => $this->field,

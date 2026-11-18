@@ -9,7 +9,7 @@ use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 #[Api(since: '0.1')]
 final class FulfillmentNotFound extends NotFound
@@ -24,7 +24,7 @@ final class FulfillmentNotFound extends NotFound
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::FulfillmentNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Commerz\Sales\Refunds\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Money\Money;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /**
  * A payment holds less than asked: what can still be refunded is what it captured less every refund of it that has not
@@ -50,7 +49,7 @@ final class RefundExceedsBalance extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::RefundExceedsBalance,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

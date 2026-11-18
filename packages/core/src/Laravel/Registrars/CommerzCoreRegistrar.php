@@ -18,8 +18,8 @@ use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
 use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
+use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\CorePlugin;
-use Commerz\Plugins\Internal\BuiltInPluginCatalog;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -28,16 +28,14 @@ use Illuminate\Foundation\Application as FoundationApplication;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
+use Packman\Config\Exceptions\InvalidConfiguration;
 use Packman\Config\Laravel\ConfigSectionRegistration;
 use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Contracts\PackageRegistrar;
 use Packman\PackmanServiceProvider;
-use Packman\Panels\Internal\Configuration\PanelsOptions;
-use Packman\Panels\Laravel\PanelExtensionBridge;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
 use Packman\Plugins\Laravel\PluginsServiceProvider;
-use Packman\Plugins\Testing\PluginGraph;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Data\Compiler\TableNames;
 use Packman\Schema\Laravel\SchemaExtensions;
@@ -63,7 +61,7 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         }
 
         $app->singletonIf(CorePlugin::class);
-        $app->singletonIf(BuiltInPluginCatalog::class, static fn (): BuiltInPluginCatalog => new BuiltInPluginCatalog);
+        CommerzPlugins::builtIn(CorePlugin::class);
 
         if (! $app->bound('commerz.core_facets_registered')) {
             $app->instance('commerz.core_facets_registered', true);
@@ -90,15 +88,7 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         ));
 
         self::bindTableNames($app);
-        self::bindPluginRegistry($app);
-
-        if ($app->bound(PanelsOptions::class)) {
-            PanelExtensionBridge::registerExtension($app, $app->make(CorePlugin::class));
-        } else {
-            $app->afterResolving(PanelsOptions::class, static function (mixed $_, Application $app): void {
-                PanelExtensionBridge::registerExtension($app, $app->make(CorePlugin::class));
-            });
-        }
+        self::bridgePluginConfiguration($app);
 
         $app->singleton(Transactions::class, DatabaseTransactions::class);
         $app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
@@ -112,10 +102,6 @@ final class CommerzCoreRegistrar implements PackageRegistrar
     {
         if (! $app->resolved(TableNames::class)) {
             self::bindTableNames($app);
-        }
-
-        if (! $app->resolved(Contributions::class) && ! $app->resolved(PluginInspector::class)) {
-            self::bindPluginRegistry($app);
         }
 
         if ($app->runningInConsole()) {
@@ -144,44 +130,22 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         });
     }
 
-    private static function bindPluginRegistry(Application $app): void
+    private static function bridgePluginConfiguration(Application $app): void
     {
-        $app->singleton(Contributions::class, static function (Application $app): Contributions&PluginInspector {
+        $app->beforeResolving(Contributions::class, static function () use ($app): void {
             $options = $app->make(CommerzOptions::class);
-            $configRepo = $app->bound(ConfigRepository::class) ? $app->make(ConfigRepository::class) : null;
-            $packmanPlugins = $configRepo !== null ? $configRepo->get('packman.plugins', []) : [];
-            $packmanDisabled = $configRepo !== null ? $configRepo->get('packman.disabled_plugins', []) : [];
+            $config = $app->make(ConfigRepository::class);
 
-            $configured = $options->plugins;
-            foreach (is_array($packmanPlugins) ? $packmanPlugins : [] as $class) {
-                if (is_string($class) && $class !== '' && ! in_array($class, $configured, true)) {
-                    $configured[] = $class;
+            foreach (['plugins' => $options->plugins, 'disabled_plugins' => $options->disabledPlugins] as $key => $values) {
+                $configured = $config->get('packman.'.$key, []);
+
+                if (! is_array($configured)) {
+                    throw new InvalidConfiguration(['packman.'.$key.': expected an array']);
                 }
+
+                $additional = array_filter($values, static fn (string $value): bool => ! in_array($value, $configured, true));
+                $config->set('packman.'.$key, array_values([...$configured, ...$additional]));
             }
-
-            $disabled = $options->disabledPlugins;
-            foreach (is_array($packmanDisabled) ? $packmanDisabled : [] as $id) {
-                if (is_string($id) && $id !== '' && ! in_array($id, $disabled, true)) {
-                    $disabled[] = $id;
-                }
-            }
-
-            $catalog = $app->make(BuiltInPluginCatalog::class);
-            $catalog->seal();
-            $builtIn = array_values(array_unique([CorePlugin::class, ...$catalog->classes()]));
-
-            /** @var list<class-string> $configuredList */
-            $configuredList = $configured;
-
-            return PluginGraph::compile(
-                container: $app,
-                plugins: $configuredList,
-                corePluginId: CorePlugin::ID,
-                builtIn: $builtIn,
-                disabled: $disabled,
-            );
         });
-
-        $app->alias(Contributions::class, PluginInspector::class);
     }
 }

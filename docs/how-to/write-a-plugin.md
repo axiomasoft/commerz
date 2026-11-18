@@ -63,8 +63,8 @@ unknown kind, a duplicate key, a wrong interface, an unknown required plugin or
 a cycle fails with `InvalidConfiguration` at boot.
 
 ```bash
-php artisan commerz:plugins        # the compiled plugins, in load order
-php artisan commerz:doctor
+php artisan packman:plugins        # the compiled plugins, in load order
+php artisan packman:doctor
 ```
 
 ## Rules to keep

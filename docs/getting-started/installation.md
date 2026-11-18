@@ -51,12 +51,12 @@ Each feature package publishes its own configuration file
 ## Verify
 
 ```bash
-php artisan commerz:doctor
+php artisan packman:doctor
 ```
 
 The doctor checks the configuration, the database and the install fingerprint,
 and the plugin registry. It exits non-zero when something is wrong. List the
-registered plugins with `php artisan commerz:plugins`.
+registered plugins with `php artisan packman:plugins`.
 
 ## Configure the host
 

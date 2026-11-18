@@ -8,7 +8,7 @@ use Commerz\Errors\Enums\CommerzErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A referenced entity does not exist. Domain packages subclass it with their own code. */
 #[Api(since: '0.1')]
@@ -48,7 +48,7 @@ class NotFound extends CommerzException
 
         return new ErrorDescriptor(
             code: CommerzErrorCode::NotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $details,
         );

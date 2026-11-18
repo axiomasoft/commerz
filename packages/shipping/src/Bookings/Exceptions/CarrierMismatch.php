@@ -9,7 +9,7 @@ use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The shipment names a carrier other than the one of its delivery method. */
 #[Api(since: '0.1')]
@@ -30,7 +30,7 @@ final class CarrierMismatch extends InvalidCommand
     {
         return new ErrorDescriptor(
             code: ShippingErrorCode::CarrierMismatch,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

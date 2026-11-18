@@ -1,6 +1,6 @@
 # Примеры кода (PHP 8.4, strict)
 
-Не пакет, а **эталон стиля и ключевых алгоритмов**. Пути показывают, где файл жил бы в пакете (CoreX STR-006:
+Не пакет, а **эталон стиля и ключевых алгоритмов**. Пути показывают, где файл жил бы в пакете (legacy-platform STR-006:
 публичные `Contracts/Data/Enums/Exceptions`, реализация — `Internal/`). Ради компактности несколько мелких типов
 собраны в один файл (`Data.php`, `Enums.php`); в пакете — один тип на файл.
 
@@ -10,7 +10,7 @@
 |---|---|
 | `composer stan` — PHPStan **level max** по всем примерам (Laravel 13, brick/math) | 0 ошибок |
 | `composer smoke` — 17 поведенческих проверок: распределение, стадии акций, stacking, объяснения, купоны, `measure` | ALL PASS |
-| `composer db` — миграции на PostgreSQL 17, резерв, истечение, повтор, **8 процессов × 20 резервов на 48 шт.**, **40 погашений купона с лимитом 10** | 48/48, 10/10, имена ограничений CoreX-стиля |
+| `composer db` — миграции на PostgreSQL 17, резерв, истечение, повтор, **8 процессов × 20 резервов на 48 шт.**, **40 погашений купона с лимитом 10** | 48/48, 10/10, имена ограничений legacy-platform-стиля |
 
 ## Карта
 
@@ -32,7 +32,7 @@
 | `Coupons/*` | **плагин** commerz-coupons | `CouponsPlugin` manifest, `CouponActivator`, `CouponCode`, **`RedeemCouponHandler`**, условие `coupon.code_in` |
 | `Catalog/AttributeType.php`, `Types/MeasureAttributeType.php` | commerz-catalog | SPI типа атрибута; `measure` с канонической единицей и проекцией |
 | `Sales/OrderStates.php` | commerz-sales | три оси состояния, выводимые из сумм/количеств |
-| `migrations/*` | inventory, promotions, coupons | Laravel 13 миграции: свои соединение и префикс, CHECK, частичные индексы, BRIN, `_pk`-имена как в CoreX |
+| `migrations/*` | inventory, promotions, coupons | Laravel 13 миграции: свои соединение и префикс, CHECK, частичные индексы, BRIN, `_pk`-имена как в legacy-platform |
 
 ## Правила, которые видны в коде
 
@@ -43,4 +43,4 @@
 4. Идемпотентность — естественные уникальные ключи (`demand_uq`, `coupon_id_order_id_uq`), не таблица квитанций.
 5. Условия/эффекты/стадии — чистые функции над неизменяемым состоянием; запись — только владелец заказа.
 6. Плагин ссылается на реализацию ключом (`'coupon'`, `'order.percent_off'`), в БД нет FQCN.
-7. Названия по словарю CoreX: `*Handler`, `*Stage`, `*Activator`, `*Config`, `*Plugin`; без `Service`/`Manager`.
+7. Названия по словарю legacy-platform: `*Handler`, `*Stage`, `*Activator`, `*Config`, `*Plugin`; без `Service`/`Manager`.

@@ -15,7 +15,7 @@ Lines 1–18:
 4: `packages/<name>/`; не меняй соседние пакеты и не перезаписывай чужие изменения.
 5: 
 6: Используй только нативно доступные навыки SKM: компактный marketplace-профиль задан в
-7: `.swissknife.json` (как CoreX). Локальный `.agents/skills/` — только CORE (см.
+7: `.swissknife.json` (как legacy-platform). Локальный `.agents/skills/` — только CORE (см.
 8: `scripts/sync-agent-skills.sh`); не держи полный php-package vendor. Не загружай
 9: справочники, планы или навыки «на всякий случай» — выбирай их по задаче.
 10: 
@@ -993,7 +993,7 @@ Lines 1–7:
 3:     "description": "AzGuard permission bridge for Vaulter — a real AzgardGuard adapter delegating to AzGuard's scoped roles and workspace-context checks, so a host wires its ecosystem authorization into Vaulter's composite ACL with one binding.",
 4:     "type": "library",
 5:     "license": "MIT",
-6:     "keywords": ["laravel", "authorization", "permissions", "azguard", "corex", "vaulter"],
+6:     "keywords": ["laravel", "authorization", "permissions", "azguard", "legacy-platform", "vaulter"],
 7:     "homepage": "https://github.com/axiomasoft/vaulter",
 ```
 
@@ -1024,7 +1024,7 @@ Lines 15–30:
 
 ```text
 15: /**
-16:  * Wires the AzGuard/Corex permission bridge (master plan P1 #2). It binds the Vaulter
+16:  * Wires the AzGuard/legacy-platform permission bridge (master plan P1 #2). It binds the Vaulter
 17:  * {@see AzgardGuard} seam to an {@see AzgardGuardAdapter} built from the CURRENT
 18:  * request's AzGuard-backed user, so that once the host selects the `azgard` permission
 19:  * driver (`vaulter.access.permission_driver = 'azgard'`) the driver resolves real
@@ -1035,8 +1035,8 @@ Lines 15–30:
 24:  * {@see NullAzgardGuard} — a safe pass-through that raises no access, never a fatal.
 25:  *
 26:  * The host still owns the ecosystem alignment this bridge cannot do for it: ulid morphs
-27:  * (`vaulter.ids.default=ulid` + `corex.ids.strategy=Ulid` + `AZ_GUARD_MORPH_TYPE=ulid`),
-28:  * registering workspace/owner types as Corex morph aliases, and adding
+27:  * (`vaulter.ids.default=ulid` + `legacy-platform.ids.strategy=Ulid` + `AZ_GUARD_MORPH_TYPE=ulid`),
+28:  * registering workspace/owner types as legacy-platform morph aliases, and adding
 29:  * `implements AzgardBackedUser` (satisfied for free by AzGuard's HasAzGuard +
 30:  * HasScopedRoles traits) to its User model.
 ```

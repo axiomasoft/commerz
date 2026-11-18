@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Money;
@@ -16,6 +15,7 @@ use Commerz\Sales\Gateways\Enums\GatewayRefundStatus;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Numbering\Exceptions\InvalidOrderNumber;
+use Packman\Errors\Enums\ErrorCategory;
 
 function gwRub(int $minor): Money
 {
@@ -106,6 +106,6 @@ it('classifies the gateway and numbering errors', function (): void {
 
     expect($declined)->toBeInstanceOf(CommerzException::class)
         ->and([$declined->code(), $declined->category(), $declined->context()])->toBe(['sales.payment_declined', ErrorCategory::Conflict, ['gateway' => 'acme.pay', 'reason' => 'card_expired']])
-        ->and([$invalid->code(), $invalid->category(), $invalid->context()])->toBe(['sales.invalid_gateway_result', ErrorCategory::Integration, ['gateway' => 'acme.pay', 'reason' => 'captured exceeds amount']])
-        ->and([$number->code(), $number->category(), $number->context()])->toBe(['sales.invalid_order_number', ErrorCategory::Configuration, ['generator' => 'sequence', 'number' => '-1']]);
+        ->and([$invalid->code(), $invalid->category(), $invalid->context()])->toBe(['sales.invalid_gateway_result', ErrorCategory::Unavailable, ['gateway' => 'acme.pay', 'reason' => 'captured exceeds amount']])
+        ->and([$number->code(), $number->category(), $number->context()])->toBe(['sales.invalid_order_number', ErrorCategory::Validation, ['generator' => 'sequence', 'number' => '-1']]);
 });

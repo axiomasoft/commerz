@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Commerz\Sales\Carts\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Identity\SellableRef;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The sellable exists but its owner does not sell it now (CTX-01); `$reason` is the owner's own. */
 #[Api(since: '0.1')]
@@ -42,7 +41,7 @@ final class SellableNotPurchasable extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::SellableNotPurchasable,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

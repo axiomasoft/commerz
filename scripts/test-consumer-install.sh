@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Consumer install smoke (D36): installs the 0.1.0 composer archives into a fresh Laravel 13 app, without the monorepo.
-# Run under PHP 8.4: scripts/php84 bash scripts/test-consumer-install.sh
+# Consumer install smoke: installs the 0.1.0 composer archives into a fresh Laravel 13 app, without the monorepo.
+# Run under PHP 8.4: ./bin/php84 bash scripts/test-consumer-install.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -19,6 +19,8 @@ ADMIN_DB="${CONSUMER_ADMIN_DB:-commerz_test}"
 CONSUMER_DB="commerz_consumer_test"
 
 PACKAGES=(core catalog inventory pricing promotions shipping sales full testkit)
+PACKMAN_PACKAGES=(packman packman-plugins packman-schema packman-panels packman-testkit)
+PACKMAN_RUNTIME=(packman packman-plugins packman-schema packman-panels)
 LOCKED_ZIPS=(commerz commerz-catalog commerz-inventory commerz-pricing commerz-promotions commerz-shipping commerz-sales)
 
 log() { printf '[consumer] %s\n' "$*"; }
@@ -31,7 +33,7 @@ guard_work_dir() {
 
 php_version_ok() {
   php -r 'exit(PHP_MAJOR_VERSION === 8 && PHP_MINOR_VERSION === 4 ? 0 : 1);' \
-    || die "PHP 8.4 required (run under scripts/php84), got $(php -r 'echo PHP_VERSION;')"
+    || die "PHP 8.4 required (run under ./bin/php84), got $(php -r 'echo PHP_VERSION;')"
 }
 
 admin_sql() {
@@ -55,15 +57,24 @@ package_name() {
 }
 
 stage_archive() {
-  local pkg="$1" staging
+  local pkg="$1" staging source archive
   staging="$(mktemp -d "${WORK}/staging.XXXXXX")"
-  rsync -a --exclude '.git' --exclude 'vendor' --exclude 'node_modules' "${ROOT}/packages/${pkg}/" "${staging}/"
+  source="${ROOT}/packages/${pkg}"
+  archive="$(package_name "$pkg")"
+  if [[ "$pkg" == packman* ]]; then
+    source="${ROOT}/vendor/axiomasoft/${pkg}"
+    archive="axiomasoft-${pkg}"
+  fi
+  rsync -aL --exclude '.git' --exclude 'vendor' --exclude 'node_modules' --exclude 'tests' --exclude 'phpunit*' "${source}/" "${staging}/"
+  if [[ ! -f "${staging}/LICENSE" && "$pkg" == packman* ]]; then
+    cp "$(dirname "$(dirname "$(readlink -f "$source")")")/LICENSE" "${staging}/LICENSE"
+  fi
   php -r '
     $data = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
     $data["version"] = $argv[2];
     file_put_contents($argv[1], json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
   ' "${staging}/composer.json" "$VERSION"
-  (cd "$staging" && composer archive --format=zip --dir="$ARTIFACTS" --file="$(package_name "$pkg")-${VERSION}" >/dev/null)
+  (cd "$staging" && composer archive --format=zip --dir="$ARTIFACTS" --file="${archive}-${VERSION}" >/dev/null)
   rm -rf "$staging"
 }
 
@@ -86,8 +97,12 @@ assert_archives() {
       // Every file of the source dirs a consumer needs must be in the archive (a package without migrations still passes install/doctor).
       preg_match("/^axiomasoft-commerz(?:-(.+?))?-[0-9.]+\.zip$/", basename($file), $m);
       $pkg = $m[1] ?? "core";
+      $sourceRoot = $argv[2]."/packages/{$pkg}";
+      if (preg_match("/^axiomasoft-(packman(?:-[a-z]+)?)-[0-9.]+\\.zip$/", basename($file), $m)) {
+        $sourceRoot = $argv[2]."/vendor/axiomasoft/".$m[1];
+      }
       foreach (["database/migrations", "config", "src"] as $dir) {
-        foreach (glob($argv[2]."/packages/{$pkg}/{$dir}/*.php") as $source) {
+        foreach (glob($sourceRoot."/{$dir}/*.php") as $source) {
           if ($zip->locateName("{$dir}/".basename($source)) === false) {
             fwrite(STDERR, basename($file).": {$dir}/".basename($source)." missing from the archive\n");
             exit(1);
@@ -96,7 +111,7 @@ assert_archives() {
       }
     }
   ' "$ARTIFACTS" "$ROOT" || die "archive content check failed"
-  [[ "$(ls "$ARTIFACTS"/*.zip | wc -l)" -eq "${#PACKAGES[@]}" ]] || die "expected ${#PACKAGES[@]} archives"
+  [[ "$(ls "$ARTIFACTS"/*.zip | wc -l)" -eq "$((${#PACKAGES[@]} + ${#PACKMAN_PACKAGES[@]}))" ]] || die "unexpected archive count"
 }
 
 consumer_env() {
@@ -153,20 +168,21 @@ run_profile() {
   new_app "$dir"
   (cd "$dir" && composer require "$@" --with-all-dependencies --no-interaction)
   if [[ "$profile" == "full" ]]; then
-    assert_lock "$dir" axiomasoft/commerz-full "${LOCKED_ZIPS[@]/#/axiomasoft/}"
+    assert_lock "$dir" axiomasoft/commerz-full "${LOCKED_ZIPS[@]/#/axiomasoft/}" "${PACKMAN_RUNTIME[@]/#/axiomasoft/}"
   else
-    assert_lock "$dir" axiomasoft/commerz axiomasoft/commerz-sales
+    assert_lock "$dir" axiomasoft/commerz axiomasoft/commerz-sales "${PACKMAN_RUNTIME[@]/#/axiomasoft/}"
   fi
   (
     cd "$dir"
+    composer install --no-interaction --prefer-dist
     php artisan package:discover --ansi >/dev/null
     php artisan commerz:install --no-interaction
     if [[ "$profile" == "crm" ]]; then
       sed -i "s/'stock' => StockMode::Inventory->value/'stock' => 'unlimited'/" config/commerz.php
       grep -q "'stock' => 'unlimited'" config/commerz.php || die "could not switch commerz.stock to unlimited"
     fi
-    php artisan commerz:doctor
-    php artisan commerz:plugins --json > plugins.json
+    php artisan packman:doctor
+    php artisan packman:plugins --json > plugins.json
     php -r '
       $ids = array_map(fn ($p) => $p["id"], json_decode(file_get_contents("plugins.json"), true, 512, JSON_THROW_ON_ERROR));
       sort($ids);
@@ -194,7 +210,7 @@ main() {
   admin_sql "DROP DATABASE IF EXISTS ${CONSUMER_DB} WITH (FORCE)"
   admin_sql "CREATE DATABASE ${CONSUMER_DB}"
 
-  for pkg in "${PACKAGES[@]}"; do stage_archive "$pkg"; done
+  for pkg in "${PACKAGES[@]}" "${PACKMAN_PACKAGES[@]}"; do stage_archive "$pkg"; done
   assert_archives
 
   run_profile full "$APP_FULL" "axiomasoft/commerz-full:${VERSION}"

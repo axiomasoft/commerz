@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Rates\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Shipping\Errors\Enums\ShippingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A delivery rate answered with something the package cannot trust, e.g. a price in another currency. */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class InvalidRateResult extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Integration;
+        return ErrorCategory::Unavailable;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class InvalidRateResult extends CommerzException
     {
         return new ErrorDescriptor(
             code: ShippingErrorCode::InvalidRateResult,
-            category: PackmanErrorCategory::Unavailable,
+            category: ErrorCategory::Unavailable,
             retryable: false,
             details: $this->context(),
         );

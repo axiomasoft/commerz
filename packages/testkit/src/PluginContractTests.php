@@ -143,7 +143,6 @@ trait PluginContractTests
         return PluginGraph::compile(
             container: app(),
             plugins: $plugins,
-            corePluginId: CorePlugin::ID,
             builtIn: [CorePlugin::class],
         );
     }

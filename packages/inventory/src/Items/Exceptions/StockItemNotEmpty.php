@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Items\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A stock item that holds, reserves or has unresolved goods in a transfer cannot be archived. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class StockItemNotEmpty extends CommerzException
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::StockItemNotEmpty,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

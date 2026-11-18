@@ -5,17 +5,17 @@
 ## 1. Открытые вопросы
 
 **1. Нужно обсудить: SaaS на общих таблицах или БД на арендатора?**
-Рекомендация — без `tenant_id`, изоляция соединением (CoreX ADR-004). Если планируется мультиарендный SaaS на одной
+Рекомендация — без `tenant_id`, изоляция соединением (legacy-platform ADR-004). Если планируется мультиарендный SaaS на одной
 схеме — решить **до первой миграции**: `tenant_id` придётся добавить в каждый UNIQUE, FK, индекс, кэш-ключ и очередь.
 Добавить позже = переписать все ограничения.
 
-**2. Нужно обсудить: Commerz — самостоятельный пакет или Flex-модуль L1 поверх CoreX?**
-Рекомендация — самостоятельный (как Chatom/Vaulter/AzGuard), мост `commerz-corex` для custom-fields, outbox, прав,
-мультиаккаунтности. Вариант «L1 CoreX» даёт готовые tenancy/outbox/поля, но запрещает установку без CoreX и навязывает
-префиксы/миграции CoreX. Критерий: будет ли хоть один проект с Commerz без CoreX.
+**2. Нужно обсудить: Commerz — самостоятельный пакет или Flex-модуль L1 поверх legacy-platform?**
+Рекомендация — самостоятельный (как Chatom/Vaulter/AzGuard), мост `commerz-legacy-platform` для custom-fields, outbox, прав,
+мультиаккаунтности. Вариант «L1 legacy-platform» даёт готовые tenancy/outbox/поля, но запрещает установку без legacy-platform и навязывает
+префиксы/миграции legacy-platform. Критерий: будет ли хоть один проект с Commerz без legacy-platform.
 
 **3. Нужно обсудить: только Laravel 13 + PHP 8.4 + PostgreSQL ≥ 16?**
-Рекомендация — да (так у CoreX, `dev-doctrine.md:176`). MySQL отнимет `EXCLUDE`, частичные индексы, `NULLS NOT DISTINCT`,
+Рекомендация — да (так у legacy-platform, `dev-doctrine.md:176`). MySQL отнимет `EXCLUDE`, частичные индексы, `NULLS NOT DISTINCT`,
 транзакционный DDL и `jsonb`-операторы — ровно то, на чём держатся инварианты. Поддержка Laravel 12 — только если есть
 конкретный проект.
 
@@ -28,7 +28,7 @@
 **5. Нужно обсудить: один префикс `cmz_` или префикс на модуль.**
 Рекомендация — один настраиваемый `cmz_` + существительное модуля (`cmz_stock_levels`, `cmz_coupons`). Владение
 таблицей видно по существительному и проверяется архитектурным тестом. Префиксы на модуль (`ctg_`, `inv_`…) — по
-образцу CoreX, но там это разные продукты; у одного семейства пакетов это 7 префиксов без выигрыша.
+образцу legacy-platform, но там это разные продукты; у одного семейства пакетов это 7 префиксов без выигрыша.
 
 **6. Нужно обсудить: когда резервировать остаток.**
 Рекомендация — при размещении заказа (дефолт), опция `OnCheckoutStart` с TTL для дропов. Резерв «при добавлении в
@@ -83,18 +83,18 @@
 | Документ | Их позиция | Наша | Почему |
 |---|---|---|---|
 | design-hypotheses §2 | упаковка A/B/C открыта | 6 пакетов + плагин купонов | критерий «реальная установка без соседа» |
-| design-hypotheses §4, logical-schema-candidate §1 | `scope_id` в каждой таблице | без tenant-колонок | CoreX ADR-004; shared-tenancy — отдельное решение (§1.1) |
+| design-hypotheses §4, logical-schema-candidate §1 | `scope_id` в каждой таблице | без tenant-колонок | legacy-platform ADR-004; shared-tenancy — отдельное решение (§1.1) |
 | logical-schema-candidate §5 | `stock_resources`, `dimension_key`, allocations, transitions | levels + movements + reservations | 3 таблицы покрывают v1; лоты/серийники — рядом с уровнем, ключ не меняется |
 | logical-schema-candidate | `command_receipts` | естественные ключи идемпотентности | ключ брони/погашения уже уникален; проверено повтором и конкуренцией |
 | logical-schema-candidate §6 | `coupon_claims`, `promotion_quota_resources/claims`, claim groups | расход в транзакции заказа | неоплаченный заказ и есть удержание; prototype E5–E7 |
 | logical-schema-candidate | `condition_tree` JSON | условия строками | статус/версия/удаление плагина построчно |
 | attribute-storage-options (вариант G) | асинхронная проекция | синхронная | фасеты не должны врать после сохранения; объём проекции мал (только фильтруемые) |
 | logical-schema-candidate / design-hypotheses | fallback-цепочка и значения по каналу | один уровень, без каналов | предсказуемость; §1.8 |
-| ecosystem-conventions | Corex/Agentools не исследовались | CoreX — главный источник конвенций | раскладка STR-006, словарь суффиксов, DATA-004, ADR-003/004 |
+| ecosystem-conventions | legacy-platform/Agentools не исследовались | legacy-platform — главный источник конвенций | раскладка STR-006, словарь суффиксов, DATA-004, ADR-003/004 |
 | design-hypotheses (replace model) | подмена моделей — «спорный escape hatch» | закрываем: без подмены | модели в `Internal`; их же довод — last-wins без диагностики |
 | ecosystem-conventions (таблицы) | `cmz_` + опциональная per-table map | `cmz_` **без** per-table map, префикс заморожен | карта имён умножает пути к таблице (миграции, raw SQL, диагностика); переименование — миграцией |
 | ChatGPT architecture-appendix §2 | 12 пакетов | 6 | `stores`/`support` — ядро; `search`/`integrations` — порты |
-| ChatGPT architecture-appendix | `BIGINT` PK + `public_id` | UUIDv7 | экосистема (CoreX ADR-003, Chatom), ID до INSERT, слияние БД; одна колонка вместо двух |
+| ChatGPT architecture-appendix | `BIGINT` PK + `public_id` | UUIDv7 | экосистема (legacy-platform ADR-003, Chatom), ID до INSERT, слияние БД; одна колонка вместо двух |
 | ChatGPT architecture-appendix §6.3 | typed EAV с атомами/группами | JSONB-документ + проекция | карточка за 1 строку; фильтры по проекции; оси — реляционно |
 | logical-schema-candidate §12 | критерий отказа: «потребитель с 6 полями создаёт десятки definitions» | не срабатывает | 6 сложных свойств Unbox = 6 строк `cmz_attributes` (+ при нужде тип-плагин) |
 

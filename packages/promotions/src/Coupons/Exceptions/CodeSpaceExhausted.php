@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Coupons\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** Generation kept meeting codes that already exist: the pattern is used up. Nothing was created. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class CodeSpaceExhausted extends CommerzException
     {
         return new ErrorDescriptor(
             code: PromotionsErrorCode::CodeSpaceExhausted,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

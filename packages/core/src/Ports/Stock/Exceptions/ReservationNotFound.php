@@ -9,7 +9,7 @@ use Commerz\Errors\NotFound;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The demand holds no (or not enough) reserved stock of the sellable. */
 #[Api(since: '0.1')]
@@ -25,7 +25,7 @@ final class ReservationNotFound extends NotFound
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::ReservationNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

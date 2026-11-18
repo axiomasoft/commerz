@@ -7,19 +7,19 @@
 
 | Правило | Решение | Почему |
 |---|---|---|
-| СУБД | только PostgreSQL ≥ 16 | `EXCLUDE`, `NULLS NOT DISTINCT`, `jsonb`, частичные индексы, `ltree`; CoreX уже PG-first |
-| PK | `uuid` (v7, генерирует приложение) | экосистема (CoreX ADR-003, Chatom); слияние БД, импорт, ID до INSERT |
+| СУБД | только PostgreSQL ≥ 16 | `EXCLUDE`, `NULLS NOT DISTINCT`, `jsonb`, частичные индексы, `ltree`; legacy-platform уже PG-first |
+| PK | `uuid` (v7, генерирует приложение) | экосистема (legacy-platform ADR-003, Chatom); слияние БД, импорт, ID до INSERT |
 | Журналы | `bigint GENERATED ALWAYS AS IDENTITY` | `cmz_stock_movements`, `cmz_order_events`, `cmz_outbox_messages` — порядок и компактность |
-| Деньги | `<name>_minor bigint` + одна `currency char(3)` на строку-владельца | точно, быстро, совпадает с `money` в `corex-custom-fields`; строки заказа наследуют валюту заказа |
+| Деньги | `<name>_minor bigint` + одна `currency char(3)` на строку-владельца | точно, быстро, совпадает с `money` в `legacy-platform-custom-fields`; строки заказа наследуют валюту заказа |
 | Количество на складе | `bigint` в базовой единице номенклатуры (шт., г, мл, мм) | целочисленный условный UPDATE, без ошибок округления; дробность — выбор базовой единицы |
 | Количество в строке продажи | `integer` продаваемых единиц | 1 строка = N штук варианта; «0,35 кг» = вариант с базовой единицей г и шагом (risks §4) |
 | Ставки | `rate_bp integer` (базисные пункты: 2000 = 20 %) | без decimal в налогах; 0,01 % точности достаточно для РФ/ЕС/США |
-| Enum | `varchar(32)` + `CHECK (col IN (…))`, источник — PHP backed enum | нативный PG `enum` трудно эволюционировать; так делает CoreX (`*_status_ck`) |
+| Enum | `varchar(32)` + `CHECK (col IN (…))`, источник — PHP backed enum | нативный PG `enum` трудно эволюционировать; так делает legacy-platform (`*_status_ck`) |
 | Время | `timestamptz`; интервалы действия — `tstzrange` | `EXCLUDE … WITH &&` для непересечения |
 | Мягкое удаление | **нет** `deleted_at` | ломает уникальные ключи и исторические ссылки; вместо — `status = archived` |
 | Переводы | короткие подписи — `jsonb {"ru": "...", "en": "..."}`; длинный индексируемый текст (name, slug, description товара) — таблица `*_translations` | slug уникален в локали → нужна строка, а не JSON |
 | Расширение хостом | `meta jsonb` на products, variants, stock_items, orders | неиндексируемые заметки интегратора; типизированные поля — атрибуты/custom-fields |
-| FK | только внутри пакета **и вниз по Composer-зависимости** (к ядру; coupons → promotions) | CoreX DATA-004 (`constitution.md:263`); inventory не знает `cmz_variants` |
+| FK | только внутри пакета **и вниз по Composer-зависимости** (к ядру; coupons → promotions) | legacy-platform DATA-004 (`constitution.md:263`); inventory не знает `cmz_variants` |
 | Хостовые ссылки | `*_ref varchar(128)` вида `user:42` | без FK на таблицы хоста (как Vaulter/AzGuard) |
 
 ## 2. Полный список таблиц
@@ -53,7 +53,7 @@
 | **cmz_attributes** | id, code, type (`AttributeType` key), name jsonb, unit, is_localizable, is_filterable, config jsonb, config_version, status | `_code_uq`; `status IN (active, deprecated, retired)` |
 | **cmz_attribute_choices** | id, attribute_id, code, label jsonb, position | `_attribute_id_code_uq` (для `select`/`multiselect`) |
 | **cmz_product_attribute_index** | product_id, variant_id NULL, attribute_id, choice_id, num numeric, flag bool, day date, term varchar(255) | `(attribute_id, choice_id, product_id)`, `(attribute_id, num)`; проекция, пишется синхронно (§4) |
-| **cmz_categories** | id, parent_id, code, path `ltree`, name jsonb, slug jsonb, position | `_code_uq`; `_path_gist_ix` (как `sys_departments_path_gist_ix` CoreX) |
+| **cmz_categories** | id, parent_id, code, path `ltree`, name jsonb, slug jsonb, position | `_code_uq`; `_path_gist_ix` (как `sys_departments_path_gist_ix` legacy-platform) |
 | **cmz_category_products** | category_id, product_id, position | PK |
 | **cmz_product_channels** | product_id, channel_id, is_visible, visible_from, visible_until | PK; FK channel → ядро |
 | **cmz_product_media** | id, product_id, variant_id, option_value_id, media_ref, role, position | картинки по цвету — через `option_value_id` (идея `ProductColor` Unbox) |
@@ -181,7 +181,7 @@ erDiagram
 | Колонки | ⚡ | ⚡ | FK/CHECK | миграция на каждое поле | **для универсальных полей**: sku, barcode, вес, габариты, налоговый класс |
 | Опции (реляционно) | средне | ⚡ (prototype E8) | составные FK | справочник | **для осей вариантов** — всегда |
 | Typed EAV (Magento/Bagisto/ChatGPT atoms) | N строк на сущность, дорого на импорт | хорошо при правильных индексах | FK на choice | тип меняется по строкам | ✗ — сложность ChatGPT-варианта (values/groups/atoms × 2 владельца) не окупается |
-| JSONB-документ (Lunar, `corex-custom-fields`) | 1 строка | GIN `@>` для равенства; диапазоны и фасеты слабее | в коде (тип-реестр) | документная миграция | **для описательных атрибутов** |
+| JSONB-документ (Lunar, `legacy-platform-custom-fields`) | 1 строка | GIN `@>` для равенства; диапазоны и фасеты слабее | в коде (тип-реестр) | документная миграция | **для описательных атрибутов** |
 | JSONB + синхронная typed-проекция | 1 строка + K строк индекса в той же транзакции | ⚡ фасеты, диапазоны, sameVariant | проекция пересобираема | rebuild команда | **выбор** для `is_filterable` атрибутов |
 
 **Почему синхронная проекция, а не асинхронная.** Существующий вариант G
@@ -272,7 +272,7 @@ UPDATE cmz_stock_levels
   — строкам с наибольшей дробной частью, при равенстве — по порядку строк (детерминизм).
 - `cmz_orders_totals_ck`: `total_minor = subtotal_minor - discount_minor + shipping_minor + CASE WHEN is_tax_inclusive THEN 0 ELSE tax_minor END`.
 - Валюта заказа одна; мультивалютный каталог — разными прайс-листами, не конвертацией на лету (курс — забота
-  прайс-листа/импорта; мост `corex-intl` может генерировать прайс-лист по курсу).
+  прайс-листа/импорта; мост `legacy-platform-intl` может генерировать прайс-лист по курсу).
 
 ## 7. Снимок заказа
 

@@ -8,7 +8,7 @@ use Commerz\Errors\Enums\CommerzErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A command, query or value object was built with a malformed field. Subclasses narrow the code. */
 #[Api(since: '0.1')]
@@ -67,7 +67,7 @@ class InvalidCommand extends CommerzException
 
         return new ErrorDescriptor(
             code: $code,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $details,
         );

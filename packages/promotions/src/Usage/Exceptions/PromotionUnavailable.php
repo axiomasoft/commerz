@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Usage\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /**
  * A promotion the quote applied can no longer be used when the order is placed: `$reason` is `promotion_not_found`,
@@ -55,7 +54,7 @@ final class PromotionUnavailable extends CommerzException
     {
         return new ErrorDescriptor(
             code: PromotionsErrorCode::PromotionUnavailable,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-catalog
 
-Public PHP surface of `packages/catalog` as recorded in `packages/catalog/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/catalog` as recorded in `packages/catalog/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -313,9 +313,10 @@ final class AttributeNotAllowed extends \Commerz\Errors\CommerzException impleme
     public readonly string $attribute;
     public readonly \Commerz\Catalog\ProductTypes\Enums\AttributeLevel $level;
     __construct(string $attribute, \Commerz\Catalog\ProductTypes\Enums\AttributeLevel $level);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -329,9 +330,10 @@ A filter names an attribute that is not filterable or is retired.
 final class AttributeNotFilterable extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $attribute;
     __construct(string $attribute);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -342,6 +344,7 @@ final class AttributeNotFilterable extends \Commerz\Errors\CommerzException impl
 ```php
 final class AttributeNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -356,9 +359,10 @@ final class AttributeNotWritable extends \Commerz\Errors\CommerzException implem
     public readonly string $attribute;
     public readonly string $status;
     __construct(string $attribute, string $status);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -373,9 +377,10 @@ final class InvalidAttributeConfig extends \Commerz\Errors\CommerzException impl
     public readonly string $attribute;
     public readonly string $reason;
     __construct(string $attribute, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -390,9 +395,10 @@ final class InvalidAttributeValue extends \Commerz\Errors\CommerzException imple
     public readonly string $attribute;
     public readonly string $reason;
     __construct(string $attribute, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -408,9 +414,10 @@ final class InvalidStatusTransition extends \Commerz\Errors\CommerzException imp
     public readonly string $from;
     public readonly string $to;
     __construct(string $entity, string $from, string $to);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -424,9 +431,10 @@ Required attributes of the product type are missing at creation, or a command tr
 final class MissingRequiredAttributes extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly array $codes;
     __construct(array $codes);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -607,9 +615,10 @@ The category is archived: it takes no products, no children and no changes.
 final class CategoryArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $category;
     __construct(string $category);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -624,9 +633,10 @@ final class CategoryCycle extends \Commerz\Errors\CommerzException implements \S
     public readonly string $category;
     public readonly string $parent;
     __construct(string $category, string $parent);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -640,9 +650,10 @@ A category with active children cannot be archived; move or archive the children
 final class CategoryHasChildren extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $category;
     __construct(string $category);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -653,6 +664,7 @@ final class CategoryHasChildren extends \Commerz\Errors\CommerzException impleme
 ```php
 final class CategoryNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -692,9 +704,121 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogOptions`](#type-commerz-catalog-configuration-catalogoptions) | class | api | 0.1 |
+
+### CatalogOptions {#type-commerz-catalog-configuration-catalogoptions}
+
+`Commerz\Catalog\Configuration\CatalogOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-catalog`.
+
+```php
+final readonly class CatalogOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly int $maxGeneratedVariants;
+    __construct(int $maxGeneratedVariants = 100);
+    static fromArray(array $config, string $path = 'commerz-catalog'): self;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogDoctorCheck`](#type-commerz-catalog-diagnostics-catalogdoctorcheck) | class | api | 0.1 |
+
+### CatalogDoctorCheck {#type-commerz-catalog-diagnostics-catalogdoctorcheck}
+
+`Commerz\Catalog\Diagnostics\CatalogDoctorCheck`
+
+Verifies `axiomasoft/commerz-catalog` configuration and required plugin contributions.
+
+```php
+final readonly class CatalogDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogProblemDefinitions`](#type-commerz-catalog-errors-catalogproblemdefinitions) | class | api | 0.1 |
+| [`CatalogErrorCode`](#type-commerz-catalog-errors-enums-catalogerrorcode) | enum | api | 0.1 |
+
+### CatalogProblemDefinitions {#type-commerz-catalog-errors-catalogproblemdefinitions}
+
+`Commerz\Catalog\Errors\CatalogProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-catalog` error codes.
+
+```php
+final readonly class CatalogProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
+}
+```
+
+### CatalogErrorCode {#type-commerz-catalog-errors-enums-catalogerrorcode}
+
+`Commerz\Catalog\Errors\Enums\CatalogErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-catalog`.
+
+```php
+enum CatalogErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case AttributeNotAllowed = 'catalog.attribute_not_allowed';
+    case AttributeNotFilterable = 'catalog.attribute_not_filterable';
+    case AttributeNotFound = 'catalog.attribute_not_found';
+    case AttributeNotWritable = 'catalog.attribute_not_writable';
+    case CategoryArchived = 'catalog.category_archived';
+    case CategoryCycle = 'catalog.category_cycle';
+    case CategoryHasChildren = 'catalog.category_has_children';
+    case CategoryNotFound = 'catalog.category_not_found';
+    case DuplicateCode = 'catalog.duplicate_code';
+    case DuplicateCombination = 'catalog.duplicate_combination';
+    case InvalidAttributeConfig = 'catalog.invalid_attribute_config';
+    case InvalidAttributeValue = 'catalog.invalid_attribute_value';
+    case InvalidAttributes = 'catalog.invalid_attributes';
+    case InvalidAxes = 'catalog.invalid_axes';
+    case InvalidBarcode = 'catalog.invalid_barcode';
+    case InvalidChoices = 'catalog.invalid_choices';
+    case InvalidCode = 'catalog.invalid_code';
+    case InvalidDimensions = 'catalog.invalid_dimensions';
+    case InvalidFilter = 'catalog.invalid_filter';
+    case InvalidHandle = 'catalog.invalid_handle';
+    case InvalidOptionValues = 'catalog.invalid_option_values';
+    case InvalidProductType = 'catalog.invalid_product_type';
+    case InvalidSku = 'catalog.invalid_sku';
+    case InvalidSkuPattern = 'catalog.invalid_sku_pattern';
+    case InvalidStatusTransition = 'catalog.invalid_status_transition';
+    case InvalidWindow = 'catalog.invalid_window';
+    case ListingNotFound = 'catalog.listing_not_found';
+    case MissingRequiredAttributes = 'catalog.missing_required_attributes';
+    case OptionNotFound = 'catalog.option_not_found';
+    case ProductArchived = 'catalog.product_archived';
+    case ProductNotFound = 'catalog.product_not_found';
+    case ProductTypeArchived = 'catalog.product_type_archived';
+    case ProductTypeNotFound = 'catalog.product_type_not_found';
+    case TooManyAxes = 'catalog.too_many_axes';
+    case TooManyVariants = 'catalog.too_many_variants';
+    case UnknownOptionValue = 'catalog.unknown_option_value';
+    case UnsupportedFilter = 'catalog.unsupported_filter';
+    case VariantNotFound = 'catalog.variant_not_found';
+    value(): string;
 }
 ```
 
@@ -710,6 +834,25 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
 
 ```php
 final class Catalog extends \Illuminate\Support\Facades\Facade {}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogRegistrar`](#type-commerz-catalog-laravel-registrars-catalogregistrar) | class | spi (call) | 0.1 |
+
+### CatalogRegistrar {#type-commerz-catalog-laravel-registrars-catalogregistrar}
+
+`Commerz\Catalog\Laravel\Registrars\CatalogRegistrar`
+
+Wires Commerz catalog services, extension plugin, options, schema ownership, diagnostics, and panels.
+
+```php
+final class CatalogRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
 ```
 
 ## Listings
@@ -837,6 +980,7 @@ The product was never published in the channel.
 ```php
 final class ListingNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $product, string $channel);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -984,6 +1128,7 @@ final readonly class UpdateOption {
 ```php
 final class OptionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -998,9 +1143,107 @@ final class UnknownOptionValue extends \Commerz\Errors\CommerzException implemen
     public readonly string $option;
     public readonly string $value;
     __construct(string $option, string $value);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`AttributesPanel`](#type-commerz-catalog-panels-attributespanel) | class | spi (call) | 0.1 |
+| [`CategoriesPanel`](#type-commerz-catalog-panels-categoriespanel) | class | spi (call) | 0.1 |
+| [`ProductsPanel`](#type-commerz-catalog-panels-productspanel) | class | spi (call) | 0.1 |
+| [`VariantsPanel`](#type-commerz-catalog-panels-variantspanel) | class | spi (call) | 0.1 |
+
+### AttributesPanel {#type-commerz-catalog-panels-attributespanel}
+
+`Commerz\Catalog\Panels\AttributesPanel`
+
+Headless Packman panel provider descriptor and admission gate for catalog attributes.
+
+```php
+final readonly class AttributesPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### CategoriesPanel {#type-commerz-catalog-panels-categoriespanel}
+
+`Commerz\Catalog\Panels\CategoriesPanel`
+
+Headless Packman panel provider descriptor and admission gate for catalog categories.
+
+```php
+final readonly class CategoriesPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### ProductsPanel {#type-commerz-catalog-panels-productspanel}
+
+`Commerz\Catalog\Panels\ProductsPanel`
+
+Headless Packman panel provider descriptor and admission gate for catalog products.
+
+```php
+final readonly class ProductsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### VariantsPanel {#type-commerz-catalog-panels-variantspanel}
+
+`Commerz\Catalog\Panels\VariantsPanel`
+
+Headless Packman panel provider descriptor and admission gate for catalog variants.
+
+```php
+final readonly class VariantsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogPlugin`](#type-commerz-catalog-plugins-catalogplugin) | class | api | 0.1 |
+
+### CatalogPlugin {#type-commerz-catalog-plugins-catalogplugin}
+
+`Commerz\Catalog\Plugins\CatalogPlugin`
+
+The catalog's code plugin: declares `attribute_type` and `product_kind`, contributes built-in types/kinds, registers the `variant` sellable provider, and exposes catalog configuration, schema, diagnostics, and panels.
+
+```php
+final class CatalogPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.catalog';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
 }
 ```
 
@@ -1195,9 +1438,10 @@ The slots or axes of a product type are inconsistent.
 final class InvalidProductType extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $reason;
     __construct(string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1211,9 +1455,10 @@ The product type is archived and takes no new products or slots.
 final class ProductTypeArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $type;
     __construct(string $type);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1224,6 +1469,7 @@ final class ProductTypeArchived extends \Commerz\Errors\CommerzException impleme
 ```php
 final class ProductTypeNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1461,9 +1707,10 @@ The product is archived and takes no further changes.
 final class ProductArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $product;
     __construct(string $product);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1474,6 +1721,25 @@ final class ProductArchived extends \Commerz\Errors\CommerzException implements 
 ```php
 final class ProductNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogSchemaSets`](#type-commerz-catalog-schema-catalogschemasets) | class | spi (call) | 0.1 |
+
+### CatalogSchemaSets {#type-commerz-catalog-schema-catalogschemasets}
+
+`Commerz\Catalog\Schema\CatalogSchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-catalog`.
+
+```php
+final readonly class CatalogSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -1765,9 +2031,10 @@ The product already has a variant (active or archived) with this combination of 
 final class DuplicateCombination extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly array $axes;
     __construct(array $axes);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1781,9 +2048,10 @@ The axes of a command do not match the product: an axis is missing or extra, or 
 final class InvalidAxes extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $reason;
     __construct(string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1798,9 +2066,10 @@ final class TooManyVariants extends \Commerz\Errors\CommerzException implements 
     public readonly int $limit;
     public readonly int $requested;
     __construct(int $requested, int $limit);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1811,5 +2080,6 @@ final class TooManyVariants extends \Commerz\Errors\CommerzException implements 
 ```php
 final class VariantNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-testkit
 
-Public PHP surface of `packages/testkit` as recorded in `packages/testkit/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/testkit` as recorded in `packages/testkit/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## (root)
 
@@ -49,7 +49,7 @@ final class Concurrency {
 `Commerz\Testkit\PackageTestCase`
 
 ```php
-abstract class PackageTestCase extends \Orchestra\Testbench\TestCase implements \Countable, \Orchestra\Testbench\Contracts\TestCase, \PHPUnit\Framework\Reorderable, \PHPUnit\Framework\SelfDescribing, \PHPUnit\Framework\Test {
+abstract class PackageTestCase extends \Packman\Testkit\PackageTestCase implements \Countable, \Orchestra\Testbench\Contracts\TestCase, \PHPUnit\Framework\Reorderable, \PHPUnit\Framework\SelfDescribing, \PHPUnit\Framework\Test {
     protected abstract commerzProviders(): array;
     protected databaseConnection(): array;
     protected defineEnvironment($app): void;

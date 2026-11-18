@@ -6,11 +6,10 @@ namespace Commerz\Catalog\Variants\Exceptions;
 
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The product already has a variant (active or archived) with this combination of axis values (CAT-01). */
 #[Api(since: '0.1')]
@@ -48,7 +47,7 @@ final class DuplicateCombination extends CommerzException
     {
         return new ErrorDescriptor(
             code: CatalogErrorCode::DuplicateCombination,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

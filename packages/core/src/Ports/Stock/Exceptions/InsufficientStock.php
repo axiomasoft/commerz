@@ -6,11 +6,10 @@ namespace Commerz\Ports\Stock\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A reservation would take more than is free; nothing of the command was reserved. */
 #[Api(since: '0.1')]
@@ -44,7 +43,7 @@ final class InsufficientStock extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::InsufficientStock,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

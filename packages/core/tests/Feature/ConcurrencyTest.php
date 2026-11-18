@@ -39,7 +39,7 @@ final class FileLogPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.file-log', '1.0.0');
+        return new PluginManifest('test.file-log', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void

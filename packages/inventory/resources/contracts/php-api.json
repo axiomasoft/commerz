@@ -455,7 +455,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -695,7 +695,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -2324,7 +2324,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -2404,7 +2404,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -2534,7 +2534,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -2630,7 +2630,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -3423,7 +3423,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -3503,7 +3503,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -3846,6 +3846,26 @@
             "uses": [],
             "doc": [],
             "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "container",
+                            "type": "?Illuminate\\Contracts\\Container\\Container",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 4
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
                 "access": {
                     "visibility": "public",
                     "static": false,
@@ -3906,6 +3926,26 @@
             "uses": [],
             "doc": [],
             "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "container",
+                            "type": "?Illuminate\\Contracts\\Container\\Container",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 4
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
                 "access": {
                     "visibility": "public",
                     "static": false,
@@ -4765,7 +4805,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -5988,7 +6028,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -6095,7 +6135,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {
@@ -7055,7 +7095,7 @@
                     "abstract": false,
                     "by_reference": false,
                     "parameters": [],
-                    "return": "Commerz\\Errors\\ErrorCategory",
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
                     "doc": []
                 },
                 "code": {

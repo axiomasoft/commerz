@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // Пакет: axiomasoft/commerz — src/Attributes/{Api,Spi,SpiKind}.php (здесь в одном файле для компактности примера).
-// Маркировка публичной поверхности как в CoreX (API-001) и Chatom (#[Api]/#[Spi]).
+// Маркировка публичной поверхности как в legacy-platform (API-001) и Chatom (#[Api]/#[Spi]).
 
 namespace Commerz\Attributes;
 

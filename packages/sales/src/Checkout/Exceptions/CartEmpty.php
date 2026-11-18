@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Checkout\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** An order needs at least one line. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class CartEmpty extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::CartEmpty,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

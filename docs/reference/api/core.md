@@ -2,13 +2,13 @@
 
 # axiomasoft/commerz
 
-Public PHP surface of `packages/core` as recorded in `packages/core/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/core` as recorded in `packages/core/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
 | Fact | Value |
 |---|---|
-| commands | `commerz:doctor`, `commerz:install`, `commerz:operations:prune`, `commerz:outbox:relay`, `commerz:plugins` |
+| commands | `commerz:install`, `commerz:operations:prune`, `commerz:outbox:relay` |
 | config | `commerz` |
 | kinds | `outbox_consumer`, `quote_stage`, `sellable_provider` |
 | plugin | `commerz.core` |
@@ -21,7 +21,6 @@ Public PHP surface of `packages/core` as recorded in `packages/core/resources/co
 |---|---|---|---|
 | [`Commerz`](#type-commerz-commerz) | class | api | 0.1 |
 | [`CommerzServiceProvider`](#type-commerz-commerzserviceprovider) | class | api | 0.1 |
-| [`PluginGraph`](#type-commerz-plugingraph) | class | api | 0.1 |
 
 ### Commerz {#type-commerz-commerz}
 
@@ -31,9 +30,9 @@ Root of the public API: only accessors of domain contracts. Feature packages add
 
 ```php
 final readonly class Commerz {
-    __construct(\Commerz\Stores\Contracts\Stores $stores, \Commerz\Stores\Contracts\Channels $channels, \Commerz\Plugins\Contracts\PluginInspector $plugins, \Commerz\Quotes\Contracts\QuotePipeline $quotes, \Commerz\Ports\Sellables\Contracts\Sellables $sellables);
+    __construct(\Commerz\Stores\Contracts\Stores $stores, \Commerz\Stores\Contracts\Channels $channels, \Packman\Plugins\Contracts\Registry\PluginInspector $plugins, \Commerz\Quotes\Contracts\QuotePipeline $quotes, \Commerz\Ports\Sellables\Contracts\Sellables $sellables);
     channels(): \Commerz\Stores\Contracts\Channels;
-    plugins(): \Commerz\Plugins\Contracts\PluginInspector;
+    plugins(): \Packman\Plugins\Contracts\Registry\PluginInspector;
     // Low-level price calculation for own scenarios; carts quote through the sales package.
     quotes(): \Commerz\Quotes\Contracts\QuotePipeline;
     sellables(): \Commerz\Ports\Sellables\Contracts\Sellables;
@@ -53,88 +52,29 @@ final class CommerzServiceProvider extends \Illuminate\Support\ServiceProvider {
 }
 ```
 
-### PluginGraph {#type-commerz-plugingraph}
-
-`Commerz\PluginGraph`
-
-Compiles a plugin set the way the application does, without booting providers: `commerz.core` first, then the given plugin classes in order. For plugin contract tests and tooling.
-
-```php
-final class PluginGraph {
-    static compile(\Illuminate\Contracts\Container\Container $container, array $plugins): \Commerz\Plugins\Contracts\Contributions&\Commerz\Plugins\Contracts\PluginInspector;
-}
-```
-
-## Attributes
-
-| Type | Kind | Layer | Since |
-|---|---|---|---|
-| [`Api`](#type-commerz-attributes-api) | class | api | 0.1 |
-| [`Spi`](#type-commerz-attributes-spi) | class | api | 0.1 |
-| [`SpiKind`](#type-commerz-attributes-spikind) | enum | api | 0.1 |
-
-### Api {#type-commerz-attributes-api}
-
-`Commerz\Attributes\Api`
-
-Marks a type as part of the public, SemVer-covered API.
-
-```php
-final readonly class Api {
-    public readonly string $since;
-    __construct(string $since);
-}
-```
-
-### Spi {#type-commerz-attributes-spi}
-
-`Commerz\Attributes\Spi`
-
-Marks an extension contract (service provider interface) with the way it is meant to be used.
-
-```php
-final readonly class Spi {
-    public readonly \Commerz\Attributes\SpiKind $kind;
-    public readonly string $since;
-    __construct(\Commerz\Attributes\SpiKind $kind, string $since = '0.1');
-}
-```
-
-### SpiKind {#type-commerz-attributes-spikind}
-
-`Commerz\Attributes\SpiKind`
-
-Who is expected to touch an SPI type.
-
-```php
-enum SpiKind {
-    case Implement = 'implement';
-    case Consume = 'consume';
-}
-```
-
 ## Configuration
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
-| [`CommerzConfig`](#type-commerz-configuration-commerzconfig) | class | api | 0.1 |
+| [`CommerzOptions`](#type-commerz-configuration-commerzoptions) | class | api | 0.1 |
 | [`StockMode`](#type-commerz-configuration-stockmode) | enum | api | 0.1 |
 
-### CommerzConfig {#type-commerz-configuration-commerzconfig}
+### CommerzOptions {#type-commerz-configuration-commerzoptions}
 
-`Commerz\Configuration\CommerzConfig`
+`Commerz\Configuration\CommerzOptions`
 
-The only reader of `config('commerz.*')`. A wrong value fails with its key path; there are no silent defaults.
+Immutable compiled configuration snapshot for `axiomasoft/commerz`.
 
 ```php
-final readonly class CommerzConfig {
+final readonly class CommerzOptions implements \Packman\Config\Contracts\OptionsFactory {
     public readonly ?string $connection;
     public readonly ?string $customers;
+    public readonly array $disabledPlugins;
     public readonly array $plugins;
     public readonly int $receiptTtlDays;
     public readonly \Commerz\Configuration\StockMode $stock;
-    public readonly string $tablePrefix;
-    __construct(?string $connection, string $tablePrefix, \Commerz\Configuration\StockMode $stock, ?string $customers, array $plugins, int $receiptTtlDays);
+    public readonly \Packman\Config\Data\TablePrefix $tablePrefix;
+    __construct(?string $connection = null, \Packman\Config\Data\TablePrefix $tablePrefix = new \Packman\Config\Data\TablePrefix, \Commerz\Configuration\StockMode $stock = Commerz\Configuration\StockMode::Inventory, ?string $customers = null, array $plugins = [], array $disabledPlugins = [], int $receiptTtlDays = 30);
     static fromArray(array $config, string $path = 'commerz'): self;
 }
 ```
@@ -190,45 +130,104 @@ interface ContextResolver {
 }
 ```
 
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CommerzDoctorCheck`](#type-commerz-diagnostics-commerzdoctorcheck) | class | api | 0.1 |
+
+### CommerzDoctorCheck {#type-commerz-diagnostics-commerzdoctorcheck}
+
+`Commerz\Diagnostics\CommerzDoctorCheck`
+
+Verifies Commerz configuration, database install fingerprint, and compiled plugin registry health.
+
+```php
+final readonly class CommerzDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, \Illuminate\Database\ConnectionResolverInterface $connections, ?\Closure $optionsResolver = null, ?\Closure $tablesResolver = null, ?\Closure $pluginsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
 ## Errors
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`CommerzException`](#type-commerz-errors-commerzexception) | class | api | 0.1 |
-| [`ErrorCategory`](#type-commerz-errors-errorcategory) | enum | api | 0.1 |
+| [`CommerzProblemDefinitions`](#type-commerz-errors-commerzproblemdefinitions) | class | api | 0.1 |
+| [`CommerzErrorCode`](#type-commerz-errors-enums-commerzerrorcode) | enum | api | 0.1 |
 | [`IdempotencyConflict`](#type-commerz-errors-idempotencyconflict) | class | api | 0.1 |
 | [`InvalidCommand`](#type-commerz-errors-invalidcommand) | class | api | 0.1 |
-| [`InvalidConfiguration`](#type-commerz-errors-invalidconfiguration) | class | api | 0.1 |
 | [`NotFound`](#type-commerz-errors-notfound) | class | api | 0.1 |
-| [`UnsupportedContribution`](#type-commerz-errors-unsupportedcontribution) | class | api | 0.1 |
 
 ### CommerzException {#type-commerz-errors-commerzexception}
 
 `Commerz\Errors\CommerzException`
 
-Root of all package errors. `code()` is a stable machine code `<module>.<snake_reason>`; the human message is for logs and may change.
+Root of Commerz domain errors, with Packman descriptors and stable domain code/context metadata.
 
 ```php
-abstract class CommerzException extends \RuntimeException implements \Stringable, \Throwable {
-    abstract category(): \Commerz\Errors\ErrorCategory;
+abstract class CommerzException extends \Packman\Errors\Exceptions\CodedException implements \Stringable, \Throwable {
+    category(): \Packman\Errors\Enums\ErrorCategory;
     abstract code(): string;
     abstract context(): array;
 }
 ```
 
-### ErrorCategory {#type-commerz-errors-errorcategory}
+### CommerzProblemDefinitions {#type-commerz-errors-commerzproblemdefinitions}
 
-`Commerz\Errors\ErrorCategory`
+`Commerz\Errors\CommerzProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz` core error codes.
 
 ```php
-enum ErrorCategory {
-    case Validation = 'validation';
-    case NotFound = 'not_found';
-    case Conflict = 'conflict';
-    case Limit = 'limit';
-    case Unsupported = 'unsupported';
-    case Configuration = 'configuration';
-    case Integration = 'integration';
+final readonly class CommerzProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
+}
+```
+
+### CommerzErrorCode {#type-commerz-errors-enums-commerzerrorcode}
+
+`Commerz\Errors\Enums\CommerzErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz`.
+
+```php
+enum CommerzErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case AmountOverflow = 'commerz.amount_overflow';
+    case ChannelArchived = 'commerz.channel_archived';
+    case ChannelNotFound = 'commerz.channel_not_found';
+    case CurrencyMismatch = 'commerz.currency_mismatch';
+    case CurrencyNotAllowed = 'commerz.currency_not_allowed';
+    case DuplicateCode = 'commerz.duplicate_code';
+    case IdempotencyConflict = 'commerz.idempotency_conflict';
+    case InsufficientStock = 'commerz.insufficient_stock';
+    case InvalidAmount = 'commerz.invalid_amount';
+    case InvalidCommand = 'commerz.invalid_command';
+    case InvalidConfiguration = 'commerz.invalid_configuration';
+    case InvalidCurrencies = 'commerz.invalid_currencies';
+    case InvalidCurrency = 'commerz.invalid_currency';
+    case InvalidId = 'commerz.invalid_id';
+    case InvalidIdempotencyKey = 'commerz.invalid_idempotency_key';
+    case InvalidLocale = 'commerz.invalid_locale';
+    case InvalidOutboxEvent = 'commerz.invalid_outbox_event';
+    case InvalidPageSize = 'commerz.invalid_page_size';
+    case InvalidRate = 'commerz.invalid_rate';
+    case InvalidRef = 'commerz.invalid_ref';
+    case InvalidWeights = 'commerz.invalid_weights';
+    case NotFound = 'commerz.not_found';
+    case PriceNotFound = 'commerz.price_not_found';
+    case QuoteCurrencyMismatch = 'commerz.quote_currency_mismatch';
+    case QuoteFailed = 'commerz.quote_failed';
+    case ReservationNotFound = 'commerz.reservation_not_found';
+    case SellableUnavailable = 'commerz.sellable_unavailable';
+    case StoreNotFound = 'commerz.store_not_found';
+    case UnsupportedContribution = 'commerz.unsupported_contribution';
+    case UsageLimitReached = 'commerz.usage_limit_reached';
+    value(): string;
 }
 ```
 
@@ -243,9 +242,10 @@ final class IdempotencyConflict extends \Commerz\Errors\CommerzException impleme
     public readonly string $key;
     public readonly string $operation;
     __construct(string $operation, string $key);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -260,26 +260,10 @@ class InvalidCommand extends \Commerz\Errors\CommerzException implements \String
     public readonly string $field;
     public readonly string $reason;
     __construct(string $field, string $reason, string $errorCode = 'common.invalid_command');
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
-}
-```
-
-### InvalidConfiguration {#type-commerz-errors-invalidconfiguration}
-
-`Commerz\Errors\InvalidConfiguration`
-
-A configuration value is wrong; `path` is the dotted key, e.g. `commerz.table_prefix`.
-
-```php
-final class InvalidConfiguration extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
-    public readonly string $path;
-    public readonly string $reason;
-    __construct(string $path, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
-    code(): string;
-    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -294,27 +278,10 @@ class NotFound extends \Commerz\Errors\CommerzException implements \Stringable, 
     public readonly string $entity;
     public readonly string $id;
     __construct(string $entity, string $id, string $errorCode = 'common.not_found');
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
-}
-```
-
-### UnsupportedContribution {#type-commerz-errors-unsupportedcontribution}
-
-`Commerz\Errors\UnsupportedContribution`
-
-A plugin contributed a kind or key the installed packages do not support.
-
-```php
-final class UnsupportedContribution extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
-    public readonly string $key;
-    public readonly string $kind;
-    public readonly string $reason;
-    __construct(string $kind, string $key, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
-    code(): string;
-    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -440,6 +407,53 @@ final class Uuid7 {
 }
 ```
 
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CommerzCoreRegistrar`](#type-commerz-laravel-registrars-commerzcoreregistrar) | class | spi (call) | 0.1 |
+| [`CommerzPortsRegistrar`](#type-commerz-laravel-registrars-commerzportsregistrar) | class | spi (call) | 0.1 |
+| [`CommerzStoresRegistrar`](#type-commerz-laravel-registrars-commerzstoresregistrar) | class | spi (call) | 0.1 |
+
+### CommerzCoreRegistrar {#type-commerz-laravel-registrars-commerzcoreregistrar}
+
+`Commerz\Laravel\Registrars\CommerzCoreRegistrar`
+
+Wires Commerz's core extension plugin, options, schema ownership, diagnostics, panels, outbox, and operations.
+
+```php
+final class CommerzCoreRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+### CommerzPortsRegistrar {#type-commerz-laravel-registrars-commerzportsregistrar}
+
+`Commerz\Laravel\Registrars\CommerzPortsRegistrar`
+
+Registers default core implementations of cross-package Commerz ports unless overridden by feature packages.
+
+```php
+final class CommerzPortsRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+### CommerzStoresRegistrar {#type-commerz-laravel-registrars-commerzstoresregistrar}
+
+`Commerz\Laravel\Registrars\CommerzStoresRegistrar`
+
+Registers core Stores, Channels, Sellables, QuotePipeline, and the root Commerz entrypoint.
+
+```php
+final class CommerzStoresRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
 ## Measures
 
 | Type | Kind | Layer | Since |
@@ -552,6 +566,7 @@ final class CurrencyMismatch extends \Commerz\Errors\InvalidCommand implements \
     public readonly string $left;
     public readonly string $right;
     __construct(string $left, string $right);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -563,6 +578,7 @@ final class CurrencyMismatch extends \Commerz\Errors\InvalidCommand implements \
 final class InvalidCurrency extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
     public readonly string $given;
     __construct(string $given);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -814,26 +830,79 @@ final readonly class Page {
 }
 ```
 
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ChannelPanel`](#type-commerz-panels-channelpanel) | class | spi (call) | 0.1 |
+| [`PanelPermissions`](#type-commerz-panels-contracts-panelpermissions) | interface | spi (implement) | 0.1 |
+| [`PanelAuthorization`](#type-commerz-panels-panelauthorization) | class | api | 0.1 |
+| [`StorePanel`](#type-commerz-panels-storepanel) | class | spi (call) | 0.1 |
+
+### ChannelPanel {#type-commerz-panels-channelpanel}
+
+`Commerz\Panels\ChannelPanel`
+
+Headless Packman panel provider descriptor and admission gate for Commerz channels.
+
+```php
+final readonly class ChannelPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### PanelPermissions {#type-commerz-panels-contracts-panelpermissions}
+
+`Commerz\Panels\Contracts\PanelPermissions`
+
+Host policy for the trusted actor, tenant, panel resource and individual action.
+
+```php
+interface PanelPermissions {
+    allows(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel, string $action): bool;
+}
+```
+
+### PanelAuthorization {#type-commerz-panels-panelauthorization}
+
+`Commerz\Panels\PanelAuthorization`
+
+Shared fail-closed admission policy for the Commerz headless panel providers.
+
+```php
+final readonly class PanelAuthorization {
+    static evaluate(?\Illuminate\Contracts\Container\Container $container, \Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel, \Packman\Panels\Data\Panel\PanelDescriptor $descriptor): \Packman\Panels\Data\Admission\PanelAccess;
+}
+```
+
+### StorePanel {#type-commerz-panels-storepanel}
+
+`Commerz\Panels\StorePanel`
+
+Headless Packman panel provider descriptor and admission gate for Commerz stores.
+
+```php
+final readonly class StorePanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
 ## Plugins
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`CommerzPlugins`](#type-commerz-plugins-commerzplugins) | class | api | 0.1 |
-| [`CommerzPlugin`](#type-commerz-plugins-contracts-commerzplugin) | interface | spi (implement) | 0.1 |
-| [`Contributions`](#type-commerz-plugins-contracts-contributions) | interface | api | 0.1 |
-| [`PluginInspector`](#type-commerz-plugins-contracts-plugininspector) | interface | api | 0.1 |
-| [`ContributionDescription`](#type-commerz-plugins-contributiondescription) | class | api | 0.1 |
-| [`ContributionKind`](#type-commerz-plugins-contributionkind) | class | api | 0.1 |
-| [`PluginDescription`](#type-commerz-plugins-plugindescription) | class | api | 0.1 |
-| [`PluginManifest`](#type-commerz-plugins-pluginmanifest) | class | api | 0.1 |
-| [`PluginRegistrar`](#type-commerz-plugins-pluginregistrar) | class | api | 0.1 |
-| [`PluginSource`](#type-commerz-plugins-pluginsource) | enum | api | 0.1 |
+| [`CorePlugin`](#type-commerz-plugins-coreplugin) | class | api | 0.1 |
 
 ### CommerzPlugins {#type-commerz-plugins-commerzplugins}
 
 `Commerz\Plugins\CommerzPlugins`
 
-Entry point for packages: call from a service provider's `register()` to add the package's built-in plugin. Hosts list their own plugins in `config('commerz.plugins')` instead. Registration must happen before the first use of `Contributions`; afterwards the catalog is frozen and this throws a LogicException.
+Entry point for registering built-in Commerz extension plugins with Packman.
 
 ```php
 final class CommerzPlugins {
@@ -841,140 +910,29 @@ final class CommerzPlugins {
 }
 ```
 
-### CommerzPlugin {#type-commerz-plugins-contracts-commerzplugin}
+### CorePlugin {#type-commerz-plugins-coreplugin}
 
-`Commerz\Plugins\Contracts\CommerzPlugin`
+`Commerz\Plugins\CorePlugin`
 
-A unit of behavior: pure declarations, no IO, no database, no container lookups. The compiler creates it with `new $class()` (no constructor arguments) once per process and calls `manifest()` and `register()` exactly once. Packages register their built-in contributions through the same contract (`CommerzPlugins::builtIn()`).
-
-```php
-interface CommerzPlugin {
-    manifest(): \Commerz\Plugins\PluginManifest;
-    register(\Commerz\Plugins\PluginRegistrar $registrar): void;
-}
-```
-
-### Contributions {#type-commerz-plugins-contracts-contributions}
-
-`Commerz\Plugins\Contracts\Contributions`
-
-The compiled, immutable plugin registry. It is built lazily on first use and never changes for the rest of the process, so it is safe in long-running workers. Contributions are shared, stateless instances.
+The Commerz core code plugin. Downstream plugins require it explicitly to use its contribution kinds, schema, configuration, panels, and diagnostics.
 
 ```php
-interface Contributions {
-    get(string $kind, string $key, string $interface): object;
-    has(string $kind, string $key): bool;
-    // Keys in plugin load order (dependencies first), then registration order. Empty for a kind nobody contributed to.
-    keys(string $kind): array;
-}
-```
-
-### PluginInspector {#type-commerz-plugins-contracts-plugininspector}
-
-`Commerz\Plugins\Contracts\PluginInspector`
-
-Read-only view of the compiled registry for diagnostics (`commerz:plugins`).
-
-```php
-interface PluginInspector {
-    describe(): array;
-}
-```
-
-### ContributionDescription {#type-commerz-plugins-contributiondescription}
-
-`Commerz\Plugins\ContributionDescription`
-
-```php
-final readonly class ContributionDescription {
-    public readonly string $class;
-    public readonly string $key;
-    public readonly string $kind;
-    __construct(string $kind, string $key, string $class);
-}
-```
-
-### ContributionKind {#type-commerz-plugins-contributionkind}
-
-`Commerz\Plugins\ContributionKind`
-
-A closed slot that plugins contribute to, declared by the package that owns its contract. The owner is the id of the declaring plugin; a plugin may contribute only to kinds of itself or of plugins it (transitively) requires.
-
-```php
-final readonly class ContributionKind {
-    public readonly string $interface;
-    public readonly string $name;
-    public readonly string $ownerPluginId;
-    __construct(string $name, string $interface, string $ownerPluginId);
-}
-```
-
-### PluginDescription {#type-commerz-plugins-plugindescription}
-
-`Commerz\Plugins\PluginDescription`
-
-```php
-final readonly class PluginDescription {
-    public readonly string $class;
-    public readonly array $contributions;
-    public readonly string $id;
-    public readonly array $kinds;
-    public readonly array $optional;
-    public readonly array $requires;
-    public readonly \Commerz\Plugins\PluginSource $source;
-    public readonly string $version;
-    __construct(string $id, string $version, \Commerz\Plugins\PluginSource $source, string $class, array $requires, array $optional, array $kinds, array $contributions);
-}
-```
-
-### PluginManifest {#type-commerz-plugins-pluginmanifest}
-
-`Commerz\Plugins\PluginManifest`
-
-Identity and dependencies of a plugin. `requires` must be present; `optional` only orders loading when present.
-
-```php
-final readonly class PluginManifest {
-    const ID_PATTERN = '/\\A[a-z0-9]+(\\.[a-z0-9-]+)+\\z/';
-    public readonly string $id;
-    public readonly array $optional;
-    public readonly array $requires;
-    public readonly string $version;
-    __construct(string $id, string $version, array $requires = [], array $optional = []);
-}
-```
-
-### PluginRegistrar {#type-commerz-plugins-pluginregistrar}
-
-`Commerz\Plugins\PluginRegistrar`
-
-Handed to `CommerzPlugin::register()`. It only records declarations; the compiler validates them against the whole graph. A registrar is sealed when `register()` returns, so a late call fails instead of mutating a frozen registry.
-
-```php
-final readonly class PluginRegistrar {
-    public readonly string $pluginId;
-    __construct(\Commerz\Plugins\Internal\PluginDeclarations $declarations, string $pluginId);
-    // Adds a contribution to a kind. The key comes from its `key()` method. A class name is resolved through the container when the graph is compiled.
-    contribute(string $kind, object|string $contribution): void;
-    // Declares a contribution kind this plugin owns.
-    declareKind(\Commerz\Plugins\ContributionKind $kind): void;
-    // Adds a stage to the quote pipeline.
-    quoteStage(\Commerz\Quotes\Contracts\QuoteStage|string $stage): void;
-    // Serves sellables of the ref type equal to the provider's key.
-    sellableProvider(\Commerz\Ports\Sellables\Contracts\SellableProvider|string $provider): void;
-}
-```
-
-### PluginSource {#type-commerz-plugins-pluginsource}
-
-`Commerz\Plugins\PluginSource`
-
-Where a plugin was registered from.
-
-```php
-enum PluginSource {
-    case BuiltIn = 'builtin';
-    case Config = 'config';
+final class CorePlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.core';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
 }
 ```
 
@@ -1219,6 +1177,7 @@ No price applies to the sellable in this context and currency.
 ```php
 final class PriceNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $sellable, string $currency);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1299,9 +1258,10 @@ final class UsageLimitReached extends \Commerz\Errors\CommerzException implement
     public readonly string $limit;
     public readonly string $promotionId;
     __construct(string $promotionId, ?string $couponCode, string $limit);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1383,9 +1343,10 @@ final class SellableUnavailable extends \Commerz\Errors\CommerzException impleme
     public readonly string $reason;
     public readonly string $sellable;
     __construct(string $sellable, string $reason = 'unknown');
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1633,9 +1594,10 @@ final class InsufficientStock extends \Commerz\Errors\CommerzException implement
     public readonly int $requested;
     public readonly string $sellable;
     __construct(string $sellable, int $requested, int $available);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1648,6 +1610,7 @@ The demand holds no (or not enough) reserved stock of the sellable.
 ```php
 final class ReservationNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $demand, string $sellable);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2004,9 +1967,10 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
     public readonly string $stage;
     __construct(string $stage, string $reason, string $message, ?\Throwable $previous = null);
     static byStage(string $stage, \Throwable $error): self;
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2014,99 +1978,17 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
-| [`CommerzMigration`](#type-commerz-schema-commerzmigration) | class | spi (implement) | 0.1 |
-| [`ConstraintNames`](#type-commerz-schema-constraintnames) | class | api | 0.1 |
-| [`SchemaOwnership`](#type-commerz-schema-contracts-schemaownership) | interface | api | 0.1 |
-| [`TableNames`](#type-commerz-schema-tablenames) | class | api | 0.1 |
+| [`CommerzSchemaSets`](#type-commerz-schema-commerzschemasets) | class | spi (call) | 0.1 |
 
-### CommerzMigration {#type-commerz-schema-commerzmigration}
+### CommerzSchemaSets {#type-commerz-schema-commerzschemasets}
 
-`Commerz\Schema\CommerzMigration`
+`Commerz\Schema\CommerzSchemaSets`
 
-Base of every Commerz migration: runs on `commerz.connection`, names tables through `TableNames` and constraints through `ConstraintNames` (PostgreSQL's `{table}_pkey` becomes `{table}_pk`). Released migrations never change; a schema change is a new migration.
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz`.
 
 ```php
-abstract class CommerzMigration extends \Illuminate\Database\Migrations\Migration {
-    // Adds `CHECK ($expression)` named `{table}_{name}_ck` to an existing table.
-    protected check(string $table, string $name, string $expression): void;
-    // Creates the table and renames its primary key to `{table}_pk`.
-    protected create(string $logical, \Closure $define): string;
-    protected db(): \Illuminate\Database\Connection;
-    // Drops the table if it exists; for `down()`.
-    protected drop(string $logical): void;
-    // Adds `EXCLUDE USING gist ($elements)` named `{table}_{name}_ex` to an existing table, e.g. `$elements` `price_list_id with =, validity with &&`. Needs the `btree_gist` extension for scalar columns.
-    protected exclude(string $table, string $name, string $elements): void;
-    protected foreign(\Illuminate\Database\Schema\Blueprint $table, array|string $columns): \Illuminate\Database\Schema\ForeignKeyDefinition;
-    getConnection(): ?string;
-    // `bigint generated always as identity` primary key, for append-only journals.
-    protected identityPrimary(\Illuminate\Database\Schema\Blueprint $table, string $column = 'id'): \Illuminate\Database\Schema\ColumnDefinition;
-    protected index(\Illuminate\Database\Schema\Blueprint $table, array|string $columns): void;
-    // `{name}_minor bigint` plus a shared `char(3)` currency column (added once per table).
-    protected money(\Illuminate\Database\Schema\Blueprint $table, string $name, bool $nullable = false, string $currency = 'currency'): \Illuminate\Database\Schema\ColumnDefinition;
-    // `{name}_ref varchar(191)` holding `type:id` of something another package or the host owns; no foreign key.
-    protected ref(\Illuminate\Database\Schema\Blueprint $table, string $name, bool $nullable = false): \Illuminate\Database\Schema\ColumnDefinition;
-    protected schema(): \Illuminate\Database\Schema\Builder;
-    // Physical name of a logical table: `stock_levels` → `cmz_stock_levels`.
-    protected table(string $logical): string;
-    protected tables(): \Commerz\Schema\TableNames;
-    // `created_at` and `updated_at` as non-null `timestamptz(6)` defaulting to now().
-    protected timestampsTz(\Illuminate\Database\Schema\Blueprint $table): void;
-    protected unique(\Illuminate\Database\Schema\Blueprint $table, array|string $columns): void;
-    // `uuid` primary key; the value is a UUIDv7 generated by the application before INSERT.
-    protected uuidPrimary(\Illuminate\Database\Schema\Blueprint $table, string $column = 'id'): \Illuminate\Database\Schema\ColumnDefinition;
-}
-```
-
-### ConstraintNames {#type-commerz-schema-constraintnames}
-
-`Commerz\Schema\ConstraintNames`
-
-Index and constraint names: `{table}_{cols}_{ix|uq|fk|ck}`, `{table}_{name}_ex` and `{table}_pk`. A name longer than 63 bytes keeps its first 54 bytes + '_' + the first 8 hex digits of the sha1 of the full name. Frozen: released migrations used it.
-
-```php
-final class ConstraintNames {
-    const MAX_IDENTIFIER = 63;
-    // `$name` describes the rule, e.g. `quantity_positive`.
-    static check(string $table, string $name): string;
-    // `$name` describes the rule, e.g. `window_overlap`; names an `EXCLUDE USING gist` constraint.
-    static exclusion(string $table, string $name): string;
-    static foreign(string $table, array|string $columns): string;
-    static index(string $table, array|string $columns): string;
-    static primary(string $table): string;
-    // Deterministic shortening of any identifier to 63 bytes.
-    static shorten(string $name): string;
-    static unique(string $table, array|string $columns): string;
-}
-```
-
-### SchemaOwnership {#type-commerz-schema-contracts-schemaownership}
-
-`Commerz\Schema\Contracts\SchemaOwnership`
-
-Which package owns which table nouns. A logical table belongs to the owner of a noun when it equals the noun, its plural, or starts with "{noun}_" (`stock` owns `stock_levels`, `store` owns `stores`). Third-party plugins use nouns `x_<vendor>`. `TableNames` refuses logical tables without an owner.
-
-```php
-interface SchemaOwnership {
-    declare(string $owner, array $nouns): void;
-    // Owner id of a logical table name (`stock_levels`), or null when no declared noun covers it.
-    ownerOf(string $logical): ?string;
-    owners(): array;
-}
-```
-
-### TableNames {#type-commerz-schema-tablenames}
-
-`Commerz\Schema\TableNames`
-
-The only source of Commerz table names for migrations, models and raw SQL: logical `stock_levels` → physical `cmz_stock_levels`. The first lookup in a process checks the install fingerprint (not at boot, so `migrate` works on an empty database); a changed prefix fails with `InvalidConfiguration('commerz.table_prefix')`.
-
-```php
-final class TableNames {
-    __construct(\Commerz\Configuration\CommerzConfig $config, \Commerz\Schema\Contracts\SchemaOwnership $ownership, \Illuminate\Database\ConnectionResolverInterface $connections);
-    // The connection every Commerz table lives on; null is the application default.
-    connection(): ?string;
-    prefix(): string;
-    table(string $logical): string;
+final readonly class CommerzSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -2457,9 +2339,10 @@ An archived channel was used where an active one is required (a new context, a c
 final class ChannelArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $channel;
     __construct(string $channel);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2470,6 +2353,7 @@ final class ChannelArchived extends \Commerz\Errors\CommerzException implements 
 ```php
 final class ChannelNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2484,9 +2368,10 @@ final class CurrencyNotAllowed extends \Commerz\Errors\CommerzException implemen
     public readonly string $channel;
     public readonly string $currency;
     __construct(string $channel, string $currency);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2501,9 +2386,10 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2514,5 +2400,6 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
 ```php
 final class StoreNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

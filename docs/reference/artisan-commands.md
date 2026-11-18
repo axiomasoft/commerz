@@ -17,21 +17,21 @@ commerz:install [--force] [--no-migrate]
 | `--force` | Overwrite the published config and migrate in production |
 | `--no-migrate` | Only publish the config |
 
-## commerz:doctor
+## packman:doctor
 
 Check the Commerz configuration, install fingerprint and plugin registry.
 Package: core. Exit `1` if any check fails.
 
 ```text
-commerz:doctor
+packman:doctor
 ```
 
-## commerz:plugins
+## packman:plugins
 
 List the compiled plugins and their contributions, in load order. Package: core.
 
 ```text
-commerz:plugins [--json]
+packman:plugins [--json]
 ```
 
 | Option | Description |

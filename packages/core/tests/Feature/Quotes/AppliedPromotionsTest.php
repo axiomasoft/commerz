@@ -75,7 +75,7 @@ final class ApCodePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('test.applied', '1.0.0');
+        return new PluginManifest('test.applied', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void

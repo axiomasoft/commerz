@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Returns\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** More units were to go back on hand than the return holds for the line (REF-01). */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class RestockExceedsReceived extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::RestockExceedsReceived,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

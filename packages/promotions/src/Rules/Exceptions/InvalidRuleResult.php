@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Rules\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A condition, effect or activator answered with something the engine cannot trust. */
 #[Api(since: '0.1')]
@@ -28,7 +27,7 @@ final class InvalidRuleResult extends CommerzException
 
     public function category(): ErrorCategory
     {
-        return ErrorCategory::Integration;
+        return ErrorCategory::Unavailable;
     }
 
     public function context(): array
@@ -41,7 +40,7 @@ final class InvalidRuleResult extends CommerzException
     {
         return new ErrorDescriptor(
             code: PromotionsErrorCode::InvalidRuleResult,
-            category: PackmanErrorCategory::Unavailable,
+            category: ErrorCategory::Unavailable,
             retryable: false,
             details: $this->context(),
         );

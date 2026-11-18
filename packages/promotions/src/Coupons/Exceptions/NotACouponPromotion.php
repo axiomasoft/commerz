@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Coupons\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Promotions\Errors\Enums\PromotionsErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** Coupons belong to promotions of the `coupon` activator; this promotion is switched on another way. */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class NotACouponPromotion extends CommerzException
     {
         return new ErrorDescriptor(
             code: PromotionsErrorCode::NotACouponPromotion,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

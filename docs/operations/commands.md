@@ -7,8 +7,8 @@ providers. Descriptions of every option are in the
 | Command | Package | Run | Purpose |
 |---|---|---|---|
 | `commerz:install` | core | once, on deploy | publish config, migrate |
-| `commerz:doctor` | core | on deploy, in CI | verify configuration, fingerprint, plugins |
-| `commerz:plugins` | core | on demand | list plugins and contributions |
+| `packman:doctor` | core | on deploy, in CI | verify configuration, fingerprint, plugins |
+| `packman:plugins` | core | on demand | list plugins and contributions |
 | `commerz:outbox:relay` | core | worker | deliver integration events |
 | `commerz:operations:prune` | core | daily | delete expired receipts and delivered outbox messages |
 | `commerz:inventory:expire-reservations` | inventory | every minute | release expired reservations |

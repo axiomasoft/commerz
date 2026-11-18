@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Sales\Common\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /**
  * The line has fewer units left for the operation than asked (ORD-03): units neither cancelled nor fulfilled for a
@@ -44,7 +43,7 @@ final class QuantityExceedsOutstanding extends CommerzException
     {
         return new ErrorDescriptor(
             code: SalesErrorCode::QuantityExceedsOutstanding,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

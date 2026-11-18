@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
@@ -21,6 +20,7 @@ use Commerz\Shipping\Rates\Exceptions\InvalidRateResult;
 use Commerz\Shipping\Rates\Internal\LoadedRate;
 use Commerz\Shipping\Tests\Fixtures\FixedRate;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The error code of the InvalidCommand a call fails with, or null. */
 function rdtCode(Closure $call): ?string
@@ -88,5 +88,5 @@ it('classifies the rate errors', function (): void {
     expect($config)->toBeInstanceOf(CommerzException::class)
         ->and([$config->code(), $config->category(), $config->context()])->toBe(['shipping.invalid_rate_config', ErrorCategory::Validation, ['field' => 'amount', 'reason' => 'must not be negative']])
         ->and($config->getMessage())->toBe('Invalid rate parameter amount: must not be negative.')
-        ->and([$result->code(), $result->category(), $result->context()])->toBe(['shipping.invalid_rate_result', ErrorCategory::Integration, ['rate' => 'acme.zone_matrix', 'reason' => 'negative price']]);
+        ->and([$result->code(), $result->category(), $result->context()])->toBe(['shipping.invalid_rate_result', ErrorCategory::Unavailable, ['rate' => 'acme.zone_matrix', 'reason' => 'negative price']]);
 });

@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-sales
 
-Public PHP surface of `packages/sales` as recorded in `packages/sales/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/sales` as recorded in `packages/sales/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -356,6 +356,7 @@ enum CartState {
 ```php
 final class CartLineNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -366,6 +367,7 @@ final class CartLineNotFound extends \Commerz\Errors\NotFound implements \String
 ```php
 final class CartNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -380,9 +382,10 @@ final class CartNotOpen extends \Commerz\Errors\CommerzException implements \Str
     public readonly string $cart;
     public readonly string $state;
     __construct(string $cart, string $state);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -397,9 +400,10 @@ final class SellableNotPurchasable extends \Commerz\Errors\CommerzException impl
     public readonly ?string $reason;
     public readonly \Commerz\Identity\SellableRef $sellable;
     __construct(\Commerz\Identity\SellableRef $sellable, ?string $reason = null);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -412,6 +416,7 @@ Delivery is priced or offered for a destination, and the cart has no shipping ad
 ```php
 final class ShippingAddressRequired extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
     __construct();
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -425,6 +430,7 @@ The cart would hold more lines than `commerz-sales.carts.max_lines`.
 final class TooManyCartLines extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
     public readonly int $max;
     __construct(int $max);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -481,9 +487,10 @@ final class CartAlreadyPlaced extends \Commerz\Errors\CommerzException implement
     public readonly string $cart;
     public readonly ?string $order;
     __construct(string $cart, ?string $order);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -499,9 +506,10 @@ final class CartChanged extends \Commerz\Errors\CommerzException implements \Str
     public readonly string $cart;
     public readonly int $expectedVersion;
     __construct(string $cart, int $expectedVersion, int $actualVersion);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -515,9 +523,10 @@ An order needs at least one line.
 final class CartEmpty extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $cart;
     __construct(string $cart);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -531,9 +540,10 @@ The cart has lines that ship and no priced delivery method (`commerz-sales.check
 final class DeliveryRequired extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $cart;
     __construct(string $cart);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -548,9 +558,10 @@ final class DuplicateOrderNumber extends \Commerz\Errors\CommerzException implem
     public readonly string $number;
     public readonly string $store;
     __construct(string $store, string $number);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -565,9 +576,10 @@ final class QuoteChanged extends \Commerz\Errors\CommerzException implements \St
     public readonly \Commerz\Money\Money $actual;
     public readonly \Commerz\Money\Money $expected;
     __construct(\Commerz\Money\Money $expected, \Commerz\Money\Money $actual);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -603,6 +615,7 @@ The order has no line with this id.
 ```php
 final class LineNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -616,9 +629,10 @@ The operation calls a payment gateway or a carrier and must run outside any data
 final class OperationInsideTransaction extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $operation;
     __construct(string $operation);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -634,9 +648,141 @@ final class QuantityExceedsOutstanding extends \Commerz\Errors\CommerzException 
     public readonly string $lineId;
     public readonly int $requested;
     __construct(string $lineId, int $requested, int $available);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesOptions`](#type-commerz-sales-configuration-salesoptions) | class | api | 0.1 |
+
+### SalesOptions {#type-commerz-sales-configuration-salesoptions}
+
+`Commerz\Sales\Configuration\SalesOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-sales`.
+
+```php
+final readonly class SalesOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly int $expireBatch;
+    public readonly int $leaseSeconds;
+    public readonly int $maxCartLines;
+    public readonly int $maxLineQuantity;
+    public readonly string $numberGenerator;
+    public readonly ?int $paymentDueMinutes;
+    public readonly bool $requireDelivery;
+    __construct(int $maxCartLines = 250, int $maxLineQuantity = 100000, bool $requireDelivery = true, string $numberGenerator = 'sequence', ?int $paymentDueMinutes = 4320, int $expireBatch = 100, int $leaseSeconds = 120);
+    static fromArray(array $config, string $path = 'commerz-sales'): self;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesDoctorCheck`](#type-commerz-sales-diagnostics-salesdoctorcheck) | class | api | 0.1 |
+
+### SalesDoctorCheck {#type-commerz-sales-diagnostics-salesdoctorcheck}
+
+`Commerz\Sales\Diagnostics\SalesDoctorCheck`
+
+Verifies `axiomasoft/commerz-sales` configuration, order numbering, and payment gateway contributions.
+
+```php
+final readonly class SalesDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesErrorCode`](#type-commerz-sales-errors-enums-saleserrorcode) | enum | api | 0.1 |
+| [`SalesProblemDefinitions`](#type-commerz-sales-errors-salesproblemdefinitions) | class | api | 0.1 |
+
+### SalesErrorCode {#type-commerz-sales-errors-enums-saleserrorcode}
+
+`Commerz\Sales\Errors\Enums\SalesErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-sales`.
+
+```php
+enum SalesErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case CartAlreadyPlaced = 'sales.cart_already_placed';
+    case CartChanged = 'sales.cart_changed';
+    case CartEmpty = 'sales.cart_empty';
+    case CartLineNotFound = 'sales.cart_line_not_found';
+    case CartNotFound = 'sales.cart_not_found';
+    case CartNotOpen = 'sales.cart_not_open';
+    case CurrencyMismatch = 'sales.currency_mismatch';
+    case DeliveryRequired = 'sales.delivery_required';
+    case DuplicateOrderNumber = 'sales.duplicate_order_number';
+    case FulfillmentAlreadyShipped = 'sales.fulfillment_already_shipped';
+    case FulfillmentNotBookable = 'sales.fulfillment_not_bookable';
+    case FulfillmentNotFound = 'sales.fulfillment_not_found';
+    case FulfillmentNotShipped = 'sales.fulfillment_not_shipped';
+    case InvalidCode = 'sales.invalid_code';
+    case InvalidDeliveryMethod = 'sales.invalid_delivery_method';
+    case InvalidFulfillment = 'sales.invalid_fulfillment';
+    case InvalidGatewayPayment = 'sales.invalid_gateway_payment';
+    case InvalidGatewayRefund = 'sales.invalid_gateway_refund';
+    case InvalidGatewayResult = 'sales.invalid_gateway_result';
+    case InvalidGroup = 'sales.invalid_group';
+    case InvalidLimit = 'sales.invalid_limit';
+    case InvalidLines = 'sales.invalid_lines';
+    case InvalidOrderNumber = 'sales.invalid_order_number';
+    case InvalidPayment = 'sales.invalid_payment';
+    case InvalidPaymentEvent = 'sales.invalid_payment_event';
+    case InvalidQuantity = 'sales.invalid_quantity';
+    case InvalidRefund = 'sales.invalid_refund';
+    case InvalidReturn = 'sales.invalid_return';
+    case LineNotFound = 'sales.line_not_found';
+    case OperationInsideTransaction = 'sales.operation_inside_transaction';
+    case OrderNotCancellable = 'sales.order_not_cancellable';
+    case OrderNotFound = 'sales.order_not_found';
+    case OrderNotFulfillable = 'sales.order_not_fulfillable';
+    case OrderNotPayable = 'sales.order_not_payable';
+    case PaymentDeclined = 'sales.payment_declined';
+    case PaymentExceedsBalance = 'sales.payment_exceeds_balance';
+    case PaymentInProgress = 'sales.payment_in_progress';
+    case PaymentNotFound = 'sales.payment_not_found';
+    case PaymentOutcomeUnknown = 'sales.payment_outcome_unknown';
+    case QuantityExceedsOutstanding = 'sales.quantity_exceeds_outstanding';
+    case QuoteChanged = 'sales.quote_changed';
+    case RefundExceedsBalance = 'sales.refund_exceeds_balance';
+    case RefundInProgress = 'sales.refund_in_progress';
+    case RefundNotFound = 'sales.refund_not_found';
+    case RefundOutcomeUnknown = 'sales.refund_outcome_unknown';
+    case RestockExceedsReceived = 'sales.restock_exceeds_received';
+    case ReturnExceedsFulfilled = 'sales.return_exceeds_fulfilled';
+    case ReturnNotFound = 'sales.return_not_found';
+    case ReturnNotOpen = 'sales.return_not_open';
+    case SellableNotPurchasable = 'sales.sellable_not_purchasable';
+    case ShippingAddressRequired = 'sales.shipping_address_required';
+    case TooManyCartLines = 'sales.too_many_cart_lines';
+    value(): string;
+}
+```
+
+### SalesProblemDefinitions {#type-commerz-sales-errors-salesproblemdefinitions}
+
+`Commerz\Sales\Errors\SalesProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-sales` error codes.
+
+```php
+final readonly class SalesProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
 }
 ```
 
@@ -862,9 +1008,10 @@ final class FulfillmentAlreadyShipped extends \Commerz\Errors\CommerzException i
     public readonly string $fulfillment;
     public readonly ?string $tracking;
     __construct(string $fulfillment, ?string $carrier, ?string $tracking, ?\Commerz\Ports\Delivery\Data\BookedShipment $booking = null);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -879,9 +1026,10 @@ final class FulfillmentNotBookable extends \Commerz\Errors\CommerzException impl
     public readonly string $fulfillment;
     public readonly string $reason;
     __construct(string $fulfillment, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -892,6 +1040,7 @@ final class FulfillmentNotBookable extends \Commerz\Errors\CommerzException impl
 ```php
 final class FulfillmentNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -905,9 +1054,10 @@ Only a shipped fulfillment can be delivered.
 final class FulfillmentNotShipped extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $fulfillment;
     __construct(string $fulfillment);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -922,9 +1072,10 @@ final class OrderNotFulfillable extends \Commerz\Errors\CommerzException impleme
     public readonly string $order;
     public readonly string $state;
     __construct(string $order, string $state);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1070,9 +1221,10 @@ final class InvalidGatewayResult extends \Commerz\Errors\CommerzException implem
     public readonly string $gateway;
     public readonly string $reason;
     __construct(string $gateway, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1087,9 +1239,29 @@ final class PaymentDeclined extends \Commerz\Errors\CommerzException implements 
     public readonly string $gateway;
     public readonly string $reason;
     __construct(string $gateway, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesRegistrar`](#type-commerz-sales-laravel-registrars-salesregistrar) | class | spi (call) | 0.1 |
+
+### SalesRegistrar {#type-commerz-sales-laravel-registrars-salesregistrar}
+
+`Commerz\Sales\Laravel\Registrars\SalesRegistrar`
+
+Wires Commerz sales services, extension plugin, options, schema ownership, diagnostics, and panels.
+
+```php
+final class SalesRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
 }
 ```
 
@@ -1144,9 +1316,10 @@ final class InvalidOrderNumber extends \Commerz\Errors\CommerzException implemen
     public readonly string $generator;
     public readonly string $number;
     __construct(string $generator, string $number);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1574,9 +1747,10 @@ final class OrderNotCancellable extends \Commerz\Errors\CommerzException impleme
     public readonly string $order;
     public readonly string $reason;
     __construct(string $order, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1587,6 +1761,72 @@ final class OrderNotCancellable extends \Commerz\Errors\CommerzException impleme
 ```php
 final class OrderNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`FulfillmentsPanel`](#type-commerz-sales-panels-fulfillmentspanel) | class | spi (call) | 0.1 |
+| [`OrdersPanel`](#type-commerz-sales-panels-orderspanel) | class | spi (call) | 0.1 |
+| [`PaymentsPanel`](#type-commerz-sales-panels-paymentspanel) | class | spi (call) | 0.1 |
+| [`ReturnsPanel`](#type-commerz-sales-panels-returnspanel) | class | spi (call) | 0.1 |
+
+### FulfillmentsPanel {#type-commerz-sales-panels-fulfillmentspanel}
+
+`Commerz\Sales\Panels\FulfillmentsPanel`
+
+Headless Packman panel provider descriptor and admission gate for fulfillments.
+
+```php
+final readonly class FulfillmentsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### OrdersPanel {#type-commerz-sales-panels-orderspanel}
+
+`Commerz\Sales\Panels\OrdersPanel`
+
+Headless Packman panel provider descriptor and admission gate for orders.
+
+```php
+final readonly class OrdersPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### PaymentsPanel {#type-commerz-sales-panels-paymentspanel}
+
+`Commerz\Sales\Panels\PaymentsPanel`
+
+Headless Packman panel provider descriptor and admission gate for payments and refunds.
+
+```php
+final readonly class PaymentsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### ReturnsPanel {#type-commerz-sales-panels-returnspanel}
+
+`Commerz\Sales\Panels\ReturnsPanel`
+
+Headless Packman panel provider descriptor and admission gate for returns.
+
+```php
+final readonly class ReturnsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
 }
 ```
 
@@ -1826,6 +2066,7 @@ A provider event is malformed or does not fit its payment (another currency, mor
 ```php
 final class InvalidPaymentEvent extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
     __construct(string $field, string $reason);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1840,9 +2081,10 @@ final class OrderNotPayable extends \Commerz\Errors\CommerzException implements 
     public readonly string $order;
     public readonly string $state;
     __construct(string $order, string $state);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1858,9 +2100,10 @@ final class PaymentExceedsBalance extends \Commerz\Errors\CommerzException imple
     public readonly string $order;
     public readonly \Commerz\Money\Money $requested;
     __construct(string $order, \Commerz\Money\Money $requested, \Commerz\Money\Money $balance);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1874,9 +2117,10 @@ Another process is asking the gateway about this payment under a live lease; try
 final class PaymentInProgress extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $payment;
     __construct(string $payment);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1887,6 +2131,7 @@ final class PaymentInProgress extends \Commerz\Errors\CommerzException implement
 ```php
 final class PaymentNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1901,9 +2146,42 @@ final class PaymentOutcomeUnknown extends \Commerz\Errors\CommerzException imple
     public readonly string $gateway;
     public readonly string $payment;
     __construct(string $payment, string $gateway, ?\Throwable $previous = null);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesPlugin`](#type-commerz-sales-plugins-salesplugin) | class | api | 0.1 |
+
+### SalesPlugin {#type-commerz-sales-plugins-salesplugin}
+
+`Commerz\Sales\Plugins\SalesPlugin`
+
+The sales' code plugin: declares `payment_gateway` and `order_number_generator`, contributes `manual` and `sequence`, and exposes sales configuration, schema, diagnostics, and panels.
+
+```php
+final class SalesPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.sales';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
 }
 ```
 
@@ -2110,9 +2388,10 @@ final class RefundExceedsBalance extends \Commerz\Errors\CommerzException implem
     public readonly \Commerz\Money\Money $refundable;
     public readonly \Commerz\Money\Money $requested;
     __construct(string $order, \Commerz\Money\Money $requested, \Commerz\Money\Money $refundable);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2126,9 +2405,10 @@ Another process is asking the gateway for this refund under a live lease; try ag
 final class RefundInProgress extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $refund;
     __construct(string $refund);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2139,6 +2419,7 @@ final class RefundInProgress extends \Commerz\Errors\CommerzException implements
 ```php
 final class RefundNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2153,9 +2434,10 @@ final class RefundOutcomeUnknown extends \Commerz\Errors\CommerzException implem
     public readonly string $gateway;
     public readonly string $refund;
     __construct(string $refund, string $gateway, ?\Throwable $previous = null);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2343,9 +2625,10 @@ final class RestockExceedsReceived extends \Commerz\Errors\CommerzException impl
     public readonly int $received;
     public readonly int $restock;
     __construct(string $lineId, int $restock, int $received);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2361,9 +2644,10 @@ final class ReturnExceedsFulfilled extends \Commerz\Errors\CommerzException impl
     public readonly string $lineId;
     public readonly int $requested;
     __construct(string $lineId, int $requested, int $available);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2374,6 +2658,7 @@ final class ReturnExceedsFulfilled extends \Commerz\Errors\CommerzException impl
 ```php
 final class ReturnNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -2388,8 +2673,27 @@ final class ReturnNotOpen extends \Commerz\Errors\CommerzException implements \S
     public readonly string $return;
     public readonly string $status;
     __construct(string $return, string $status);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`SalesSchemaSets`](#type-commerz-sales-schema-salesschemasets) | class | spi (call) | 0.1 |
+
+### SalesSchemaSets {#type-commerz-sales-schema-salesschemasets}
+
+`Commerz\Sales\Schema\SalesSchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-sales`.
+
+```php
+final readonly class SalesSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```

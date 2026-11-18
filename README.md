@@ -36,7 +36,7 @@ Stack: PHP 8.4, Laravel 13, PostgreSQL ≥ 16.
 ```bash
 composer require axiomasoft/commerz-full
 php artisan commerz:install
-php artisan commerz:doctor
+php artisan packman:doctor
 ```
 
 ```php

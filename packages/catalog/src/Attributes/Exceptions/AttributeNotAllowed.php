@@ -7,11 +7,10 @@ namespace Commerz\Catalog\Attributes\Exceptions;
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The product type has no slot for the attribute on this level (product or variant). */
 #[Api(since: '0.1')]
@@ -42,7 +41,7 @@ final class AttributeNotAllowed extends CommerzException
     {
         return new ErrorDescriptor(
             code: CatalogErrorCode::AttributeNotAllowed,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Items\Exceptions;
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Inventory\Errors\Enums\InventoryErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /**
  * An untracked item keeps no levels: stock cannot be placed on it, and the policy cannot change to it while stock is
@@ -50,7 +49,7 @@ final class UntrackedStockItem extends CommerzException
     {
         return new ErrorDescriptor(
             code: InventoryErrorCode::UntrackedStockItem,
-            category: PackmanErrorCategory::Conflict,
+            category: ErrorCategory::Conflict,
             retryable: false,
             details: $this->context(),
         );

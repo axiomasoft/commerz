@@ -3,7 +3,7 @@
 ## 0. Позиция в одном абзаце
 
 Модульный монолит в одной транзакционной PostgreSQL. **Ядро `axiomasoft/commerz`** — единственная точка
-взаимодействия модулей (как `src/` в CoreX): value objects, контракты между модулями, реестр плагинов, именование
+взаимодействия модулей (как `src/` в legacy-platform): value objects, контракты между модулями, реестр плагинов, именование
 таблиц. Шесть доменных пакетов зависят **только от ядра**, никогда друг от друга. Акции — отдельный пакет со своим
 SPI, купоны — плагин к нему. Платежи, доставка, налоги, медиа, поиск — порты с адаптерами. Никаких микросервисов,
 никакого event sourcing, никакой подмены моделей.
@@ -38,7 +38,7 @@ flowchart TB
   coupons --> kernel
   pay[commerz-payment-*] --> sales
   ship[commerz-shipping-*] --> sales
-  bridges[commerz-corex · commerz-vaulter · commerz-azguard · commerz-chatom] -.-> kernel
+  bridges[commerz-legacy-platform · commerz-vaulter · commerz-azguard · commerz-chatom] -.-> kernel
   admin[commerz-filament · commerz-http] -.-> kernel
   full[commerz-full — meta] -.-> catalog & inventory & pricing & promotions & sales & coupons
 ```
@@ -72,8 +72,8 @@ flowchart TB
 
 | Тип | Суть | Решение |
 |---|---|---|
-| `Money` | `int $amountMinor` + `Currency` | целые минорные единицы, как `money` в `corex-custom-fields` (`{minor, currency}`); промежуточная арифметика (проценты, распределение) — `brick/math` с явным `RoundingMode` |
-| `Currency` | ISO 4217 + `exponent` | встроенный справочник, порт `CurrencyMetadata` (мост к `corex-intl`) |
+| `Money` | `int $amountMinor` + `Currency` | целые минорные единицы, как `money` в `legacy-platform-custom-fields` (`{minor, currency}`); промежуточная арифметика (проценты, распределение) — `brick/math` с явным `RoundingMode` |
+| `Currency` | ISO 4217 + `exponent` | встроенный справочник, порт `CurrencyMetadata` (мост к `legacy-platform-intl`) |
 | `Quantity` | `int` в базовой единице номенклатуры | 1,5 кг = 1500 г; без decimal в счётчиках склада (database.md §5.1) |
 | `ProductId`, `VariantId`, `OrderId`, … | обёртки над UUIDv7-строкой | разные типы → нельзя перепутать в сигнатуре |
 | `PurchasableRef` | `type` + `id` | то, что кладут в корзину: вариант каталога, услуга хоста, подарочный сертификат |
@@ -89,15 +89,15 @@ flowchart TB
 | `StockReservations::reserve(ReserveStock): ReservationResult` / `release` / `consume` | inventory | sales | то же |
 | `PriceResolver::unitPrice(PurchasableRef, int $quantity, CommerceContext): ResolvedPrice` | pricing | sales, catalog | ошибка |
 | `PricingStage` (SPI, конвейер расчёта) | pricing, promotions, sales(shipping), tax | `PricingPipeline` ядра | стадия просто не зарегистрирована |
-| `CustomerResolver` | хост (или мост к CoreX/AzGuard) | promotions, pricing | гость |
+| `CustomerResolver` | хост (или мост к legacy-platform/AzGuard) | promotions, pricing | гость |
 | `ProductMediaStore`, `CatalogIndexer` | мосты / адаптеры | catalog | без медиа / SQL-поиск |
 
-Это ровно принцип CoreX «пакеты общаются через контракты ядра, пакет заменим»: inventory можно заменить внешним
+Это ровно принцип legacy-platform «пакеты общаются через контракты ядра, пакет заменим»: inventory можно заменить внешним
 складом (адаптер к 1С/МойСклад), реализовав два контракта, и sales этого не заметит.
 
 ### 3.3. Реестр плагинов
 
-Закрытый набор **видов вкладов** (по образцу закрытых 8 extenders CoreX, `corex/docs/dev-doctrine.md:72`):
+Закрытый набор **видов вкладов** (по образцу закрытых 8 extenders legacy-platform, `legacy-platform/docs/dev-doctrine.md:72`):
 
 | Вид вклада | Ключ | Кто объявляет SPI |
 |---|---|---|
@@ -138,7 +138,7 @@ PricingInput(lines, context, codes) ─► [base] ─► [catalog_promotions] �
 ```
 
 - Якоря **фиксированы и упорядочены** (enum `PricingAnchor`). Плагин вставляет стадию `before`/`after` якоря, а не в
-  произвольное место. Это ответ на «прерывания везде» Magento и «рой hooks», запрещённый CoreX (`dev-doctrine.md:78`).
+  произвольное место. Это ответ на «прерывания везде» Magento и «рой hooks», запрещённый legacy-platform (`dev-doctrine.md:78`).
 - Стадия — чистая функция `(PricingState): PricingState`; `PricingState` неизменяем (`with*()`), каждая корректировка
   несёт `source` (ключ стадии/акции) и объяснение. Ни одна стадия не пишет в БД.
 - Налог после скидок — дефолт для РФ/ЕС; цены «с НДС» (tax-inclusive) — флаг канала, `tax`-стадия выделяет налог из суммы.
@@ -154,10 +154,10 @@ PricingInput(lines, context, codes) ─► [base] ─► [catalog_promotions] �
 | Tenant | граница изоляции данных | **нет колонки** | отдельное соединение/БД |
 
 **Арендаторы: без `tenant_id` в схеме.** Существующие материалы закладывают `scope_id` логически в каждую таблицу
-([logical-schema-candidate.md](../../docs/discovery/2026-10-08/logical-schema-candidate.md) §1). Мы против: CoreX уже выбрал
-**DB-per-account** (ADR-004, `corex/docs/dev-doctrine.md:175`), а shared-table tenancy требует tenant в каждом unique,
+([logical-schema-candidate.md](../../docs/discovery/2026-10-08/logical-schema-candidate.md) §1). Мы против: legacy-platform уже выбрал
+**DB-per-account** (ADR-004, `legacy-platform/docs/dev-doctrine.md:175`), а shared-table tenancy требует tenant в каждом unique,
 FK, кэше, очереди, поиске — сами же материалы это признают (design-hypotheses §4). Commerz работает на соединении,
-которое ему дали (`commerz.connection` или резолвер хоста); изоляция — забота хоста/CoreX. Несколько магазинов внутри
+которое ему дали (`commerz.connection` или резолвер хоста); изоляция — забота хоста/legacy-platform. Несколько магазинов внутри
 одной БД — штатно, через `store_id`/`channel_id`. Если владельцу нужен SaaS на общих таблицах — это отдельное
 решение до первой миграции (Нужно обсудить, risks §1).
 
@@ -187,13 +187,13 @@ HTTP/команда PlaceOrder(cartId, idempotencyKey)
 `PaymentState` (агрегат по платежам): `unpaid → authorized → partially_paid → paid → partially_refunded → refunded`.
 `FulfillmentState` (агрегат по отгрузкам): `unfulfilled → partially_fulfilled → fulfilled → partially_returned → returned`.
 Переходы — метод enum `canTransitionTo()` + таблица `cmz_order_events` (журнал). Универсальный state-machine пакет
-не нужен (corex-workflow — для процессов, не для трёх enum).
+не нужен (legacy-platform-workflow — для процессов, не для трёх enum).
 
 ## 9. События и интеграция
 
 Доменные события — `final readonly` классы в `Events/` модуля, публикуются **после коммита**; для внешних
-потребителей — запись в outbox в той же транзакции (`cmz_outbox_messages` или `sys_outbox_messages` через мост CoreX).
-Подписки — только в коде (CoreX: «подписки ТОЛЬКО в коде манифеста», `dev-doctrine.md:70`).
+потребителей — запись в outbox в той же транзакции (`cmz_outbox_messages` или `sys_outbox_messages` через мост legacy-platform).
+Подписки — только в коде (legacy-platform: «подписки ТОЛЬКО в коде манифеста», `dev-doctrine.md:70`).
 Ключевые: `ProductPublished`, `VariantCreated`, `StockLevelChanged`, `StockReserved`, `OrderPlaced`, `OrderCancelled`,
 `PaymentCaptured`, `ShipmentShipped`, `PromotionUsageExhausted`.
 
@@ -203,6 +203,6 @@ HTTP/команда PlaceOrder(cartId, idempotencyKey)
   (фасад `Commerz` — тонкая обёртка для удобства).
 - HTTP-контроллеры, Filament — отдельные пакеты; ядро не знает о транспорте (как Chatom «Keep the PHP core transport-agnostic», `chatom/AGENTS.md`).
 - Хост поставляет: соединение, `CustomerResolver`, авторизацию (`Gate`/AzGuard-мост), медиа-хранилище, очередь.
-- Мосты: `commerz-corex` (модуль, схема, tenancy, outbox, custom-fields для доп. полей заказа/покупателя),
+- Мосты: `commerz-legacy-platform` (модуль, схема, tenancy, outbox, custom-fields для доп. полей заказа/покупателя),
   `commerz-azguard` (права `commerz.orders.refund` …), `commerz-vaulter` (медиа товаров), `commerz-chatom`
   (чат по заказу как подписчик `OrderPlaced`). Ядро ни от одного не зависит.

@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-shipping
 
-Public PHP surface of `packages/shipping` as recorded in `packages/shipping/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/shipping` as recorded in `packages/shipping/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -167,9 +167,10 @@ Another process is booking the same reference right now; repeat later to get its
 final class BookingInProgress extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $reference;
     __construct(string $reference);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -183,9 +184,10 @@ A shipment was booked inside a database transaction, which could roll back after
 final class BookingInsideTransaction extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $reference;
     __construct(string $reference);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -196,6 +198,7 @@ final class BookingInsideTransaction extends \Commerz\Errors\CommerzException im
 ```php
 final class BookingNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -210,9 +213,10 @@ final class BookingOutcomeUnknown extends \Commerz\Errors\CommerzException imple
     public readonly string $carrier;
     public readonly string $reference;
     __construct(string $reference, string $carrier, \Throwable $previous);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -229,6 +233,7 @@ final class CarrierMismatch extends \Commerz\Errors\InvalidCommand implements \S
     public readonly string $method;
     __construct(string $method, string $expected, string $given);
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -285,9 +290,10 @@ final class CarrierRejected extends \Commerz\Errors\CommerzException implements 
     public readonly string $detail;
     public readonly string $reason;
     __construct(string $carrier, string $reason, string $detail);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -302,9 +308,10 @@ final class InvalidCarrierResult extends \Commerz\Errors\CommerzException implem
     public readonly string $carrier;
     public readonly string $reason;
     __construct(string $carrier, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -355,9 +362,118 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingOptions`](#type-commerz-shipping-configuration-shippingoptions) | class | api | 0.1 |
+
+### ShippingOptions {#type-commerz-shipping-configuration-shippingoptions}
+
+`Commerz\Shipping\Configuration\ShippingOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-shipping`.
+
+```php
+final readonly class ShippingOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly int $bookingLeaseSeconds;
+    public readonly int $maxZoneMembers;
+    public readonly bool $taxIncluded;
+    __construct(bool $taxIncluded = false, int $maxZoneMembers = 2000, int $bookingLeaseSeconds = 120);
+    static fromArray(array $config, string $path = 'commerz-shipping'): self;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingDoctorCheck`](#type-commerz-shipping-diagnostics-shippingdoctorcheck) | class | api | 0.1 |
+
+### ShippingDoctorCheck {#type-commerz-shipping-diagnostics-shippingdoctorcheck}
+
+`Commerz\Shipping\Diagnostics\ShippingDoctorCheck`
+
+Verifies `axiomasoft/commerz-shipping` configuration, rate/carrier contributions, and delivery quote stage.
+
+```php
+final readonly class ShippingDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingErrorCode`](#type-commerz-shipping-errors-enums-shippingerrorcode) | enum | api | 0.1 |
+| [`ShippingProblemDefinitions`](#type-commerz-shipping-errors-shippingproblemdefinitions) | class | api | 0.1 |
+
+### ShippingErrorCode {#type-commerz-shipping-errors-enums-shippingerrorcode}
+
+`Commerz\Shipping\Errors\Enums\ShippingErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-shipping`.
+
+```php
+enum ShippingErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case BookingInProgress = 'shipping.booking_in_progress';
+    case BookingInsideTransaction = 'shipping.booking_inside_transaction';
+    case BookingNotFound = 'shipping.booking_not_found';
+    case BookingOutcomeUnknown = 'shipping.booking_outcome_unknown';
+    case CarrierMismatch = 'shipping.carrier_mismatch';
+    case CarrierRejected = 'shipping.carrier_rejected';
+    case CurrencyMismatch = 'shipping.currency_mismatch';
+    case DeliveryUnavailable = 'shipping.delivery_unavailable';
+    case DuplicateCode = 'shipping.duplicate_code';
+    case DuplicateRate = 'shipping.duplicate_rate';
+    case DuplicateZoneMember = 'shipping.duplicate_zone_member';
+    case InvalidBooking = 'shipping.invalid_booking';
+    case InvalidCarrierResult = 'shipping.invalid_carrier_result';
+    case InvalidChannels = 'shipping.invalid_channels';
+    case InvalidCode = 'shipping.invalid_code';
+    case InvalidEta = 'shipping.invalid_eta';
+    case InvalidFreeAbove = 'shipping.invalid_free_above';
+    case InvalidName = 'shipping.invalid_name';
+    case InvalidPosition = 'shipping.invalid_position';
+    case InvalidRate = 'shipping.invalid_rate';
+    case InvalidRateConfig = 'shipping.invalid_rate_config';
+    case InvalidRatePrice = 'shipping.invalid_rate_price';
+    case InvalidRateResult = 'shipping.invalid_rate_result';
+    case InvalidStatus = 'shipping.invalid_status';
+    case InvalidZoneMember = 'shipping.invalid_zone_member';
+    case MethodArchived = 'shipping.method_archived';
+    case MethodNotFound = 'shipping.method_not_found';
+    case TooManyRates = 'shipping.too_many_rates';
+    case TooManyZoneMembers = 'shipping.too_many_zone_members';
+    case UnknownCarrier = 'shipping.unknown_carrier';
+    case UnknownRate = 'shipping.unknown_rate';
+    case ZoneArchived = 'shipping.zone_archived';
+    case ZoneNotFound = 'shipping.zone_not_found';
+    value(): string;
+}
+```
+
+### ShippingProblemDefinitions {#type-commerz-shipping-errors-shippingproblemdefinitions}
+
+`Commerz\Shipping\Errors\ShippingProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-shipping` error codes.
+
+```php
+final readonly class ShippingProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
 }
 ```
 
@@ -373,6 +489,25 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
 
 ```php
 final class Shipping extends \Illuminate\Support\Facades\Facade {}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingRegistrar`](#type-commerz-shipping-laravel-registrars-shippingregistrar) | class | spi (call) | 0.1 |
+
+### ShippingRegistrar {#type-commerz-shipping-laravel-registrars-shippingregistrar}
+
+`Commerz\Shipping\Laravel\Registrars\ShippingRegistrar`
+
+Wires Commerz shipping services, extension plugin, options, schema ownership, diagnostics, and panels.
+
+```php
+final class ShippingRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
 ```
 
 ## Methods
@@ -655,9 +790,10 @@ The method is archived, which is final: it can no longer be changed, enabled or 
 final class MethodArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $method;
     __construct(string $method);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -668,6 +804,7 @@ final class MethodArchived extends \Commerz\Errors\CommerzException implements \
 ```php
 final class MethodNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -740,9 +877,92 @@ final class DeliveryUnavailable extends \Commerz\Errors\CommerzException impleme
     public readonly string $reason;
     public readonly string $verdict;
     __construct(string $method, string $verdict, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CarriersPanel`](#type-commerz-shipping-panels-carrierspanel) | class | spi (call) | 0.1 |
+| [`ShippingMethodsPanel`](#type-commerz-shipping-panels-shippingmethodspanel) | class | spi (call) | 0.1 |
+| [`ShippingZonesPanel`](#type-commerz-shipping-panels-shippingzonespanel) | class | spi (call) | 0.1 |
+
+### CarriersPanel {#type-commerz-shipping-panels-carrierspanel}
+
+`Commerz\Shipping\Panels\CarriersPanel`
+
+Headless Packman panel provider descriptor and admission gate for shipping carriers and bookings.
+
+```php
+final readonly class CarriersPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### ShippingMethodsPanel {#type-commerz-shipping-panels-shippingmethodspanel}
+
+`Commerz\Shipping\Panels\ShippingMethodsPanel`
+
+Headless Packman panel provider descriptor and admission gate for shipping methods.
+
+```php
+final readonly class ShippingMethodsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### ShippingZonesPanel {#type-commerz-shipping-panels-shippingzonespanel}
+
+`Commerz\Shipping\Panels\ShippingZonesPanel`
+
+Headless Packman panel provider descriptor and admission gate for shipping zones.
+
+```php
+final readonly class ShippingZonesPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingPlugin`](#type-commerz-shipping-plugins-shippingplugin) | class | api | 0.1 |
+
+### ShippingPlugin {#type-commerz-shipping-plugins-shippingplugin}
+
+`Commerz\Shipping\Plugins\ShippingPlugin`
+
+The shipping's code plugin: declares `delivery_rate` and `carrier`, contributes the built-in `flat` and `weight_table` rates, the `manual` carrier, and the `delivery` quote stage, and exposes shipping configuration, schema, diagnostics, and panels.
+
+```php
+final class ShippingPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.shipping';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
 }
 ```
 
@@ -873,9 +1093,10 @@ final class InvalidRateConfig extends \Commerz\Errors\CommerzException implement
     public readonly string $field;
     public readonly string $reason;
     __construct(string $field, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -890,9 +1111,28 @@ final class InvalidRateResult extends \Commerz\Errors\CommerzException implement
     public readonly string $rate;
     public readonly string $reason;
     __construct(string $rate, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ShippingSchemaSets`](#type-commerz-shipping-schema-shippingschemasets) | class | spi (call) | 0.1 |
+
+### ShippingSchemaSets {#type-commerz-shipping-schema-shippingschemasets}
+
+`Commerz\Shipping\Schema\ShippingSchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-shipping`.
+
+```php
+final readonly class ShippingSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -1108,9 +1348,10 @@ The zone is archived: restore it before changing it.
 final class ZoneArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $zone;
     __construct(string $zone);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1121,5 +1362,6 @@ final class ZoneArchived extends \Commerz\Errors\CommerzException implements \St
 ```php
 final class ZoneNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

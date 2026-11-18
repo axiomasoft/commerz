@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Errors\CommerzException;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
@@ -19,6 +18,7 @@ use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleResult;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Quotes\Enums\QuoteAnchor;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The error code of the InvalidCommand a call fails with, or null. */
 function rdCode(Closure $call): ?string
@@ -97,5 +97,5 @@ it('classifies the rule errors', function (): void {
 
     expect($config)->toBeInstanceOf(CommerzException::class)
         ->and([$config->code(), $config->category(), $config->context()])->toBe(['promotions.invalid_rule_config', ErrorCategory::Validation, ['field' => 'min', 'reason' => 'must be positive']])
-        ->and([$result->code(), $result->category(), $result->context()])->toBe(['promotions.invalid_rule_result', ErrorCategory::Integration, ['rule' => 'acme.vip_only', 'reason' => 'negative discount']]);
+        ->and([$result->code(), $result->category(), $result->context()])->toBe(['promotions.invalid_rule_result', ErrorCategory::Unavailable, ['rule' => 'acme.vip_only', 'reason' => 'negative discount']]);
 });

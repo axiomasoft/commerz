@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Commerz\Arch\ApiManifest;
+use Commerz\Arch\ApiSurface;
 
 /**
  * Renders docs/reference/api/<pkg>.md and index.md from the php-api.json manifests (composer api:manifest) and the
@@ -173,11 +175,18 @@ function anchor(string $type): string
     return 'type-'.strtolower(str_replace('\\', '-', $type));
 }
 
+// Packman owns the snapshot format; the existing reflection renderer supplies readable
+// PHP signatures and platform facts only for symbols included in that snapshot.
+$rendered = (new ApiManifest(ApiSurface::fromRoot($root)))->build();
 $pages = [];
 $index = [GENERATED, '', '# API reference', '', 'Generated from the `php-api.json` manifests of each package (`composer api:manifest`, then `composer docs:reference`).', '', '| Package | Composer | Types |', '|---|---|---|'];
 
 foreach (glob($root.'/packages/*/resources/contracts/php-api.json') ?: [] as $file) {
-    $manifest = json_decode((string) file_get_contents($file), true, flags: JSON_THROW_ON_ERROR);
+    $snapshot = json_decode((string) file_get_contents($file), true, flags: JSON_THROW_ON_ERROR);
+    $directory = basename(dirname($file, 3));
+    $manifest = $rendered[$directory];
+    $manifest['schema'] = $snapshot['schema'];
+    $manifest['types'] = array_intersect_key((array) $manifest['types'], $snapshot['symbols']);
     $composer = json_decode((string) file_get_contents($root.'/packages/'.$manifest['package'].'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
     $namespace = (string) array_search('src/', $composer['autoload']['psr-4'], true);
     $pages[$manifest['package'].'.md'] = page($manifest, $namespace);

@@ -29,7 +29,7 @@ abbreviated examples; exact signatures are owned by the code and its
    itself (lesson of Medusa #16569 and Vendure 3.7.4).
 7. **Errors** are subclasses of `CommerzException` with a stable machine
    `code()` (`inventory.insufficient_stock`), a `category()`
-   (`validation|not_found|conflict|limit|unsupported|configuration|integration`)
+   (the shared `Packman\Errors\Enums\ErrorCategory`)
    and scalar `context()`. HTTP rendering is not the core's job.
 8. **Money and quantities** are value objects (`Money`, `Quantity`), never
    floats or strings.

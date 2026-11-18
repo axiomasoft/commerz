@@ -9,7 +9,7 @@ use Commerz\Pricing\Errors\Enums\PricingErrorCode;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 #[Api(since: '0.1')]
 final class TaxZoneNotFound extends NotFound
@@ -24,7 +24,7 @@ final class TaxZoneNotFound extends NotFound
     {
         return new ErrorDescriptor(
             code: PricingErrorCode::TaxZoneNotFound,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

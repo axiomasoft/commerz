@@ -27,7 +27,7 @@ final class AuditPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('audit.log', '1.0.0');
+        return new PluginManifest('audit.log', '1.0.0', ['commerz.core']);
     }
 
     public function register(PluginRegistrar $registrar): void

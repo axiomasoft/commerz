@@ -6,11 +6,10 @@ namespace Commerz\Ports\Sellables\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** The provider of the ref type does not know the ref (deleted, never existed, or hidden from the channel). */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class SellableUnavailable extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::SellableUnavailable,
-            category: PackmanErrorCategory::NotFound,
+            category: ErrorCategory::NotFound,
             retryable: false,
             details: $this->context(),
         );

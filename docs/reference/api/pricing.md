@@ -2,7 +2,7 @@
 
 # axiomasoft/commerz-pricing
 
-Public PHP surface of `packages/pricing` as recorded in `packages/pricing/resources/contracts/php-api.json` (schema `commerz.php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
+Public PHP surface of `packages/pricing` as recorded in `packages/pricing/resources/contracts/php-api.json` (schema `php-api/1`). Types outside `Internal` marked `#[Api]` are the API; `#[Spi]` types are extension contracts.
 
 ## Platform
 
@@ -154,9 +154,10 @@ final class InvalidTaxResult extends \Commerz\Errors\CommerzException implements
     public readonly string $calculator;
     public readonly string $reason;
     __construct(string $calculator, string $reason);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -195,9 +196,118 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
     public readonly string $duplicate;
     public readonly string $entity;
     __construct(string $entity, string $duplicate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Configuration
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingOptions`](#type-commerz-pricing-configuration-pricingoptions) | class | api | 0.1 |
+
+### PricingOptions {#type-commerz-pricing-configuration-pricingoptions}
+
+`Commerz\Pricing\Configuration\PricingOptions`
+
+Immutable compiled configuration snapshot for `axiomasoft/commerz-pricing`.
+
+```php
+final readonly class PricingOptions implements \Packman\Config\Contracts\OptionsFactory {
+    public readonly string $defaultTaxClass;
+    public readonly ?string $defaultTaxZone;
+    public readonly ?string $deliveryTaxClass;
+    public readonly bool $fallbackToSellable;
+    public readonly string $taxCalculator;
+    public readonly \Commerz\Money\RoundingMode $taxRounding;
+    __construct(bool $fallbackToSellable = true, string $taxCalculator = 'rates', string $defaultTaxClass = 'standard', ?string $deliveryTaxClass = 'standard', ?string $defaultTaxZone = null, \Commerz\Money\RoundingMode $taxRounding = Commerz\Money\RoundingMode::HalfUp);
+    static fromArray(array $config, string $path = 'commerz-pricing'): self;
+}
+```
+
+## Diagnostics
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingDoctorCheck`](#type-commerz-pricing-diagnostics-pricingdoctorcheck) | class | api | 0.1 |
+
+### PricingDoctorCheck {#type-commerz-pricing-diagnostics-pricingdoctorcheck}
+
+`Commerz\Pricing\Diagnostics\PricingDoctorCheck`
+
+Verifies `axiomasoft/commerz-pricing` configuration, tax calculator contribution, and `tax` quote stage.
+
+```php
+final readonly class PricingDoctorCheck implements \Packman\Doctor\Contracts\DoctorCheck {
+    __construct(\Illuminate\Contracts\Config\Repository $config, ?\Closure $optionsResolver = null, ?\Closure $contributionsResolver = null);
+    key(): string;
+    run(\Packman\Doctor\Data\DoctorContext $context): array;
+    title(): string;
+}
+```
+
+## Errors
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingErrorCode`](#type-commerz-pricing-errors-enums-pricingerrorcode) | enum | api | 0.1 |
+| [`PricingProblemDefinitions`](#type-commerz-pricing-errors-pricingproblemdefinitions) | class | api | 0.1 |
+
+### PricingErrorCode {#type-commerz-pricing-errors-enums-pricingerrorcode}
+
+`Commerz\Pricing\Errors\Enums\PricingErrorCode`
+
+Stable wire-level error codes emitted by `axiomasoft/commerz-pricing`.
+
+```php
+enum PricingErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case CurrencyMismatch = 'pricing.currency_mismatch';
+    case DuplicateCode = 'pricing.duplicate_code';
+    case DuplicateMember = 'pricing.duplicate_member';
+    case DuplicatePrice = 'pricing.duplicate_price';
+    case InvalidAmount = 'pricing.invalid_amount';
+    case InvalidBatch = 'pricing.invalid_batch';
+    case InvalidChannels = 'pricing.invalid_channels';
+    case InvalidCode = 'pricing.invalid_code';
+    case InvalidCompareAt = 'pricing.invalid_compare_at';
+    case InvalidGroup = 'pricing.invalid_group';
+    case InvalidMember = 'pricing.invalid_member';
+    case InvalidName = 'pricing.invalid_name';
+    case InvalidPriority = 'pricing.invalid_priority';
+    case InvalidQuantity = 'pricing.invalid_quantity';
+    case InvalidRate = 'pricing.invalid_rate';
+    case InvalidTaxAmount = 'pricing.invalid_tax_amount';
+    case InvalidTaxCode = 'pricing.invalid_tax_code';
+    case InvalidTaxItem = 'pricing.invalid_tax_item';
+    case InvalidTaxRequest = 'pricing.invalid_tax_request';
+    case InvalidTaxResult = 'pricing.invalid_tax_result';
+    case InvalidWindow = 'pricing.invalid_window';
+    case PriceListArchived = 'pricing.price_list_archived';
+    case PriceListNotFound = 'pricing.price_list_not_found';
+    case PriceNotFound = 'pricing.price_not_found';
+    case PriceWindowOverlap = 'pricing.price_window_overlap';
+    case TaxClassNotFound = 'pricing.tax_class_not_found';
+    case TaxRateNotFound = 'pricing.tax_rate_not_found';
+    case TaxRateOverlap = 'pricing.tax_rate_overlap';
+    case TaxZoneMemberTaken = 'pricing.tax_zone_member_taken';
+    case TaxZoneNotFound = 'pricing.tax_zone_not_found';
+    value(): string;
+}
+```
+
+### PricingProblemDefinitions {#type-commerz-pricing-errors-pricingproblemdefinitions}
+
+`Commerz\Pricing\Errors\PricingProblemDefinitions`
+
+Registers RFC 9457 Problem Details definitions for all `axiomasoft/commerz-pricing` error codes.
+
+```php
+final readonly class PricingProblemDefinitions implements \Packman\Errors\Contracts\ProblemDefinitionProvider {
+    __construct(string $urnPrefix = 'urn:packman:problem:');
+    definitions(): array;
 }
 ```
 
@@ -213,6 +323,107 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
 
 ```php
 final class Pricing extends \Illuminate\Support\Facades\Facade {}
+```
+
+## Laravel
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingRegistrar`](#type-commerz-pricing-laravel-registrars-pricingregistrar) | class | spi (call) | 0.1 |
+
+### PricingRegistrar {#type-commerz-pricing-laravel-registrars-pricingregistrar}
+
+`Commerz\Pricing\Laravel\Registrars\PricingRegistrar`
+
+Wires Commerz pricing services, extension plugin, options, schema ownership, diagnostics, and panels.
+
+```php
+final class PricingRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
+    boot(\Illuminate\Contracts\Foundation\Application $app): void;
+    register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+## Panels
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PriceListsPanel`](#type-commerz-pricing-panels-pricelistspanel) | class | spi (call) | 0.1 |
+| [`TaxRatesPanel`](#type-commerz-pricing-panels-taxratespanel) | class | spi (call) | 0.1 |
+| [`TaxZonesPanel`](#type-commerz-pricing-panels-taxzonespanel) | class | spi (call) | 0.1 |
+
+### PriceListsPanel {#type-commerz-pricing-panels-pricelistspanel}
+
+`Commerz\Pricing\Panels\PriceListsPanel`
+
+Headless Packman panel provider descriptor and admission gate for price lists.
+
+```php
+final readonly class PriceListsPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### TaxRatesPanel {#type-commerz-pricing-panels-taxratespanel}
+
+`Commerz\Pricing\Panels\TaxRatesPanel`
+
+Headless Packman panel provider descriptor and admission gate for tax rates.
+
+```php
+final readonly class TaxRatesPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+### TaxZonesPanel {#type-commerz-pricing-panels-taxzonespanel}
+
+`Commerz\Pricing\Panels\TaxZonesPanel`
+
+Headless Packman panel provider descriptor and admission gate for tax zones.
+
+```php
+final readonly class TaxZonesPanel implements \Packman\Panels\Contracts\Registry\PanelProvider {
+    __construct(?\Illuminate\Contracts\Container\Container $container = null);
+    access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
+    descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## Plugins
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingPlugin`](#type-commerz-pricing-plugins-pricingplugin) | class | api | 0.1 |
+
+### PricingPlugin {#type-commerz-pricing-plugins-pricingplugin}
+
+`Commerz\Pricing\Plugins\PricingPlugin`
+
+The pricing's code plugin: declares `tax_calculator`, contributes `rates` and the `tax` quote stage, and exposes pricing configuration, schema, diagnostics, and panels.
+
+```php
+final class PricingPlugin implements \Packman\Extensions\Contracts\Composition\WithPanels, \Packman\Extensions\Contracts\Configuration\WithConfiguration, \Packman\Extensions\Contracts\Persistence\WithSchema, \Packman\Extensions\Contracts\Runtime\WithDiagnostics, \Packman\Plugins\Contracts\Registry\ExtensionPlugin {
+    const ID = 'commerz.pricing';
+    configRoot(): string;
+    configSectionClass(): ?string;
+    defaultConfigPath(): string;
+    healthChecks(): array;
+    manifest(): \Packman\Plugins\Data\Plugin\PluginManifest;
+    migrationPath(): string;
+    optionsClass(): string;
+    panelProviders(): array;
+    problemProviders(): array;
+    register(\Packman\Plugins\Laravel\PluginRegistrar $registrar): void;
+    schemaComponents(): array;
+    schemaSetProviders(): array;
+    tableNouns(): array;
+    tablePrefix(): string;
+}
 ```
 
 ## PriceLists
@@ -435,9 +646,10 @@ The price list is archived: restore it before changing it or setting prices in i
 final class PriceListArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
     public readonly string $priceList;
     __construct(string $priceList);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -448,6 +660,7 @@ final class PriceListArchived extends \Commerz\Errors\CommerzException implement
 ```php
 final class PriceListNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -690,6 +903,7 @@ No price row has this id. Not the core's `prices.price_not_found`: that one says
 ```php
 final class PriceNotFoundById extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -705,9 +919,28 @@ final class PriceWindowOverlap extends \Commerz\Errors\CommerzException implemen
     public readonly string $priceList;
     public readonly string $sellable;
     __construct(string $sellable, string $priceList, ?string $conflictingPrice);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Schema
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PricingSchemaSets`](#type-commerz-pricing-schema-pricingschemasets) | class | spi (call) | 0.1 |
+
+### PricingSchemaSets {#type-commerz-pricing-schema-pricingschemasets}
+
+`Commerz\Pricing\Schema\PricingSchemaSets`
+
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-pricing`.
+
+```php
+final readonly class PricingSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    sets(): array;
 }
 ```
 
@@ -970,6 +1203,7 @@ final readonly class TaxRatesChanged {
 ```php
 final class TaxClassNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $code);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -981,9 +1215,10 @@ Either no rate of a tax class applies in a zone at the moment of a calculation (
 
 ```php
 final class TaxRateNotFound extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
     static forClass(string $taxClass, string $zone, string $at): self;
     static forId(string $id): self;
 }
@@ -1002,9 +1237,10 @@ final class TaxRateOverlap extends \Commerz\Errors\CommerzException implements \
     public readonly string $taxCode;
     public readonly string $zone;
     __construct(string $taxClass, string $zone, string $taxCode, ?string $conflictingRate);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1020,9 +1256,10 @@ final class TaxZoneMemberTaken extends \Commerz\Errors\CommerzException implemen
     public readonly ?string $otherZone;
     public readonly ?string $region;
     __construct(string $country, ?string $region, ?string $otherZone);
-    category(): \Commerz\Errors\ErrorCategory;
+    category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1033,5 +1270,6 @@ final class TaxZoneMemberTaken extends \Commerz\Errors\CommerzException implemen
 ```php
 final class TaxZoneNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $code);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

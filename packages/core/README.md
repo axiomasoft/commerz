@@ -10,7 +10,8 @@ engine for Laravel (PHP 8.4, Laravel 13, PostgreSQL ≥ 16).
 ```bash
 composer require axiomasoft/commerz
 php artisan commerz:install
-php artisan commerz:doctor
+php artisan packman:doctor
+php artisan packman:plugins
 ```
 
 Every other Commerz package builds on it; it works alone with default ports (unlimited stock, base prices, no promotions, no delivery).

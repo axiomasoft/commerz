@@ -6,11 +6,10 @@ namespace Commerz\Stores\Exceptions;
 
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\Enums\CommerzErrorCode;
-use Commerz\Errors\ErrorCategory;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Errors\Data\ErrorDescriptor;
-use Packman\Errors\Enums\ErrorCategory as PackmanErrorCategory;
+use Packman\Errors\Enums\ErrorCategory;
 
 /** A currency is outside the channel's currency list (including a default currency that is not in it). */
 #[Api(since: '0.1')]
@@ -41,7 +40,7 @@ final class CurrencyNotAllowed extends CommerzException
     {
         return new ErrorDescriptor(
             code: CommerzErrorCode::CurrencyNotAllowed,
-            category: PackmanErrorCategory::Validation,
+            category: ErrorCategory::Validation,
             retryable: false,
             details: $this->context(),
         );

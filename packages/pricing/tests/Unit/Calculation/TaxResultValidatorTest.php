@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Context\CommerceContext;
-use Commerz\Errors\ErrorCategory;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
@@ -16,6 +15,7 @@ use Commerz\Pricing\Calculation\Exceptions\InvalidTaxResult;
 use Commerz\Pricing\Calculation\Internal\TaxResultValidator;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Stores\Data\ChannelId;
+use Packman\Errors\Enums\ErrorCategory;
 
 function taxAmount(string $amount, string $lineId = '1', string $code = 'vat', string $currency = 'RUB', AdjustmentTarget $target = AdjustmentTarget::Line): TaxAmount
 {
@@ -96,6 +96,6 @@ it('refuses taxes whose sum overflows', function (): void {
 });
 
 it('is an integration error', function (): void {
-    expect(new InvalidTaxResult('x', 'because')->category())->toBe(ErrorCategory::Integration)
+    expect(new InvalidTaxResult('x', 'because')->category())->toBe(ErrorCategory::Unavailable)
         ->and(new InvalidTaxResult('x', 'because')->context())->toBe(['calculator' => 'x', 'reason' => 'because']);
 });

@@ -53,7 +53,7 @@ Published with `--tag=commerz-config` to `config/commerz.php`.
 | Quotes | `QuotePipeline`, `QuoteStage`, `QuoteAnchor`, `QuoteInput`, `QuoteState`, `QuoteResult` |
 | Operations | `Transactions`, `OperationReceipts`, `CommittedEvents` |
 | Outbox | `Outbox`, `OutboxConsumer`, `IntegrationEvent` |
-| Errors | `CommerzException`, `ErrorCategory`, `InvalidCommand`, `NotFound`, `IdempotencyConflict`, `InvalidConfiguration`, `UnsupportedContribution` |
+| Errors | `CommerzException`, `Packman\Errors\Enums\ErrorCategory`, `InvalidCommand`, `NotFound`, `IdempotencyConflict`, `InvalidConfiguration`, `UnsupportedContribution` |
 | Schema | `TableNames`, `CommerzMigration`, `ConstraintNames`, `SchemaOwnership` |
 
 ## Plugin and kinds
@@ -71,8 +71,8 @@ Prefix + `stores`, `channels`, `schema_state`, `operation_receipts`,
 | Command | |
 |---|---|
 | `commerz:install` | publish the config and migrate |
-| `commerz:doctor` | check configuration, database fingerprint and plugins |
-| `commerz:plugins` | list the compiled plugins (`--json`) |
+| `packman:doctor` | check configuration, database fingerprint and plugins |
+| `packman:plugins` | list the compiled plugins (`--json`) |
 | `commerz:outbox:relay` | deliver outbox events (`--batch`, `--once`) |
 | `commerz:operations:prune` | delete expired receipts and delivered outbox messages |
 
@@ -89,3 +89,17 @@ the sellable's base price, no promotions, guests only, no delivery. See
 [ports and plugins](../../concepts/ports-and-plugins).
 
 API reference: [core](../../reference/api/core).
+
+## Headless panel permissions
+
+Bind `Commerz\Panels\Contracts\PanelPermissions` in the host container. Its
+`allows(PanelContext $context, PanelReference $panel, string $action): bool`
+method must check the actor and tenant against the referenced commerce resource.
+The panel first requires `view`, then filters its supported actions through this
+policy. Directly constructed panels without a container, missing policies and
+policy exceptions deny all access. System actors also require explicit permission.
+
+Plugins that contribute to core kinds must declare `requires: ['commerz.core']`
+in their Packman `PluginManifest`. Register built-ins with `CommerzPlugins::builtIn()`
+or Packman's `ExtensionRegistrar::builtIn()` before the graph is first resolved.
+`packman:plugins` and `packman:doctor` inspect the shared runtime registry.
