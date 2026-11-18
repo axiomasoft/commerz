@@ -26,7 +26,7 @@ final class PromotionNotFound extends NotFound
             code: PromotionsErrorCode::PromotionNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

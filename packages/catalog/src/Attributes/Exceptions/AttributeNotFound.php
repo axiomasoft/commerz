@@ -27,7 +27,7 @@ final class AttributeNotFound extends NotFound
             code: CatalogErrorCode::AttributeNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

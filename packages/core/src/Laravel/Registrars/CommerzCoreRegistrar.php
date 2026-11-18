@@ -20,6 +20,7 @@ use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\CorePlugin;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -78,6 +79,8 @@ final class CommerzCoreRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, CorePlugin::class, CorePlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(CommerzDoctorCheck::class, static fn (Application $app): CommerzDoctorCheck => new CommerzDoctorCheck(
             config: $app->make(ConfigRepository::class),

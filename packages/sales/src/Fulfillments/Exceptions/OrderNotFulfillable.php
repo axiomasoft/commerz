@@ -43,7 +43,7 @@ final class OrderNotFulfillable extends CommerzException
             code: SalesErrorCode::OrderNotFulfillable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

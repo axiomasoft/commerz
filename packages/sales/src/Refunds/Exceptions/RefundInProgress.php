@@ -42,7 +42,7 @@ final class RefundInProgress extends CommerzException
             code: SalesErrorCode::RefundInProgress,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

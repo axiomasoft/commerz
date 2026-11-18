@@ -42,7 +42,7 @@ final class PaymentInProgress extends CommerzException
             code: SalesErrorCode::PaymentInProgress,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

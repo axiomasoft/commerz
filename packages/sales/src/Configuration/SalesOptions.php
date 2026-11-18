@@ -68,17 +68,17 @@ final readonly class SalesOptions implements OptionsFactory
         $orders = self::section($validator, $config, 'orders', self::ORDERS_KEYS, $path);
         $payments = self::section($validator, $config, 'payments', self::PAYMENTS_KEYS, $path);
 
-        $maxCartLines = self::int($validator, $carts['max_lines'] ?? 250, 1, 10_000, $path.'.carts.max_lines');
-        $maxLineQuantity = self::int($validator, $carts['max_quantity'] ?? 100_000, 1, 1_000_000, $path.'.carts.max_quantity');
+        $maxCartLines = self::int($validator, array_key_exists('max_lines', $carts) ? $carts['max_lines'] : 250, 1, 10_000, $path.'.carts.max_lines');
+        $maxLineQuantity = self::int($validator, array_key_exists('max_quantity', $carts) ? $carts['max_quantity'] : 100_000, 1, 1_000_000, $path.'.carts.max_quantity');
 
-        $requireDelivery = $checkout['require_delivery'] ?? true;
+        $requireDelivery = array_key_exists('require_delivery', $checkout) ? $checkout['require_delivery'] : true;
 
         if (! is_bool($requireDelivery)) {
             $validator->add($path.'.checkout.require_delivery', 'expected true or false');
             $requireDelivery = true;
         }
 
-        $generator = $checkout['number_generator'] ?? 'sequence';
+        $generator = array_key_exists('number_generator', $checkout) ? $checkout['number_generator'] : 'sequence';
 
         if (! is_string($generator) || preg_match('/\A[a-z0-9][a-z0-9_.-]{0,63}\z/', $generator) !== 1) {
             $validator->add($path.'.checkout.number_generator', 'expected a contribution key of 1..64 characters [a-z0-9_.-]');
@@ -90,8 +90,8 @@ final readonly class SalesOptions implements OptionsFactory
             ? null
             : self::int($validator, $dueRaw, 1, 525_600, $path.'.orders.payment_due_minutes');
 
-        $expireBatch = self::int($validator, $orders['expire_batch'] ?? 100, 1, 1000, $path.'.orders.expire_batch');
-        $leaseSeconds = self::int($validator, $payments['lease_seconds'] ?? 120, 10, 3600, $path.'.payments.lease_seconds');
+        $expireBatch = self::int($validator, array_key_exists('expire_batch', $orders) ? $orders['expire_batch'] : 100, 1, 1000, $path.'.orders.expire_batch');
+        $leaseSeconds = self::int($validator, array_key_exists('lease_seconds', $payments) ? $payments['lease_seconds'] : 120, 10, 3600, $path.'.payments.lease_seconds');
 
         $validator->failIfAny();
 
@@ -118,7 +118,7 @@ final readonly class SalesOptions implements OptionsFactory
         array $allowedKeys,
         string $path,
     ): array {
-        $section = $config[$key] ?? [];
+        $section = array_key_exists($key, $config) ? $config[$key] : [];
 
         if (! is_array($section)) {
             $validator->add("{$path}.{$key}", 'expected an array');

@@ -42,7 +42,7 @@ final class CartEmpty extends CommerzException
             code: SalesErrorCode::CartEmpty,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

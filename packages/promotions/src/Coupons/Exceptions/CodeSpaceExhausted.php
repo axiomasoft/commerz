@@ -42,7 +42,7 @@ final class CodeSpaceExhausted extends CommerzException
             code: PromotionsErrorCode::CodeSpaceExhausted,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -42,7 +42,7 @@ final class ProductTypeArchived extends CommerzException
             code: CatalogErrorCode::ProductTypeArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

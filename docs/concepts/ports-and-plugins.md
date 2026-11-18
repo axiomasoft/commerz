@@ -35,14 +35,19 @@ port.
 
 ## Plugins
 
-A plugin implements `CommerzPlugin`:
+A plugin implements `Packman\Plugins\Contracts\Registry\ExtensionPlugin`:
 
 ```php
-final class AcmePlugin implements CommerzPlugin
+use Commerz\Promotions\Rules\Contracts\PromotionEffect;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
+
+final class AcmePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('acme.loyalty', '1.0.0', requires: ['commerz.promotions']);
+        return new PluginManifest('acme.loyalty', '1.0.0', requires: ['commerz.core', 'commerz.promotions']);
     }
 
     public function register(PluginRegistrar $registrar): void
@@ -53,8 +58,7 @@ final class AcmePlugin implements CommerzPlugin
 ```
 
 - The id is `vendor.name` (`[a-z0-9.-]`). `register` declares only: no I/O.
-- `PluginRegistrar`: `declareKind()`, `contribute($kind, $contribution)`, and the
-  sugar `sellableProvider()` and `quoteStage()`. The contribution's key comes
+- `PluginRegistrar`: `declareKind()` and `contribute($kind, $contribution)`. The contribution's key comes
   from its own `key()`.
 - Commerz packages register their built-ins through the same API
   (`commerz.core`, `commerz.catalog`, … `commerz.sales`); host plugins come from

@@ -42,7 +42,7 @@ final class LocationNotEmpty extends CommerzException
             code: InventoryErrorCode::LocationNotEmpty,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

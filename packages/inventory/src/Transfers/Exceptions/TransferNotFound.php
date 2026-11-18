@@ -26,7 +26,7 @@ final class TransferNotFound extends NotFound
             code: InventoryErrorCode::TransferNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

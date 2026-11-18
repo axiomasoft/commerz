@@ -42,7 +42,7 @@ final class ChannelArchived extends CommerzException
             code: CommerzErrorCode::ChannelArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

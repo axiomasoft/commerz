@@ -43,7 +43,7 @@ final class OrderNotPayable extends CommerzException
             code: SalesErrorCode::OrderNotPayable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

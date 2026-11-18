@@ -39,4 +39,7 @@ it('names the offending key', function (array $config, string $path): void {
     'batch zero' => [['expiry_batch' => 0], 'commerz-inventory.expiry_batch'],
     'batch too large' => [['expiry_batch' => 10001], 'commerz-inventory.expiry_batch'],
     'batch not an int' => [['expiry_batch' => '50'], 'commerz-inventory.expiry_batch'],
+    'strategy null' => [['allocation_strategy' => null], 'commerz-inventory.allocation_strategy'],
+    'unlinked null' => [['unlinked_sellables' => null], 'commerz-inventory.unlinked_sellables'],
+    'batch null' => [['expiry_batch' => null], 'commerz-inventory.expiry_batch'],
 ]);

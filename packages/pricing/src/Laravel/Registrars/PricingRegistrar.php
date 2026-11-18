@@ -20,6 +20,7 @@ use Commerz\Pricing\Taxes\Contracts\Taxes;
 use Commerz\Pricing\Taxes\Internal\DatabaseTaxes;
 use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
 use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Application as FoundationApplication;
@@ -75,6 +76,8 @@ final class PricingRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, PricingPlugin::class, PricingPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(PriceWrites::class);
         $app->singleton(PriceLists::class, DatabasePriceLists::class);

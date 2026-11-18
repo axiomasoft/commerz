@@ -173,6 +173,10 @@ abstract class CommerzException extends \Packman\Errors\Exceptions\CodedExceptio
     category(): \Packman\Errors\Enums\ErrorCategory;
     abstract code(): string;
     abstract context(): array;
+    protected descriptorDetails(): array;
+    protected static sanitizeDetailString(string $value, int $maxLength = self::DEFAULT_MAX_DETAIL_CHARS): string;
+    // Sanitizes and bounds structured detail fields so untrusted control characters, invalid UTF-8, or oversized inputs never break {@see ErrorDescriptor} construction while preserving raw exception properties and messages.
+    protected static sanitizeDetails(array $details, int $maxStringLength = self::DEFAULT_MAX_DETAIL_CHARS): array;
 }
 ```
 
@@ -1269,7 +1273,7 @@ final class UsageLimitReached extends \Commerz\Errors\CommerzException implement
 
 `Commerz\Ports\Sellables\Contracts\SellableProvider`
 
-Source of sellables of one ref type: the catalog provides `variant`, a CRM its own services. Registered as the `sellable_provider` contribution (`PluginRegistrar::sellableProvider()`); `key()` is the ref type it serves. Reads only: no writes, no network calls inside a database transaction.
+Source of sellables of one ref type: the catalog provides `variant`, a CRM its own services. Registered as the `sellable_provider` contribution (`PluginRegistrar::contribute(SellableProvider::KIND, ...)`); `key()` is the ref type it serves. Reads only: no writes, no network calls inside a database transaction.
 
 ```php
 interface SellableProvider {
@@ -1653,7 +1657,7 @@ interface QuotePipeline {
 
 `Commerz\Quotes\Contracts\QuoteStage`
 
-One step of the quote pipeline, registered as the `quote_stage` contribution (`PluginRegistrar::quoteStage()`). Stages run by anchor, then `Before → At → After`, then key. A stage is a pure function of the state: it may read (prices, rules) but never writes to the database or calls the network, and takes the time from the context. Any exception it throws fails the quote with `QuoteFailed`.
+One step of the quote pipeline, registered as the `quote_stage` contribution (`PluginRegistrar::contribute(QuoteStage::KIND, ...)`). Stages run by anchor, then `Before → At → After`, then key. A stage is a pure function of the state: it may read (prices, rules) but never writes to the database or calls the network, and takes the time from the context. Any exception it throws fails the quote with `QuoteFailed`.
 
 ```php
 interface QuoteStage {
@@ -1984,10 +1988,14 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
 
 `Commerz\Schema\CommerzSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz`.
+Declares the central PostgreSQL schema set owned by `axiomasoft/commerz` and governs Laravel migration execution across all registered Commerz `SchemaSet` declarations.
 
 ```php
 final readonly class CommerzSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    // Validates that the configured Commerz database connection satisfies every registered Commerz `SchemaSet`.
+    static assertConnectionSupported(\Illuminate\Contracts\Foundation\Application $app): void;
+    // Registers Commerz `SchemaSet` paths with Laravel's `migrator` and guards execution so unsupported database drivers fail cleanly with {@see SchemaSetException} before creating partial commerce tables.
+    static governMigrations(\Illuminate\Contracts\Foundation\Application $app): void;
     sets(): array;
 }
 ```

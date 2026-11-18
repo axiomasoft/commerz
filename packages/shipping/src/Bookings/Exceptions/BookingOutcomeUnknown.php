@@ -46,7 +46,7 @@ final class BookingOutcomeUnknown extends CommerzException
             code: ShippingErrorCode::BookingOutcomeUnknown,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

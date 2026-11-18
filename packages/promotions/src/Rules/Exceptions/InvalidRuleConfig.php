@@ -42,7 +42,7 @@ final class InvalidRuleConfig extends CommerzException
             code: PromotionsErrorCode::InvalidRuleConfig,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

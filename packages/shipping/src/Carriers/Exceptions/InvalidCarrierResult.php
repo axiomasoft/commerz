@@ -42,7 +42,7 @@ final class InvalidCarrierResult extends CommerzException
             code: ShippingErrorCode::InvalidCarrierResult,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

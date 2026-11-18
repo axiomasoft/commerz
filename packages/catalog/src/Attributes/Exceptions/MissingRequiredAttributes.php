@@ -43,7 +43,7 @@ final class MissingRequiredAttributes extends CommerzException
             code: CatalogErrorCode::MissingRequiredAttributes,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

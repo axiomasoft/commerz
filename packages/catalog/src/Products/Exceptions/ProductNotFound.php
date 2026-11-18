@@ -27,7 +27,7 @@ final class ProductNotFound extends NotFound
             code: CatalogErrorCode::ProductNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

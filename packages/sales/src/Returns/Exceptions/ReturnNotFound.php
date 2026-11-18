@@ -26,7 +26,7 @@ final class ReturnNotFound extends NotFound
             code: SalesErrorCode::ReturnNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

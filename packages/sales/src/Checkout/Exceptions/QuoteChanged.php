@@ -43,7 +43,7 @@ final class QuoteChanged extends CommerzException
             code: SalesErrorCode::QuoteChanged,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

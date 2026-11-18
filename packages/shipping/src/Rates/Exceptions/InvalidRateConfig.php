@@ -42,7 +42,7 @@ final class InvalidRateConfig extends CommerzException
             code: ShippingErrorCode::InvalidRateConfig,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

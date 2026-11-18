@@ -41,7 +41,7 @@ final class IdempotencyConflict extends CommerzException
             code: CommerzErrorCode::IdempotencyConflict,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

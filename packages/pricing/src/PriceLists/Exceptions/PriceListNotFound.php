@@ -26,7 +26,7 @@ final class PriceListNotFound extends NotFound
             code: PricingErrorCode::PriceListNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

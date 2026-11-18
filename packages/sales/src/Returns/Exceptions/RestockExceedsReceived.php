@@ -42,7 +42,7 @@ final class RestockExceedsReceived extends CommerzException
             code: SalesErrorCode::RestockExceedsReceived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

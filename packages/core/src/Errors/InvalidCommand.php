@@ -69,7 +69,7 @@ class InvalidCommand extends CommerzException
             code: $code,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $details,
+            details: self::sanitizeDetails($details),
         );
     }
 }

@@ -70,11 +70,14 @@ trait PluginContractTests {
     aPluginThatIsNotRegisteredLeavesNoContributions(): void;
     anUnknownKeyIsUnsupported(): void;
     contributionKeysAreStable(): void;
+    protected dependencyPluginClasses(): array;
     // The contribution keys the plugin must provide, by kind; an empty array skips the check. Pin it so a renamed key, which silently orphans stored rules, fails a test.
     protected expectedContributions(): array;
     protected abstract pluginClass(): string;
     protected pluginDependencies(): array;
+    protected pluginUnderTest(): \Packman\Plugins\Contracts\Registry\ExtensionPlugin;
     registeringThePluginTwiceFails(): void;
+    test_plugin_declares_valid_manifest_and_compiles_deterministically(): void;
 }
 ```
 

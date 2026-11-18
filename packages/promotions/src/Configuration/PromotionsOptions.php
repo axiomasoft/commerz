@@ -49,7 +49,7 @@ final readonly class PromotionsOptions implements OptionsFactory
         $validator = new ConfigurationValidator;
         $validator->rejectUnknownKeys($config, self::TOP_KEYS, $path);
 
-        $roundingRaw = $config['rounding'] ?? RoundingMode::HalfUp;
+        $roundingRaw = array_key_exists('rounding', $config) ? $config['rounding'] : RoundingMode::HalfUp;
         $rounding = $roundingRaw instanceof RoundingMode ? $roundingRaw : (is_string($roundingRaw) ? RoundingMode::tryFrom($roundingRaw) : null);
 
         if ($rounding === null) {
@@ -57,10 +57,14 @@ final readonly class PromotionsOptions implements OptionsFactory
             $rounding = RoundingMode::HalfUp;
         }
 
-        $maxCodes = self::int($validator, $config['max_codes'] ?? 5, 1, 50, $path.'.max_codes');
-        $restoreOn = self::restoreOn($validator, $config['restore_on'] ?? ['cancelled', 'expired'], $path.'.restore_on');
+        $maxCodes = self::int($validator, array_key_exists('max_codes', $config) ? $config['max_codes'] : 5, 1, 50, $path.'.max_codes');
+        $restoreOn = self::restoreOn(
+            $validator,
+            array_key_exists('restore_on', $config) ? $config['restore_on'] : ['cancelled', 'expired'],
+            $path.'.restore_on',
+        );
 
-        $coupons = $config['coupons'] ?? [];
+        $coupons = array_key_exists('coupons', $config) ? $config['coupons'] : [];
 
         if (! is_array($coupons)) {
             $validator->add($path.'.coupons', 'expected an array');
@@ -69,8 +73,18 @@ final readonly class PromotionsOptions implements OptionsFactory
             $validator->rejectUnknownKeys($coupons, self::COUPON_KEYS, $path.'.coupons');
         }
 
-        $couponAlphabet = self::alphabet($validator, $coupons['alphabet'] ?? self::DEFAULT_ALPHABET, $path.'.coupons.alphabet');
-        $maxGenerate = self::int($validator, $coupons['max_generate'] ?? 50000, 1, 1_000_000, $path.'.coupons.max_generate');
+        $couponAlphabet = self::alphabet(
+            $validator,
+            array_key_exists('alphabet', $coupons) ? $coupons['alphabet'] : self::DEFAULT_ALPHABET,
+            $path.'.coupons.alphabet',
+        );
+        $maxGenerate = self::int(
+            $validator,
+            array_key_exists('max_generate', $coupons) ? $coupons['max_generate'] : 50000,
+            1,
+            1_000_000,
+            $path.'.coupons.max_generate',
+        );
 
         $validator->failIfAny();
 

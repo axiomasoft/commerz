@@ -16,12 +16,22 @@
         "axiomasoft/commerz-inventory": "^0.1",
         "axiomasoft/commerz-pricing": "^0.1",
         "axiomasoft/commerz-promotions": "^0.1",
-        "axiomasoft/commerz-shipping": "^0.1",
-        "axiomasoft/commerz-sales": "^0.1"
+        "axiomasoft/commerz-sales": "^0.1",
+        "axiomasoft/commerz-shipping": "^0.1"
     },
     "extra": {
+        "packman": {
+            "schema-version": 1,
+            "package-type": "metapackage",
+            "stability": "stable"
+        },
         "branch-alias": {
             "dev-main": "0.1.x-dev"
         }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
     }
 }

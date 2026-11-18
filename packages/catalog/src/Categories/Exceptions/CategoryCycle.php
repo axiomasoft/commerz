@@ -42,7 +42,7 @@ final class CategoryCycle extends CommerzException
             code: CatalogErrorCode::CategoryCycle,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

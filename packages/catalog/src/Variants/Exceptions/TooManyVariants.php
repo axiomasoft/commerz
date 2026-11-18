@@ -42,7 +42,7 @@ final class TooManyVariants extends CommerzException
             code: CatalogErrorCode::TooManyVariants,
             category: ErrorCategory::RateLimit,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

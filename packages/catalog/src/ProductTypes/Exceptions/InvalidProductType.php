@@ -42,7 +42,7 @@ final class InvalidProductType extends CommerzException
             code: CatalogErrorCode::InvalidProductType,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

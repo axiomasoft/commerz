@@ -19,6 +19,7 @@ use Commerz\Promotions\Internal\Console\ReconcilePromotionsCommand;
 use Commerz\Promotions\Plugins\PromotionsPlugin;
 use Commerz\Promotions\Promotions;
 use Commerz\Promotions\Usage\Internal\DatabasePromotionUsage;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -72,6 +73,8 @@ final class PromotionsRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, PromotionsPlugin::class, PromotionsPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(PromotionRows::class);
         $app->singleton(UsageCounters::class);

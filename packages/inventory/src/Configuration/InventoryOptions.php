@@ -36,14 +36,14 @@ final readonly class InventoryOptions implements OptionsFactory
         $validator = new ConfigurationValidator;
         $validator->rejectUnknownKeys($config, self::TOP_KEYS, $path);
 
-        $strategy = $config['allocation_strategy'] ?? 'priority';
+        $strategy = array_key_exists('allocation_strategy', $config) ? $config['allocation_strategy'] : 'priority';
 
         if (! is_string($strategy) || preg_match('/\A[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?\z/', $strategy) !== 1) {
             $validator->add($path.'.allocation_strategy', "expected a strategy key such as 'priority' or 'vendor.name'");
             $strategy = 'priority';
         }
 
-        $unlinked = $config['unlinked_sellables'] ?? UnlinkedSellables::Unavailable;
+        $unlinked = array_key_exists('unlinked_sellables', $config) ? $config['unlinked_sellables'] : UnlinkedSellables::Unavailable;
         $unlinkedEnum = $unlinked instanceof UnlinkedSellables ? $unlinked : (is_string($unlinked) ? UnlinkedSellables::tryFrom($unlinked) : null);
 
         if ($unlinkedEnum === null) {
@@ -51,7 +51,7 @@ final readonly class InventoryOptions implements OptionsFactory
             $unlinkedEnum = UnlinkedSellables::Unavailable;
         }
 
-        $batch = $config['expiry_batch'] ?? 500;
+        $batch = array_key_exists('expiry_batch', $config) ? $config['expiry_batch'] : 500;
 
         if (! is_int($batch) || $batch < 1 || $batch > 10000) {
             $validator->add($path.'.expiry_batch', 'expected an integer from 1 to 10000');

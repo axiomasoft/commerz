@@ -36,8 +36,6 @@ final class InventoryServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/commerz-inventory.php' => $this->app->configPath('commerz-inventory.php'),

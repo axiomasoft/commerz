@@ -31,7 +31,7 @@ final readonly class CatalogOptions implements OptionsFactory
         $validator = new ConfigurationValidator;
         $validator->rejectUnknownKeys($config, self::TOP_KEYS, $path);
 
-        $max = $config['max_generated_variants'] ?? 100;
+        $max = array_key_exists('max_generated_variants', $config) ? $config['max_generated_variants'] : 100;
 
         if (! is_int($max) || $max < 1 || $max > 10000) {
             $validator->add($path.'.max_generated_variants', 'expected an integer from 1 to 10000');

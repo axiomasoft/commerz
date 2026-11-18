@@ -42,7 +42,7 @@ final class CartAlreadyPlaced extends CommerzException
             code: SalesErrorCode::CartAlreadyPlaced,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

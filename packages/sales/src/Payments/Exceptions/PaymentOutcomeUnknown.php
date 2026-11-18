@@ -46,7 +46,7 @@ final class PaymentOutcomeUnknown extends CommerzException
             code: SalesErrorCode::PaymentOutcomeUnknown,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

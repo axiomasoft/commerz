@@ -43,7 +43,7 @@ final class OrderNotCancellable extends CommerzException
             code: SalesErrorCode::OrderNotCancellable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

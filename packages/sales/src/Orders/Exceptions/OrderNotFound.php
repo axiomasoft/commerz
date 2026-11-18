@@ -26,7 +26,7 @@ final class OrderNotFound extends NotFound
             code: SalesErrorCode::OrderNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

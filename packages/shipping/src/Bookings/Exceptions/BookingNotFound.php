@@ -26,7 +26,7 @@ final class BookingNotFound extends NotFound
             code: ShippingErrorCode::BookingNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

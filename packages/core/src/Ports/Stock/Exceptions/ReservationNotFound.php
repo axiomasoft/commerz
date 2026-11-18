@@ -27,7 +27,7 @@ final class ReservationNotFound extends NotFound
             code: CommerzErrorCode::ReservationNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

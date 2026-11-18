@@ -42,7 +42,7 @@ final class SellableUnavailable extends CommerzException
             code: CommerzErrorCode::SellableUnavailable,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

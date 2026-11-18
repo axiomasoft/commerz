@@ -42,7 +42,7 @@ final class UnknownOptionValue extends CommerzException
             code: CatalogErrorCode::UnknownOptionValue,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

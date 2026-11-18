@@ -26,11 +26,11 @@ final class InvalidCurrency extends InvalidCommand
             code: CommerzErrorCode::InvalidCurrency,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: [
+            details: self::sanitizeDetails([
                 'field' => $this->field,
                 'reason' => $this->reason,
                 'given' => $this->given,
-            ],
+            ]),
         );
     }
 }

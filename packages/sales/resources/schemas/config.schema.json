@@ -42,7 +42,10 @@
                             "default": 100
                         },
                         "payment_due_minutes": {
-                            "type": "integer",
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
                             "default": 4320
                         }
                     },

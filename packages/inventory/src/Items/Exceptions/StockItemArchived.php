@@ -42,7 +42,7 @@ final class StockItemArchived extends CommerzException
             code: InventoryErrorCode::StockItemArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

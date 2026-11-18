@@ -36,7 +36,7 @@ delete or rename its own entity without breaking history.
 ## Wiring a provider
 
 A provider is a contribution of kind `sellable_provider`, registered by a
-plugin: `$registrar->sellableProvider(MyProvider::class)`. The catalog
+plugin: `$registrar->contribute(SellableProvider::KIND, MyProvider::class)`. The catalog
 registers `variant`; see [a custom sellable provider](../how-to/custom-sellable-provider).
 
 ## Channel availability

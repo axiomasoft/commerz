@@ -42,7 +42,7 @@ final class DeliveryRequired extends CommerzException
             code: SalesErrorCode::DeliveryRequired,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

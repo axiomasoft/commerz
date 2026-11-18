@@ -29,7 +29,10 @@
                             "default": null
                         },
                         "delivery_class": {
-                            "type": "string",
+                            "type": [
+                                "string",
+                                "null"
+                            ],
                             "default": "standard"
                         },
                         "rounding": {

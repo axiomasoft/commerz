@@ -42,7 +42,7 @@ final class InvalidTaxResult extends CommerzException
             code: PricingErrorCode::InvalidTaxResult,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

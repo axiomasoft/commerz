@@ -27,7 +27,7 @@ final class PaymentNotFound extends NotFound
             code: SalesErrorCode::PaymentNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

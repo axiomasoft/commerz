@@ -48,7 +48,7 @@ final class DeliveryUnavailable extends CommerzException
             code: ShippingErrorCode::DeliveryUnavailable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

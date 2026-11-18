@@ -43,7 +43,7 @@ final class FulfillmentNotBookable extends CommerzException
             code: SalesErrorCode::FulfillmentNotBookable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

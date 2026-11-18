@@ -196,6 +196,14 @@
             ]
         },
         {
+            "name": "axiomasoft/commerz-full",
+            "path": "packages/full",
+            "namespace": "",
+            "profile": "metapackage",
+            "layer": "L3",
+            "type": "metapackage"
+        },
+        {
             "name": "axiomasoft/commerz-testkit",
             "path": "packages/testkit",
             "namespace": "Commerz\\Testkit\\",

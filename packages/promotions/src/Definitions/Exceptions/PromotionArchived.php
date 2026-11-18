@@ -42,7 +42,7 @@ final class PromotionArchived extends CommerzException
             code: PromotionsErrorCode::PromotionArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

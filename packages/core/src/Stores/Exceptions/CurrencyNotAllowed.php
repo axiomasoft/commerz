@@ -42,7 +42,7 @@ final class CurrencyNotAllowed extends CommerzException
             code: CommerzErrorCode::CurrencyNotAllowed,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Internal\Console;
 
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -27,6 +28,8 @@ final class InstallCommand extends Command
 
             return self::SUCCESS;
         }
+
+        CommerzSchemaSets::assertConnectionSupported($this->laravel);
 
         $migrated = $this->call('migrate', ['--force' => $this->option('force') === true]);
 

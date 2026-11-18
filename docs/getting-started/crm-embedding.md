@@ -82,20 +82,25 @@ final class CrmServices implements SellableProvider
 and the plugin that registers it:
 
 ```php
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Ports\Sellables\Contracts\SellableProvider;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
-final class CrmPlugin implements CommerzPlugin
+final class CrmPlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
-        return new PluginManifest('acme.crm', '1.0.0');
+        return new PluginManifest(
+            id: 'acme.crm',
+            version: '1.0.0',
+            requires: ['commerz.core'],
+        );
     }
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->sellableProvider(CrmServices::class);
+        $registrar->contribute(SellableProvider::KIND, CrmServices::class);
     }
 }
 ```

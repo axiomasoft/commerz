@@ -13,6 +13,7 @@ use Packman\Plugins\Contracts\Registry\PluginInspector;
 use Packman\Plugins\Data\Plugin\PluginDescription;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Packman\Plugins\Testing\PluginGraph;
+use Packman\Testkit\Concerns\Conformance\PluginContractTests as PackmanPluginContractTests;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -37,6 +38,8 @@ use stdClass;
 #[Api(since: '0.1')]
 trait PluginContractTests
 {
+    use PackmanPluginContractTests;
+
     /** @return class-string<ExtensionPlugin> */
     abstract protected function pluginClass(): string;
 
@@ -44,6 +47,20 @@ trait PluginContractTests
     protected function pluginDependencies(): array
     {
         return [];
+    }
+
+    protected function pluginUnderTest(): ExtensionPlugin
+    {
+        $plugin = app()->make($this->pluginClass());
+        self::assertInstanceOf(ExtensionPlugin::class, $plugin);
+
+        return $plugin;
+    }
+
+    /** @return list<class-string<ExtensionPlugin>> */
+    protected function dependencyPluginClasses(): array
+    {
+        return array_values(array_unique([CorePlugin::class, ...$this->pluginDependencies()]));
     }
 
     /**

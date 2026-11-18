@@ -42,7 +42,7 @@ final class CarrierRejected extends CommerzException
             code: ShippingErrorCode::CarrierRejected,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

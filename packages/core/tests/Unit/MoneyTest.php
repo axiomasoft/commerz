@@ -40,6 +40,27 @@ it('rejects unknown currencies with a stable code', function (): void {
     expect(fn () => Currency::of('rub'))->toThrow(InvalidCurrency::class);
 });
 
+it('sanitizes and bounds malformed currency inputs in InvalidCurrency::errorDescriptor while preserving diagnostic state', function (string $given): void {
+    $exception = new InvalidCurrency($given);
+    $descriptor = $exception->errorDescriptor();
+
+    expect($exception->given)->toBe($given)
+        ->and($exception->getMessage())->toBe("Invalid currency: '{$given}' is not a known ISO 4217 code.")
+        ->and($descriptor->code)->toBe('commerz.invalid_currency')
+        ->and(is_string($descriptor->details['given']))->toBeTrue()
+        ->and(is_string($descriptor->details['reason']))->toBeTrue()
+        ->and(mb_check_encoding((string) $descriptor->details['given'], 'UTF-8'))->toBeTrue()
+        ->and(mb_check_encoding((string) $descriptor->details['reason'], 'UTF-8'))->toBeTrue()
+        ->and(preg_match('/[\x00-\x1F\x7F]/', (string) $descriptor->details['given']))->toBe(0)
+        ->and(preg_match('/[\x00-\x1F\x7F]/', (string) $descriptor->details['reason']))->toBe(0)
+        ->and(mb_strlen((string) $descriptor->details['given'], 'UTF-8'))->toBeLessThanOrEqual(120)
+        ->and(mb_strlen((string) $descriptor->details['reason'], 'UTF-8'))->toBeLessThanOrEqual(120);
+})->with([
+    'newline control char' => ["USD\n"],
+    'oversized 5000-byte string' => [str_repeat('X', 5000)],
+    'invalid utf-8 sequence' => ["\xFF\xFE"],
+]);
+
 it('knows exponents', function (): void {
     expect(Currency::of('RUB')->exponent)->toBe(2)
         ->and(Currency::of('JPY')->exponent)->toBe(0)

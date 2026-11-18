@@ -42,7 +42,7 @@ final class FulfillmentNotShipped extends CommerzException
             code: SalesErrorCode::FulfillmentNotShipped,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

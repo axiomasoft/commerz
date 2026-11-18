@@ -40,16 +40,22 @@ final readonly class ShippingOptions implements OptionsFactory
         $validator = new ConfigurationValidator;
         $validator->rejectUnknownKeys($config, self::TOP_KEYS, $path);
 
-        $taxIncluded = $config['tax_included'] ?? false;
+        $taxIncluded = array_key_exists('tax_included', $config) ? $config['tax_included'] : false;
 
         if (! is_bool($taxIncluded)) {
             $validator->add($path.'.tax_included', 'expected true or false');
             $taxIncluded = false;
         }
 
-        $maxZoneMembers = self::int($validator, $config['max_zone_members'] ?? 2000, 1, 100_000, $path.'.max_zone_members');
+        $maxZoneMembers = self::int(
+            $validator,
+            array_key_exists('max_zone_members', $config) ? $config['max_zone_members'] : 2000,
+            1,
+            100_000,
+            $path.'.max_zone_members',
+        );
 
-        $booking = $config['booking'] ?? [];
+        $booking = array_key_exists('booking', $config) ? $config['booking'] : [];
 
         if (! is_array($booking)) {
             $validator->add($path.'.booking', 'expected an array');
@@ -58,7 +64,13 @@ final readonly class ShippingOptions implements OptionsFactory
             $validator->rejectUnknownKeys($booking, self::BOOKING_KEYS, $path.'.booking');
         }
 
-        $bookingLeaseSeconds = self::int($validator, $booking['lease_seconds'] ?? 120, 10, 3600, $path.'.booking.lease_seconds');
+        $bookingLeaseSeconds = self::int(
+            $validator,
+            array_key_exists('lease_seconds', $booking) ? $booking['lease_seconds'] : 120,
+            10,
+            3600,
+            $path.'.booking.lease_seconds',
+        );
 
         $validator->failIfAny();
 

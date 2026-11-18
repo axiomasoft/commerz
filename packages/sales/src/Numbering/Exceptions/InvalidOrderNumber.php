@@ -42,7 +42,7 @@ final class InvalidOrderNumber extends CommerzException
             code: SalesErrorCode::InvalidOrderNumber,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

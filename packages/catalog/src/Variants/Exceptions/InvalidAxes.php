@@ -42,7 +42,7 @@ final class InvalidAxes extends CommerzException
             code: CatalogErrorCode::InvalidAxes,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

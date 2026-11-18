@@ -42,7 +42,7 @@ final class InvalidGatewayResult extends CommerzException
             code: SalesErrorCode::InvalidGatewayResult,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

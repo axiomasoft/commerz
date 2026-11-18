@@ -42,7 +42,7 @@ final class BookingInsideTransaction extends CommerzException
             code: ShippingErrorCode::BookingInsideTransaction,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

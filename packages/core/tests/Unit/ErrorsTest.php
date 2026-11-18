@@ -79,3 +79,23 @@ it('uses the shared Packman categories', function (): void {
     expect(array_column(ErrorCategory::cases(), 'value'))
         ->toBe(['authentication', 'authorization', 'validation', 'conflict', 'not_found', 'rate_limit', 'unsupported', 'unavailable', 'internal']);
 });
+
+it('sanitizes untrusted control characters, invalid UTF-8 and oversized inputs across domain error descriptors', function (CommerzException $exception): void {
+    $descriptor = $exception->errorDescriptor();
+    $encoded = json_encode($descriptor->details, JSON_THROW_ON_ERROR);
+
+    expect(strlen($encoded))->toBeLessThanOrEqual(4096);
+
+    foreach ($descriptor->details as $value) {
+        if (is_string($value)) {
+            expect(mb_check_encoding($value, 'UTF-8'))->toBeTrue()
+                ->and(preg_match('/[\x00-\x1F\x7F]/', $value))->toBe(0)
+                ->and(mb_strlen($value, 'UTF-8'))->toBeLessThanOrEqual(120);
+        }
+    }
+})->with([
+    'invalid command' => [new InvalidCommand("field\n\x00", "\xFF\xFE".str_repeat('a', 5000))],
+    'not found' => [new NotFound('Order', "ord\r\n\xFF".str_repeat('9', 5000))],
+    'idempotency conflict' => [new IdempotencyConflict("place\norder", "\xFE".str_repeat('k', 5000))],
+    'channel not found' => [new ChannelNotFound("ch\n\xFF".str_repeat('c', 5000))],
+]);

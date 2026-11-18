@@ -26,7 +26,7 @@ final class FulfillmentNotFound extends NotFound
             code: SalesErrorCode::FulfillmentNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

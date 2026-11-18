@@ -26,7 +26,7 @@ final class CouponNotFound extends NotFound
             code: PromotionsErrorCode::CouponNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

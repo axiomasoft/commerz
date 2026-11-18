@@ -49,7 +49,7 @@ Published with `--tag=commerz-config` to `config/commerz.php`.
 | Identity | `EntityId` and typed ids, `Uuid7`, `SellableRef`, `CustomerRef`, `ActorRef`, `IdempotencyKey` |
 | Context | `CommerceContext`, `ContextResolver` |
 | Ports | `StockAvailability`, `StockReservations`, `StockReturns`, `PriceResolver`, `PromotionUsage`, `DeliveryOptions`, `ShipmentBooking`, `CustomerDirectory`, `SellableProvider` |
-| Plugins | `CommerzPlugin`, `PluginManifest`, `PluginRegistrar`, `Contributions`, `PluginInspector` |
+| Plugins | `CorePlugin`, `CommerzPlugins`, `ExtensionPlugin`, `PluginManifest`, `PluginRegistrar`, `Contributions`, `PluginInspector` |
 | Quotes | `QuotePipeline`, `QuoteStage`, `QuoteAnchor`, `QuoteInput`, `QuoteState`, `QuoteResult` |
 | Operations | `Transactions`, `OperationReceipts`, `CommittedEvents` |
 | Outbox | `Outbox`, `OutboxConsumer`, `IntegrationEvent` |

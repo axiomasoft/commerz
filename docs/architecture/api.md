@@ -512,10 +512,10 @@ final class CrmServiceSellables implements SellableProvider
     public function resolve(array $refs, CommerceContext $context): array { /* kind Service, no shipping */ }
 }
 
-final class CrmPlugin implements CommerzPlugin
+final class CrmPlugin implements ExtensionPlugin
 {
-    public function manifest(): PluginManifest { return new PluginManifest(id: 'flex.crm-commerce', version: '1.0.0'); }
-    public function register(PluginRegistrar $registrar): void { $registrar->sellableProvider(CrmServiceSellables::class); }
+    public function manifest(): PluginManifest { return new PluginManifest(id: 'acme.crm-commerce', version: '1.0.0', requires: ['commerz.core']); }
+    public function register(PluginRegistrar $registrar): void { $registrar->contribute(SellableProvider::KIND, CrmServiceSellables::class); }
 }
 // config/commerz.php: 'stock' => 'unlimited', 'customers' => CrmCustomerDirectory::class
 ```

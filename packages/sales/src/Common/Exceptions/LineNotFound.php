@@ -27,7 +27,7 @@ final class LineNotFound extends NotFound
             code: SalesErrorCode::LineNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

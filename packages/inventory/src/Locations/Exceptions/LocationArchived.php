@@ -42,7 +42,7 @@ final class LocationArchived extends CommerzException
             code: InventoryErrorCode::LocationArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

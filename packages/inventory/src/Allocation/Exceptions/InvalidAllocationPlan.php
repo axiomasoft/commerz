@@ -42,7 +42,7 @@ final class InvalidAllocationPlan extends CommerzException
             code: InventoryErrorCode::InvalidAllocationPlan,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

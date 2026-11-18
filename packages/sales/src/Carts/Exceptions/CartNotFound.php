@@ -26,7 +26,7 @@ final class CartNotFound extends NotFound
             code: SalesErrorCode::CartNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

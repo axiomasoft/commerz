@@ -728,6 +728,74 @@
                     "parameters": [],
                     "return": "array",
                     "doc": []
+                },
+                "descriptorDetails": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "sanitizeDetailString": {
+                    "visibility": "protected",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "value",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "maxLength",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "self::DEFAULT_MAX_DETAIL_CHARS",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "string",
+                    "doc": []
+                },
+                "sanitizeDetails": {
+                    "visibility": "protected",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "details",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "maxStringLength",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "self::DEFAULT_MAX_DETAIL_CHARS",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
                 }
             },
             "properties": {},
@@ -8743,6 +8811,46 @@
             "uses": [],
             "doc": [],
             "methods": {
+                "assertConnectionSupported": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": "Illuminate\\Contracts\\Foundation\\Application",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "governMigrations": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": "Illuminate\\Contracts\\Foundation\\Application",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
                 "sets": {
                     "visibility": "public",
                     "static": false,

@@ -42,7 +42,7 @@ final class InvalidAttributeConfig extends CommerzException
             code: CatalogErrorCode::InvalidAttributeConfig,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

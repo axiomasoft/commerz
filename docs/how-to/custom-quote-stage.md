@@ -34,7 +34,7 @@ final class StaffDiscount implements QuoteStage
 }
 ```
 
-Register it in a plugin: `$registrar->quoteStage(StaffDiscount::class)`.
+Register it in a plugin: `$registrar->contribute(QuoteStage::KIND, StaffDiscount::class)`.
 
 ## Rules
 

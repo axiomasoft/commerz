@@ -45,7 +45,7 @@ final class QuantityExceedsOutstanding extends CommerzException
             code: SalesErrorCode::QuantityExceedsOutstanding,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

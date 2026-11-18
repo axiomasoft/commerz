@@ -46,7 +46,7 @@ final class NegativeStock extends CommerzException
             code: InventoryErrorCode::NegativeStock,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

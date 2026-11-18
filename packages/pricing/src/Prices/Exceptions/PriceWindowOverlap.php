@@ -49,7 +49,7 @@ final class PriceWindowOverlap extends CommerzException
             code: PricingErrorCode::PriceWindowOverlap,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

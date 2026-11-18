@@ -42,7 +42,7 @@ final class AttributeNotWritable extends CommerzException
             code: CatalogErrorCode::AttributeNotWritable,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

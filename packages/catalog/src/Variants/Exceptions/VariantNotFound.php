@@ -27,7 +27,7 @@ final class VariantNotFound extends NotFound
             code: CatalogErrorCode::VariantNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

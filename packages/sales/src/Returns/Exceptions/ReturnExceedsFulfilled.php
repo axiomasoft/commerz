@@ -42,7 +42,7 @@ final class ReturnExceedsFulfilled extends CommerzException
             code: SalesErrorCode::ReturnExceedsFulfilled,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

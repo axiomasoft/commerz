@@ -70,6 +70,16 @@ it('names the key of a wrong value', function (array $config, string $key): void
     'batch too large' => [['orders' => ['expire_batch' => 1001]], 'commerz-sales.orders.expire_batch'],
     'lease too short' => [['payments' => ['lease_seconds' => 9]], 'commerz-sales.payments.lease_seconds'],
     'lease too long' => [['payments' => ['lease_seconds' => 3601]], 'commerz-sales.payments.lease_seconds'],
+    'carts null' => [['carts' => null], 'commerz-sales.carts'],
+    'checkout null' => [['checkout' => null], 'commerz-sales.checkout'],
+    'orders null' => [['orders' => null], 'commerz-sales.orders'],
+    'payments null' => [['payments' => null], 'commerz-sales.payments'],
+    'max_lines null' => [['carts' => ['max_lines' => null]], 'commerz-sales.carts.max_lines'],
+    'max_quantity null' => [['carts' => ['max_quantity' => null]], 'commerz-sales.carts.max_quantity'],
+    'require_delivery null' => [['checkout' => ['require_delivery' => null]], 'commerz-sales.checkout.require_delivery'],
+    'number_generator null' => [['checkout' => ['number_generator' => null]], 'commerz-sales.checkout.number_generator'],
+    'expire_batch null' => [['orders' => ['expire_batch' => null]], 'commerz-sales.orders.expire_batch'],
+    'lease_seconds null' => [['payments' => ['lease_seconds' => null]], 'commerz-sales.payments.lease_seconds'],
 ]);
 
 it('accepts the bounds', function (): void {

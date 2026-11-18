@@ -42,7 +42,7 @@ final class NotACouponPromotion extends CommerzException
             code: PromotionsErrorCode::NotACouponPromotion,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

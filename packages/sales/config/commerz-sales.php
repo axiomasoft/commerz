@@ -17,6 +17,7 @@ return [
     ],
     'orders' => [
         // null or 1..525600: minutes to pay an order placed from a `cart`; drafts have no deadline.
+        /** @var ?int */
         'payment_due_minutes' => 4320,
         // 1..1000: orders expired in one pass.
         'expire_batch' => 100,

@@ -42,7 +42,7 @@ final class CartChanged extends CommerzException
             code: SalesErrorCode::CartChanged,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -10,6 +10,7 @@ use Commerz\Inventory\Internal\Console\ExpireReservationsCommand;
 use Commerz\Inventory\Internal\Console\ReconcileStockCommand;
 use Commerz\Inventory\Plugins\InventoryPlugin;
 use Commerz\Plugins\CommerzPlugins;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -63,6 +64,8 @@ final class InventoryCoreRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, InventoryPlugin::class, InventoryPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         CommerzPlugins::builtIn(InventoryPlugin::class);
     }

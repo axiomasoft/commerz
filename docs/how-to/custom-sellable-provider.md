@@ -38,9 +38,12 @@ can be unavailable in one channel and not in another.
 ## Register it
 
 ```php
+use Commerz\Ports\Sellables\Contracts\SellableProvider;
+use Packman\Plugins\Laravel\PluginRegistrar;
+
 public function register(PluginRegistrar $registrar): void
 {
-    $registrar->sellableProvider(CrmServices::class);
+    $registrar->contribute(SellableProvider::KIND, CrmServices::class);
 }
 ```
 

@@ -12,7 +12,7 @@ use Packman\Attributes\SpiKind;
 
 /**
  * Source of sellables of one ref type: the catalog provides `variant`, a CRM its own services. Registered as the
- * `sellable_provider` contribution (`PluginRegistrar::sellableProvider()`); `key()` is the ref type it serves.
+ * `sellable_provider` contribution (`PluginRegistrar::contribute(SellableProvider::KIND, ...)`); `key()` is the ref type it serves.
  * Reads only: no writes, no network calls inside a database transaction.
  */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]

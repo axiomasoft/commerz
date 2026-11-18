@@ -42,7 +42,7 @@ public categories it needs (see [Code layout](#code-layout)).
 | `Schema` | `TableNames`, `CommerzMigration`, `ConstraintNames`, `Contracts\SchemaOwnership` |
 | `Operations` | `Contracts\Transactions`, `Contracts\OperationReceipts` |
 | `Outbox` | `Contracts\Outbox`, `IntegrationEvent`, relay command |
-| `Plugins` | `Contracts\CommerzPlugin`, `PluginManifest`, `PluginRegistrar`, `ContributionKind`, `Contracts\PluginInspector`, `Contracts\Contributions` |
+| `Plugins` | `CorePlugin`, `CommerzPlugins`, `Packman\Plugins\Contracts\Registry\ExtensionPlugin`, `PluginManifest`, `PluginRegistrar`, `ContributionKind`, `PluginInspector`, `Contributions` |
 | `Stores` | `Contracts\Stores`, `Contracts\Channels`, `StoreId`, `ChannelId`, commands, views, events |
 | `Pagination` | `Page<T>`, `Cursor` |
 | `Ports\Sellables` | `Sellables`, `SellableProvider`, `SellableSnapshot`, `SellableKind`, `SellableUnavailable` |

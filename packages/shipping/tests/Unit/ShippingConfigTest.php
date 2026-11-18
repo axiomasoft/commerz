@@ -43,6 +43,10 @@ it('names the key of a wrong value', function (array $config, string $key): void
     'booking not an array' => [['booking' => 120], 'commerz-shipping.booking'],
     'lease too short' => [['booking' => ['lease_seconds' => 9]], 'commerz-shipping.booking.lease_seconds'],
     'lease too long' => [['booking' => ['lease_seconds' => 3601]], 'commerz-shipping.booking.lease_seconds'],
+    'tax_included null' => [['tax_included' => null], 'commerz-shipping.tax_included'],
+    'max_zone_members null' => [['max_zone_members' => null], 'commerz-shipping.max_zone_members'],
+    'booking null' => [['booking' => null], 'commerz-shipping.booking'],
+    'lease_seconds null' => [['booking' => ['lease_seconds' => null]], 'commerz-shipping.booking.lease_seconds'],
 ]);
 
 it('accepts the bounds', function (): void {

@@ -26,7 +26,7 @@ final class StoreNotFound extends NotFound
             code: CommerzErrorCode::StoreNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

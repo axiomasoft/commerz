@@ -34,8 +34,6 @@ final class PromotionsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/commerz-promotions.php' => $this->app->configPath('commerz-promotions.php'),

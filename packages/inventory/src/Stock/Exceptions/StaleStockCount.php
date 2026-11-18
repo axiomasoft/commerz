@@ -46,7 +46,7 @@ final class StaleStockCount extends CommerzException
             code: InventoryErrorCode::StaleStockCount,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

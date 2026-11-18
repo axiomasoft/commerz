@@ -42,7 +42,7 @@ final class InvalidRateResult extends CommerzException
             code: ShippingErrorCode::InvalidRateResult,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

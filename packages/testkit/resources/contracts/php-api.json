@@ -1213,7 +1213,9 @@
             "abstract": false,
             "extends": [],
             "implements": [],
-            "uses": [],
+            "uses": [
+                "Packman\\Testkit\\Concerns\\Conformance\\PluginContractTests"
+            ],
             "doc": [],
             "methods": {
                 "aPluginThatIsNotRegisteredLeavesNoContributions": {
@@ -1246,6 +1248,16 @@
                     "return": "void",
                     "doc": []
                 },
+                "dependencyPluginClasses": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
                 "expectedContributions": {
                     "visibility": "protected",
                     "static": false,
@@ -1274,6 +1286,16 @@
                     "by_reference": false,
                     "parameters": [],
                     "return": "array",
+                    "doc": []
+                },
+                "pluginUnderTest": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Plugins\\Contracts\\Registry\\ExtensionPlugin",
                     "doc": []
                 },
                 "registeringThePluginTwiceFails": {

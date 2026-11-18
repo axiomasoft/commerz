@@ -24,6 +24,7 @@ use Commerz\Sales\Refunds\Internal\DatabaseRefunds;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Returns\Internal\DatabaseReturns;
 use Commerz\Sales\Sales;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -77,6 +78,8 @@ final class SalesRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, SalesPlugin::class, SalesPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(Carts::class, DatabaseCarts::class);
         $app->singleton(Checkout::class, OrderPlacement::class);

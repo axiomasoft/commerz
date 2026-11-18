@@ -62,4 +62,8 @@ it('names the offending key', function (array $config, string $path): void {
     'default class malformed' => [['tax' => ['default_class' => 'Standard']], 'commerz-pricing.tax.default_class'],
     'delivery class malformed' => [['tax' => ['delivery_class' => 'a b']], 'commerz-pricing.tax.delivery_class'],
     'default zone malformed' => [['tax' => ['default_zone' => 7]], 'commerz-pricing.tax.default_zone'],
+    'fallback null' => [['fallback_to_sellable' => null], 'commerz-pricing.fallback_to_sellable'],
+    'tax null' => [['tax' => null], 'commerz-pricing.tax'],
+    'calculator null' => [['tax' => ['calculator' => null]], 'commerz-pricing.tax.calculator'],
+    'rounding null' => [['tax' => ['rounding' => null]], 'commerz-pricing.tax.rounding'],
 ]);

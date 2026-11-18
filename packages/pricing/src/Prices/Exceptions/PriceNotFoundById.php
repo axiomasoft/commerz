@@ -27,7 +27,7 @@ final class PriceNotFoundById extends NotFound
             code: PricingErrorCode::PriceNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -66,7 +66,10 @@ final readonly class CommerzOptions implements OptionsFactory
         $tablePrefix = new TablePrefix('cmz_');
 
         try {
-            $tablePrefix = TablePrefix::fromArrayValue($config['table_prefix'] ?? 'cmz_', $path.'.table_prefix');
+            $tablePrefix = TablePrefix::fromArrayValue(
+                array_key_exists('table_prefix', $config) ? $config['table_prefix'] : 'cmz_',
+                $path.'.table_prefix',
+            );
         } catch (InvalidConfiguration $exception) {
             foreach ($exception->problems() as $problem) {
                 $prefix = $path.'.table_prefix: ';
@@ -74,7 +77,7 @@ final readonly class CommerzOptions implements OptionsFactory
             }
         }
 
-        $stock = $config['stock'] ?? StockMode::Inventory->value;
+        $stock = array_key_exists('stock', $config) ? $config['stock'] : StockMode::Inventory->value;
         $stockMode = $stock instanceof StockMode ? $stock : (is_string($stock) ? StockMode::tryFrom($stock) : null);
 
         if ($stockMode === null) {
@@ -90,18 +93,26 @@ final readonly class CommerzOptions implements OptionsFactory
         }
 
         /** @var list<class-string> $plugins */
-        $plugins = self::validateClassList($config['plugins'] ?? [], $path.'.plugins', $validator);
+        $plugins = self::validateClassList(
+            array_key_exists('plugins', $config) ? $config['plugins'] : [],
+            $path.'.plugins',
+            $validator,
+        );
 
-        $disabledPlugins = self::validatePluginIds($config['disabled_plugins'] ?? [], $path.'.disabled_plugins', $validator);
+        $disabledPlugins = self::validatePluginIds(
+            array_key_exists('disabled_plugins', $config) ? $config['disabled_plugins'] : [],
+            $path.'.disabled_plugins',
+            $validator,
+        );
 
-        $operations = $config['operations'] ?? [];
+        $operations = array_key_exists('operations', $config) ? $config['operations'] : [];
         $ttl = 30;
 
         if (! is_array($operations)) {
             $validator->add($path.'.operations', 'expected an array');
         } else {
             $validator->rejectUnknownKeys($operations, self::OPERATION_KEYS, $path.'.operations');
-            $rawTtl = $operations['receipt_ttl_days'] ?? 30;
+            $rawTtl = array_key_exists('receipt_ttl_days', $operations) ? $operations['receipt_ttl_days'] : 30;
 
             if (! is_int($rawTtl) || $rawTtl < 1 || $rawTtl > 3650) {
                 $validator->add($path.'.operations.receipt_ttl_days', 'expected an integer from 1 to 3650');

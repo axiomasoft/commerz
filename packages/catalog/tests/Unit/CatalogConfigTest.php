@@ -20,4 +20,4 @@ it('rejects unknown keys under closed schema validation', function (): void {
 it('rejects values outside 1..10000 with the key path', function (mixed $value): void {
     expect(fn () => CatalogOptions::fromArray(['max_generated_variants' => $value]))
         ->toThrow(InvalidConfiguration::class, 'commerz-catalog.max_generated_variants');
-})->with([0, -1, 10001, '100', 1.5, true]);
+})->with([0, -1, 10001, '100', 1.5, true, null]);

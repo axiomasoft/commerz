@@ -70,4 +70,10 @@ it('names the offending key', function (array $config, string $path): void {
     'alphabet not a string' => [['coupons' => ['alphabet' => ['A', 'B']]], 'commerz-promotions.coupons.alphabet'],
     'max generate zero' => [['coupons' => ['max_generate' => 0]], 'commerz-promotions.coupons.max_generate'],
     'max generate too large' => [['coupons' => ['max_generate' => 1_000_001]], 'commerz-promotions.coupons.max_generate'],
+    'rounding null' => [['rounding' => null], 'commerz-promotions.rounding'],
+    'max codes null' => [['max_codes' => null], 'commerz-promotions.max_codes'],
+    'restore on null' => [['restore_on' => null], 'commerz-promotions.restore_on'],
+    'coupons null' => [['coupons' => null], 'commerz-promotions.coupons'],
+    'alphabet null' => [['coupons' => ['alphabet' => null]], 'commerz-promotions.coupons.alphabet'],
+    'max generate null' => [['coupons' => ['max_generate' => null]], 'commerz-promotions.coupons.max_generate'],
 ]);

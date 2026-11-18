@@ -26,7 +26,7 @@ final class MethodNotFound extends NotFound
             code: ShippingErrorCode::MethodNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

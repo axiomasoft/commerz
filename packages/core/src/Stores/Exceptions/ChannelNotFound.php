@@ -26,7 +26,7 @@ final class ChannelNotFound extends NotFound
             code: CommerzErrorCode::ChannelNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

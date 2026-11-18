@@ -42,7 +42,7 @@ final class AttributeNotFilterable extends CommerzException
             code: CatalogErrorCode::AttributeNotFilterable,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

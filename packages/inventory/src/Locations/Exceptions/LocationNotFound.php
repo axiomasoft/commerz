@@ -27,7 +27,7 @@ final class LocationNotFound extends NotFound
             code: InventoryErrorCode::LocationNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

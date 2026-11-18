@@ -67,7 +67,7 @@ final class QuoteFailed extends CommerzException
             code: CommerzErrorCode::QuoteFailed,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -42,7 +42,7 @@ final class DuplicateCode extends CommerzException
             code: CatalogErrorCode::DuplicateCode,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

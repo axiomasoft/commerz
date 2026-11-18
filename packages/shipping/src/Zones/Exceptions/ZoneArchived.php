@@ -42,7 +42,7 @@ final class ZoneArchived extends CommerzException
             code: ShippingErrorCode::ZoneArchived,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -44,7 +44,7 @@ final class TooManyComponents extends CommerzException
             code: InventoryErrorCode::TooManyComponents,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

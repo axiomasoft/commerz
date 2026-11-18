@@ -26,12 +26,12 @@ final class CurrencyMismatch extends InvalidCommand
             code: CommerzErrorCode::CurrencyMismatch,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: [
+            details: self::sanitizeDetails([
                 'field' => $this->field,
                 'reason' => $this->reason,
                 'left' => $this->left,
                 'right' => $this->right,
-            ],
+            ]),
         );
     }
 }

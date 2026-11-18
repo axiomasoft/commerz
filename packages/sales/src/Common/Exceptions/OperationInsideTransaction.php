@@ -46,7 +46,7 @@ final class OperationInsideTransaction extends CommerzException
             code: SalesErrorCode::OperationInsideTransaction,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

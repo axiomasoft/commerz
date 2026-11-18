@@ -12,7 +12,7 @@ is optional. Values are validated at boot; an invalid value is an
 | `table_prefix` | `cmz_` | Prefix of every table: 2..7 lowercase letters or digits, then `_`. Choose it before the first migration; changing it later is a boot error |
 | `stock` | `inventory` | `inventory` checks sales against the inventory package; `unlimited` skips stock tracking |
 | `customers` | `null` | Class implementing `CustomerDirectory`, or `null` when the host has no customer groups |
-| `plugins` | `[]` | Plugin classes implementing `CommerzPlugin`, registered in order |
+| `plugins` | `[]` | Plugin classes implementing `ExtensionPlugin`, registered in order |
 | `operations.receipt_ttl_days` | `30` | Days an idempotency receipt (and a delivered outbox message) is kept |
 
 ## commerz-catalog — `config/commerz-catalog.php`

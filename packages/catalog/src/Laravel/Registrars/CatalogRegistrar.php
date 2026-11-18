@@ -25,6 +25,7 @@ use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Commerz\Catalog\Variants\Internal\DatabaseVariants;
 use Commerz\Plugins\CommerzPlugins;
+use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Application as FoundationApplication;
@@ -80,6 +81,8 @@ final class CatalogRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, CatalogPlugin::class, CatalogPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(AttributeWriter::class);
         $app->singleton(AttributeIndexer::class, AttributeWriter::class);

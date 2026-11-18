@@ -50,7 +50,7 @@ class NotFound extends CommerzException
             code: CommerzErrorCode::NotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $details,
+            details: self::sanitizeDetails($details),
         );
     }
 }

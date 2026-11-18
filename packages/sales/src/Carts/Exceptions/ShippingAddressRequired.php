@@ -27,7 +27,7 @@ final class ShippingAddressRequired extends InvalidCommand
             code: SalesErrorCode::ShippingAddressRequired,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

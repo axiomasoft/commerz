@@ -7,18 +7,19 @@ A plugin adds behavior under a stable key. Everything extensible in Commerz is a
 ## 1. The plugin class
 
 ```php
-use Commerz\Plugins\Contracts\CommerzPlugin;
-use Commerz\Plugins\PluginManifest;
-use Commerz\Plugins\PluginRegistrar;
+use Commerz\Promotions\Rules\Contracts\PromotionEffect;
+use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
+use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Plugins\Laravel\PluginRegistrar;
 
-final class AcmePlugin implements CommerzPlugin
+final class AcmePlugin implements ExtensionPlugin
 {
     public function manifest(): PluginManifest
     {
         return new PluginManifest(
-            id: 'acme.loyalty',               // vendor.name, [a-z0-9.-]
+            id: 'acme.loyalty',                             // vendor.name, [a-z0-9.-]
             version: '1.0.0',
-            requires: ['commerz.promotions'], // plugins that must be loaded first
+            requires: ['commerz.core', 'commerz.promotions'], // plugins that must be loaded first
         );
     }
 
@@ -90,6 +91,7 @@ final class AcmePluginTest extends PackageTestCase
     use PluginContractTests;
 
     protected function pluginClass(): string { return AcmePlugin::class; }
+    protected function pluginDependencies(): array { return [PromotionsPlugin::class]; }
     protected function commerzProviders(): array { return [CommerzServiceProvider::class, PromotionsServiceProvider::class]; }
 }
 ```

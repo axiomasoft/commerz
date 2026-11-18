@@ -27,7 +27,7 @@ final class StockLinkMissing extends NotFound
             code: InventoryErrorCode::StockLinkMissing,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

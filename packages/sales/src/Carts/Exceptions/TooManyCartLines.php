@@ -27,7 +27,7 @@ final class TooManyCartLines extends InvalidCommand
             code: SalesErrorCode::TooManyCartLines,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

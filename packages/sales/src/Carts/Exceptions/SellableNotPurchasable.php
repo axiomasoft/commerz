@@ -43,7 +43,7 @@ final class SellableNotPurchasable extends CommerzException
             code: SalesErrorCode::SellableNotPurchasable,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

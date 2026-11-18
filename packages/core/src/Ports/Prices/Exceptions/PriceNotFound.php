@@ -27,7 +27,7 @@ final class PriceNotFound extends NotFound
             code: CommerzErrorCode::PriceNotFound,
             category: ErrorCategory::NotFound,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

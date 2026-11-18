@@ -51,7 +51,7 @@ final class TaxRateOverlap extends CommerzException
             code: PricingErrorCode::TaxRateOverlap,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

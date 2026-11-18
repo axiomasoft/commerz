@@ -42,7 +42,7 @@ final class CategoryHasChildren extends CommerzException
             code: CatalogErrorCode::CategoryHasChildren,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -47,14 +47,14 @@ final readonly class PricingOptions implements OptionsFactory
         $validator = new ConfigurationValidator;
         $validator->rejectUnknownKeys($config, self::TOP_KEYS, $path);
 
-        $fallback = $config['fallback_to_sellable'] ?? true;
+        $fallback = array_key_exists('fallback_to_sellable', $config) ? $config['fallback_to_sellable'] : true;
 
         if (! is_bool($fallback)) {
             $validator->add($path.'.fallback_to_sellable', 'expected true or false');
             $fallback = true;
         }
 
-        $tax = $config['tax'] ?? [];
+        $tax = array_key_exists('tax', $config) ? $config['tax'] : [];
 
         if (! is_array($tax)) {
             $validator->add($path.'.tax', 'expected an array');
@@ -63,14 +63,14 @@ final readonly class PricingOptions implements OptionsFactory
             $validator->rejectUnknownKeys($tax, self::TAX_KEYS, $path.'.tax');
         }
 
-        $calculator = $tax['calculator'] ?? 'rates';
+        $calculator = array_key_exists('calculator', $tax) ? $tax['calculator'] : 'rates';
 
         if (! is_string($calculator) || preg_match('/\A[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)?\z/', $calculator) !== 1) {
             $validator->add($path.'.tax.calculator', "expected a calculator key such as 'rates' or 'vendor.name'");
             $calculator = 'rates';
         }
 
-        $rounding = $tax['rounding'] ?? RoundingMode::HalfUp;
+        $rounding = array_key_exists('rounding', $tax) ? $tax['rounding'] : RoundingMode::HalfUp;
         $roundingEnum = $rounding instanceof RoundingMode ? $rounding : (is_string($rounding) ? RoundingMode::tryFrom($rounding) : null);
 
         if ($roundingEnum === null) {

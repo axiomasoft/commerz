@@ -42,7 +42,7 @@ final class InvalidRuleResult extends CommerzException
             code: PromotionsErrorCode::InvalidRuleResult,
             category: ErrorCategory::Unavailable,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

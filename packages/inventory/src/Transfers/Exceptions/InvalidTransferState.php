@@ -43,7 +43,7 @@ final class InvalidTransferState extends CommerzException
             code: InventoryErrorCode::InvalidTransferState,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

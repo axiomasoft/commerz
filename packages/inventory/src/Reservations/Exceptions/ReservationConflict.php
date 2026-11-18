@@ -42,7 +42,7 @@ final class ReservationConflict extends CommerzException
             code: InventoryErrorCode::ReservationConflict,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -45,7 +45,7 @@ final class UsageLimitReached extends CommerzException
             code: CommerzErrorCode::UsageLimitReached,
             category: ErrorCategory::RateLimit,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

@@ -7,6 +7,7 @@ namespace Commerz\Shipping\Laravel\Registrars;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
+use Commerz\Schema\CommerzSchemaSets;
 use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Bookings\Internal\CarrierShipmentBooking;
 use Commerz\Shipping\Bookings\Internal\DatabaseBookings;
@@ -75,6 +76,8 @@ final class ShippingRegistrar implements PackageRegistrar
 
             SchemaExtensions::register($app, ShippingPlugin::class, ShippingPlugin::ID);
         }
+
+        CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(Zones::class, DatabaseZones::class);
         $app->singleton(Methods::class, DatabaseMethods::class);

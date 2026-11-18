@@ -32,7 +32,7 @@ final class CarrierMismatch extends InvalidCommand
             code: ShippingErrorCode::CarrierMismatch,
             category: ErrorCategory::Validation,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

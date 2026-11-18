@@ -72,4 +72,10 @@ it('names the failing key path', function (array $input, string $path): void {
     'operations shape' => [['operations' => 5], 'app.commerz.operations'],
     'ttl zero' => [['operations' => ['receipt_ttl_days' => 0]], 'app.commerz.operations.receipt_ttl_days'],
     'ttl type' => [['operations' => ['receipt_ttl_days' => '30']], 'app.commerz.operations.receipt_ttl_days'],
+    'table_prefix null' => [['table_prefix' => null], 'app.commerz.table_prefix'],
+    'stock null' => [['stock' => null], 'app.commerz.stock'],
+    'plugins null' => [['plugins' => null], 'app.commerz.plugins'],
+    'disabled_plugins null' => [['disabled_plugins' => null], 'app.commerz.disabled_plugins'],
+    'operations null' => [['operations' => null], 'app.commerz.operations'],
+    'ttl null' => [['operations' => ['receipt_ttl_days' => null]], 'app.commerz.operations.receipt_ttl_days'],
 ]);

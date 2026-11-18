@@ -42,7 +42,7 @@ final class ReturnNotOpen extends CommerzException
             code: SalesErrorCode::ReturnNotOpen,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

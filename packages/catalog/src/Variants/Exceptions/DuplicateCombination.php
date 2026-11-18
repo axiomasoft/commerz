@@ -49,7 +49,7 @@ final class DuplicateCombination extends CommerzException
             code: CatalogErrorCode::DuplicateCombination,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }

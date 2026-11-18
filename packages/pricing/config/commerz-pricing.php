@@ -17,6 +17,7 @@ return [
         'default_class' => 'standard',
 
         /* Tax class of the delivery charge; null leaves delivery untaxed. */
+        /** @var ?string */
         'delivery_class' => 'standard',
 
         /* Code of the tax zone used when a quote has no delivery address (POS, CRM, digital goods); null: no zone, no tax. */

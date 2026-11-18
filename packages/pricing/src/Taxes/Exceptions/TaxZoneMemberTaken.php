@@ -47,7 +47,7 @@ final class TaxZoneMemberTaken extends CommerzException
             code: PricingErrorCode::TaxZoneMemberTaken,
             category: ErrorCategory::Conflict,
             retryable: false,
-            details: $this->context(),
+            details: $this->descriptorDetails(),
         );
     }
 }
