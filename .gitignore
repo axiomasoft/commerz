@@ -78,3 +78,4 @@ Thumbs.db
 # Plan tooling output (regenerated locally; not versioned)
 plans/*/log.jsonl
 plans/*/views/
+.claude/scheduled_tasks.lock
