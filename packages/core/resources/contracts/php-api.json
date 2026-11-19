@@ -134,24 +134,12 @@
             "readonly": false,
             "abstract": false,
             "extends": [
-                "Illuminate\\Support\\ServiceProvider"
+                "Commerz\\Laravel\\CommerzPluginServiceProvider"
             ],
             "implements": [],
-            "uses": [
-                "Packman\\Foundation\\Concerns\\RegistersPackageRegistrars"
-            ],
+            "uses": [],
             "doc": [],
             "methods": {
-                "boot": {
-                    "visibility": "public",
-                    "static": false,
-                    "final": false,
-                    "abstract": false,
-                    "by_reference": false,
-                    "parameters": [],
-                    "return": "void",
-                    "doc": []
-                },
                 "register": {
                     "visibility": "public",
                     "static": false,
@@ -1762,6 +1750,56 @@
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
+        },
+        "Commerz\\Laravel\\CommerzPluginServiceProvider": {
+            "kind": "class",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": true,
+            "extends": [
+                "Illuminate\\Support\\ServiceProvider"
+            ],
+            "implements": [],
+            "uses": [
+                "Packman\\Foundation\\Concerns\\RegistersPackageRegistrars"
+            ],
+            "doc": [],
+            "methods": {
+                "boot": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "register": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [
+                {
+                    "name": "PLUGIN",
+                    "type": "string",
+                    "visibility": "protected",
+                    "final": false
+                }
+            ],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
         },
         "Commerz\\Laravel\\Registrars\\CommerzCoreRegistrar": {
             "kind": "class",
@@ -9052,6 +9090,26 @@
                         }
                     ],
                     "return": "void",
+                    "doc": []
+                },
+                "migrationPaths": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": "Illuminate\\Contracts\\Foundation\\Application",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
                     "doc": []
                 },
                 "sets": {

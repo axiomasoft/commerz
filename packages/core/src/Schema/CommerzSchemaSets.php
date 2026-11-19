@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Schema;
 
 use Commerz\Configuration\CommerzOptions;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -98,10 +99,20 @@ final readonly class CommerzSchemaSets implements SchemaSetProvider
         }
     }
 
+    /** @return list<string> Paths of the Commerz schema sets selected by this host. */
+    public static function migrationPaths(Application $app): array
+    {
+        return array_map(static fn (SchemaSet $set): string => $set->path, self::commerzSets($app));
+    }
+
     private static function registerPaths(Migrator $migrator, Application $app): void
     {
-        foreach (self::commerzSets($app) as $set) {
-            $migrator->path($set->path);
+        if ($app->make(Repository::class)->get('packman.schema.auto_load_migrations', true) !== true) {
+            return;
+        }
+
+        foreach (self::migrationPaths($app) as $path) {
+            $migrator->path($path);
         }
     }
 

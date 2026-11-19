@@ -41,10 +41,8 @@ final readonly class Pricing {
 `Commerz\Pricing\PricingServiceProvider`
 
 ```php
-final class PricingServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class PricingServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['price', 'tax'];
-    boot(): void;
-    register(): void;
 }
 ```
 

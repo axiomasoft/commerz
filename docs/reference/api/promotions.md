@@ -41,10 +41,8 @@ final readonly class Promotions {
 `Commerz\Promotions\PromotionsServiceProvider`
 
 ```php
-final class PromotionsServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class PromotionsServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['promotion', 'coupon'];
-    boot(): void;
-    register(): void;
 }
 ```
 

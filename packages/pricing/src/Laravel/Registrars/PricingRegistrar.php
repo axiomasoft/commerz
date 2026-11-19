@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing\Laravel\Registrars;
 
-use Commerz\Plugins\CommerzPlugins;
 use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Diagnostics\PricingDoctorCheck;
@@ -23,18 +22,12 @@ use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
 use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Foundation\Application as FoundationApplication;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
-use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Concerns\RegistersNothingOnBoot;
 use Packman\Foundation\Contracts\PackageRegistrar;
-use Packman\PackmanServiceProvider;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Plugins\Laravel\PluginsServiceProvider;
-use Packman\Schema\Laravel\SchemaExtensions;
-use Packman\Schema\Laravel\SchemaServiceProvider;
 
 /**
  * Wires Commerz pricing services, extension plugin, options, schema ownership, diagnostics, and panels.
@@ -47,16 +40,6 @@ final class PricingRegistrar implements PackageRegistrar
     #[Override]
     public function register(Application $app): void
     {
-        foreach ([
-            PackmanServiceProvider::class,
-            PluginsServiceProvider::class,
-            SchemaServiceProvider::class,
-        ] as $provider) {
-            if ($app instanceof FoundationApplication && $app->getProvider($provider) === null) {
-                $app->register($provider);
-            }
-        }
-
         $app->singletonIf(PricingPlugin::class);
 
         $app->singleton(PricingDoctorCheck::class, static fn (Application $app): PricingDoctorCheck => new PricingDoctorCheck(
@@ -64,18 +47,6 @@ final class PricingRegistrar implements PackageRegistrar
             optionsResolver: static fn (): PricingOptions => $app->make(PricingOptions::class),
             contributionsResolver: static fn (): Contributions => $app->make(Contributions::class),
         ));
-
-        if (! $app->bound('commerz.pricing_facets_registered')) {
-            $app->instance('commerz.pricing_facets_registered', true);
-
-            ExtensionFacetRegistrar::register(
-                $app,
-                PricingPlugin::class,
-                dirname(__DIR__, 3).'/composer.json',
-            );
-
-            SchemaExtensions::register($app, PricingPlugin::class, PricingPlugin::ID);
-        }
 
         CommerzSchemaSets::governMigrations($app);
 
@@ -88,7 +59,5 @@ final class PricingRegistrar implements PackageRegistrar
         $app->singleton(TaxRateLookup::class);
         $app->singleton(Taxes::class, DatabaseTaxes::class);
         $app->singleton(Pricing::class);
-
-        CommerzPlugins::builtInFor($app, PricingPlugin::class);
     }
 }

@@ -45,9 +45,8 @@ final readonly class Commerz {
 `Commerz\CommerzServiceProvider`
 
 ```php
-final class CommerzServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class CommerzServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox'];
-    boot(): void;
     register(): void;
 }
 ```
@@ -415,9 +414,27 @@ final class Uuid7 {
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`CommerzPluginServiceProvider`](#type-commerz-laravel-commerzpluginserviceprovider) | class | spi (implement) | 0.1 |
 | [`CommerzCoreRegistrar`](#type-commerz-laravel-registrars-commerzcoreregistrar) | class | spi (call) | 0.1 |
 | [`CommerzPortsRegistrar`](#type-commerz-laravel-registrars-commerzportsregistrar) | class | spi (call) | 0.1 |
 | [`CommerzStoresRegistrar`](#type-commerz-laravel-registrars-commerzstoresregistrar) | class | spi (call) | 0.1 |
+
+### CommerzPluginServiceProvider {#type-commerz-laravel-commerzpluginserviceprovider}
+
+`Commerz\Laravel\CommerzPluginServiceProvider`
+
+Registers a packaged plugin now and starts its Laravel services after host providers register.
+
+```php
+abstract class CommerzPluginServiceProvider extends \Illuminate\Support\ServiceProvider {
+    const PLUGIN = 'Commerz\\Plugins\\CorePlugin';
+    boot(): void;
+    protected bootPackageRegistrars(): void;
+    register(): void;
+    protected registerPackageRegistrars(): void;
+    protected resolvePackageRegistrars(): array;
+}
+```
 
 ### CommerzCoreRegistrar {#type-commerz-laravel-registrars-commerzcoreregistrar}
 
@@ -2013,6 +2030,7 @@ final readonly class CommerzSchemaSets implements \Packman\Schema\Contracts\Migr
     static assertConnectionSupported(\Illuminate\Contracts\Foundation\Application $app): void;
     // Registers Commerz `SchemaSet` paths with Laravel's `migrator` and guards execution so unsupported database drivers fail cleanly with {@see SchemaSetException} before creating partial commerce tables.
     static governMigrations(\Illuminate\Contracts\Foundation\Application $app): void;
+    static migrationPaths(\Illuminate\Contracts\Foundation\Application $app): array;
     sets(): array;
 }
 ```

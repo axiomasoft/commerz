@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Commerz\Pricing;
 
+use Commerz\Laravel\CommerzPluginServiceProvider;
 use Commerz\Pricing\Laravel\Registrars\PricingRegistrar;
-use Illuminate\Support\ServiceProvider;
-use Override;
+use Commerz\Pricing\Plugins\PricingPlugin;
 use Packman\Attributes\Api;
-use Packman\Foundation\Concerns\RegistersPackageRegistrars;
 use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
-final class PricingServiceProvider extends ServiceProvider
+final class PricingServiceProvider extends CommerzPluginServiceProvider
 {
-    use RegistersPackageRegistrars {
-        register as protected registerRegistrars;
-        boot as protected bootRegistrars;
-    }
+    protected const string PLUGIN = PricingPlugin::class;
 
     public const array NOUNS = ['price', 'tax'];
 
@@ -25,21 +21,4 @@ final class PricingServiceProvider extends ServiceProvider
     protected const array REGISTRARS = [
         PricingRegistrar::class,
     ];
-
-    #[Override]
-    public function register(): void
-    {
-        $this->registerRegistrars();
-    }
-
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/commerz-pricing.php' => $this->app->configPath('commerz-pricing.php'),
-            ], 'commerz-pricing-config');
-        }
-
-        $this->bootRegistrars();
-    }
 }

@@ -45,10 +45,8 @@ final readonly class Catalog {
 `Commerz\Catalog\CatalogServiceProvider`
 
 ```php
-final class CatalogServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class CatalogServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing'];
-    boot(): void;
-    register(): void;
 }
 ```
 

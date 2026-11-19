@@ -6,19 +6,15 @@ namespace Commerz\Inventory;
 
 use Commerz\Inventory\Laravel\Registrars\InventoryCoreRegistrar;
 use Commerz\Inventory\Laravel\Registrars\InventoryPortsRegistrar;
-use Illuminate\Support\ServiceProvider;
-use Override;
+use Commerz\Inventory\Plugins\InventoryPlugin;
+use Commerz\Laravel\CommerzPluginServiceProvider;
 use Packman\Attributes\Api;
-use Packman\Foundation\Concerns\RegistersPackageRegistrars;
 use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
-final class InventoryServiceProvider extends ServiceProvider
+final class InventoryServiceProvider extends CommerzPluginServiceProvider
 {
-    use RegistersPackageRegistrars {
-        register as protected registerRegistrars;
-        boot as protected bootRegistrars;
-    }
+    protected const string PLUGIN = InventoryPlugin::class;
 
     public const array NOUNS = ['stock'];
 
@@ -27,21 +23,4 @@ final class InventoryServiceProvider extends ServiceProvider
         InventoryCoreRegistrar::class,
         InventoryPortsRegistrar::class,
     ];
-
-    #[Override]
-    public function register(): void
-    {
-        $this->registerRegistrars();
-    }
-
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/commerz-inventory.php' => $this->app->configPath('commerz-inventory.php'),
-            ], 'commerz-inventory-config');
-        }
-
-        $this->bootRegistrars();
-    }
 }

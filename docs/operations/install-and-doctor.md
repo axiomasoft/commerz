@@ -14,8 +14,10 @@ php artisan commerz:install
 | `--no-migrate` | only publish the config; run `php artisan migrate` yourself |
 | `--force` | overwrite the published config; allow `migrate` in production |
 
-Migrations of every installed package are loaded by their service providers and
-create tables with the configured prefix. They run on the Commerz connection
+Laravel loads migration paths for active Commerz plugins by default. Set
+`packman.schema.auto_load_migrations` to `false` to omit them from Laravel’s normal
+`migrate` command. An explicit `commerz:install` still migrates the active Commerz
+schema sets. The migrations create tables with the configured prefix. They run on the Commerz connection
 (`commerz.connection`). Plan the prefix and the connection **before** the first
 migration: the prefix is fingerprinted into `cmz_schema_state` and cannot be
 changed later.

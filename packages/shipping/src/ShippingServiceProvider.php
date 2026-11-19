@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping;
 
+use Commerz\Laravel\CommerzPluginServiceProvider;
 use Commerz\Shipping\Laravel\Registrars\ShippingRegistrar;
-use Illuminate\Support\ServiceProvider;
-use Override;
+use Commerz\Shipping\Plugins\ShippingPlugin;
 use Packman\Attributes\Api;
-use Packman\Foundation\Concerns\RegistersPackageRegistrars;
 use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
-final class ShippingServiceProvider extends ServiceProvider
+final class ShippingServiceProvider extends CommerzPluginServiceProvider
 {
-    use RegistersPackageRegistrars {
-        register as protected registerRegistrars;
-        boot as protected bootRegistrars;
-    }
+    protected const string PLUGIN = ShippingPlugin::class;
 
     public const array NOUNS = ['shipping'];
 
@@ -25,21 +21,4 @@ final class ShippingServiceProvider extends ServiceProvider
     protected const array REGISTRARS = [
         ShippingRegistrar::class,
     ];
-
-    #[Override]
-    public function register(): void
-    {
-        $this->registerRegistrars();
-    }
-
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/commerz-shipping.php' => $this->app->configPath('commerz-shipping.php'),
-            ], 'commerz-shipping-config');
-        }
-
-        $this->bootRegistrars();
-    }
 }

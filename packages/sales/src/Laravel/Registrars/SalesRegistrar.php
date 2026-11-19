@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Laravel\Registrars;
 
-use Commerz\Plugins\CommerzPlugins;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Internal\DatabaseCarts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
@@ -25,20 +24,15 @@ use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Returns\Internal\DatabaseReturns;
 use Commerz\Sales\Sales;
 use Commerz\Schema\CommerzSchemaSets;
-use Illuminate\Console\Application as Artisan;
+use Illuminate\Console\Events\ArtisanStarting;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Foundation\Application as FoundationApplication;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
-use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Contracts\PackageRegistrar;
-use Packman\PackmanServiceProvider;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Plugins\Laravel\PluginsServiceProvider;
-use Packman\Schema\Laravel\SchemaExtensions;
-use Packman\Schema\Laravel\SchemaServiceProvider;
 
 /**
  * Wires Commerz sales services, extension plugin, options, schema ownership, diagnostics, and panels.
@@ -49,16 +43,6 @@ final class SalesRegistrar implements PackageRegistrar
     #[Override]
     public function register(Application $app): void
     {
-        foreach ([
-            PackmanServiceProvider::class,
-            PluginsServiceProvider::class,
-            SchemaServiceProvider::class,
-        ] as $provider) {
-            if ($app instanceof FoundationApplication && $app->getProvider($provider) === null) {
-                $app->register($provider);
-            }
-        }
-
         $app->singletonIf(SalesPlugin::class);
 
         $app->singleton(SalesDoctorCheck::class, static fn (Application $app): SalesDoctorCheck => new SalesDoctorCheck(
@@ -66,18 +50,6 @@ final class SalesRegistrar implements PackageRegistrar
             optionsResolver: static fn (): SalesOptions => $app->make(SalesOptions::class),
             contributionsResolver: static fn (): Contributions => $app->make(Contributions::class),
         ));
-
-        if (! $app->bound('commerz.sales_facets_registered')) {
-            $app->instance('commerz.sales_facets_registered', true);
-
-            ExtensionFacetRegistrar::register(
-                $app,
-                SalesPlugin::class,
-                dirname(__DIR__, 3).'/composer.json',
-            );
-
-            SchemaExtensions::register($app, SalesPlugin::class, SalesPlugin::ID);
-        }
 
         CommerzSchemaSets::governMigrations($app);
 
@@ -89,16 +61,14 @@ final class SalesRegistrar implements PackageRegistrar
         $app->singleton(Returns::class, DatabaseReturns::class);
         $app->singleton(Refunds::class, DatabaseRefunds::class);
         $app->singleton(Sales::class);
-
-        CommerzPlugins::builtInFor($app, SalesPlugin::class);
     }
 
     #[Override]
     public function boot(Application $app): void
     {
         if ($app->runningInConsole()) {
-            Artisan::starting(static function (Artisan $artisan): void {
-                $artisan->resolveCommands([
+            $app->make(Dispatcher::class)->listen(ArtisanStarting::class, static function (ArtisanStarting $event): void {
+                $event->artisan->resolveCommands([
                     ExpireOrdersCommand::class,
                 ]);
             });

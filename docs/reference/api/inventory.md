@@ -47,10 +47,8 @@ final readonly class Inventory {
 `Commerz\Inventory\InventoryServiceProvider`
 
 ```php
-final class InventoryServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class InventoryServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['stock'];
-    boot(): void;
-    register(): void;
 }
 ```
 

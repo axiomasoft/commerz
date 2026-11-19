@@ -46,10 +46,8 @@ final readonly class Sales {
 `Commerz\Sales\SalesServiceProvider`
 
 ```php
-final class SalesServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class SalesServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'];
-    boot(): void;
-    register(): void;
 }
 ```
 

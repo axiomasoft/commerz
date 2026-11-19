@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Commerz\Sales;
 
+use Commerz\Laravel\CommerzPluginServiceProvider;
 use Commerz\Sales\Laravel\Registrars\SalesRegistrar;
-use Illuminate\Support\ServiceProvider;
-use Override;
+use Commerz\Sales\Plugins\SalesPlugin;
 use Packman\Attributes\Api;
-use Packman\Foundation\Concerns\RegistersPackageRegistrars;
 use Packman\Foundation\Contracts\PackageRegistrar;
 
 #[Api(since: '0.1')]
-final class SalesServiceProvider extends ServiceProvider
+final class SalesServiceProvider extends CommerzPluginServiceProvider
 {
-    use RegistersPackageRegistrars {
-        register as protected registerRegistrars;
-        boot as protected bootRegistrars;
-    }
+    protected const string PLUGIN = SalesPlugin::class;
 
     public const array NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'];
 
@@ -25,21 +21,4 @@ final class SalesServiceProvider extends ServiceProvider
     protected const array REGISTRARS = [
         SalesRegistrar::class,
     ];
-
-    #[Override]
-    public function register(): void
-    {
-        $this->registerRegistrars();
-    }
-
-    public function boot(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/commerz-sales.php' => $this->app->configPath('commerz-sales.php'),
-            ], 'commerz-sales-config');
-        }
-
-        $this->bootRegistrars();
-    }
 }

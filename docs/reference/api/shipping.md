@@ -42,10 +42,8 @@ final readonly class Shipping {
 `Commerz\Shipping\ShippingServiceProvider`
 
 ```php
-final class ShippingServiceProvider extends \Illuminate\Support\ServiceProvider {
+final class ShippingServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
     const NOUNS = ['shipping'];
-    boot(): void;
-    register(): void;
 }
 ```
 

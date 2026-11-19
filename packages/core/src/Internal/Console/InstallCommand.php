@@ -8,6 +8,7 @@ use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Config\Repository;
 use Packman\Attributes\Internal;
 
 #[Description('Publish the Commerz config and run the migrations.')]
@@ -31,7 +32,13 @@ final class InstallCommand extends Command
 
         CommerzSchemaSets::assertConnectionSupported($this->laravel);
 
-        $migrated = $this->call('migrate', ['--force' => $this->option('force') === true]);
+        $arguments = ['--force' => $this->option('force') === true];
+        if ($this->laravel->make(Repository::class)->get('packman.schema.auto_load_migrations', true) !== true) {
+            $arguments['--path'] = CommerzSchemaSets::migrationPaths($this->laravel);
+            $arguments['--realpath'] = true;
+        }
+
+        $migrated = $this->call('migrate', $arguments);
 
         if ($migrated !== self::SUCCESS) {
             return $migrated;

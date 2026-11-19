@@ -18,31 +18,24 @@ use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
 use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
-use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\CorePlugin;
 use Commerz\Schema\CommerzSchemaSets;
 use Commerz\Schema\Internal\LegacyFingerprint;
 use Commerz\Schema\TableNames;
-use Illuminate\Console\Application as Artisan;
+use Illuminate\Console\Events\ArtisanStarting;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\ConnectionResolverInterface;
-use Illuminate\Foundation\Application as FoundationApplication;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
-use Packman\Config\Exceptions\InvalidConfiguration;
 use Packman\Config\Laravel\ConfigSectionRegistration;
-use Packman\Extensions\Laravel\ExtensionFacetRegistrar;
 use Packman\Foundation\Contracts\PackageRegistrar;
-use Packman\PackmanServiceProvider;
-use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
-use Packman\Plugins\Laravel\PluginsServiceProvider;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Data\Compiler\TableNames as PackmanTables;
 use Packman\Schema\Laravel\SchemaExtensions;
-use Packman\Schema\Laravel\SchemaServiceProvider;
 
 /**
  * Wires Commerz's core extension plugin, options, schema ownership, diagnostics, panels, outbox, and operations.
@@ -53,34 +46,11 @@ final class CommerzCoreRegistrar implements PackageRegistrar
     #[Override]
     public function register(Application $app): void
     {
-        foreach ([
-            PackmanServiceProvider::class,
-            PluginsServiceProvider::class,
-            SchemaServiceProvider::class,
-        ] as $provider) {
-            if ($app instanceof FoundationApplication && $app->getProvider($provider) === null) {
-                $app->register($provider);
-            }
-        }
-
         $app->singletonIf(CorePlugin::class);
-        CommerzPlugins::builtInFor($app, CorePlugin::class);
 
-        if (! $app->bound('commerz.core_facets_registered')) {
-            $app->instance('commerz.core_facets_registered', true);
-
-            ExtensionFacetRegistrar::register(
-                $app,
-                CorePlugin::class,
-                dirname(__DIR__, 3).'/composer.json',
-            );
-
-            ConfigSectionRegistration::own($app, 'commerz', static function (array $section): void {
-                CommerzOptions::fromArray($section, 'commerz');
-            });
-
-            SchemaExtensions::register($app, CorePlugin::class, CorePlugin::ID);
-        }
+        ConfigSectionRegistration::own($app, 'commerz', static function (array $section): void {
+            CommerzOptions::fromArray($section, 'commerz');
+        });
 
         CommerzSchemaSets::governMigrations($app);
 
@@ -93,7 +63,6 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         ));
 
         self::bindTableNames($app);
-        self::bridgePluginConfiguration($app);
 
         $app->singleton(Transactions::class, DatabaseTransactions::class);
         $app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
@@ -106,8 +75,8 @@ final class CommerzCoreRegistrar implements PackageRegistrar
     public function boot(Application $app): void
     {
         if ($app->runningInConsole()) {
-            Artisan::starting(static function (Artisan $artisan): void {
-                $artisan->resolveCommands([
+            $app->make(Dispatcher::class)->listen(ArtisanStarting::class, static function (ArtisanStarting $event): void {
+                $event->artisan->resolveCommands([
                     InstallCommand::class,
                     RelayOutboxCommand::class,
                     PruneOperationsCommand::class,
@@ -131,24 +100,5 @@ final class CommerzCoreRegistrar implements PackageRegistrar
                 ownsLegacy: LegacyFingerprint::owns(...),
             );
         }));
-    }
-
-    private static function bridgePluginConfiguration(Application $app): void
-    {
-        $app->beforeResolving(Contributions::class, static function () use ($app): void {
-            $options = $app->make(CommerzOptions::class);
-            $config = $app->make(ConfigRepository::class);
-
-            foreach (['plugins' => $options->plugins, 'disabled_plugins' => $options->disabledPlugins] as $key => $values) {
-                $configured = $config->get('packman.'.$key, []);
-
-                if (! is_array($configured)) {
-                    throw new InvalidConfiguration(['packman.'.$key.': expected an array']);
-                }
-
-                $additional = array_filter($values, static fn (string $value): bool => ! in_array($value, $configured, true));
-                $config->set('packman.'.$key, array_values([...$configured, ...$additional]));
-            }
-        });
     }
 }
