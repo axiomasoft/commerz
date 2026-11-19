@@ -2440,7 +2440,28 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "code": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "exponent": {
+                    "flags": 1,
+                    "type": "int",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
@@ -3652,7 +3673,18 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "token": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
@@ -8198,7 +8230,88 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "adjustments": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "delivery": {
+                    "flags": 1,
+                    "type": "?Commerz\\Quotes\\Data\\DeliveryCharge",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "input": {
+                    "flags": 1,
+                    "type": "Commerz\\Quotes\\Data\\QuoteInput",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "lines": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "rejections": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "settledLines": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "taxLines": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "totals": {
+                    "flags": 1,
+                    "type": "?Commerz\\Quotes\\Data\\QuoteTotals",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []

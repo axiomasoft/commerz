@@ -54,12 +54,6 @@ return new class extends CommerzMigration
             return false;
         }
 
-        foreach ($expected as $key => $value) {
-            if (($document[$key] ?? null) !== $value) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($expected, static fn (int|string $value, string $key): bool => ($document[$key] ?? null) === $value);
     }
 };

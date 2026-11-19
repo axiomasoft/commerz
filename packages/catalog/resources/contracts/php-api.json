@@ -843,7 +843,58 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "choice": {
+                    "flags": 1,
+                    "type": "?Commerz\\Catalog\\Attributes\\Data\\AttributeChoiceId",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "day": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "flag": {
+                    "flags": 1,
+                    "type": "?bool",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "number": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "term": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
@@ -6486,7 +6537,38 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "attribute": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "operator": {
+                    "flags": 1,
+                    "type": "Commerz\\Catalog\\Attributes\\Enums\\FilterOperator",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "values": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [
                 {
                     "name": "MAX_VALUES",
@@ -7001,7 +7083,18 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "axes": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []

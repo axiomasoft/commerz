@@ -4255,7 +4255,38 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "amount": {
+                    "flags": 1,
+                    "type": "?Commerz\\Money\\Money",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "message": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "reason": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
@@ -5314,7 +5345,38 @@
                     "doc": []
                 }
             },
-            "properties": {},
+            "properties": {
+                "country": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "postalPrefix": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "region": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
