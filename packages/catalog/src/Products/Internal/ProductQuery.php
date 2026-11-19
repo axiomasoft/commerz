@@ -13,13 +13,13 @@ use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Catalog\Variants\Enums\VariantStatus;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Pagination\Cursor;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** The single SQL of `Products::list` over `products p` (knowledge/catalog-design#filters, D19). */
 #[Internal]

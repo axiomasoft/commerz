@@ -10,10 +10,10 @@ use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Items\Exceptions\StockItemNotFound;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Holds the items and the location of a stock change `for share` — items first, ordered by id, then the location —

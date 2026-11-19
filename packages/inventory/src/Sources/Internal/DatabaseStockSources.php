@@ -17,12 +17,12 @@ use Commerz\Inventory\Sources\Data\AssignSource;
 use Commerz\Inventory\Sources\Data\StockSourceView;
 use Commerz\Inventory\Sources\Data\UnassignSource;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** The location is held `for share` while it is assigned, so archiving it (`for no key update`) cannot slip past. */
 #[Internal]

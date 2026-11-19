@@ -25,11 +25,11 @@ use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 #[Internal]
 final readonly class DatabaseOptions implements Options

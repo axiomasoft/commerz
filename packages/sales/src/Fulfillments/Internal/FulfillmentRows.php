@@ -19,12 +19,12 @@ use Commerz\Sales\Fulfillments\Enums\FulfillmentStatus;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineId;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `fulfillments` and `fulfillment_lines`. Every write is made under the lock of the order the

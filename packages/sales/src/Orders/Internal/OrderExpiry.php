@@ -15,13 +15,13 @@ use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Expiry of unpaid orders (D32): sales owns the payment deadline, the stock holds the reservation until then. Each

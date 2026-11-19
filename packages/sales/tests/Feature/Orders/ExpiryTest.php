@@ -21,9 +21,9 @@ use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
+use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 

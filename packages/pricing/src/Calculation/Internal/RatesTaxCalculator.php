@@ -7,6 +7,7 @@ namespace Commerz\Pricing\Calculation\Internal;
 use Commerz\Money\Money;
 use Commerz\Money\MoneyAllocator;
 use Commerz\Money\Rate;
+use Commerz\Money\RoundingMode;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxAmount;
@@ -18,6 +19,7 @@ use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
 use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
+use Illuminate\Contracts\Container\Container;
 use Packman\Attributes\Internal;
 
 /**
@@ -33,7 +35,7 @@ final readonly class RatesTaxCalculator implements TaxCalculator
     public function __construct(
         private TaxZoneLookup $zones,
         private TaxRateLookup $rates,
-        private PricingOptions $config,
+        private Container $container,
     ) {}
 
     public function key(): string
@@ -43,7 +45,8 @@ final readonly class RatesTaxCalculator implements TaxCalculator
 
     public function calculate(TaxRequest $request): TaxResult
     {
-        $zone = $this->zoneOf($request);
+        $options = $this->container->make(PricingOptions::class);
+        $zone = $this->zoneOf($request, $options->defaultTaxZone);
 
         // Outside every tax zone nothing is taxed (an export, for one).
         if ($zone === null) {
@@ -59,7 +62,7 @@ final readonly class RatesTaxCalculator implements TaxCalculator
             $rates = $inForce[$item->taxClass]
                 ?? throw TaxRateNotFound::forClass($item->taxClass, Rows::string($zone, 'code'), $request->context->at->format(DATE_ATOM));
 
-            foreach ($this->taxesOf($item, $rates) as $amount) {
+            foreach ($this->taxesOf($item, $rates, $options->taxRounding) as $amount) {
                 $amounts[] = $amount;
             }
         }
@@ -67,27 +70,25 @@ final readonly class RatesTaxCalculator implements TaxCalculator
         return new TaxResult($amounts);
     }
 
-    private function zoneOf(TaxRequest $request): ?object
+    private function zoneOf(TaxRequest $request, ?string $defaultZone): ?object
     {
         if ($request->destination !== null) {
             return $this->zones->forAddress($request->destination);
         }
 
-        if ($this->config->defaultTaxZone === null) {
+        if ($defaultZone === null) {
             return null;
         }
 
-        return $this->zones->byCode($this->config->defaultTaxZone) ?? throw new TaxZoneNotFound($this->config->defaultTaxZone);
+        return $this->zones->byCode($defaultZone) ?? throw new TaxZoneNotFound($defaultZone);
     }
 
     /**
      * @param  list<array{code: string, rate: Rate}>  $rates  sorted by tax code, which fixes who gets the odd minor unit
      * @return list<TaxAmount>
      */
-    private function taxesOf(TaxableItem $item, array $rates): array
+    private function taxesOf(TaxableItem $item, array $rates, RoundingMode $rounding): array
     {
-        $rounding = $this->config->taxRounding;
-
         if (! $item->included) {
             return array_map(
                 static fn (array $tax): TaxAmount => new TaxAmount($item->target, $item->lineId, $tax['code'], $tax['rate'], $item->base->percentage($tax['rate'], $rounding)),

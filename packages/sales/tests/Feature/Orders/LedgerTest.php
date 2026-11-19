@@ -7,11 +7,11 @@ use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Data\OrderView;
+use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 

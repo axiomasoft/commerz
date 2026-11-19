@@ -14,8 +14,8 @@ use Commerz\Sales\Refunds\Data\IssueRefund;
 use Commerz\Sales\Refunds\Data\RefundId;
 use Commerz\Sales\Refunds\Data\RefundView;
 use Commerz\Sales\Returns\Data\ReturnId;
+use Commerz\Schema\TableNames;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 

@@ -29,13 +29,13 @@ use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Pricing\PriceLists\Events\PriceListChanged;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the price list row first (`for no key update` to change or archive it, `for share` to put prices or

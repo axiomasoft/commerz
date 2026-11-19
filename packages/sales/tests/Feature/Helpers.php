@@ -38,6 +38,7 @@ use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -46,7 +47,6 @@ use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The fixture plugin goes in before the registry is compiled (the migrations already resolve it); without the inventory

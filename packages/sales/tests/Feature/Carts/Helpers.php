@@ -16,6 +16,7 @@ use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Sales;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
@@ -23,7 +24,6 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 function ctCarts(): Carts
 {

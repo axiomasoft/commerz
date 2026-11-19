@@ -32,6 +32,7 @@ use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\CartNotOpen;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\TooManyCartLines;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ArchiveChannel;
 use Commerz\Stores\Exceptions\ChannelArchived;
@@ -39,7 +40,6 @@ use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/Helpers.php';
 

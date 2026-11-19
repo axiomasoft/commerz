@@ -8,6 +8,7 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Bookings\Data\BookingId;
 use Commerz\Shipping\Bookings\Data\BookingView;
@@ -19,7 +20,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 #[Internal]
 final readonly class DatabaseBookings implements Bookings

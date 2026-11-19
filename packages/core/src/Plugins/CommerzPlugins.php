@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Plugins;
 
+use Illuminate\Contracts\Container\Container;
 use Packman\Attributes\Api;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Laravel\ExtensionRegistrar;
@@ -18,5 +19,11 @@ final class CommerzPlugins
     public static function builtIn(string ...$plugins): void
     {
         ExtensionRegistrar::builtIn(...$plugins);
+    }
+
+    /** @param class-string<ExtensionPlugin> ...$plugins */
+    public static function builtInFor(Container $container, string ...$plugins): void
+    {
+        ExtensionRegistrar::builtInFor($container, ...$plugins);
     }
 }

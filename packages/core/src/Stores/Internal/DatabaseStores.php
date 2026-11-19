@@ -10,6 +10,7 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ArchiveStore;
 use Commerz\Stores\Data\ChannelView;
@@ -31,7 +32,6 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 #[Internal]
 final readonly class DatabaseStores implements Stores

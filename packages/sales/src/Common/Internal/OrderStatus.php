@@ -20,11 +20,11 @@ use Commerz\Sales\Orders\Events\OrderCompleted;
 use Commerz\Sales\Orders\Events\OrderPaymentStateChanged;
 use Commerz\Sales\Orders\Events\PaymentRequiresRefund;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the states and amounts of an order (D31): `amount_due`, `authorized`, `captured`, `refunded`, the

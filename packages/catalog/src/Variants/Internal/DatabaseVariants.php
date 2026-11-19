@@ -43,13 +43,13 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
 use Packman\Schema\Data\Compiler\ConstraintNames;
-use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**

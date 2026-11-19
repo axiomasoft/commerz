@@ -19,10 +19,10 @@ use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
 use Commerz\Inventory\Locations\Exceptions\LocationNotEmpty;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 

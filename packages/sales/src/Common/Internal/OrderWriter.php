@@ -17,6 +17,7 @@ use Commerz\Sales\Checkout\Exceptions\DuplicateOrderNumber;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelView;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -24,7 +25,6 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use LogicException;
 use Packman\Attributes\Internal;
 use Packman\Schema\Data\Compiler\ConstraintNames;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of new `orders` and `order_lines` rows (ORD-01): the snapshot of an accepted quote (ORD-02). An

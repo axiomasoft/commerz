@@ -15,11 +15,11 @@ use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Turns requested sellables into stock needs through their current links: untracked items drop out, a sellable

@@ -8,12 +8,12 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\ActorRef;
 use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderId;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use JsonException;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** The append-only history of an order (`order_events`): written in the transaction of the change it records. */
 #[Internal]

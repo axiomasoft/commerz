@@ -9,6 +9,7 @@ use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Internal\Clock;
 use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Configuration\ShippingOptions;
@@ -28,7 +29,6 @@ use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** Reads and writes the channel and tariff rows of methods and turns method rows into views. */
 #[Internal]

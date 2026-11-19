@@ -23,6 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/setup-packman
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
@@ -40,6 +41,7 @@ jobs:
       - run: composer lint:check
       - run: composer analyse
       - run: composer refactor:check
+      - run: composer gate
       - run: composer api:check
       - run: composer docs:reference -- --check
       - run: bash scripts/build-agent-docs.sh --check
@@ -72,8 +74,15 @@ jobs:
       DB_DATABASE: commerz_test
       DB_USERNAME: commerz
       DB_PASSWORD: commerz
+      PGSQL_HOST: 127.0.0.1
+      PGSQL_PORT: 54329
+      PGSQL_DATABASE: commerz_test
+      PGSQL_USERNAME: commerz
+      PGSQL_PASSWORD: commerz
+      COMPOSER_PROCESS_TIMEOUT: 0
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-packman
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -83,12 +92,15 @@ jobs:
       - run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update --no-interaction
       - run: composer update --prefer-dist --no-interaction --no-progress
       - run: composer test
+      - run: composer test:pg
+      - run: bash scripts/test-consumer-install.sh
 
   docs:
     name: Documentation site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-packman
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'

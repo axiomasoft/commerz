@@ -39,12 +39,12 @@ use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Exceptions\PromotionArchived;
 use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use UnexpectedValueException;
 
 /**

@@ -22,11 +22,11 @@ use Commerz\Sales\Orders\Events\OrderCancelled;
 use Commerz\Sales\Orders\Events\PaymentRequiresRefund;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/../Helpers.php';
 

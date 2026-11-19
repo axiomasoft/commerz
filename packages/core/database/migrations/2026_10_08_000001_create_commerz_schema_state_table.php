@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
+use Commerz\Schema\CommerzMigration;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\Schema\Blueprint;
 use Packman\Schema\Data\Compiler\SchemaFingerprint;
-use Packman\Schema\Laravel\PackmanMigration;
 
-return new class extends PackmanMigration
+return new class extends CommerzMigration
 {
     public function up(): void
     {
@@ -18,7 +19,7 @@ return new class extends PackmanMigration
 
         $this->db()->table($table)->insert([
             'key' => SchemaFingerprint::KEY,
-            'value' => json_encode(SchemaFingerprint::document($this->tables()->prefix()), JSON_THROW_ON_ERROR),
+            'value' => json_encode(SchemaFingerprint::document($this->tables()->prefix(), TableNames::OWNER), JSON_THROW_ON_ERROR),
         ]);
     }
 

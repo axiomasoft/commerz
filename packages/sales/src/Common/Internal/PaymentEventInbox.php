@@ -7,12 +7,12 @@ namespace Commerz\Sales\Common\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Money\Money;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

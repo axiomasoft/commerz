@@ -15,6 +15,7 @@ use Commerz\Inventory\Reservations\Data\ReservationId;
 use Commerz\Inventory\Reservations\Data\ReservationLineView;
 use Commerz\Inventory\Reservations\Data\ReservationView;
 use Commerz\Inventory\Reservations\Enums\ReservationState;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -22,7 +23,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * SQL on `stock_reservations` and `stock_reservation_lines`. Callers own the lock order: a header (`for no key

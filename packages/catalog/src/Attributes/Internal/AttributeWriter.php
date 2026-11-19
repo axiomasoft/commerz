@@ -20,11 +20,11 @@ use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the `attributes` documents of products and variants and of the `attribute_index` projection

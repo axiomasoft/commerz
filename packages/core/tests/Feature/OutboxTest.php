@@ -20,6 +20,8 @@ use Packman\Plugins\Laravel\PluginRegistrar;
 
 // Relay consumers must run after commit, so these tests use committed data.
 beforeEach(function (): void {
+    app()->singletonIf(RecordingConsumer::class);
+    CommerzPlugins::builtInFor(app(), RecordingConsumerPlugin::class);
     $this->artisan('migrate')->assertSuccessful();
 });
 
@@ -65,14 +67,6 @@ function recordEvent(IntegrationEvent $event): void
     app(Transactions::class)->run(fn () => app(Outbox::class)->record($event));
 }
 
-function consumer(): RecordingConsumer
-{
-    app()->singletonIf(RecordingConsumer::class);
-    CommerzPlugins::builtIn(RecordingConsumerPlugin::class);
-
-    return app(RecordingConsumer::class);
-}
-
 afterEach(fn () => Uuid7::reset());
 
 it('validates integration events', function (): void {
@@ -104,7 +98,7 @@ it('records an event inside the transaction', function (): void {
 
 it('relays to listeners and consumers once', function (): void {
     Event::fake([IntegrationEventDelivered::class]);
-    $consumer = consumer();
+    $consumer = app(RecordingConsumer::class);
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', ['n' => 1]));
     recordEvent(IntegrationEvent::of('sales.order_paid', 'order:1', []));
 
@@ -121,7 +115,7 @@ it('relays to listeners and consumers once', function (): void {
 });
 
 it('reschedules a failed delivery with backoff and delivers it later', function (): void {
-    $consumer = consumer();
+    $consumer = app(RecordingConsumer::class);
     $consumer->failing = true;
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', []));
 
@@ -157,7 +151,7 @@ it('rejects a bad batch size', function (): void {
 });
 
 it('refuses delivery in a host transaction without claiming rows or calling consumers', function (): void {
-    $consumer = consumer();
+    $consumer = app(RecordingConsumer::class);
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', []));
 
     DB::transaction(function () use ($consumer): void {

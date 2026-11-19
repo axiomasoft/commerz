@@ -19,6 +19,7 @@ use Commerz\Sales\Returns\Data\ReturnLineView;
 use Commerz\Sales\Returns\Data\ReturnView;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
@@ -26,7 +27,6 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `returns` and `return_lines`. Every write is made under the lock of the order the document

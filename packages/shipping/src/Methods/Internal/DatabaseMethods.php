@@ -12,6 +12,7 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
 use Commerz\Shipping\Common\Internal\Clock;
@@ -47,7 +48,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order of the package: the method row `for update` first, then the zones of the new tariffs `for share` in id

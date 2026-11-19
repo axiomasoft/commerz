@@ -6,6 +6,7 @@ namespace Commerz\Diagnostics;
 
 use Closure;
 use Commerz\Configuration\CommerzOptions;
+use Commerz\Schema\TableNames;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -17,7 +18,6 @@ use Packman\Doctor\Data\DoctorContext;
 use Packman\Doctor\Data\DoctorFinding;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
 use Packman\Schema\Data\Compiler\SchemaFingerprint;
-use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**
@@ -140,7 +140,7 @@ final readonly class CommerzDoctorCheck implements DoctorCheck
                 )];
             }
 
-            SchemaFingerprint::verify($connection, $prefix, 'commerz.table_prefix');
+            TableNames::verifyFingerprint($connection, $prefix);
 
             $row = $connection->selectOne(
                 sprintf('select value::text as value from "%s" where key = ?', $table),
@@ -160,7 +160,7 @@ final readonly class CommerzDoctorCheck implements DoctorCheck
                 )];
             }
 
-            $expected = SchemaFingerprint::document($prefix)['hash'];
+            $expected = SchemaFingerprint::document($prefix, isset($stored['owner']) ? TableNames::OWNER : null)['hash'];
 
             if ($hash !== $expected) {
                 return [DoctorFinding::error(

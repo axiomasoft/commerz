@@ -15,11 +15,11 @@ use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

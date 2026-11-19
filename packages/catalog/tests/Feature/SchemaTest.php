@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Commerz\Catalog\CatalogServiceProvider;
 use Commerz\Identity\Uuid7;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Data\Compiler\ConstraintNames;
-use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 

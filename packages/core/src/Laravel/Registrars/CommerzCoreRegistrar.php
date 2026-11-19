@@ -21,6 +21,8 @@ use Commerz\Outbox\Internal\OutboxRelay;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\CorePlugin;
 use Commerz\Schema\CommerzSchemaSets;
+use Commerz\Schema\Internal\LegacyFingerprint;
+use Commerz\Schema\TableNames;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -38,7 +40,7 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
 use Packman\Plugins\Laravel\PluginsServiceProvider;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
-use Packman\Schema\Data\Compiler\TableNames;
+use Packman\Schema\Data\Compiler\TableNames as PackmanTables;
 use Packman\Schema\Laravel\SchemaExtensions;
 use Packman\Schema\Laravel\SchemaServiceProvider;
 
@@ -62,7 +64,7 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         }
 
         $app->singletonIf(CorePlugin::class);
-        CommerzPlugins::builtIn(CorePlugin::class);
+        CommerzPlugins::builtInFor($app, CorePlugin::class);
 
         if (! $app->bound('commerz.core_facets_registered')) {
             $app->instance('commerz.core_facets_registered', true);
@@ -103,10 +105,6 @@ final class CommerzCoreRegistrar implements PackageRegistrar
     #[Override]
     public function boot(Application $app): void
     {
-        if (! $app->resolved(TableNames::class)) {
-            self::bindTableNames($app);
-        }
-
         if ($app->runningInConsole()) {
             Artisan::starting(static function (Artisan $artisan): void {
                 $artisan->resolveCommands([
@@ -120,17 +118,19 @@ final class CommerzCoreRegistrar implements PackageRegistrar
 
     private static function bindTableNames(Application $app): void
     {
-        $app->singleton(TableNames::class, static function (Application $app): TableNames {
+        $app->singletonIf(TableNames::class, static fn (Application $app): TableNames => new TableNames(static function () use ($app): PackmanTables {
             $options = $app->make(CommerzOptions::class);
 
-            return new TableNames(
+            return new PackmanTables(
                 prefix: $options->tablePrefix,
-                ownership: $app->make(SchemaOwnership::class),
+                ownership: SchemaExtensions::ownershipFor($app->make(SchemaOwnership::class), $app->make(CorePlugin::class)->tablePrefix()),
                 connections: $app->make('db'),
                 connection: $options->connection,
                 configPath: 'commerz.table_prefix',
+                owner: TableNames::OWNER,
+                ownsLegacy: LegacyFingerprint::owns(...),
             );
-        });
+        }));
     }
 
     private static function bridgePluginConfiguration(Application $app): void

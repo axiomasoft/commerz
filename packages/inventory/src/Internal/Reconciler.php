@@ -11,10 +11,10 @@ use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Internal\Data\Discrepancy;
 use Commerz\Inventory\Internal\Data\ReconciliationReport;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Checks the stock tables against each other (INV-03, INV-04) and repairs the one derived number that is safe to

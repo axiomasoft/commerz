@@ -76,14 +76,16 @@ npm run docs:dev --prefix docs
 
 ## Development
 
-The repository is a monorepo; packages live under `packages/<name>/`. PHP and
-Composer run through `scripts/php84`:
+Packages live under `packages/<name>/`. Check out Packman at tag `v0.1.1` in
+`../packman` for the Composer path repositories. Run PHP and Composer with
+`bin/php84`.
 
 ```bash
-scripts/php84 composer lint:check
-scripts/php84 composer analyse
-scripts/php84 composer refactor:check
-scripts/php84 composer test          # PostgreSQL required; see docker-compose.yml
+bin/php84 composer lint:check
+bin/php84 composer analyse
+bin/php84 composer refactor:check
+bin/php84 composer test
+bin/php84 composer test:pg       # PostgreSQL integration and concurrency tests
 ```
 
 ## License

@@ -24,10 +24,10 @@ use Commerz\Promotions\Coupons\Enums\CouponStatus;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Usage\Exceptions\PromotionUnavailable;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

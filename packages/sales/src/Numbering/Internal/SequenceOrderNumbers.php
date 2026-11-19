@@ -8,9 +8,9 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Data\OrderNumbering;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

@@ -38,7 +38,7 @@ final readonly class CommerzSchemaSets implements SchemaSetProvider
                 name: 'commerz',
                 scope: SchemaScope::Central,
                 path: dirname(__DIR__, 2).'/database/migrations',
-                version: 1,
+                version: 2,
                 drivers: ['pgsql'],
                 lifecycle: SchemaLifecycle::Platform,
             ),

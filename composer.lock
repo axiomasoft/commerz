@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63e67aa7bed4731bd7e0694c1ef1f501",
+    "content-hash": "497067079dae723e37f583b8d178f9a6",
     "packages": [
         {
             "name": "axiomasoft/commerz",
@@ -12,13 +12,13 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "57ba1c3073f6dbf08bf7f5183d7a700ed202e746"
+                "reference": "91464ddc1baea21a709be6792638693cee98eab5"
             },
             "require": {
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
@@ -95,14 +95,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "dd714054d20c55e8db92cf2999b7c221597098e3"
+                "reference": "bbcc072d439288652ea92fd1081edccd0bfe82f7"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
@@ -220,14 +220,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "25c7a5ca3a8419d3410e69996299a522844f22f7"
+                "reference": "f53b1b160307e4b97e410c1a9ad185b9fbafae2f"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
@@ -303,14 +303,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "da78c5dae30f66f08647d9fb171587a8169820bd"
+                "reference": "7fe3c124cf84b55aeed1af6553fcdc3627d2aba3"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -380,14 +380,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "a263c0acd625fa7a50a0116b65afa419bf3a5573"
+                "reference": "bc0268765b655eb8c8702bd7307dce7535f51f00"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
@@ -459,14 +459,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "101805d56b306d3f6ba3abd096148643ed669a13"
+                "reference": "64f0f84f83f3b12c3a565d363def4dab849840ba"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "illuminate/console": "^13.0",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
@@ -542,14 +542,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "9220927d62449388b7c8102e7a10fb76d3f03c6a"
+                "reference": "bb395a7dccba90c5b08c7cba3e48587916418bae"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-panels": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-schema": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -617,11 +617,11 @@
         },
         {
             "name": "axiomasoft/packman",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/core",
-                "reference": "fe837667a8142f79fe7469a3c163c8070f56f699"
+                "reference": "0837c5730f43ee92b57e330342de0d509185a8ec"
             },
             "require": {
                 "php": "^8.4",
@@ -699,11 +699,11 @@
         },
         {
             "name": "axiomasoft/packman-panels",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/panels",
-                "reference": "e414f549ae08dffc1d64a2e77397c6f267e5da42"
+                "reference": "69f01ec545d42abe932841d729a31caa08ccf240"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -753,11 +753,11 @@
         },
         {
             "name": "axiomasoft/packman-plugins",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/plugins",
-                "reference": "46dd91fa5d292233c2ed09b0027b22d75ae24e1d"
+                "reference": "8dd496897780023784eb547553742a0d021d961c"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -805,11 +805,11 @@
         },
         {
             "name": "axiomasoft/packman-schema",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/schema",
-                "reference": "ed82c3c0e22531482f8435bfe4c3e0239cfa32ad"
+                "reference": "b10bcc8c762808f31f5a31f7010ab8b0eb027007"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -6778,13 +6778,13 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "bef9f7d11d21f34f12e4e17dad42251f6d730534"
+                "reference": "e49bd532e6d3fb5a692b4139850af9cc1f4aa223"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
-                "axiomasoft/packman": "^0.1",
-                "axiomasoft/packman-plugins": "^0.1",
-                "axiomasoft/packman-testkit": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-testkit": "^0.1.1",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -6832,11 +6832,11 @@
         },
         {
             "name": "axiomasoft/packman-devtools",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/devtools",
-                "reference": "6008f6a407a0a0f1b8be18b36b4aa971c6fdfa64"
+                "reference": "d554ea13f554428f22565b188030a00914fa55fb"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -6889,11 +6889,11 @@
         },
         {
             "name": "axiomasoft/packman-testkit",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/testkit",
-                "reference": "101d4271df6ffd7b6878b7dfc2f400783030e8c9"
+                "reference": "b0778192d30867beca868bfba301135e361fc33e"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",

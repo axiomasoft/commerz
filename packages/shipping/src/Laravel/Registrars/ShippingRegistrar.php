@@ -88,6 +88,6 @@ final class ShippingRegistrar implements PackageRegistrar
         $app->singleton(ShipmentBooking::class, CarrierShipmentBooking::class);
         $app->singleton(Shipping::class);
 
-        CommerzPlugins::builtIn(ShippingPlugin::class);
+        CommerzPlugins::builtInFor($app, ShippingPlugin::class);
     }
 }

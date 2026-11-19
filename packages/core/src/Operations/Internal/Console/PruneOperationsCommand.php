@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Commerz\Operations\Internal\Console;
 
 use Commerz\Configuration\CommerzOptions;
+use Commerz\Schema\TableNames;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** Removes idempotency receipts and delivered outbox messages older than `commerz.operations.receipt_ttl_days`. */
 #[Description('Delete expired Commerz idempotency receipts and delivered outbox messages.')]

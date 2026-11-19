@@ -90,7 +90,7 @@ final class SalesRegistrar implements PackageRegistrar
         $app->singleton(Refunds::class, DatabaseRefunds::class);
         $app->singleton(Sales::class);
 
-        CommerzPlugins::builtIn(SalesPlugin::class);
+        CommerzPlugins::builtInFor($app, SalesPlugin::class);
     }
 
     #[Override]

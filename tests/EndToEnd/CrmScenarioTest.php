@@ -45,13 +45,13 @@ use Commerz\Sales\Payments\Data\InitiatePayment;
 use Commerz\Sales\Payments\Data\RecordPaymentEvent;
 use Commerz\Sales\Payments\Enums\PaymentEventType;
 use Commerz\Sales\SalesServiceProvider;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\ShippingServiceProvider;
 use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Packman\Schema\Data\Compiler\TableNames;
 
 // B3 for a CRM: the host installs the core, pricing (for taxes and its B2B prices) and sales — no catalog, inventory,
 // shipping or promotions — sells its own services through a sellable provider of its own and names its customers

@@ -8,6 +8,7 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Measures\LocalizedText;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Data\PostalCode;
 use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
@@ -16,7 +17,6 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Loads, in one query (one consistent snapshot), every method that is not archived with its assignment to the

@@ -53,8 +53,10 @@ beforeEach(function (): void {
         $this->markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
     $this->log = tempnam(sys_get_temp_dir(), 'commerz-log-');
+    app()->instance(FileLogConsumer::class, new FileLogConsumer($this->log));
+    CommerzPlugins::builtInFor(app(), FileLogPlugin::class);
+    $this->artisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -114,8 +116,6 @@ it('lets parallel relays share the backlog without delivering an event twice', f
         }
     });
 
-    app()->instance(FileLogConsumer::class, new FileLogConsumer($this->log));
-    CommerzPlugins::builtIn(FileLogPlugin::class);
     app(Contributions::class); // compiled before the workers fork
 
     $delivered = Concurrency::run(3, function (): int {

@@ -9,10 +9,10 @@ use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Orders\Data\OrderId;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of the ledger of the order lines (ORD-03): `cancelled_quantity`, `fulfilled_quantity` and

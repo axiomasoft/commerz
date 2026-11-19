@@ -911,6 +911,7 @@ Entry point for registering built-in Commerz extension plugins with Packman.
 ```php
 final class CommerzPlugins {
     static builtIn(string ...$plugins): void;
+    static builtInFor(\Illuminate\Contracts\Container\Container $container, string ...$plugins): void;
 }
 ```
 
@@ -1982,7 +1983,23 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`CommerzMigration`](#type-commerz-schema-commerzmigration) | class | spi (implement) | 0.1 |
 | [`CommerzSchemaSets`](#type-commerz-schema-commerzschemasets) | class | spi (call) | 0.1 |
+| [`TableNames`](#type-commerz-schema-tablenames) | class | api | 0.1 |
+
+### CommerzMigration {#type-commerz-schema-commerzmigration}
+
+`Commerz\Schema\CommerzMigration`
+
+Runs migrations with the Commerz table prefix and connection.
+
+```php
+abstract class CommerzMigration extends \Packman\Schema\Laravel\PackmanMigration {
+    getConnection(): ?string;
+    protected table(string $logical): string;
+    protected tables(): \Packman\Schema\Data\Compiler\TableNames;
+}
+```
 
 ### CommerzSchemaSets {#type-commerz-schema-commerzschemasets}
 
@@ -1997,6 +2014,24 @@ final readonly class CommerzSchemaSets implements \Packman\Schema\Contracts\Migr
     // Registers Commerz `SchemaSet` paths with Laravel's `migrator` and guards execution so unsupported database drivers fail cleanly with {@see SchemaSetException} before creating partial commerce tables.
     static governMigrations(\Illuminate\Contracts\Foundation\Application $app): void;
     sets(): array;
+}
+```
+
+### TableNames {#type-commerz-schema-tablenames}
+
+`Commerz\Schema\TableNames`
+
+Resolves tables in the Commerz schema configured for this application.
+
+```php
+final class TableNames {
+    const OWNER = 'axiomasoft/commerz-core';
+    __construct(\Closure $resolve);
+    connection(): ?string;
+    prefix(): string;
+    resolver(): \Packman\Schema\Data\Compiler\TableNames;
+    table(string $logical): string;
+    static verifyFingerprint(\Illuminate\Database\ConnectionInterface $connection, string $prefix): void;
 }
 ```
 

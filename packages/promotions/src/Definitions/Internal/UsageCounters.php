@@ -6,11 +6,11 @@ namespace Commerz\Promotions\Definitions\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Promotions\Common\Internal\Rows;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Commerz\Schema\CommerzMigration;
 use Illuminate\Database\Schema\Blueprint;
-use Packman\Schema\Laravel\PackmanMigration;
 
-return new class extends PackmanMigration
+return new class extends CommerzMigration
 {
     public function up(): void
     {

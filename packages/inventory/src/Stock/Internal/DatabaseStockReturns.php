@@ -25,11 +25,11 @@ use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\RestockLine;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 
 /**

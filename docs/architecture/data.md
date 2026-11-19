@@ -10,8 +10,16 @@ colliding, and stored history never depends on live data.
   `cmz_promotion_usages`. The prefix is configurable before the first install
   only; its fingerprint is stored in `cmz_schema_state`, and changing it later
   is a boot error. Third-party plugin tables: `cmz_x_<vendor>_*`.
-- One resolver, `TableNames`, serves migrations, models, raw SQL and
-  diagnostics. No per-table name map. Migrations extend `CommerzMigration`.
+- Inject `Commerz\Schema\TableNames` for commerce tables and extend
+  `Commerz\Schema\CommerzMigration` for commerce migrations. Packman and other
+  packages keep their own prefixes and connections in the same Laravel app.
+  Commerce plugins declare their table nouns in the `cmz_` ownership scope.
+  For manual declarations, call
+  `SchemaExtensions::ownershipFor($app->make(SchemaOwnership::class), 'cmz_')->declare($pluginId, $nouns)`.
+  This logical scope also applies when the host configures a different physical prefix.
+- The fingerprint records its owner. The upgrade identifies an older Commerz
+  installation by the columns in its stores and operation receipts tables,
+  retains its configured prefix, and preserves additional fingerprint fields.
 - Constraint names: `{table}_{cols}_{uq|ix|fk|ck}`, primary key `{table}_pk`.
   Names longer than 63 bytes are shortened deterministically with a hash
   suffix (`ConstraintNames`).

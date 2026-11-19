@@ -6,9 +6,9 @@ use Commerz\EndToEnd\Concurrency\Support\Outcome;
 use Commerz\EndToEnd\Support\CommittedDatabase;
 use Commerz\EndToEnd\Support\ShopWorld;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\TableNames;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 // The positive control of the detector: two workers lock two stock levels in opposite orders on purpose. If the
 // detector does not see the resulting 40P01 — in a worker and in pg_stat_database — every green concurrency test of

@@ -32,11 +32,11 @@ use Commerz\Sales\Payments\Events\PaymentStatusChanged;
 use Commerz\Sales\Payments\Exceptions\OrderNotPayable;
 use Commerz\Sales\Payments\Exceptions\PaymentExceedsBalance;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**

@@ -100,6 +100,6 @@ policy. Directly constructed panels without a container, missing policies and
 policy exceptions deny all access. System actors also require explicit permission.
 
 Plugins that contribute to core kinds must declare `requires: ['commerz.core']`
-in their Packman `PluginManifest`. Register built-ins with `CommerzPlugins::builtIn()`
-or Packman's `ExtensionRegistrar::builtIn()` before the graph is first resolved.
+in their Packman `PluginManifest`. In a provider, call
+`CommerzPlugins::builtInFor($this->app, MyPlugin::class)` before the graph is first resolved.
 `packman:plugins` and `packman:doctor` inspect the shared runtime registry.

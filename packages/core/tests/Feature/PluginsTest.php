@@ -7,6 +7,9 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Plugins\CommerzPlugins;
 use Commerz\Plugins\CorePlugin;
+use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
 use Packman\Config\Exceptions\InvalidConfiguration;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
@@ -382,6 +385,24 @@ it('builds the registry lazily, once, and freezes the catalog', function (): voi
         ->and($registry->keys('greeter'))->toBe(['test.hello'])
         ->and(array_map(fn ($p): array => [$p->id, $p->source], $registry->describe()))->toBe([['commerz.core', PluginSource::BuiltIn], ['test.owner', PluginSource::BuiltIn]])
         ->and(fn () => CommerzPlugins::builtIn(PlgExtension::class))->toThrow(LogicException::class, 'frozen');
+});
+
+it('registers built-ins in the supplied application while another application is current', function (): void {
+    $app = app();
+    $other = new Application;
+
+    try {
+        $other->instance('config', new Repository);
+        (new ExtensionRegistrar)->register($other);
+        new CommerzServiceProvider($app)->register();
+        CommerzPlugins::builtInFor($app, PlgOwner::class);
+
+        expect(array_column($other->make(PluginInspector::class)->describe(), 'id'))->toBe([])
+            ->and(array_column($app->make(PluginInspector::class)->describe(), 'id'))->toBe(['commerz.core', 'test.owner'])
+            ->and(fn () => CommerzPlugins::builtInFor($app, PlgExtension::class))->toThrow(LogicException::class, 'frozen');
+    } finally {
+        Container::setInstance($app);
+    }
 });
 
 it('keeps the built-in plugins of a provider that registered before the core', function (): void {

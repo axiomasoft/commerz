@@ -21,10 +21,10 @@ use Commerz\Sales\Refunds\Data\IssueRefund;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Returns\Data\ReceiveReturn;
 use Commerz\Sales\Returns\Data\RequestReturn;
+use Commerz\Schema\TableNames;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeStock;
 use Illuminate\Support\Facades\DB;
-use Packman\Schema\Data\Compiler\TableNames;
 
 require_once __DIR__.'/Helpers.php';
 

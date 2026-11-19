@@ -15,9 +15,9 @@ use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\ActivationRequest;
 use Commerz\Promotions\Rules\Data\ActivationResult;
 use Commerz\Promotions\Rules\Data\CodeRejection;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Switches a promotion on when a code of one of its coupons is presented. Reads the coupons in one query and never

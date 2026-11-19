@@ -18,11 +18,11 @@ use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\CartNotOpen;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** The only reader and writer of the `carts` row; the lines are written by `CartLines`. */
 #[Internal]

@@ -10,11 +10,11 @@ use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Taxes\Data\TaxZoneId;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Pricing\Taxes\Data\TaxZoneView;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** Finds the tax zone of a place. The one reader of zone membership: `zoneFor` and the `rates` calculator share it. */
 #[Internal]

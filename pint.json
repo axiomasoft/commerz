@@ -13,6 +13,7 @@
         "build",
         "docs",
         "vendor",
+        "var/consumer",
         "tests/Arch/Fixtures"
     ]
 }

@@ -11,6 +11,7 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
 use Commerz\Shipping\Common\Internal\Clock;
 use Commerz\Shipping\Common\Internal\Rows;
@@ -33,7 +34,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /** Lock order: the zone row `for update` first, then its member rows. */
 #[Internal]

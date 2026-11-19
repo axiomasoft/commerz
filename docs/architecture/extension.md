@@ -29,10 +29,11 @@ public function register(PluginRegistrar $registrar): void;
 - `PluginRegistrar` declares contribution kinds and registers implementations
   through `declareKind()` and `contribute()`. The contribution supplies its stable
   `key()`. Native Packman capabilities and slots use the same compiled graph.
-- Commerz packages forward their built-ins through `CommerzPlugins::builtIn()` to
-  Packman's `ExtensionRegistrar`. Host plugins may use either registration entry
-  point, `commerz.plugins`, or `packman.plugins`; register them before the graph
-  is first resolved.
+- In a service provider, register code plugins with
+  `CommerzPlugins::builtInFor($this->app, MyPlugin::class)` or Packman's
+  `ExtensionRegistrar::builtInFor()`. Each application owns its graph.
+  Hosts can also list plugins in `commerz.plugins` or `packman.plugins`.
+  Register plugins before the graph is first resolved.
 - Dependencies are explicit: a plugin contributing a core sellable provider,
   outbox consumer or quote stage must require `commerz.core`. Feature contribution
   kinds require their owning feature plugin (and inherit its core dependency).

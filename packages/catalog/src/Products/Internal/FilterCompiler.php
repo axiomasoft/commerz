@@ -18,11 +18,11 @@ use Commerz\Catalog\Products\Data\AttributeFilter;
 use Commerz\Catalog\Products\Data\VariantFilter;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Compiles AttributeFilter/VariantFilter into conditions on one variant row `v` of the product row `p`

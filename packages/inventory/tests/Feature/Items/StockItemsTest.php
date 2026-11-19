@@ -26,9 +26,9 @@ use Commerz\Inventory\Items\Exceptions\TooManyComponents;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Pagination\Cursor;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Packman\Schema\Data\Compiler\TableNames;
 
 uses(RefreshDatabase::class);
 

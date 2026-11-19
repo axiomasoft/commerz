@@ -89,6 +89,6 @@ final class PricingRegistrar implements PackageRegistrar
         $app->singleton(Taxes::class, DatabaseTaxes::class);
         $app->singleton(Pricing::class);
 
-        CommerzPlugins::builtIn(PricingPlugin::class);
+        CommerzPlugins::builtInFor($app, PricingPlugin::class);
     }
 }

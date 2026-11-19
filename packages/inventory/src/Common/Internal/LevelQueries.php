@@ -18,12 +18,12 @@ use Commerz\Inventory\Stock\Data\StockLevelView;
 use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Reads of `stock_levels` and `stock_movements` outside a ledger operation; the only such reader besides the ledger

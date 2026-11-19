@@ -57,13 +57,14 @@ package_name() {
 }
 
 stage_archive() {
-  local pkg="$1" staging source archive
+  local pkg="$1" staging source archive version="$VERSION"
   staging="$(mktemp -d "${WORK}/staging.XXXXXX")"
   source="${ROOT}/packages/${pkg}"
   archive="$(package_name "$pkg")"
   if [[ "$pkg" == packman* ]]; then
     source="${ROOT}/vendor/axiomasoft/${pkg}"
     archive="axiomasoft-${pkg}"
+    version="$(php -r 'require $argv[1]; echo Composer\InstalledVersions::getPrettyVersion($argv[2]);' "$ROOT/vendor/autoload.php" "axiomasoft/${pkg}")"
   fi
   rsync -aL --exclude '.git' --exclude 'vendor' --exclude 'node_modules' --exclude 'tests' --exclude 'phpunit*' "${source}/" "${staging}/"
   if [[ ! -f "${staging}/LICENSE" && "$pkg" == packman* ]]; then
@@ -73,8 +74,8 @@ stage_archive() {
     $data = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
     $data["version"] = $argv[2];
     file_put_contents($argv[1], json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
-  ' "${staging}/composer.json" "$VERSION"
-  (cd "$staging" && composer archive --format=zip --dir="$ARTIFACTS" --file="${archive}-${VERSION}" >/dev/null)
+  ' "${staging}/composer.json" "$version"
+  (cd "$staging" && composer archive --format=zip --dir="$ARTIFACTS" --file="${archive}-${version}" >/dev/null)
   rm -rf "$staging"
 }
 
@@ -116,7 +117,9 @@ assert_archives() {
 
 consumer_env() {
   export DB_CONNECTION=pgsql DB_HOST DB_PORT DB_DATABASE="$CONSUMER_DB" DB_USERNAME DB_PASSWORD
-  export COMPOSER_HOME="${WORK}/composer-home" COMPOSER_CACHE_DIR="${WORK}/composer-cache"
+  local cache_dir
+  cache_dir="$(composer config cache-dir --absolute)"
+  export COMPOSER_HOME="${WORK}/composer-home" COMPOSER_CACHE_DIR="$cache_dir"
   export COMPOSER_NO_INTERACTION=1
 }
 
@@ -145,7 +148,8 @@ assert_lock() {
         $found[$p["name"]] = $p;
       }
     }
-    $want = array_slice($argv, 3);
+    require $argv[3];
+    $want = array_slice($argv, 4);
     sort($want);
     $have = array_keys($found);
     sort($have);
@@ -154,12 +158,13 @@ assert_lock() {
       exit(1);
     }
     foreach ($found as $name => $p) {
-      if ($p["version"] !== $argv[2]) { fwrite(STDERR, "lock: {$name} is {$p["version"]}\n"); exit(1); }
+      $version = str_starts_with($name, "axiomasoft/packman") ? Composer\InstalledVersions::getPrettyVersion($name) : $argv[2];
+      if ($p["version"] !== $version) { fwrite(STDERR, "lock: {$name} is {$p["version"]}\n"); exit(1); }
       $isMeta = ($p["type"] ?? "") === "metapackage";
       if (! $isMeta && ($p["dist"]["type"] ?? "") !== "zip") { fwrite(STDERR, "lock: {$name} is not a zip dist\n"); exit(1); }
       if (! $isMeta && ! str_contains($p["dist"]["url"], "var/consumer/artifacts")) { fwrite(STDERR, "lock: {$name} not from the artifact repo\n"); exit(1); }
     }
-  ' "$dir" "$VERSION" "$@" || die "composer.lock check failed ($dir)"
+  ' "$dir" "$VERSION" "$ROOT/vendor/autoload.php" "$@" || die "composer.lock check failed ($dir)"
 }
 
 run_profile() {
@@ -174,7 +179,7 @@ run_profile() {
   fi
   (
     cd "$dir"
-    composer install --no-interaction --prefer-dist
+    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
     php artisan package:discover --ansi >/dev/null
     php artisan commerz:install --no-interaction
     if [[ "$profile" == "crm" ]]; then
@@ -195,11 +200,9 @@ run_profile() {
 
 main() {
   local cmd
-  for cmd in php composer rsync psql curl pg_isready; do command -v "$cmd" >/dev/null || die "missing command: $cmd"; done
+  for cmd in php composer rsync psql pg_isready; do command -v "$cmd" >/dev/null || die "missing command: $cmd"; done
   php_version_ok
   guard_work_dir
-  curl -fsS -m 15 -o /dev/null https://repo.packagist.org/packages.json \
-    || die "no network access to repo.packagist.org: the consumer install needs Laravel from Packagist"
   pg_isready -h "$DB_HOST" -p "$DB_PORT" >/dev/null || die "PostgreSQL is not accepting connections on ${DB_HOST}:${DB_PORT}"
 
   rm -rf "$WORK"

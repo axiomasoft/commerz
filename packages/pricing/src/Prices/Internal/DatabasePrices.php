@@ -30,13 +30,13 @@ use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Events\PricesChanged;
 use Commerz\Pricing\Prices\Exceptions\PriceNotFoundById;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Lock order: the price list row `for share` first, then price rows (`for no key update`); batches take the price

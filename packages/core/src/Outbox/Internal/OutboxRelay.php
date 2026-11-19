@@ -7,6 +7,7 @@ namespace Commerz\Outbox\Internal;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Outbox\Events\IntegrationEventDelivered;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
@@ -15,7 +16,6 @@ use InvalidArgumentException;
 use LogicException;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**

@@ -84,7 +84,7 @@ final class PromotionsRegistrar implements PackageRegistrar
         $app->singleton(PromotionSessions::class); // holds the quote sessions of the process
         $app->singleton(PromotionUsage::class, DatabasePromotionUsage::class); // replaces the core's singletonIf null default
 
-        CommerzPlugins::builtIn(PromotionsPlugin::class);
+        CommerzPlugins::builtInFor($app, PromotionsPlugin::class);
     }
 
     #[Override]

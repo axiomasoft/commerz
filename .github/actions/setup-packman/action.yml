@@ -1,0 +1,13 @@
+name: Set up Packman
+description: Check out the release used by the Commerz Composer path repositories.
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: axiomasoft/packman
+        ref: v0.1.1
+        path: var/packman-checkout
+        persist-credentials: false
+    - shell: bash
+      run: mv "$GITHUB_WORKSPACE/var/packman-checkout" "$GITHUB_WORKSPACE/../packman"

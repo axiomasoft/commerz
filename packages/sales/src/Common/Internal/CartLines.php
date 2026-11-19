@@ -15,12 +15,12 @@ use Commerz\Sales\Carts\Exceptions\CartLineNotFound;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\TooManyCartLines;
 use Commerz\Sales\Configuration\SalesOptions;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `cart_lines`: one line per sellable, the limits of `commerz-sales.carts.*`, and a sellable that is

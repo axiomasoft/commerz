@@ -40,6 +40,7 @@ use Commerz\Sales\Common\Internal\CartRow;
 use Commerz\Sales\Common\Internal\CartRows;
 use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Common\Internal\SalesCodec;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -47,7 +48,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * Every change takes the cart row `for update`, so it is the only writer of its cart and of its lines; sellables are

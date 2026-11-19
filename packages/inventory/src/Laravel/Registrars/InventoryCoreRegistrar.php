@@ -67,7 +67,7 @@ final class InventoryCoreRegistrar implements PackageRegistrar
 
         CommerzSchemaSets::governMigrations($app);
 
-        CommerzPlugins::builtIn(InventoryPlugin::class);
+        CommerzPlugins::builtInFor($app, InventoryPlugin::class);
     }
 
     #[Override]

@@ -34,13 +34,13 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "axiomasoft/packman": "0.1.0",
-                    "axiomasoft/packman-schema": "0.1.0",
-                    "axiomasoft/packman-plugins": "0.1.0",
-                    "axiomasoft/packman-panels": "0.1.0",
-                    "axiomasoft/packman-filament": "0.1.0",
-                    "axiomasoft/packman-testkit": "0.1.0",
-                    "axiomasoft/packman-devtools": "0.1.0"
+                    "axiomasoft/packman": "0.1.1",
+                    "axiomasoft/packman-schema": "0.1.1",
+                    "axiomasoft/packman-plugins": "0.1.1",
+                    "axiomasoft/packman-panels": "0.1.1",
+                    "axiomasoft/packman-filament": "0.1.1",
+                    "axiomasoft/packman-testkit": "0.1.1",
+                    "axiomasoft/packman-devtools": "0.1.1"
                 }
             }
         }
@@ -55,15 +55,15 @@
         "axiomasoft/commerz-promotions": "^0.1@dev",
         "axiomasoft/commerz-sales": "^0.1@dev",
         "axiomasoft/commerz-shipping": "^0.1@dev",
-        "axiomasoft/packman": "^0.1",
-        "axiomasoft/packman-panels": "^0.1",
-        "axiomasoft/packman-plugins": "^0.1",
-        "axiomasoft/packman-schema": "^0.1"
+        "axiomasoft/packman": "^0.1.1",
+        "axiomasoft/packman-panels": "^0.1.1",
+        "axiomasoft/packman-plugins": "^0.1.1",
+        "axiomasoft/packman-schema": "^0.1.1"
     },
     "require-dev": {
         "axiomasoft/commerz-testkit": "^0.1@dev",
-        "axiomasoft/packman-devtools": "^0.1",
-        "axiomasoft/packman-testkit": "^0.1",
+        "axiomasoft/packman-devtools": "^0.1.1",
+        "axiomasoft/packman-testkit": "^0.1.1",
         "driftingly/rector-laravel": "^2.7",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.32",

@@ -20,11 +20,11 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The only writer of `stock_levels` and `stock_movements` (INV-03: every on-hand change is exactly one movement whose

@@ -16,12 +16,12 @@ use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\QueryException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The write steps of a price, shared by `set`, `setMany` and `reschedule` (PRC-01). PostgreSQL cannot `ON CONFLICT

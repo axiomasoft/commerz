@@ -9,6 +9,7 @@ use Commerz\Errors\CommerzException;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Methods\Data\CreateMethod;
 use Commerz\Shipping\Methods\Data\MethodView;
@@ -32,7 +33,6 @@ use Illuminate\Support\Facades\DB;
 use Packman\Errors\Exceptions\CodedException;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\PluginInspector;
-use Packman\Schema\Data\Compiler\TableNames;
 
 function mtChannel(string $code = 'web', string $currency = 'RUB'): ChannelId
 {

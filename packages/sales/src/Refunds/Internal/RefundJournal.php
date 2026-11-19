@@ -37,12 +37,12 @@ use Commerz\Sales\Refunds\Events\RefundStatusChanged;
 use Commerz\Sales\Refunds\Exceptions\RefundExceedsBalance;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use Throwable;
 
 /**

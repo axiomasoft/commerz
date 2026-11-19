@@ -14,6 +14,7 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Delivery\Data\BookShipment;
+use Commerz\Schema\TableNames;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use Commerz\Shipping\Bookings\Events\ShipmentBooked;
 use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
@@ -26,7 +27,6 @@ use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 use RuntimeException;
 use Throwable;
 

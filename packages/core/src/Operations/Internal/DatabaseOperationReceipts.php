@@ -8,11 +8,11 @@ use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use InvalidArgumentException;
 use LogicException;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * `INSERT … ON CONFLICT DO NOTHING RETURNING` claims the key; a concurrent claimant blocks on the unique index until

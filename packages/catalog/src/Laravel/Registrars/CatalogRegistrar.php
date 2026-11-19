@@ -95,6 +95,6 @@ final class CatalogRegistrar implements PackageRegistrar
         $app->singleton(Listings::class, DatabaseListings::class);
         $app->singleton(Catalog::class);
 
-        CommerzPlugins::builtIn(CatalogPlugin::class);
+        CommerzPlugins::builtInFor($app, CatalogPlugin::class);
     }
 }

@@ -7,12 +7,12 @@ namespace Commerz\Pricing\Prices\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
 use Commerz\Pricing\Common\Internal\Rows;
+use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The prices of the given sellables in the active price lists assigned to the channel, in the currency: one query for

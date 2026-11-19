@@ -16,6 +16,7 @@ use Commerz\Context\CommerceContext;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Contracts\Container\Container;
@@ -24,7 +25,6 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
-use Packman\Schema\Data\Compiler\TableNames;
 
 /**
  * The `variant` sellable provider (knowledge/catalog-design#sellables): five queries however large the batch,
