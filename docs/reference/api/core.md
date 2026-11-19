@@ -423,7 +423,7 @@ final class Uuid7 {
 
 `Commerz\Laravel\CommerzPluginServiceProvider`
 
-Registers a packaged plugin now and starts its Laravel services after host providers register.
+Makes selected Laravel services available to the first consumer of the application’s plugin graph.
 
 ```php
 abstract class CommerzPluginServiceProvider extends \Illuminate\Support\ServiceProvider {

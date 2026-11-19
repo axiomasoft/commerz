@@ -6,7 +6,6 @@ namespace Commerz\Laravel;
 
 use Commerz\Plugins\CorePlugin;
 use Commerz\Plugins\Internal\CommerzActivationGate;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use Packman\Attributes\Spi;
@@ -14,12 +13,13 @@ use Packman\Attributes\SpiKind;
 use Packman\Extensions\Contracts\Configuration\WithConfiguration;
 use Packman\Foundation\Concerns\RegistersPackageRegistrars;
 use Packman\PackmanServiceProvider;
+use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Laravel\ExtensionRegistrar;
 use Packman\Plugins\Laravel\PluginsServiceProvider;
 use Packman\Schema\Laravel\SchemaServiceProvider;
 
-/** Registers a packaged plugin now and starts its Laravel services after host providers register. */
+/** Makes selected Laravel services available to the first consumer of the application’s plugin graph. */
 #[Spi(kind: SpiKind::Implement, since: '0.1')]
 abstract class CommerzPluginServiceProvider extends ServiceProvider
 {
@@ -28,7 +28,7 @@ abstract class CommerzPluginServiceProvider extends ServiceProvider
     /** @var class-string<ExtensionPlugin&WithConfiguration> */
     protected const string PLUGIN = CorePlugin::class;
 
-    private bool $active = false;
+    private ?bool $active = null;
 
     #[Override]
     public function register(): void
@@ -44,25 +44,25 @@ abstract class CommerzPluginServiceProvider extends ServiceProvider
         ExtensionRegistrar::addActivationGate($this->app, CommerzActivationGate::class);
         ExtensionRegistrar::builtInFor($this->app, static::PLUGIN);
 
-        if ($this->app instanceof Application && $this->app->isBooted()) {
-            $this->activate();
-        } else {
-            $this->app->booting($this->activate(...));
-        }
+        $this->app->beforeResolving(Contributions::class, $this->activate(...));
+        $this->app->booting($this->activate(...));
+        $this->booting($this->activate(...));
     }
 
     private function activate(): void
     {
-        $id = (new (static::PLUGIN))->manifest()->id;
-        $this->active = ExtensionRegistrar::activationGateFor($this->app)?->isEnabled($id) !== false;
-        if ($this->active) {
-            $this->registerPackageRegistrars();
+        if ($this->active === null) {
+            $id = (new (static::PLUGIN))->manifest()->id;
+            $this->active = ExtensionRegistrar::activationGateFor($this->app)?->isEnabled($id) !== false;
+            if ($this->active) {
+                $this->registerPackageRegistrars();
+            }
         }
     }
 
     public function boot(): void
     {
-        if (! $this->active) {
+        if ($this->active !== true) {
             return;
         }
 
