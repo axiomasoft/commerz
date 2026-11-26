@@ -140,6 +140,7 @@ uses()->group('pg')->in(
     'EndToEnd/Concurrency/PlacementConcurrencyTest.php',
     'EndToEnd/CrmMixedHostTest.php',
     'EndToEnd/CrmScenarioTest.php',
+    'EndToEnd/PgConcurrencyStressTest.php',
     'EndToEnd/ReverseBootTest.php',
     'EndToEnd/ShopScenarioTest.php',
 );
