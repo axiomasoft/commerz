@@ -247,6 +247,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "InvalidOrderChange",
+            "code": "sales.invalid_order_change",
+            "type": "urn:packman:problem:sales.invalid_order_change",
+            "status": 422,
+            "title": "Invalid Order Change",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "InvalidOrderNumber",
             "code": "sales.invalid_order_number",
             "type": "urn:packman:problem:sales.invalid_order_number",
@@ -335,11 +346,66 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "OrderChangeLineLocked",
+            "code": "sales.order_change_line_locked",
+            "type": "urn:packman:problem:sales.order_change_line_locked",
+            "status": 409,
+            "title": "Order Line Locked Against Edit",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "OrderChangeNotFound",
+            "code": "sales.order_change_not_found",
+            "type": "urn:packman:problem:sales.order_change_not_found",
+            "status": 404,
+            "title": "Order Change Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "OrderChangeNotOpen",
+            "code": "sales.order_change_not_open",
+            "type": "urn:packman:problem:sales.order_change_not_open",
+            "status": 409,
+            "title": "Order Change Not Open",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "OrderChangeVersionConflict",
+            "code": "sales.order_change_version_conflict",
+            "type": "urn:packman:problem:sales.order_change_version_conflict",
+            "status": 409,
+            "title": "Order Change Version Conflict (ORDERS_ORDER_CHANGE_VERSION_CONFLICT)",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "OrderNotCancellable",
             "code": "sales.order_not_cancellable",
             "type": "urn:packman:problem:sales.order_not_cancellable",
             "status": 409,
             "title": "Order Not Cancellable",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "OrderNotEditable",
+            "code": "sales.order_not_editable",
+            "type": "urn:packman:problem:sales.order_not_editable",
+            "status": 409,
+            "title": "Order Not Editable",
             "retryable": false,
             "category": "conflict"
         },

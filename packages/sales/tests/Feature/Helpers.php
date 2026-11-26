@@ -27,6 +27,7 @@ use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderStatus;
 use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
+use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Data\OrderView;
@@ -78,6 +79,11 @@ function slsOrders(): Orders
     return app(Orders::class);
 }
 
+function slsOrderChanges(): OrderChanges
+{
+    return app(OrderChanges::class);
+}
+
 function slsPayments(): Payments
 {
     return app(Payments::class);
@@ -109,7 +115,7 @@ function slsConfig(array $sections): void
         config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
     }
 
-    foreach ([SalesOptions::class, Carts::class, Checkout::class, Orders::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
+    foreach ([SalesOptions::class, Carts::class, Checkout::class, Orders::class, OrderChanges::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }
@@ -242,7 +248,8 @@ function slsCommitted(): void
 function slsTruncate(): void
 {
     DB::statement('truncate cmz_payment_events, cmz_refunds, cmz_payments, cmz_return_lines, cmz_returns,'
-        .' cmz_fulfillment_lines, cmz_fulfillments, cmz_order_events, cmz_order_lines, cmz_orders, cmz_cart_lines,'
+        .' cmz_fulfillment_lines, cmz_fulfillments, cmz_order_change_actions, cmz_order_changes, cmz_order_events,'
+        .' cmz_order_lines, cmz_orders, cmz_cart_lines,'
         .' cmz_carts, cmz_channels, cmz_stores, cmz_outbox_messages, cmz_operation_receipts cascade');
 }
 

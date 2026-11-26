@@ -50,7 +50,7 @@ final readonly class OrderStatus
      * Derives the states from the stored lines, payments and refunds and writes what changed. `$reason` is required
      * when the order becomes cancelled (every unit cancelled); `completed` and `cancelled` are final.
      */
-    public function refresh(OrderRow $order, ?CancelReason $reason = null, ?ActorRef $actor = null): OrderStatusChange
+    public function refresh(OrderRow $order, ?CancelReason $reason = null, ?ActorRef $actor = null, bool $bumpVersion = true): OrderStatusChange
     {
         $db = $this->db();
         $orders = $this->tables->table('orders');
@@ -115,7 +115,13 @@ final readonly class OrderStatus
         $changes = array_filter($values, static fn (int|string $value, string $column): bool => $stored->{$column} !== $value, ARRAY_FILTER_USE_BOTH);
 
         if ($changes !== []) {
-            $db->table($orders)->where('id', $id)->update($changes + ['updated_at' => $now]);
+            $update = $changes + ['updated_at' => $now];
+
+            if ($bumpVersion) {
+                $update['version'] = Rows::int($stored, 'version') + 1;
+            }
+
+            $db->table($orders)->where('id', $id)->update($update);
         }
 
         $change = new OrderStatusChange($from, $state, $paymentFrom, $payment, $fulfillmentFrom, $fulfillment);

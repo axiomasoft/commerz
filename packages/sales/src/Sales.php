@@ -7,6 +7,7 @@ namespace Commerz\Sales;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
+use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Refunds\Contracts\Refunds;
@@ -36,6 +37,11 @@ final readonly class Sales
     public function orders(): Orders
     {
         return $this->container->make(Orders::class);
+    }
+
+    public function orderChanges(): OrderChanges
+    {
+        return $this->container->make(OrderChanges::class);
     }
 
     public function payments(): Payments

@@ -105,6 +105,7 @@ uses()->group('pg')->in(
     '../packages/sales/tests/Feature/Fulfillments/FulfillmentConcurrencyTest.php',
     '../packages/sales/tests/Feature/Fulfillments/FulfillmentsTest.php',
     '../packages/sales/tests/Feature/Numbering/SequenceOrderNumbersTest.php',
+    '../packages/sales/tests/Feature/OrderChanges/OrderChangesTest.php',
     '../packages/sales/tests/Feature/Orders/CancelConcurrencyTest.php',
     '../packages/sales/tests/Feature/Orders/CancelLinesTest.php',
     '../packages/sales/tests/Feature/Orders/CancelTest.php',

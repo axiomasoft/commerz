@@ -79,6 +79,7 @@ final readonly class OrderView
         public DateTimeImmutable $placedAt,
         public ?DateTimeImmutable $completedAt,
         public ?DateTimeImmutable $cancelledAt,
+        public int $version = 1,
     ) {
         $this->total = $totals->total;
     }

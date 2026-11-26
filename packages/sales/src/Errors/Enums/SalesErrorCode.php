@@ -36,6 +36,7 @@ enum SalesErrorCode: string implements ErrorCode
     case InvalidGroup = 'sales.invalid_group';
     case InvalidLimit = 'sales.invalid_limit';
     case InvalidLines = 'sales.invalid_lines';
+    case InvalidOrderChange = 'sales.invalid_order_change';
     case InvalidOrderNumber = 'sales.invalid_order_number';
     case InvalidPayment = 'sales.invalid_payment';
     case InvalidPaymentEvent = 'sales.invalid_payment_event';
@@ -44,7 +45,12 @@ enum SalesErrorCode: string implements ErrorCode
     case InvalidReturn = 'sales.invalid_return';
     case LineNotFound = 'sales.line_not_found';
     case OperationInsideTransaction = 'sales.operation_inside_transaction';
+    case OrderChangeLineLocked = 'sales.order_change_line_locked';
+    case OrderChangeNotFound = 'sales.order_change_not_found';
+    case OrderChangeNotOpen = 'sales.order_change_not_open';
+    case OrderChangeVersionConflict = 'sales.order_change_version_conflict';
     case OrderNotCancellable = 'sales.order_not_cancellable';
+    case OrderNotEditable = 'sales.order_not_editable';
     case OrderNotFound = 'sales.order_not_found';
     case OrderNotFulfillable = 'sales.order_not_fulfillable';
     case OrderNotPayable = 'sales.order_not_payable';

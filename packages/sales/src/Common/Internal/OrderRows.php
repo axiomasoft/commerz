@@ -149,6 +149,7 @@ final readonly class OrderRows
             Rows::date($row, 'placed_at'),
             $date('completed_at'),
             $date('cancelled_at'),
+            Rows::int($row, 'version'),
         );
     }
 
