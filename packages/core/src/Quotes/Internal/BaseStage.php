@@ -50,7 +50,11 @@ final readonly class BaseStage implements QuoteStage
 
         $prices = $this->container->make(PriceResolver::class)->resolveMany(
             array_map(
-                static fn (QuoteLineInput $line): ResolvePrice => new ResolvePrice($line->sellable->ref, $line->quantity, $line->sellable->basePrice),
+                static fn (QuoteLineInput $line): ResolvePrice => new ResolvePrice(
+                    $line->sellable->ref,
+                    $line->quantity,
+                    $line->sellable->basePrice ?? $line->sellable->unitPrice?->amount,
+                ),
                 $inputs,
             ),
             $state->context(),
@@ -70,6 +74,8 @@ final readonly class BaseStage implements QuoteStage
                 $price->compareAt,
                 $price->taxIncluded,
                 $price->source,
+                $input->sellable->unitPrice?->withAmount($price->unit),
+                $state->input->rounding,
             ));
         }
 

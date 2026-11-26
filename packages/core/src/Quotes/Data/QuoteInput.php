@@ -6,6 +6,7 @@ namespace Commerz\Quotes\Data;
 
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
+use Commerz\Money\RoundingMode;
 use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
@@ -24,6 +25,7 @@ final readonly class QuoteInput
         public array $lines,
         array $codes = [],
         public ?DeliverySelection $delivery = null,
+        public RoundingMode $rounding = RoundingMode::HalfUp,
     ) {
         $ids = array_map(static fn (QuoteLineInput $line): string => $line->lineId, $lines);
 

@@ -136,6 +136,7 @@ final readonly class TotalsStage implements QuoteStage
                 $adjustments,
                 $taxes,
                 $total,
+                $line->pricePerUnit,
             );
         }
 

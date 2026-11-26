@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Quotes\Data;
 
+use Commerz\Measures\UnitPrice;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Packman\Attributes\Api;
@@ -13,7 +14,7 @@ use Packman\Attributes\Api;
 final readonly class QuotedLine
 {
     /**
-     * @param  Money  $subtotal  unit price × quantity
+     * @param  Money  $subtotal  unit price × quantity (or UnitPrice::calculate when measured)
      * @param  list<Adjustment>  $adjustments  own line adjustments, then allocated shares of order-level ones
      * @param  list<TaxLine>  $taxLines
      * @param  Money  $total  subtotal + adjustments + excluded taxes
@@ -30,5 +31,6 @@ final readonly class QuotedLine
         public array $adjustments,
         public array $taxLines,
         public Money $total,
+        public ?UnitPrice $pricePerUnit = null,
     ) {}
 }
