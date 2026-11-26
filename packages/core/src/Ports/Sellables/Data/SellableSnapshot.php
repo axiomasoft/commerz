@@ -6,6 +6,8 @@ namespace Commerz\Ports\Sellables\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Commerz\Measures\QuantityStepPolicy;
+use Commerz\Measures\UnitPrice;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Packman\Attributes\Api;
@@ -35,6 +37,8 @@ final readonly class SellableSnapshot
         public ?int $weightGrams = null,
         public array $attributes = [],
         public array $categories = [],
+        public ?QuantityStepPolicy $quantityStepPolicy = null,
+        public ?UnitPrice $unitPrice = null,
     ) {
         if ($sku === '' || strlen($sku) > 191) {
             throw new InvalidCommand('sku', 'must be 1..191 bytes', 'sellables.invalid_snapshot');
@@ -54,6 +58,18 @@ final readonly class SellableSnapshot
 
         if ($purchasable && $unavailableReason !== null) {
             throw new InvalidCommand('unavailableReason', 'is set only when the sellable is not purchasable', 'sellables.invalid_snapshot');
+        }
+
+        if ($quantityStepPolicy !== null && $unitPrice !== null && $quantityStepPolicy->unit !== $unitPrice->unit) {
+            throw new InvalidCommand(
+                'unitPrice',
+                "unit '{$unitPrice->unit}' must match quantityStepPolicy unit '{$quantityStepPolicy->unit}'",
+                'sellables.invalid_snapshot',
+            );
+        }
+
+        if ($basePrice !== null && $unitPrice !== null && ! $basePrice->currency->equals($unitPrice->amount->currency)) {
+            throw new InvalidCommand('unitPrice', 'currency must match basePrice', 'sellables.invalid_snapshot');
         }
     }
 }
