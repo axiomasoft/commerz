@@ -24,6 +24,7 @@
                     "axiomasoft/commerz-promotions": "0.1.x-dev",
                     "axiomasoft/commerz-sales": "0.1.x-dev",
                     "axiomasoft/commerz-shipping": "0.1.x-dev",
+                    "axiomasoft/commerz-stored-value": "0.1.x-dev",
                     "axiomasoft/commerz-testkit": "0.1.x-dev"
                 }
             }
@@ -55,6 +56,7 @@
         "axiomasoft/commerz-promotions": "^0.1@dev",
         "axiomasoft/commerz-sales": "^0.1@dev",
         "axiomasoft/commerz-shipping": "^0.1@dev",
+        "axiomasoft/commerz-stored-value": "^0.1@dev",
         "axiomasoft/packman": "^0.1.1",
         "axiomasoft/packman-panels": "^0.1.1",
         "axiomasoft/packman-plugins": "^0.1.1",
@@ -83,6 +85,7 @@
             "Commerz\\Promotions\\Tests\\": "packages/promotions/tests/",
             "Commerz\\Shipping\\Tests\\": "packages/shipping/tests/",
             "Commerz\\Sales\\Tests\\": "packages/sales/tests/",
+            "Commerz\\StoredValue\\Tests\\": "packages/stored-value/tests/",
             "Commerz\\Arch\\": "tests/Arch/Support/",
             "Commerz\\EndToEnd\\": "tests/EndToEnd/"
         }

@@ -9,6 +9,7 @@ use Commerz\Pricing\Tests\TestCase as PricingTestCase;
 use Commerz\Promotions\Tests\TestCase as PromotionsTestCase;
 use Commerz\Sales\Tests\TestCase as SalesTestCase;
 use Commerz\Shipping\Tests\TestCase as ShippingTestCase;
+use Commerz\StoredValue\Tests\TestCase as StoredValueTestCase;
 use Commerz\Tests\TestCase as CoreTestCase;
 
 uses(CoreTestCase::class)->in('../packages/core/tests/Feature');
@@ -121,6 +122,8 @@ uses()->group('pg')->in(
     '../packages/sales/tests/Feature/Returns/ReturnsTest.php',
     '../packages/sales/tests/Feature/SchemaTest.php',
     '../packages/sales/tests/Feature/ShopScenarioTest.php',
+    '../packages/stored-value/tests/Feature/SchemaTest.php',
+    '../packages/stored-value/tests/Feature/StoredValueConcurrencyTest.php',
     'Integration/SalesShippingQuoteTest.php',
     'EndToEnd/AssemblyTest.php',
     'EndToEnd/Concurrency/DetectorControlTest.php',
@@ -137,4 +140,5 @@ uses(PricingTestCase::class)->in('../packages/pricing/tests/Feature');
 uses(PromotionsTestCase::class)->in('../packages/promotions/tests/Feature');
 uses(ShippingTestCase::class)->in('../packages/shipping/tests/Feature');
 uses(SalesTestCase::class)->in('../packages/sales/tests/Feature');
+uses(StoredValueTestCase::class)->in('../packages/stored-value/tests/Feature');
 uses(EndToEndTestCase::class)->in('EndToEnd');

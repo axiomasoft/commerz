@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-stored-value configuration",
+    "type": "object",
+    "properties": {
+        "commerz-stored-value": {
+            "type": "object",
+            "properties": {
+                "default_hold_ttl_seconds": {
+                    "type": "integer",
+                    "default": 1800
+                },
+                "gift_cards": {
+                    "type": "object",
+                    "properties": {
+                        "code_alphabet": {
+                            "type": "string",
+                            "default": "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+                        },
+                        "code_length": {
+                            "type": "integer",
+                            "default": 16
+                        },
+                        "code_prefix": {
+                            "type": "string",
+                            "default": "GC"
+                        },
+                        "default_expiry_days": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "default": null
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "max_tenders_per_quote": {
+                    "type": "integer",
+                    "default": 5
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

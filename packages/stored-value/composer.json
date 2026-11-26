@@ -1,0 +1,70 @@
+{
+    "name": "axiomasoft/commerz-stored-value",
+    "description": "Commerz stored value: gift cards, customer wallets (store credit), immutable double-entry ledger, and post-tax tender settlement.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.4 <8.6",
+        "axiomasoft/commerz": "^0.1",
+        "axiomasoft/packman": "^0.1.1",
+        "axiomasoft/packman-panels": "^0.1.1",
+        "axiomasoft/packman-plugins": "^0.1.1",
+        "axiomasoft/packman-schema": "^0.1.1",
+        "illuminate/console": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Commerz\\StoredValue\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Commerz\\StoredValue\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Commerz\\StoredValue\\StoredValueServiceProvider"
+            ]
+        },
+        "packman": {
+            "schema-version": 1,
+            "package-type": "addon",
+            "stability": "stable",
+            "error-prefix": "stored-value",
+            "owns": [
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "GiftCards",
+                "Internal",
+                "Laravel",
+                "Ledger",
+                "Panels",
+                "Plugins",
+                "Schema",
+                "Tender",
+                "Wallets"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

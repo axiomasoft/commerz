@@ -36,6 +36,8 @@ use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Internal\UnlimitedStock;
+use Commerz\Ports\StoredValue\Contracts\StoredValueTender;
+use Commerz\Ports\StoredValue\Internal\NullStoredValueTender;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Fakes\FakePrices;
 use Commerz\Testkit\Fakes\FakeSellables;
@@ -83,6 +85,7 @@ it('binds the core defaults when no package implements a port', function (): voi
         ->and(app(DigitalDeliveryPort::class))->toBeInstanceOf(NullDigitalDelivery::class)
         ->and(app(PiiCipherPort::class))->toBeInstanceOf(NullPiiCipher::class)
         ->and(app(PromotionUsage::class))->toBeInstanceOf(NullPromotionUsage::class)
+        ->and(app(StoredValueTender::class))->toBeInstanceOf(NullStoredValueTender::class)
         ->and(app(CustomerDirectory::class))->toBeInstanceOf(GuestOnlyDirectory::class)
         ->and(app(StockAvailability::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(StockReservations::class))->toBeInstanceOf(UnlimitedStock::class)

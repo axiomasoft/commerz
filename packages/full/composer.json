@@ -17,7 +17,8 @@
         "axiomasoft/commerz-pricing": "^0.1",
         "axiomasoft/commerz-promotions": "^0.1",
         "axiomasoft/commerz-sales": "^0.1",
-        "axiomasoft/commerz-shipping": "^0.1"
+        "axiomasoft/commerz-shipping": "^0.1",
+        "axiomasoft/commerz-stored-value": "^0.1"
     },
     "extra": {
         "packman": {

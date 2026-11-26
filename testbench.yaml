@@ -8,3 +8,4 @@ dont-discover:
   - axiomasoft/commerz-promotions
   - axiomasoft/commerz-sales
   - axiomasoft/commerz-shipping
+  - axiomasoft/commerz-stored-value

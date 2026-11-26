@@ -25,6 +25,8 @@ use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Internal\UnlimitedStock;
+use Commerz\Ports\StoredValue\Contracts\StoredValueTender;
+use Commerz\Ports\StoredValue\Internal\NullStoredValueTender;
 use Illuminate\Contracts\Foundation\Application;
 use Override;
 use Packman\Attributes\Spi;
@@ -49,6 +51,7 @@ final class CommerzPortsRegistrar implements PackageRegistrar
         $app->singletonIf(PiiCipherPort::class, NullPiiCipher::class);
         $app->singletonIf(PriceResolver::class, SnapshotPriceResolver::class);
         $app->singletonIf(PromotionUsage::class, NullPromotionUsage::class);
+        $app->singletonIf(StoredValueTender::class, NullStoredValueTender::class);
         $app->singletonIf(DeliveryOptions::class, NoDelivery::class);
         $app->singletonIf(ShipmentBooking::class, NoDelivery::class);
 
