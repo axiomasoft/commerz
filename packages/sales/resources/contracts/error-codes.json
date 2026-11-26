@@ -5,6 +5,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "CaptureExceedsAuthorization",
+            "code": "sales.capture_exceeds_authorization",
+            "type": "urn:packman:problem:sales.capture_exceeds_authorization",
+            "status": 409,
+            "title": "Capture Exceeds Session Authorization",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "CartAlreadyPlaced",
             "code": "sales.cart_already_placed",
             "type": "urn:packman:problem:sales.cart_already_placed",
@@ -148,6 +159,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "GatewayCapabilityUnsupported",
+            "code": "sales.gateway_capability_unsupported",
+            "type": "urn:packman:problem:sales.gateway_capability_unsupported",
+            "status": 422,
+            "title": "Gateway Capability Unsupported",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "InvalidCode",
             "code": "sales.invalid_code",
             "type": "urn:packman:problem:sales.invalid_code",
@@ -280,6 +302,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "InvalidPaymentSessionState",
+            "code": "sales.invalid_payment_session_state",
+            "type": "urn:packman:problem:sales.invalid_payment_session_state",
+            "status": 409,
+            "title": "Invalid Payment Session State",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "InvalidQuantity",
             "code": "sales.invalid_quantity",
             "type": "urn:packman:problem:sales.invalid_quantity",
@@ -379,6 +412,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "PaymentCollectionNotFound",
+            "code": "sales.payment_collection_not_found",
+            "type": "urn:packman:problem:sales.payment_collection_not_found",
+            "status": 404,
+            "title": "Payment Collection Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "PaymentDeclined",
             "code": "sales.payment_declined",
             "type": "urn:packman:problem:sales.payment_declined",
@@ -430,6 +474,17 @@
             "title": "Payment Outcome Unknown",
             "retryable": false,
             "category": "unavailable"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "PaymentSessionNotFound",
+            "code": "sales.payment_session_not_found",
+            "type": "urn:packman:problem:sales.payment_session_not_found",
+            "status": 404,
+            "title": "Payment Session Not Found",
+            "retryable": false,
+            "category": "not_found"
         },
         {
             "package": "axiomasoft/commerz-sales",

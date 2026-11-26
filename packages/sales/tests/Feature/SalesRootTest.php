@@ -7,6 +7,8 @@ use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Facades\Sales as SalesFacade;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Payments\Contracts\PaymentCollections;
+use Commerz\Sales\Payments\Contracts\PaymentMethodResolver;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
@@ -20,6 +22,8 @@ it('hands out the module contracts from the root', function (): void {
         ->and($root->checkout())->toBe(app(Checkout::class))
         ->and($root->orders())->toBe(app(Orders::class))
         ->and($root->payments())->toBe(app(Payments::class))
+        ->and($root->paymentCollections())->toBe(app(PaymentCollections::class))
+        ->and($root->paymentMethods())->toBe(app(PaymentMethodResolver::class))
         ->and($root->fulfillments())->toBe(app(Fulfillments::class))
         ->and($root->returns())->toBe(app(Returns::class))
         ->and(app(Sales::class))->toBe($root);
@@ -32,6 +36,8 @@ it('reaches the same modules through the facade', function (): void {
         ->and(SalesFacade::checkout())->toBe(app(Checkout::class))
         ->and(SalesFacade::orders())->toBe(app(Orders::class))
         ->and(SalesFacade::payments())->toBe(app(Payments::class))
+        ->and(SalesFacade::paymentCollections())->toBe(app(PaymentCollections::class))
+        ->and(SalesFacade::paymentMethods())->toBe(app(PaymentMethodResolver::class))
         ->and(SalesFacade::fulfillments())->toBe(app(Fulfillments::class))
         ->and(SalesFacade::returns())->toBe(app(Returns::class));
 });

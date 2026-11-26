@@ -111,6 +111,7 @@ uses()->group('pg')->in(
     '../packages/sales/tests/Feature/Orders/LedgerTest.php',
     '../packages/sales/tests/Feature/Orders/OrdersQueryTest.php',
     '../packages/sales/tests/Feature/Payments/InitiatePaymentTest.php',
+    '../packages/sales/tests/Feature/Payments/PaymentCollectionsTest.php',
     '../packages/sales/tests/Feature/Payments/PaymentConcurrencyTest.php',
     '../packages/sales/tests/Feature/Payments/PaymentEventsTest.php',
     '../packages/sales/tests/Feature/Payments/PaymentJournalFenceTest.php',

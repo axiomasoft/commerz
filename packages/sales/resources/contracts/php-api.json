@@ -2829,6 +2829,10 @@
             "enum_backing": "string",
             "enum_cases": [
                 {
+                    "name": "CaptureExceedsAuthorization",
+                    "value": "'sales.capture_exceeds_authorization'"
+                },
+                {
                     "name": "CartAlreadyPlaced",
                     "value": "'sales.cart_already_placed'"
                 },
@@ -2881,6 +2885,10 @@
                     "value": "'sales.fulfillment_not_shipped'"
                 },
                 {
+                    "name": "GatewayCapabilityUnsupported",
+                    "value": "'sales.gateway_capability_unsupported'"
+                },
+                {
                     "name": "InvalidCode",
                     "value": "'sales.invalid_code'"
                 },
@@ -2929,6 +2937,10 @@
                     "value": "'sales.invalid_payment_event'"
                 },
                 {
+                    "name": "InvalidPaymentSessionState",
+                    "value": "'sales.invalid_payment_session_state'"
+                },
+                {
                     "name": "InvalidQuantity",
                     "value": "'sales.invalid_quantity'"
                 },
@@ -2965,6 +2977,10 @@
                     "value": "'sales.order_not_payable'"
                 },
                 {
+                    "name": "PaymentCollectionNotFound",
+                    "value": "'sales.payment_collection_not_found'"
+                },
+                {
                     "name": "PaymentDeclined",
                     "value": "'sales.payment_declined'"
                 },
@@ -2983,6 +2999,10 @@
                 {
                     "name": "PaymentOutcomeUnknown",
                     "value": "'sales.payment_outcome_unknown'"
+                },
+                {
+                    "name": "PaymentSessionNotFound",
+                    "value": "'sales.payment_session_not_found'"
                 },
                 {
                     "name": "QuantityExceedsOutstanding",
@@ -4294,6 +4314,138 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Sales\\Gateways\\Contracts\\AcquiringPaymentGateway": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Sales\\Gateways\\Contracts\\CapablePaymentGateway"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "authorize": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "type": "Commerz\\Sales\\Gateways\\Data\\GatewayAuthorizeRequest",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult",
+                    "doc": []
+                },
+                "capture": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "type": "Commerz\\Sales\\Gateways\\Data\\GatewayCaptureRequest",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Gateways\\Data\\GatewayCaptureResult",
+                    "doc": []
+                },
+                "incrementalAuthorize": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "type": "Commerz\\Sales\\Gateways\\Data\\GatewayIncrementalAuthRequest",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult",
+                    "doc": []
+                },
+                "void": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "request",
+                            "type": "Commerz\\Sales\\Gateways\\Data\\GatewayVoidRequest",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentResult",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
+        },
+        "Commerz\\Sales\\Gateways\\Contracts\\CapablePaymentGateway": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Sales\\Gateways\\Contracts\\PaymentGateway"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "capabilities": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Sales\\Gateways\\Data\\PaymentCapabilities",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
+        },
         "Commerz\\Sales\\Gateways\\Contracts\\PaymentGateway": {
             "kind": "interface",
             "layer": "spi",
@@ -4409,6 +4561,498 @@
             "enum_backing": null,
             "enum_cases": [],
             "spi_kind": "implement"
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayAuthorizeRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "orderNumber",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customerEmail",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "lineItems",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayCaptureRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentReference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentExternalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "isFinalCapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 1
+                        },
+                        {
+                            "name": "lineItems",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayCaptureResult": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "status",
+                            "type": "Commerz\\Sales\\Gateways\\Enums\\GatewayPaymentStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captured",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "isFinalCapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 1
+                        },
+                        {
+                            "name": "externalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayIncrementalAuthRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentReference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentExternalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "additionalAmount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "newAuthorizedTotal",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayLineItem": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sku",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "name",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "quantity",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "unitPrice",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "total",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "taxAmount",
+                            "type": "?Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "commodityCode",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "unitOfMeasure",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {
+                "commodityCode": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "name": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "sku": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "unitOfMeasure": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Sales\\Gateways\\Data\\GatewayPaymentRequest": {
             "kind": "class",
@@ -4715,6 +5359,184 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Sales\\Gateways\\Data\\GatewayVoidRequest": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentReference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "paymentExternalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "reason",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Gateways\\Data\\PaymentCapabilities": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "authorizeCaptureVoid",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "multicapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "incrementalAuth",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "overcapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "lineItemsL3",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "basic": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "self",
+                    "doc": []
+                },
+                "of": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "gateway",
+                            "type": "Commerz\\Sales\\Gateways\\Contracts\\PaymentGateway",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Sales\\Gateways\\Enums\\GatewayPaymentStatus": {
             "kind": "enum",
             "layer": "api",
@@ -4786,6 +5608,95 @@
                     "value": "'failed'"
                 }
             ]
+        },
+        "Commerz\\Sales\\Gateways\\Exceptions\\GatewayCapabilityUnsupported": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Errors\\CommerzException"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "gateway",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        },
+                        {
+                            "name": "capability",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "category": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
+                    "doc": []
+                },
+                "code": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "context": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "errorDescriptor": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Data\\ErrorDescriptor",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
         },
         "Commerz\\Sales\\Gateways\\Exceptions\\InvalidGatewayResult": {
             "kind": "class",
@@ -7479,6 +8390,337 @@
             "enum_cases": [],
             "spi_kind": "call"
         },
+        "Commerz\\Sales\\Payments\\Contracts\\PaymentCollections": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "addStoredValueSession": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\AddStoredValueSession",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "authorizeGatewaySession": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\AuthorizeGatewaySession",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "cancel": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\CancelPaymentCollection",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "captureSession": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\CapturePaymentSession",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "create": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\CreatePaymentCollection",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "find": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "forOrder": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "order",
+                            "type": "Commerz\\Sales\\Orders\\Data\\OrderId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "forTarget": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "incrementalAuthorize": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\IncrementalAuthorizeSession",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                },
+                "voidSession": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Sales\\Payments\\Data\\VoidPaymentSession",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Contracts\\PaymentCustomization": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "customize": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCustomizationContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "key": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "priority": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "int",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [
+                {
+                    "name": "KIND",
+                    "type": "string",
+                    "visibility": "public",
+                    "final": false
+                }
+            ],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
+        },
+        "Commerz\\Sales\\Payments\\Contracts\\PaymentMethodResolver": {
+            "kind": "interface",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "resolve": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCustomizationContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "customizers",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Sales\\Payments\\Contracts\\Payments": {
             "kind": "interface",
             "layer": "api",
@@ -7589,6 +8831,730 @@
                         }
                     ],
                     "return": "Commerz\\Sales\\Payments\\Data\\PaymentEventResult",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\AddStoredValueSession": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "storedValueKind",
+                            "type": "Commerz\\Ports\\StoredValue\\Enums\\StoredValueKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captureImmediately",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "expiresAt",
+                            "type": "?DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {
+                "accountId": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\AuthorizeGatewaySession": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "gateway",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "?Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "autoCapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "lineItems",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\CancelPaymentCollection": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "reason",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {
+                "reason": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\CapturePaymentSession": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "session",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "?Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "isFinalCapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 1
+                        },
+                        {
+                            "name": "lineItems",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\CreatePaymentCollection": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "kind",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "\\Commerz\\Sales\\Payments\\Enums\\PaymentCollectionKind::Order",
+                            "flags": 1
+                        },
+                        {
+                            "name": "order",
+                            "type": "?Commerz\\Sales\\Orders\\Data\\OrderId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customerEmail",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "forOrder": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "order",
+                            "type": "Commerz\\Sales\\Orders\\Data\\OrderId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "customerEmail",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "forTopUp": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "customerEmail",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "targetRef": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\IncrementalAuthorizeSession": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "session",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "additionalAmount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
                     "doc": []
                 }
             },
@@ -7745,6 +9711,513 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Sales\\Payments\\Data\\PaymentCaptureId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Identity\\EntityId"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentCaptureView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCaptureId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "session",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "externalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "status",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCaptureStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "isFinalCapture",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "errorCode",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "errorMessage",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "createdAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "updatedAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Identity\\EntityId"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentCollectionView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "kind",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "order",
+                            "type": "?Commerz\\Sales\\Orders\\Data\\OrderId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "status",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "authorized",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captured",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "customerEmail",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "sessions",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "createdAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "updatedAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "remainingToAuthorize": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Money\\Money",
+                    "doc": []
+                },
+                "remainingToCapture": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Money\\Money",
+                    "doc": []
+                },
+                "session": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Sales\\Payments\\Data\\PaymentSessionView",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentCustomizationContext": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "channel",
+                            "type": "Commerz\\Stores\\Data\\ChannelId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "locale",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "methods",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "cart",
+                            "type": "?Commerz\\Sales\\Carts\\Data\\CartId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "market",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "shippingCountry",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "billingCountry",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "customerGroups",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Sales\\Payments\\Data\\PaymentEventResult": {
             "kind": "class",
             "layer": "api",
@@ -7824,6 +10297,561 @@
             "uses": [],
             "doc": [],
             "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentMethodDescriptor": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "label",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "position",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "0",
+                            "flags": 1
+                        },
+                        {
+                            "name": "capabilities",
+                            "type": "?Commerz\\Sales\\Gateways\\Data\\PaymentCapabilities",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "withLabel": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "label",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "withPosition": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "position",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "key": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "label": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentMethodOperation": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "action",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCustomizationAction",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "methodKey",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "name",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "position",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "hide": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "methodKey",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "move": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "methodKey",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "position",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "rename": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "methodKey",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "name",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "methodKey": {
+                    "flags": 1,
+                    "type": "string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                },
+                "name": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentSessionId": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Identity\\EntityId"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Data\\PaymentSessionView": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "kind",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentSessionKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "gateway",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "storedValueKind",
+                            "type": "?Commerz\\Ports\\StoredValue\\Enums\\StoredValueKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "storedValueAccountId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "storedValueHoldId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "externalId",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "status",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentSessionStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "amount",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "authorized",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captured",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captureClosed",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "actionUrl",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "attempts",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "errorCode",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "errorMessage",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "captures",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "createdAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "updatedAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "remainingCapturable": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Money\\Money",
+                    "doc": []
+                }
+            },
             "properties": {},
             "constants": [],
             "enum_backing": null,
@@ -8150,6 +11178,218 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Sales\\Payments\\Data\\VoidPaymentSession": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "session",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentSessionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "reason",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "idempotencyKey",
+                            "type": "?Commerz\\Identity\\IdempotencyKey",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "actor",
+                            "type": "?Commerz\\Identity\\ActorRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {
+                "reason": {
+                    "flags": 1,
+                    "type": "?string",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentCaptureStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Initiating",
+                    "value": "'initiating'"
+                },
+                {
+                    "name": "Pending",
+                    "value": "'pending'"
+                },
+                {
+                    "name": "Succeeded",
+                    "value": "'succeeded'"
+                },
+                {
+                    "name": "Failed",
+                    "value": "'failed'"
+                },
+                {
+                    "name": "Unknown",
+                    "value": "'unknown'"
+                }
+            ]
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Order",
+                    "value": "'order'"
+                },
+                {
+                    "name": "TopUp",
+                    "value": "'top_up'"
+                }
+            ]
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "NotPaid",
+                    "value": "'not_paid'"
+                },
+                {
+                    "name": "PartiallyAuthorized",
+                    "value": "'partially_authorized'"
+                },
+                {
+                    "name": "Authorized",
+                    "value": "'authorized'"
+                },
+                {
+                    "name": "PartiallyCaptured",
+                    "value": "'partially_captured'"
+                },
+                {
+                    "name": "Captured",
+                    "value": "'captured'"
+                },
+                {
+                    "name": "Cancelled",
+                    "value": "'cancelled'"
+                }
+            ]
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentCustomizationAction": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Hide",
+                    "value": "'hide'"
+                },
+                {
+                    "name": "Rename",
+                    "value": "'rename'"
+                },
+                {
+                    "name": "Move",
+                    "value": "'move'"
+                }
+            ]
+        },
         "Commerz\\Sales\\Payments\\Enums\\PaymentEventOutcome": {
             "kind": "enum",
             "layer": "api",
@@ -8221,6 +11461,107 @@
                 }
             ]
         },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentSessionKind": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Gateway",
+                    "value": "'gateway'"
+                },
+                {
+                    "name": "StoredValue",
+                    "value": "'stored_value'"
+                }
+            ]
+        },
+        "Commerz\\Sales\\Payments\\Enums\\PaymentSessionStatus": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "isActive": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "bool",
+                    "doc": []
+                },
+                "isFinal": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "bool",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Pending",
+                    "value": "'pending'"
+                },
+                {
+                    "name": "Authorizing",
+                    "value": "'authorizing'"
+                },
+                {
+                    "name": "RequiresAction",
+                    "value": "'requires_action'"
+                },
+                {
+                    "name": "Authorized",
+                    "value": "'authorized'"
+                },
+                {
+                    "name": "PartiallyCaptured",
+                    "value": "'partially_captured'"
+                },
+                {
+                    "name": "Captured",
+                    "value": "'captured'"
+                },
+                {
+                    "name": "Voided",
+                    "value": "'voided'"
+                },
+                {
+                    "name": "Failed",
+                    "value": "'failed'"
+                },
+                {
+                    "name": "Unknown",
+                    "value": "'unknown'"
+                }
+            ]
+        },
         "Commerz\\Sales\\Payments\\Enums\\PaymentStatus": {
             "kind": "enum",
             "layer": "api",
@@ -8282,6 +11623,80 @@
                 }
             ]
         },
+        "Commerz\\Sales\\Payments\\Events\\PaymentCollectionStatusChanged": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "collection",
+                            "type": "Commerz\\Sales\\Payments\\Data\\PaymentCollectionId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "targetRef",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "order",
+                            "type": "?Commerz\\Sales\\Orders\\Data\\OrderId",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "from",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "to",
+                            "type": "Commerz\\Sales\\Payments\\Enums\\PaymentCollectionStatus",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Sales\\Payments\\Events\\PaymentStatusChanged": {
             "kind": "class",
             "layer": "api",
@@ -8338,6 +11753,104 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Sales\\Payments\\Exceptions\\CaptureExceedsAuthorization": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Errors\\CommerzException"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "session",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        },
+                        {
+                            "name": "requested",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        },
+                        {
+                            "name": "remaining",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "category": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
+                    "doc": []
+                },
+                "code": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "context": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "errorDescriptor": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Data\\ErrorDescriptor",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Sales\\Payments\\Exceptions\\InvalidPaymentEvent": {
             "kind": "class",
             "layer": "api",
@@ -8379,6 +11892,104 @@
                         }
                     ],
                     "return": null,
+                    "doc": []
+                },
+                "errorDescriptor": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Data\\ErrorDescriptor",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\InvalidPaymentSessionState": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Errors\\CommerzException"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "entityId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        },
+                        {
+                            "name": "status",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        },
+                        {
+                            "name": "reason",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 65
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "category": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Enums\\ErrorCategory",
+                    "doc": []
+                },
+                "code": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "context": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
                     "doc": []
                 },
                 "errorDescriptor": {
@@ -8468,6 +12079,56 @@
                     "by_reference": false,
                     "parameters": [],
                     "return": "array",
+                    "doc": []
+                },
+                "errorDescriptor": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Data\\ErrorDescriptor",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentCollectionNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Errors\\NotFound"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": null,
                     "doc": []
                 },
                 "errorDescriptor": {
@@ -8794,6 +12455,56 @@
                     "by_reference": false,
                     "parameters": [],
                     "return": "array",
+                    "doc": []
+                },
+                "errorDescriptor": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Packman\\Errors\\Data\\ErrorDescriptor",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Sales\\Payments\\Exceptions\\PaymentSessionNotFound": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Errors\\NotFound"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": null,
                     "doc": []
                 },
                 "errorDescriptor": {
@@ -11099,6 +14810,26 @@
                     "by_reference": false,
                     "parameters": [],
                     "return": "Commerz\\Sales\\Orders\\Contracts\\Orders",
+                    "doc": []
+                },
+                "paymentCollections": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Sales\\Payments\\Contracts\\PaymentCollections",
+                    "doc": []
+                },
+                "paymentMethods": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Sales\\Payments\\Contracts\\PaymentMethodResolver",
                     "doc": []
                 },
                 "payments": {

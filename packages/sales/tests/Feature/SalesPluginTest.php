@@ -10,6 +10,7 @@ use Commerz\Sales\Gateways\Contracts\PaymentGateway;
 use Commerz\Sales\Gateways\Internal\ManualGateway;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Internal\SequenceOrderNumbers;
+use Commerz\Sales\Payments\Contracts\PaymentCustomization;
 use Commerz\Sales\Plugins\SalesPlugin;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Testkit\PackageTestCase;
@@ -61,6 +62,7 @@ final class SalesPluginTest extends PackageTestCase
         self::assertSame([
             'payment_gateway' => PaymentGateway::class,
             'order_number_generator' => OrderNumberGenerator::class,
+            'payment_customization' => PaymentCustomization::class,
         ], $kinds);
     }
 

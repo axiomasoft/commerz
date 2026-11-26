@@ -14,6 +14,7 @@ use Packman\Errors\Contracts\ErrorCode;
 #[Api(since: '0.1')]
 enum SalesErrorCode: string implements ErrorCode
 {
+    case CaptureExceedsAuthorization = 'sales.capture_exceeds_authorization';
     case CartAlreadyPlaced = 'sales.cart_already_placed';
     case CartChanged = 'sales.cart_changed';
     case CartEmpty = 'sales.cart_empty';
@@ -27,6 +28,7 @@ enum SalesErrorCode: string implements ErrorCode
     case FulfillmentNotBookable = 'sales.fulfillment_not_bookable';
     case FulfillmentNotFound = 'sales.fulfillment_not_found';
     case FulfillmentNotShipped = 'sales.fulfillment_not_shipped';
+    case GatewayCapabilityUnsupported = 'sales.gateway_capability_unsupported';
     case InvalidCode = 'sales.invalid_code';
     case InvalidDeliveryMethod = 'sales.invalid_delivery_method';
     case InvalidFulfillment = 'sales.invalid_fulfillment';
@@ -39,6 +41,7 @@ enum SalesErrorCode: string implements ErrorCode
     case InvalidOrderNumber = 'sales.invalid_order_number';
     case InvalidPayment = 'sales.invalid_payment';
     case InvalidPaymentEvent = 'sales.invalid_payment_event';
+    case InvalidPaymentSessionState = 'sales.invalid_payment_session_state';
     case InvalidQuantity = 'sales.invalid_quantity';
     case InvalidRefund = 'sales.invalid_refund';
     case InvalidReturn = 'sales.invalid_return';
@@ -48,11 +51,13 @@ enum SalesErrorCode: string implements ErrorCode
     case OrderNotFound = 'sales.order_not_found';
     case OrderNotFulfillable = 'sales.order_not_fulfillable';
     case OrderNotPayable = 'sales.order_not_payable';
+    case PaymentCollectionNotFound = 'sales.payment_collection_not_found';
     case PaymentDeclined = 'sales.payment_declined';
     case PaymentExceedsBalance = 'sales.payment_exceeds_balance';
     case PaymentInProgress = 'sales.payment_in_progress';
     case PaymentNotFound = 'sales.payment_not_found';
     case PaymentOutcomeUnknown = 'sales.payment_outcome_unknown';
+    case PaymentSessionNotFound = 'sales.payment_session_not_found';
     case QuantityExceedsOutstanding = 'sales.quantity_exceeds_outstanding';
     case QuoteChanged = 'sales.quote_changed';
     case RefundExceedsBalance = 'sales.refund_exceeds_balance';

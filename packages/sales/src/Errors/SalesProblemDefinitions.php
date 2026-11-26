@@ -26,6 +26,7 @@ final readonly class SalesProblemDefinitions implements ProblemDefinitionProvide
     public function definitions(): array
     {
         return [
+            $this->define(SalesErrorCode::CaptureExceedsAuthorization, 409, 'Capture Exceeds Session Authorization', ErrorCategory::Conflict, ['session', 'requested_minor', 'remaining_minor', 'currency']),
             $this->define(SalesErrorCode::CartAlreadyPlaced, 409, 'Cart Already Placed', ErrorCategory::Conflict, ['cart', 'order']),
             $this->define(SalesErrorCode::CartChanged, 409, 'Cart Changed During Checkout', ErrorCategory::Conflict, ['cart', 'expected_version', 'actual_version']),
             $this->define(SalesErrorCode::CartEmpty, 422, 'Cart Is Empty', ErrorCategory::Validation, ['cart']),
@@ -39,6 +40,7 @@ final readonly class SalesProblemDefinitions implements ProblemDefinitionProvide
             $this->define(SalesErrorCode::FulfillmentNotBookable, 409, 'Fulfillment Not Bookable', ErrorCategory::Conflict, ['fulfillment', 'reason']),
             $this->define(SalesErrorCode::FulfillmentNotFound, 404, 'Fulfillment Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(SalesErrorCode::FulfillmentNotShipped, 409, 'Fulfillment Not Shipped', ErrorCategory::Conflict, ['fulfillment']),
+            $this->define(SalesErrorCode::GatewayCapabilityUnsupported, 422, 'Gateway Capability Unsupported', ErrorCategory::Validation, ['gateway', 'capability']),
             $this->define(SalesErrorCode::InvalidCode, 422, 'Invalid Sales Code', ErrorCategory::Validation, ['*']),
             $this->define(SalesErrorCode::InvalidDeliveryMethod, 422, 'Invalid Delivery Method', ErrorCategory::Validation, ['*']),
             $this->define(SalesErrorCode::InvalidFulfillment, 422, 'Invalid Fulfillment Command', ErrorCategory::Validation, ['*']),
@@ -51,6 +53,7 @@ final readonly class SalesProblemDefinitions implements ProblemDefinitionProvide
             $this->define(SalesErrorCode::InvalidOrderNumber, 422, 'Invalid Order Number', ErrorCategory::Validation, ['generator', 'number']),
             $this->define(SalesErrorCode::InvalidPayment, 422, 'Invalid Payment Request', ErrorCategory::Validation, ['*']),
             $this->define(SalesErrorCode::InvalidPaymentEvent, 422, 'Invalid Payment Event', ErrorCategory::Validation, ['field', 'reason']),
+            $this->define(SalesErrorCode::InvalidPaymentSessionState, 409, 'Invalid Payment Session State', ErrorCategory::Conflict, ['entity_id', 'status', 'reason']),
             $this->define(SalesErrorCode::InvalidQuantity, 422, 'Invalid Line Quantity', ErrorCategory::Validation, ['*']),
             $this->define(SalesErrorCode::InvalidRefund, 422, 'Invalid Refund Request', ErrorCategory::Validation, ['*']),
             $this->define(SalesErrorCode::InvalidReturn, 422, 'Invalid Return Request', ErrorCategory::Validation, ['*']),
@@ -60,11 +63,13 @@ final readonly class SalesProblemDefinitions implements ProblemDefinitionProvide
             $this->define(SalesErrorCode::OrderNotFound, 404, 'Order Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(SalesErrorCode::OrderNotFulfillable, 409, 'Order Not Fulfillable', ErrorCategory::Conflict, ['order', 'state']),
             $this->define(SalesErrorCode::OrderNotPayable, 409, 'Order Not Payable', ErrorCategory::Conflict, ['order', 'state']),
+            $this->define(SalesErrorCode::PaymentCollectionNotFound, 404, 'Payment Collection Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(SalesErrorCode::PaymentDeclined, 409, 'Payment Declined By Gateway', ErrorCategory::Conflict, ['gateway', 'reason']),
             $this->define(SalesErrorCode::PaymentExceedsBalance, 409, 'Payment Exceeds Order Balance', ErrorCategory::Conflict, ['order', 'requested_minor', 'balance_minor', 'currency']),
             $this->define(SalesErrorCode::PaymentInProgress, 409, 'Payment Initiation In Progress', ErrorCategory::Conflict, ['payment']),
             $this->define(SalesErrorCode::PaymentNotFound, 404, 'Payment Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(SalesErrorCode::PaymentOutcomeUnknown, 503, 'Payment Outcome Unknown', ErrorCategory::Unavailable, ['payment', 'gateway']),
+            $this->define(SalesErrorCode::PaymentSessionNotFound, 404, 'Payment Session Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(SalesErrorCode::QuantityExceedsOutstanding, 409, 'Quantity Exceeds Outstanding', ErrorCategory::Conflict, ['line', 'requested', 'available']),
             $this->define(SalesErrorCode::QuoteChanged, 409, 'Quote Changed Before Checkout', ErrorCategory::Conflict, ['expected_minor', 'expected_currency', 'actual_minor', 'actual_currency']),
             $this->define(SalesErrorCode::RefundExceedsBalance, 409, 'Refund Exceeds Payment Balance', ErrorCategory::Conflict, ['order', 'requested_minor', 'refundable_minor', 'currency']),
