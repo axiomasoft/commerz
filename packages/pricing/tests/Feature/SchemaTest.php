@@ -15,7 +15,9 @@ use Packman\Schema\Data\Compiler\ConstraintNames;
 uses(RefreshDatabase::class);
 
 const PRICING_TABLES = [
-    'price_lists', 'price_list_channels', 'prices', 'tax_classes', 'tax_zones', 'tax_zone_members', 'tax_rates',
+    'price_lists', 'price_list_channels', 'prices', 'staged_prices', 'price_history',
+    'tax_classes', 'tax_zones', 'tax_zone_members', 'tax_rates',
+    'markets', 'market_countries',
 ];
 
 function pricingTable(string $logical): string
@@ -152,7 +154,7 @@ it('has no foreign key to the core or other packages', function (): void {
         );
 
         foreach ($targets as $row) {
-            expect($row->target)->toMatch('/\A'.preg_quote($prefix, '/').'(price|tax)_/', "{$logical} references {$row->target}");
+            expect($row->target)->toMatch('/\A'.preg_quote($prefix, '/').'(price|staged_price|tax|market|markets)/', "{$logical} references {$row->target}");
         }
     }
 });

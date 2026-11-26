@@ -16,6 +16,7 @@ use Commerz\Pricing\PriceLists\Data\RestorePriceList;
 use Commerz\Pricing\PriceLists\Data\UnassignPriceListChannels;
 use Commerz\Pricing\PriceLists\Data\UpdatePriceList;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
+use Commerz\Pricing\PriceLists\Exceptions\PriceListCycleDetected;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Stores\Exceptions\ChannelArchived;
 use Commerz\Stores\Exceptions\ChannelNotFound;
@@ -30,10 +31,11 @@ interface PriceLists
      * @throws DuplicateCode
      * @throws ChannelNotFound|ChannelArchived
      * @throws CurrencyNotAllowed a channel does not sell in the currency of the list
+     * @throws PriceListNotFound|PriceListArchived|PriceListCycleDetected
      */
     public function create(CreatePriceList $command): PriceListView;
 
-    /** @throws PriceListNotFound|PriceListArchived */
+    /** @throws PriceListNotFound|PriceListArchived|PriceListCycleDetected */
     public function update(UpdatePriceList $command): PriceListView;
 
     /**

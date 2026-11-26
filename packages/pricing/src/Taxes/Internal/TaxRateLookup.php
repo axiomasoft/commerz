@@ -10,6 +10,7 @@ use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -58,8 +59,15 @@ final readonly class TaxRateLookup
     {
         $moment = Windows::format($at);
 
-        return $builder->whereRaw('(r.valid_from is null or r.valid_from <= ?::timestamptz)', [$moment])
-            ->whereRaw('(r.valid_until is null or ?::timestamptz < r.valid_until)', [$moment]);
+        $connection = $builder->getConnection();
+
+        if (! $connection instanceof Connection || $connection->getDriverName() === 'pgsql') {
+            return $builder->whereRaw('(r.valid_from is null or r.valid_from <= ?::timestamptz)', [$moment])
+                ->whereRaw('(r.valid_until is null or ?::timestamptz < r.valid_until)', [$moment]);
+        }
+
+        return $builder->where(static fn (Builder $q): Builder => $q->whereNull('r.valid_from')->orWhere('r.valid_from', '<=', $moment))
+            ->where(static fn (Builder $q): Builder => $q->whereNull('r.valid_until')->orWhere('r.valid_until', '>', $moment));
     }
 
     private function db(): ConnectionInterface

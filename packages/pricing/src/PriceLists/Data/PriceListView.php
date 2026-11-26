@@ -26,5 +26,8 @@ final readonly class PriceListView
         public array $channels,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public ?PriceListId $parentPriceListId = null,
+        public ?PriceListFormula $formula = null,
+        public ?RoundingRule $roundingRule = null,
     ) {}
 }

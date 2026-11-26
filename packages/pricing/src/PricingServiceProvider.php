@@ -15,7 +15,7 @@ final class PricingServiceProvider extends CommerzPluginServiceProvider
 {
     protected const string PLUGIN = PricingPlugin::class;
 
-    public const array NOUNS = ['price', 'tax'];
+    public const array NOUNS = ['price', 'staged_price', 'tax', 'market'];
 
     /** @var list<class-string<PackageRegistrar>> */
     protected const array REGISTRARS = [

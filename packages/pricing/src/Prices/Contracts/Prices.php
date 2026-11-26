@@ -13,8 +13,10 @@ use Commerz\Ports\Prices\Exceptions\PriceNotFound;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\ExplainPrice;
+use Commerz\Pricing\Prices\Data\ListPriceHistory;
 use Commerz\Pricing\Prices\Data\ListPrices;
 use Commerz\Pricing\Prices\Data\PriceExplanation;
+use Commerz\Pricing\Prices\Data\PriceHistoryEntry;
 use Commerz\Pricing\Prices\Data\PriceView;
 use Commerz\Pricing\Prices\Data\RemovePrice;
 use Commerz\Pricing\Prices\Data\ReschedulePrice;
@@ -71,4 +73,11 @@ interface Prices
 
     /** Why a sellable costs what it costs: every candidate price with its verdict. Never throws for a missing price. */
     public function explain(ExplainPrice $query): PriceExplanation;
+
+    /**
+     * Reads immutable entries from the append-only `cmz_price_history` journal, newest first.
+     *
+     * @return list<PriceHistoryEntry>
+     */
+    public function history(ListPriceHistory $query): array;
 }

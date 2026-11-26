@@ -29,6 +29,7 @@ final readonly class DatabasePriceResolver implements PriceResolver
         private PriceCandidates $candidates,
         private Channels $channels,
         private PricingOptions $config,
+        private ?PriceHistoryJournal $history = null,
     ) {}
 
     public function resolveMany(array $requests, CommerceContext $context): array
@@ -84,18 +85,55 @@ final readonly class DatabasePriceResolver implements PriceResolver
             return $pricesIncludeTax ??= $this->channels->find($context->channel)->pricesIncludeTax;
         };
 
-        $decisions = [];
+        $winnersByIndex = [];
+        $rankedByIndex = [];
+        $discountedRequests = [];
 
-        foreach ($requests as $request) {
+        foreach ($requests as $index => $request) {
             $ranked = PriceSelection::rank($listed, (string) $request->sellable, $request->quantity, $context->customerGroups, $context->at);
             $winner = PriceSelection::winner($ranked);
+            $winnersByIndex[$index] = $winner;
+            $rankedByIndex[$index] = $ranked;
+
+            if ($winner instanceof ListedPrice && $winner->compareAtMinor !== null) {
+                $discountedRequests[$index] = [
+                    'sellable' => (string) $request->sellable,
+                    'quantity' => $request->quantity,
+                    'winner' => $winner,
+                ];
+            }
+        }
+
+        $lowestByIndex = [];
+
+        if ($discountedRequests !== []) {
+            $lowestByIndex = $this->history !== null
+                ? $this->history->lowestLast30Days(
+                    discountedRequests: $discountedRequests,
+                    channel: $context->channel,
+                    currency: $context->currency,
+                    customerGroups: $context->customerGroups,
+                    at: $context->at,
+                )
+                : array_map(
+                    static fn (array $entry): Money => Money::ofMinor($entry['winner']->amountMinor, $context->currency),
+                    $discountedRequests,
+                );
+        }
+
+        $decisions = [];
+
+        foreach ($requests as $index => $request) {
+            $winner = $winnersByIndex[$index];
+            $ranked = $rankedByIndex[$index];
 
             if ($winner instanceof ListedPrice) {
                 $decisions[] = [new ResolvedPrice(
-                    Money::ofMinor($winner->amountMinor, $context->currency),
-                    $winner->compareAtMinor === null ? null : Money::ofMinor($winner->compareAtMinor, $context->currency),
-                    $winner->taxIncluded ?? $channelTax(),
-                    'price_list:'.$winner->priceList,
+                    unit: Money::ofMinor($winner->amountMinor, $context->currency),
+                    compareAt: $winner->compareAtMinor === null ? null : Money::ofMinor($winner->compareAtMinor, $context->currency),
+                    taxIncluded: $winner->taxIncluded ?? $channelTax(),
+                    source: 'price_list:'.$winner->priceList,
+                    lowestPriceLast30Days: $winner->compareAtMinor === null ? null : ($lowestByIndex[$index] ?? Money::ofMinor($winner->amountMinor, $context->currency)),
                 ), false, $ranked];
 
                 continue;

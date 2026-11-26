@@ -104,6 +104,39 @@
         {
             "package": "axiomasoft/commerz-pricing",
             "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidCountries",
+            "code": "pricing.invalid_countries",
+            "type": "urn:packman:problem:pricing.invalid_countries",
+            "status": 422,
+            "title": "Invalid Market Countries",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidCurrencies",
+            "code": "pricing.invalid_currencies",
+            "type": "urn:packman:problem:pricing.invalid_currencies",
+            "status": 422,
+            "title": "Invalid Market Currencies",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidFormula",
+            "code": "pricing.invalid_formula",
+            "type": "urn:packman:problem:pricing.invalid_formula",
+            "status": 422,
+            "title": "Invalid Price List Formula",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
             "case": "InvalidGroup",
             "code": "pricing.invalid_group",
             "type": "urn:packman:problem:pricing.invalid_group",
@@ -170,6 +203,17 @@
         {
             "package": "axiomasoft/commerz-pricing",
             "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidRoundingRule",
+            "code": "pricing.invalid_rounding_rule",
+            "type": "urn:packman:problem:pricing.invalid_rounding_rule",
+            "status": 422,
+            "title": "Invalid Price Rounding Rule",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
             "case": "InvalidTaxAmount",
             "code": "pricing.invalid_tax_amount",
             "type": "urn:packman:problem:pricing.invalid_tax_amount",
@@ -186,6 +230,17 @@
             "type": "urn:packman:problem:pricing.invalid_tax_code",
             "status": 422,
             "title": "Invalid Tax Code",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidTaxExemption",
+            "code": "pricing.invalid_tax_exemption",
+            "type": "urn:packman:problem:pricing.invalid_tax_exemption",
+            "status": 422,
+            "title": "Invalid Tax Exemption",
             "retryable": false,
             "category": "validation"
         },
@@ -225,6 +280,17 @@
         {
             "package": "axiomasoft/commerz-pricing",
             "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "InvalidVatNumber",
+            "code": "pricing.invalid_vat_number",
+            "type": "urn:packman:problem:pricing.invalid_vat_number",
+            "status": 422,
+            "title": "Invalid B2B VAT Number",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
             "case": "InvalidWindow",
             "code": "pricing.invalid_window",
             "type": "urn:packman:problem:pricing.invalid_window",
@@ -236,11 +302,55 @@
         {
             "package": "axiomasoft/commerz-pricing",
             "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "MarketArchived",
+            "code": "pricing.market_archived",
+            "type": "urn:packman:problem:pricing.market_archived",
+            "status": 409,
+            "title": "Market Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "MarketCountryTaken",
+            "code": "pricing.market_country_taken",
+            "type": "urn:packman:problem:pricing.market_country_taken",
+            "status": 409,
+            "title": "Market Country Already Assigned",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "MarketNotFound",
+            "code": "pricing.market_not_found",
+            "type": "urn:packman:problem:pricing.market_not_found",
+            "status": 404,
+            "title": "Market Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
             "case": "PriceListArchived",
             "code": "pricing.price_list_archived",
             "type": "urn:packman:problem:pricing.price_list_archived",
             "status": 409,
             "title": "Price List Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "PriceListCycle",
+            "code": "pricing.price_list_cycle",
+            "type": "urn:packman:problem:pricing.price_list_cycle",
+            "status": 409,
+            "title": "Price List Formula Cycle Detected",
             "retryable": false,
             "category": "conflict"
         },
@@ -274,6 +384,28 @@
             "type": "urn:packman:problem:pricing.price_window_overlap",
             "status": 409,
             "title": "Price Window Overlap",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "StagedPriceNotFound",
+            "code": "pricing.staged_price_not_found",
+            "type": "urn:packman:problem:pricing.staged_price_not_found",
+            "status": 404,
+            "title": "Staged Price Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-pricing",
+            "enum": "Commerz\\Pricing\\Errors\\Enums\\PricingErrorCode",
+            "case": "StagedPriceStateConflict",
+            "code": "pricing.staged_price_state_conflict",
+            "type": "urn:packman:problem:pricing.staged_price_state_conflict",
+            "status": 409,
+            "title": "Staged Price State Conflict",
             "retryable": false,
             "category": "conflict"
         },

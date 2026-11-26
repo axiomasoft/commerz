@@ -32,6 +32,7 @@ final readonly class PricingSchemaSets implements SchemaSetProvider
                 package: 'axiomasoft/commerz-pricing',
                 name: 'commerz-pricing',
                 path: dirname(__DIR__, 2).'/database/migrations',
+                version: 2,
             ),
         ];
     }

@@ -11,5 +11,10 @@ use Packman\Attributes\Api;
 final readonly class TaxResult
 {
     /** @param  list<TaxAmount>  $amounts */
-    public function __construct(public array $amounts) {}
+    public function __construct(
+        public array $amounts,
+        public bool $reverseCharge = false,
+        public bool $exempt = false,
+        public ?string $exemptionReason = null,
+    ) {}
 }
