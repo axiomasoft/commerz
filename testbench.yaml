@@ -9,3 +9,4 @@ dont-discover:
   - axiomasoft/commerz-sales
   - axiomasoft/commerz-shipping
   - axiomasoft/commerz-stored-value
+  - axiomasoft/commerz-subscriptions

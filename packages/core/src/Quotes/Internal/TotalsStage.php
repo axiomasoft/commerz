@@ -6,6 +6,7 @@ namespace Commerz\Quotes\Internal;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
+use Commerz\Money\RoundingMode;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteState;
@@ -14,13 +15,14 @@ use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
+use Commerz\Sellable\SellingPlan;
 use Packman\Attributes\Internal;
 
 /**
  * Settles the quote: every input line must be priced; each order-level adjustment is spread over the lines by
  * `MoneyAllocator` in proportion to what is left of each line (its subtotal after line adjustments and earlier
  * order-level shares), so no line goes below zero and the shares add up exactly; then the totals, which must not be
- * negative.
+ * negative, and the due-now / remaining-balance split for deposit and deferred selling plans.
  */
 #[Internal]
 final readonly class TotalsStage implements QuoteStage
@@ -92,6 +94,7 @@ final readonly class TotalsStage implements QuoteStage
 
         $taxTotal = $zero;
         $excludedTax = $zero;
+        $deliveryExcludedTax = $zero;
         $lineTaxes = [];
 
         foreach ($state->taxLines as $tax) {
@@ -101,6 +104,10 @@ final readonly class TotalsStage implements QuoteStage
 
             $taxTotal = $taxTotal->plus($tax->amount);
             $excludedTax = $tax->included ? $excludedTax : $excludedTax->plus($tax->amount);
+
+            if ($tax->target === AdjustmentTarget::Delivery && ! $tax->included) {
+                $deliveryExcludedTax = $deliveryExcludedTax->plus($tax->amount);
+            }
 
             if ($tax->lineId !== null) {
                 $lineTaxes[$tax->lineId][] = $tax;
@@ -139,6 +146,7 @@ final readonly class TotalsStage implements QuoteStage
                 $line->pricePerUnit,
                 $line->isGift,
                 $line->giftPromotionId,
+                $line->sellingPlan,
             );
         }
 
@@ -148,6 +156,90 @@ final readonly class TotalsStage implements QuoteStage
             throw new QuoteFailed($this->key(), 'negative_total', "the total {$total->toDecimal()} is negative");
         }
 
-        return $state->withTotals($settled, new QuoteTotals($subtotal, $discount, $deliveryNet, $taxTotal, $total));
+        [$dueNowAmount, $remainingBalanceAmount] = self::partitionSchedule(
+            $settled,
+            $total,
+            $deliveryNet->plus($deliveryExcludedTax),
+            $state->input->sellingPlan,
+            $state->input->rounding,
+        );
+
+        return $state->withTotals(
+            $settled,
+            new QuoteTotals($subtotal, $discount, $deliveryNet, $taxTotal, $total, $dueNowAmount, $remainingBalanceAmount),
+        );
+    }
+
+    /**
+     * @param  list<QuotedLine>  $settledLines
+     * @return array{Money, Money}
+     */
+    private static function partitionSchedule(
+        array $settledLines,
+        Money $total,
+        Money $deliveryGross,
+        ?SellingPlan $quotePlan,
+        RoundingMode $rounding,
+    ): array {
+        if ($total->isZero()) {
+            return [$total, $total];
+        }
+
+        $uniformPlan = self::uniformSellingPlan($settledLines, $quotePlan);
+        if ($uniformPlan !== null) {
+            $dueNow = $uniformPlan->computeDueNow($total, $rounding);
+
+            return [$dueNow, $total->minus($dueNow)];
+        }
+
+        $hasAnyPlan = false;
+        foreach ($settledLines as $line) {
+            if ($line->sellingPlan !== null) {
+                $hasAnyPlan = true;
+
+                break;
+            }
+        }
+
+        if (! $hasAnyPlan) {
+            return [$total, Money::zero($total->currency)];
+        }
+
+        $dueNow = $deliveryGross;
+        foreach ($settledLines as $line) {
+            $lineDue = $line->sellingPlan?->computeDueNow($line->total, $rounding) ?? $line->total;
+            $dueNow = $dueNow->plus($lineDue);
+        }
+
+        if ($dueNow->compare($total) > 0) {
+            $dueNow = $total;
+        }
+
+        return [$dueNow, $total->minus($dueNow)];
+    }
+
+    /**
+     * @param  list<QuotedLine>  $settledLines
+     */
+    private static function uniformSellingPlan(array $settledLines, ?SellingPlan $quotePlan): ?SellingPlan
+    {
+        $nonGift = array_values(array_filter($settledLines, static fn (QuotedLine $line): bool => ! $line->isGift));
+
+        if ($nonGift === []) {
+            return $quotePlan;
+        }
+
+        $first = $nonGift[0]->sellingPlan;
+        if ($first === null) {
+            return null;
+        }
+
+        foreach ($nonGift as $line) {
+            if ($line->sellingPlan === null || ! $first->equals($line->sellingPlan)) {
+                return null;
+            }
+        }
+
+        return $first;
     }
 }

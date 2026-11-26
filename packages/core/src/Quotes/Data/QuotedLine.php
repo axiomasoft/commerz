@@ -7,6 +7,7 @@ namespace Commerz\Quotes\Data;
 use Commerz\Measures\UnitPrice;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Commerz\Sellable\SellingPlan;
 use Packman\Attributes\Api;
 
 /** A settled line of a quote result: what an order line snapshots. */
@@ -34,5 +35,6 @@ final readonly class QuotedLine
         public ?UnitPrice $pricePerUnit = null,
         public bool $isGift = false,
         public ?string $giftPromotionId = null,
+        public ?SellingPlan $sellingPlan = null,
     ) {}
 }

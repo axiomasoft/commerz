@@ -1,0 +1,43 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-subscriptions configuration",
+    "type": "object",
+    "properties": {
+        "commerz-subscriptions": {
+            "type": "object",
+            "properties": {
+                "batch_size": {
+                    "type": "integer",
+                    "default": 100
+                },
+                "retry_policy": {
+                    "type": "object",
+                    "properties": {
+                        "backoff_delays_seconds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "default": [
+                                86400,
+                                259200,
+                                604800
+                            ]
+                        },
+                        "exhausted_action": {
+                            "type": "string",
+                            "default": "cancel"
+                        },
+                        "max_attempts": {
+                            "type": "integer",
+                            "default": 4
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
