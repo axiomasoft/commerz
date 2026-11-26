@@ -21,5 +21,9 @@ final readonly class StockItemView
         public StockItemStatus $status,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public ?string $hsCode = null,
+        public ?string $originCountryCode = null,
+        public ?string $material = null,
+        public ?string $customsDescription = null,
     ) {}
 }

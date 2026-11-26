@@ -47,6 +47,43 @@ it('validates sellable snapshots and addresses', function (): void {
         ->and(fn () => new Address('ru'))->toThrow(InvalidCommand::class, 'country')
         ->and(fn () => new Address('RU', 'KZ-ALA'))->toThrow(InvalidCommand::class, 'region')
         ->and((new Address('RU', 'RU-MOW'))->region)->toBe('RU-MOW');
+
+    $partial = Address::partial('RU', postalCode: '101000');
+    $full = new Address('RU', 'RU-MOW', 'Moscow', '101000', ['Tverskaya 1'], 'Ivan', '+79990000000');
+    $noPhone = new Address('DE', city: 'Berlin', lines: ['Strasse 1']);
+
+    expect($partial->isPartial())->toBeTrue()
+        ->and($partial->lines)->toBe([])
+        ->and($partial->city)->toBeNull()
+        ->and($partial->phone)->toBeNull()
+        ->and($full->isPartial())->toBeFalse()
+        ->and($noPhone->isPartial())->toBeTrue();
+
+    $withCustoms = new SellableSnapshot(
+        SellableRef::of('fake', '1'),
+        'SKU-1',
+        'Cotton Tee',
+        SellableKind::Physical,
+        true,
+        hsCode: '6109.10.00',
+        originCountryCode: 'CN',
+        material: '100% Cotton',
+        customsDescription: 'Men cotton t-shirt',
+    );
+
+    expect($withCustoms->hsCode)->toBe('6109.10.00')
+        ->and($withCustoms->originCountryCode)->toBe('CN')
+        ->and($withCustoms->material)->toBe('100% Cotton')
+        ->and($withCustoms->customsDescription)->toBe('Men cotton t-shirt')
+        ->and(pdtSnapshot()->hsCode)->toBeNull()
+        ->and(fn () => new SellableSnapshot(SellableRef::of('fake', '1'), 'S', 'Thing', SellableKind::Physical, true, originCountryCode: 'cn'))
+        ->toThrow(InvalidCommand::class, 'originCountryCode')
+        ->and(fn () => new SellableSnapshot(SellableRef::of('fake', '1'), 'S', 'Thing', SellableKind::Physical, true, hsCode: '  '))
+        ->toThrow(InvalidCommand::class, 'hsCode')
+        ->and(fn () => new SellableSnapshot(SellableRef::of('fake', '1'), 'S', 'Thing', SellableKind::Physical, true, material: '  '))
+        ->toThrow(InvalidCommand::class, 'material')
+        ->and(fn () => new SellableSnapshot(SellableRef::of('fake', '1'), 'S', 'Thing', SellableKind::Physical, true, customsDescription: '  '))
+        ->toThrow(InvalidCommand::class, 'customsDescription');
 });
 
 it('validates quote inputs, adjustments and taxes', function (): void {

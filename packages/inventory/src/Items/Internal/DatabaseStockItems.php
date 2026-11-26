@@ -72,6 +72,10 @@ final readonly class DatabaseStockItems implements StockItems
                     'name' => $command->name,
                     'unit' => $command->unit,
                     'policy' => $command->policy->value,
+                    'hs_code' => $command->hsCode,
+                    'origin_country_code' => $command->originCountryCode,
+                    'material' => $command->material,
+                    'customs_description' => $command->customsDescription,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]));
@@ -99,6 +103,17 @@ final readonly class DatabaseStockItems implements StockItems
                 }
 
                 $changes['policy'] = $command->policy->value;
+            }
+
+            foreach ([
+                'hs_code' => $command->hsCode,
+                'origin_country_code' => $command->originCountryCode,
+                'material' => $command->material,
+                'customs_description' => $command->customsDescription,
+            ] as $column => $value) {
+                if ($value !== null && $value !== Rows::nullableString($row, $column)) {
+                    $changes[$column] = $value;
+                }
             }
 
             if ($changes !== []) {
@@ -307,6 +322,10 @@ final readonly class DatabaseStockItems implements StockItems
             StockItemStatus::from(Rows::string($row, 'status')),
             Rows::date($row, 'created_at'),
             Rows::date($row, 'updated_at'),
+            Rows::nullableString($row, 'hs_code'),
+            Rows::nullableString($row, 'origin_country_code'),
+            Rows::nullableString($row, 'material'),
+            Rows::nullableString($row, 'customs_description'),
         );
     }
 

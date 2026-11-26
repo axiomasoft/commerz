@@ -193,3 +193,41 @@ it('unlinks idempotently and refuses to link an archived item', function (): voi
     expect(fn () => Inventory::items()->link(new LinkSellable(sellable('v1'), $item->id)))->toThrow(StockItemArchived::class)
         ->and(fn () => Inventory::items()->link(new LinkSellable(sellable('v1'), StockItemId::generate())))->toThrow(StockItemNotFound::class);
 });
+
+it('stores and updates optional customs attributes on stock items', function (): void {
+    $plain = Inventory::items()->create(new CreateStockItem('plain-tee'));
+
+    expect($plain->hsCode)->toBeNull()
+        ->and($plain->originCountryCode)->toBeNull()
+        ->and($plain->material)->toBeNull()
+        ->and($plain->customsDescription)->toBeNull();
+
+    $created = Inventory::items()->create(new CreateStockItem(
+        'cotton-tee',
+        name: 'Cotton Tee',
+        hsCode: '6109.10.00',
+        originCountryCode: 'CN',
+        material: '100% Cotton',
+        customsDescription: 'Knitted cotton t-shirt',
+    ));
+
+    expect($created->hsCode)->toBe('6109.10.00')
+        ->and($created->originCountryCode)->toBe('CN')
+        ->and($created->material)->toBe('100% Cotton')
+        ->and($created->customsDescription)->toBe('Knitted cotton t-shirt')
+        ->and(Inventory::items()->findBySku('cotton-tee')->hsCode)->toBe('6109.10.00');
+
+    $updated = Inventory::items()->update(new UpdateStockItem(
+        $created->id,
+        hsCode: '6109.90.00',
+        originCountryCode: 'TR',
+    ));
+
+    expect($updated->hsCode)->toBe('6109.90.00')
+        ->and($updated->originCountryCode)->toBe('TR')
+        ->and($updated->material)->toBe('100% Cotton')
+        ->and($updated->customsDescription)->toBe('Knitted cotton t-shirt')
+        ->and(fn () => new CreateStockItem('bad', originCountryCode: 'cn'))->toThrow(InvalidCommand::class)
+        ->and(fn () => new CreateStockItem('bad', hsCode: ' '))->toThrow(InvalidCommand::class)
+        ->and(fn () => new UpdateStockItem($created->id, originCountryCode: 'USA'))->toThrow(InvalidCommand::class);
+});

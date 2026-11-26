@@ -39,6 +39,10 @@ final readonly class SellableSnapshot
         public array $categories = [],
         public ?QuantityStepPolicy $quantityStepPolicy = null,
         public ?UnitPrice $unitPrice = null,
+        public ?string $hsCode = null,
+        public ?string $originCountryCode = null,
+        public ?string $material = null,
+        public ?string $customsDescription = null,
     ) {
         if ($sku === '' || strlen($sku) > 191) {
             throw new InvalidCommand('sku', 'must be 1..191 bytes', 'sellables.invalid_snapshot');
@@ -70,6 +74,22 @@ final readonly class SellableSnapshot
 
         if ($basePrice !== null && $unitPrice !== null && ! $basePrice->currency->equals($unitPrice->amount->currency)) {
             throw new InvalidCommand('unitPrice', 'currency must match basePrice', 'sellables.invalid_snapshot');
+        }
+
+        if ($hsCode !== null && (trim($hsCode) === '' || strlen($hsCode) > 32)) {
+            throw new InvalidCommand('hsCode', 'must be 1..32 bytes', 'sellables.invalid_snapshot');
+        }
+
+        if ($originCountryCode !== null && preg_match('/\A[A-Z]{2}\z/', $originCountryCode) !== 1) {
+            throw new InvalidCommand('originCountryCode', "'{$originCountryCode}' is not an ISO 3166-1 alpha-2 code", 'sellables.invalid_snapshot');
+        }
+
+        if ($material !== null && (trim($material) === '' || strlen($material) > 191)) {
+            throw new InvalidCommand('material', 'must be 1..191 bytes', 'sellables.invalid_snapshot');
+        }
+
+        if ($customsDescription !== null && (trim($customsDescription) === '' || strlen($customsDescription) > 500)) {
+            throw new InvalidCommand('customsDescription', 'must be 1..500 bytes', 'sellables.invalid_snapshot');
         }
     }
 }

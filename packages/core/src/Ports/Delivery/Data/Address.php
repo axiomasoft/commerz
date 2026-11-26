@@ -32,4 +32,20 @@ final readonly class Address
             throw new InvalidCommand('region', "'{$region}' is not an ISO 3166-2 code of {$country}", 'delivery.invalid_address');
         }
     }
+
+    /** Partial address for product-page delivery estimates and accelerated checkout (Apple Pay / Google Pay). */
+    public static function partial(
+        string $country,
+        ?string $region = null,
+        ?string $city = null,
+        ?string $postalCode = null,
+    ): self {
+        return new self($country, $region, $city, $postalCode);
+    }
+
+    /** Whether the address omits street lines, city, or phone (estimation-only / accelerated checkout). */
+    public function isPartial(): bool
+    {
+        return $this->lines === [] || $this->city === null || $this->phone === null;
+    }
 }

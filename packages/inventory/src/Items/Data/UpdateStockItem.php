@@ -15,7 +15,12 @@ final readonly class UpdateStockItem
         public StockItemId $item,
         public ?string $name = null,
         public ?StockPolicy $policy = null,
+        public ?string $hsCode = null,
+        public ?string $originCountryCode = null,
+        public ?string $material = null,
+        public ?string $customsDescription = null,
     ) {
         CreateStockItem::assertName($name);
+        CreateStockItem::assertCustoms($hsCode, $originCountryCode, $material, $customsDescription);
     }
 }
