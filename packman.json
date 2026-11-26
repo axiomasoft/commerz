@@ -260,6 +260,29 @@
             ]
         },
         {
+            "name": "axiomasoft/commerz-b2b",
+            "path": "packages/b2b",
+            "namespace": "Commerz\\B2b\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Approvals",
+                "BusinessUnits",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Internal",
+                "Laravel",
+                "Panels",
+                "PaymentTerms",
+                "Plugins",
+                "Quotes",
+                "Schema"
+            ]
+        },
+        {
             "name": "axiomasoft/commerz-full",
             "path": "packages/full",
             "namespace": "",

@@ -12,6 +12,7 @@
     "require": {
         "php": ">=8.4 <8.6",
         "axiomasoft/commerz": "^0.1",
+        "axiomasoft/commerz-b2b": "^0.1",
         "axiomasoft/commerz-catalog": "^0.1",
         "axiomasoft/commerz-inventory": "^0.1",
         "axiomasoft/commerz-pricing": "^0.1",

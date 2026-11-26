@@ -17,6 +17,7 @@ return [
     'sales' => ['kind' => 'feature', 'nouns' => ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund', 'exchange', 'claim'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'stored-value' => ['kind' => 'feature', 'nouns' => ['stored_value'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'subscriptions' => ['kind' => 'feature', 'nouns' => ['subscription'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
+    'b2b' => ['kind' => 'feature', 'nouns' => ['b2b'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'testkit' => ['kind' => 'testkit', 'nouns' => [], 'extra' => ['orchestra/*', 'axiomasoft/packman', 'axiomasoft/packman-*']],
     'full' => ['kind' => 'meta', 'nouns' => []],
 ];

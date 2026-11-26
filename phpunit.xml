@@ -18,6 +18,7 @@
         <testsuite name="Sales"><directory>packages/sales/tests</directory></testsuite>
         <testsuite name="StoredValue"><directory>packages/stored-value/tests</directory></testsuite>
         <testsuite name="Subscriptions"><directory>packages/subscriptions/tests</directory></testsuite>
+        <testsuite name="B2b"><directory>packages/b2b/tests</directory></testsuite>
         <testsuite name="Testkit"><directory>packages/testkit/tests</directory></testsuite>
         <testsuite name="Integration"><directory>tests/Integration</directory></testsuite>
         <testsuite name="EndToEnd"><directory>tests/EndToEnd</directory></testsuite>

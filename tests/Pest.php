@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Commerz\B2b\Tests\TestCase as B2bTestCase;
 use Commerz\Catalog\Tests\TestCase as CatalogTestCase;
 use Commerz\EndToEnd\Support\EndToEndTestCase;
 use Commerz\Inventory\Tests\TestCase as InventoryTestCase;
@@ -135,6 +136,7 @@ uses()->group('pg')->in(
     '../packages/stored-value/tests/Feature/SchemaTest.php',
     '../packages/stored-value/tests/Feature/StoredValueConcurrencyTest.php',
     '../packages/subscriptions/tests/Feature/SchemaTest.php',
+    '../packages/b2b/tests/Feature/SchemaTest.php',
     'Integration/SalesShippingQuoteTest.php',
     'EndToEnd/AssemblyTest.php',
     'EndToEnd/Concurrency/DetectorControlTest.php',
@@ -153,4 +155,5 @@ uses(ShippingTestCase::class)->in('../packages/shipping/tests/Feature');
 uses(SalesTestCase::class)->in('../packages/sales/tests/Feature');
 uses(StoredValueTestCase::class)->in('../packages/stored-value/tests/Feature');
 uses(SubscriptionsTestCase::class)->in('../packages/subscriptions/tests/Feature');
+uses(B2bTestCase::class)->in('../packages/b2b/tests/Feature');
 uses(EndToEndTestCase::class)->in('EndToEnd');

@@ -1,0 +1,30 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "axiomasoft/commerz-b2b configuration",
+    "type": "object",
+    "properties": {
+        "commerz-b2b": {
+            "type": "object",
+            "properties": {
+                "allow_self_approval": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "default_quote_validity_days": {
+                    "type": "integer",
+                    "default": 30
+                },
+                "max_hierarchy_depth": {
+                    "type": "integer",
+                    "default": 10
+                },
+                "quote_request_prefix": {
+                    "type": "string",
+                    "default": "RFQ"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

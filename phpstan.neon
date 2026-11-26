@@ -15,5 +15,6 @@ parameters:
         - packages/sales/src
         - packages/stored-value/src
         - packages/subscriptions/src
+        - packages/b2b/src
         - packages/testkit/src
         - packages/testkit/tests
