@@ -17,7 +17,7 @@ uses(RefreshDatabase::class);
 const CATALOG_TABLES = [
     'attributes', 'attribute_choices', 'options', 'option_values', 'product_types', 'product_type_attributes',
     'product_type_options', 'products', 'product_options', 'variants', 'variant_option_values', 'attribute_index',
-    'categories', 'category_products', 'listings',
+    'categories', 'category_products', 'listings', 'collections', 'collection_products', 'storefront_products',
 ];
 
 function catalogTable(string $logical): string

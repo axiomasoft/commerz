@@ -45,6 +45,7 @@
             "owns": [
                 "Attributes",
                 "Categories",
+                "Collections",
                 "Common",
                 "Configuration",
                 "Diagnostics",
@@ -58,6 +59,7 @@
                 "Plugins",
                 "Products",
                 "ProductTypes",
+                "Projection",
                 "Schema",
                 "Variants"
             ]

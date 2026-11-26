@@ -21,7 +21,8 @@ final readonly class CreateProductType
      * @param  list<string>  $productAttributes  attribute codes valid on the product, in position order
      * @param  list<string>  $variantAttributes  attribute codes valid on each variant, in position order
      * @param  list<string>  $variantAxes  option codes that create variants, in position order
-     * @param  list<string>  $required  attribute codes (of either level) that must be set at creation
+     * @param  list<string>  $required  attribute codes (of any level) that must be set at creation
+     * @param  list<string>  $overridableVariantAttributes  attribute codes with product fallback and optional variant override, in position order
      */
     public function __construct(
         public string $code,
@@ -31,6 +32,7 @@ final readonly class CreateProductType
         public array $variantAttributes = [],
         public array $variantAxes = [],
         public array $required = [],
+        public array $overridableVariantAttributes = [],
     ) {
         CatalogCodes::code('code', $code);
         CatalogCodes::code('kind', $kind);
@@ -38,6 +40,7 @@ final readonly class CreateProductType
         foreach ([
             'productAttributes' => $productAttributes,
             'variantAttributes' => $variantAttributes,
+            'overridableVariantAttributes' => $overridableVariantAttributes,
             'variantAxes' => $variantAxes,
             'required' => $required,
         ] as $field => $codes) {
@@ -54,13 +57,17 @@ final readonly class CreateProductType
             throw new InvalidCommand('variantAxes', 'at most '.self::MAX_AXES.' axes are allowed', 'catalog.too_many_axes');
         }
 
-        $both = array_intersect($productAttributes, $variantAttributes);
+        $overlap = [
+            ...array_intersect($productAttributes, $variantAttributes),
+            ...array_intersect($productAttributes, $overridableVariantAttributes),
+            ...array_intersect($variantAttributes, $overridableVariantAttributes),
+        ];
 
-        if ($both !== []) {
-            throw new InvalidProductType("attribute '".reset($both)."' is on both levels");
+        if ($overlap !== []) {
+            throw new InvalidProductType("attribute '".reset($overlap)."' is on multiple levels");
         }
 
-        $unknown = array_diff($required, $productAttributes, $variantAttributes);
+        $unknown = array_diff($required, $productAttributes, $variantAttributes, $overridableVariantAttributes);
 
         if ($unknown !== []) {
             throw new InvalidProductType("required attribute '".reset($unknown)."' has no slot");

@@ -11,6 +11,8 @@ use Commerz\Catalog\Attributes\Internal\DatabaseAttributes;
 use Commerz\Catalog\Catalog;
 use Commerz\Catalog\Categories\Contracts\Categories;
 use Commerz\Catalog\Categories\Internal\DatabaseCategories;
+use Commerz\Catalog\Collections\Contracts\Collections;
+use Commerz\Catalog\Collections\Internal\DatabaseCollections;
 use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Diagnostics\CatalogDoctorCheck;
 use Commerz\Catalog\Listings\Contracts\Listings;
@@ -22,6 +24,9 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\Products\Internal\DatabaseProducts;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
+use Commerz\Catalog\Projection\Contracts\StorefrontProjection;
+use Commerz\Catalog\Projection\Internal\DatabaseStorefrontProjection;
+use Commerz\Catalog\Projection\Internal\StorefrontOutboxProjector;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Commerz\Catalog\Variants\Internal\DatabaseVariants;
 use Commerz\Schema\CommerzSchemaSets;
@@ -63,7 +68,11 @@ final class CatalogRegistrar implements PackageRegistrar
         $app->singleton(Products::class, DatabaseProducts::class);
         $app->singleton(Variants::class, DatabaseVariants::class);
         $app->singleton(Categories::class, DatabaseCategories::class);
+        $app->singleton(Collections::class, DatabaseCollections::class);
         $app->singleton(Listings::class, DatabaseListings::class);
+        $app->singleton(DatabaseStorefrontProjection::class);
+        $app->singleton(StorefrontProjection::class, DatabaseStorefrontProjection::class);
+        $app->singleton(StorefrontOutboxProjector::class);
         $app->singleton(Catalog::class);
     }
 }

@@ -56,7 +56,11 @@ final readonly class DatabaseProductTypes implements ProductTypes
 
         return $this->transactions->run(function () use ($command): ProductTypeView {
             $db = $this->db();
-            $attributes = $this->attributes($db, [...$command->productAttributes, ...$command->variantAttributes]);
+            $attributes = $this->attributes($db, [
+                ...$command->productAttributes,
+                ...$command->variantAttributes,
+                ...$command->overridableVariantAttributes,
+            ]);
             $options = $this->options($db, $command->variantAxes);
             $id = Uuid7::generate();
             $now = PgTimestamp::now();
@@ -77,6 +81,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
             }
 
             $this->insertSlots($db, $id, AttributeLevel::Product, $command->productAttributes, $attributes, $command->required, 0);
+            $this->insertSlots($db, $id, AttributeLevel::OverridableVariant, $command->overridableVariantAttributes, $attributes, $command->required, 0);
             $this->insertSlots($db, $id, AttributeLevel::Variant, $command->variantAttributes, $attributes, $command->required, 0);
 
             $axes = [];
@@ -103,7 +108,11 @@ final readonly class DatabaseProductTypes implements ProductTypes
                 throw new ProductTypeArchived(Rows::string($row, 'code'));
             }
 
-            $adds = [...$command->addProductAttributes, ...$command->addVariantAttributes];
+            $adds = [
+                ...$command->addProductAttributes,
+                ...$command->addVariantAttributes,
+                ...$command->addOverridableVariantAttributes,
+            ];
 
             if ($command->name === null && $adds === []) {
                 return $this->find($command->type);
@@ -121,6 +130,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
 
                 foreach ([
                     [AttributeLevel::Product, $command->addProductAttributes],
+                    [AttributeLevel::OverridableVariant, $command->addOverridableVariantAttributes],
                     [AttributeLevel::Variant, $command->addVariantAttributes],
                 ] as [$level, $codes]) {
                     $last = $db->table($slots)->where('product_type_id', $command->type->value)->where('level', $level->value)->max('position');
@@ -301,7 +311,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
         $slotRows = $db->table($this->tables->table('product_type_attributes').' as s')
             ->join($this->tables->table('attributes').' as a', 'a.id', '=', 's.attribute_id')
             ->whereIn('s.product_type_id', $ids)
-            ->orderByRaw("case s.level when 'product' then 0 else 1 end")
+            ->orderByRaw("case s.level when 'product' then 0 when 'overridable_variant' then 1 else 2 end")
             ->orderBy('s.position')
             ->select('s.product_type_id', 's.attribute_id', 's.level', 's.required', 's.position', 'a.code')
             ->get();

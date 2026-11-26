@@ -9,7 +9,7 @@ declare(strict_types=1);
  */
 return [
     'core' => ['kind' => 'core', 'nouns' => ['store', 'channel', 'schema', 'operation', 'outbox', 'entity_link', 'custom_field', 'webhook'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
-    'catalog' => ['kind' => 'feature', 'nouns' => ['product', 'variant', 'option', 'attribute', 'category', 'listing'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
+    'catalog' => ['kind' => 'feature', 'nouns' => ['product', 'variant', 'option', 'attribute', 'category', 'listing', 'collection', 'storefront_product'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'inventory' => ['kind' => 'feature', 'nouns' => ['stock'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'pricing' => ['kind' => 'feature', 'nouns' => ['price', 'tax'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'promotions' => ['kind' => 'feature', 'nouns' => ['promotion', 'coupon'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],

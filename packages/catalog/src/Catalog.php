@@ -6,10 +6,12 @@ namespace Commerz\Catalog;
 
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Categories\Contracts\Categories;
+use Commerz\Catalog\Collections\Contracts\Collections;
 use Commerz\Catalog\Listings\Contracts\Listings;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Projection\Contracts\StorefrontProjection;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Packman\Attributes\Api;
 
@@ -25,6 +27,8 @@ final readonly class Catalog
         private Variants $variants,
         private Categories $categories,
         private Listings $listings,
+        private Collections $collections,
+        private StorefrontProjection $storefront,
     ) {}
 
     public function products(): Products
@@ -60,5 +64,15 @@ final readonly class Catalog
     public function listings(): Listings
     {
         return $this->listings;
+    }
+
+    public function collections(): Collections
+    {
+        return $this->collections;
+    }
+
+    public function storefront(): StorefrontProjection
+    {
+        return $this->storefront;
     }
 }
