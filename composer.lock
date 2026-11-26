@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "810af375386cd09afef35f0cb57d3b09",
+    "content-hash": "81adcbe8209b680a3cb269dd1851614a",
     "packages": [
         {
             "name": "axiomasoft/commerz",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "06094bdb2539fde6ed3195896ef9baede4868916"
+                "reference": "0fecbc4f7f3b3eb545d95f11eb4d478da1a0e729"
             },
             "require": {
                 "axiomasoft/packman": "^0.1.1",
@@ -96,12 +96,89 @@
             }
         },
         {
+            "name": "axiomasoft/commerz-b2b",
+            "version": "0.1.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/b2b",
+                "reference": "ca648463ba006fac1ef962e076ccf6e8c2877c7f"
+            },
+            "require": {
+                "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
+                "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
+                "illuminate/contracts": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": ">=8.4 <8.6"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Commerz\\B2b\\B2bServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "b2b",
+                    "owns": [
+                        "Approvals",
+                        "BusinessUnits",
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "Internal",
+                        "Laravel",
+                        "Panels",
+                        "PaymentTerms",
+                        "Plugins",
+                        "Quotes",
+                        "Schema"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Commerz\\B2b\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Commerz\\B2b\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
+            "description": "Commerz B2B: business unit hierarchies, associates, approval flows, payment terms, credit limits, and 3-stage negotiated quotes.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "axiomasoft/commerz-catalog",
             "version": "0.1.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "41d0c777c4dbc70c4f665280f1e8de0621a978b3"
+                "reference": "d6c966fdc18dc03458dd558e65c2758a42cbde24"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -189,10 +266,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/full",
-                "reference": "a6a20021da31ab24930dd9a8e066e3e32f8bf755"
+                "reference": "db93b8e7d094609b3bf29560d1f6dc723f0b9156"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
+                "axiomasoft/commerz-b2b": "^0.1",
                 "axiomasoft/commerz-catalog": "^0.1",
                 "axiomasoft/commerz-inventory": "^0.1",
                 "axiomasoft/commerz-pricing": "^0.1",
@@ -235,7 +313,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "c034ce0fc5a3e257f038e9da1daafcad2aaaee35"
+                "reference": "98507ac9805b5d09309fd1a1c4ce3a120d771148"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -318,7 +396,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "92b2ab289c95d2380beca38c436270d265a6f160"
+                "reference": "db0f94a615f3cd58bd257e30d853fb5251ea0895"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -397,7 +475,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "003ac13e9b48bd5fd4519ca3f264d4790bbe9de4"
+                "reference": "6645b55ecde5f61cdea8cb4b5fc791d728f0f3ab"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -477,7 +555,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "c22add8482f0df1efd9ee63ae464ade0b8d30868"
+                "reference": "43b4163b33a16907d1632227f375820edc4c00d5"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -510,12 +588,14 @@
                         "Configuration",
                         "Diagnostics",
                         "Errors",
+                        "Exchanges",
                         "Facades",
                         "Fulfillments",
                         "Gateways",
                         "Internal",
                         "Laravel",
                         "Numbering",
+                        "OrderChanges",
                         "Orders",
                         "Panels",
                         "Payments",
@@ -560,7 +640,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "eb2817df9786015ac6f5b46c450d2264ff20e214"
+                "reference": "a655e6dd836130d4af0114fcecf1c1d517e6d672"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -568,6 +648,7 @@
                 "axiomasoft/packman-panels": "^0.1.1",
                 "axiomasoft/packman-plugins": "^0.1.1",
                 "axiomasoft/packman-schema": "^0.1.1",
+                "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
@@ -597,7 +678,9 @@
                         "Laravel",
                         "Methods",
                         "Options",
+                        "Packing",
                         "Panels",
+                        "PickupPoints",
                         "Plugins",
                         "Rates",
                         "Schema",
@@ -639,7 +722,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/stored-value",
-                "reference": "666e58cb984afb6564f7c34388c030acf81a89c7"
+                "reference": "1ae223faff9d3af0c0086d620c44e7b2d8b20c95"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -716,7 +799,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/subscriptions",
-                "reference": "fe3077adf0a371bc9d70f9de9432cd827ba337a8"
+                "reference": "1718c4475df430b0f8c627b0cd0812b00383f57c"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -6995,7 +7078,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "30e20d488b184530c2ee57cfff285905966a68bc"
+                "reference": "9fbbbc9eaba9f3e9064fb3c5d0d9490db63e9613"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -7008,6 +7091,12 @@
                 "orchestra/testbench": "^11.3",
                 "php": ">=8.4 <8.6"
             },
+            "suggest": {
+                "axiomasoft/commerz-catalog": "Required for AssertsSearchEngineCompliance and FakeSearchEngine.",
+                "axiomasoft/commerz-pricing": "Required for AssertsTaxCalculatorCompliance.",
+                "axiomasoft/commerz-sales": "Required for AssertsPaymentProviderCompliance.",
+                "axiomasoft/commerz-shipping": "Required for AssertsCarrierCompliance."
+            },
             "type": "library",
             "extra": {
                 "packman": {
@@ -7015,6 +7104,7 @@
                     "package-type": "dev",
                     "stability": "stable",
                     "owns": [
+                        "Contracts",
                         "Fakes"
                     ]
                 },
@@ -12076,6 +12166,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "axiomasoft/commerz": 20,
+        "axiomasoft/commerz-b2b": 20,
         "axiomasoft/commerz-catalog": 20,
         "axiomasoft/commerz-full": 20,
         "axiomasoft/commerz-inventory": 20,

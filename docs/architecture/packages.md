@@ -15,9 +15,12 @@ packages may depend on each other.
 | `packages/pricing` | `axiomasoft/commerz-pricing` | `Commerz\Pricing\` | `price`, `tax` | `PriceResolver`, quote stage `tax` | core |
 | `packages/promotions` | `axiomasoft/commerz-promotions` | `Commerz\Promotions\` | `promotion`, `coupon` | `PromotionUsage`, quote stages `promotions.*` | core |
 | `packages/shipping` | `axiomasoft/commerz-shipping` | `Commerz\Shipping\` | `shipping` (`cmz_shipping_zones`, `_zone_members`, `_methods`, `_method_channels`, `_rates`, `_bookings`) | `DeliveryOptions`, `ShipmentBooking`, quote stage `delivery` | core |
-| `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\Sales\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` (`cmz_carts`, `_cart_lines`, `_orders`, `_order_lines`, `_order_events`, `_payments`, `_payment_events`, `_refunds`, `_fulfillments`, `_fulfillment_lines`, `_returns`, `_return_lines`, sequence `cmz_order_number_seq`) | none (consumer of ports; contributes SPIs `payment_gateway`, `order_number_generator`) | core |
+| `packages/sales` | `axiomasoft/commerz-sales` | `Commerz\Sales\` | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` (`cmz_carts`, `_cart_lines`, `_orders`, `_order_lines`, `_order_events`, `_payments`, `_payment_events`, `_refunds`, `_fulfillments`, `_fulfillment_lines`, `_returns`, `_return_lines`, sequence `cmz_order_number_seq`) | none (consumer of ports; contributes SPIs `payment_gateway`, `order_number_generator`, `order_splitter`) | core |
+| `packages/stored-value` | `axiomasoft/commerz-stored-value` | `Commerz\StoredValue\` | `stored_value` (`cmz_stored_value_accounts`, `_holds`, `_ledger`) | `StoredValueTender` | core |
+| `packages/subscriptions` | `axiomasoft/commerz-subscriptions` | `Commerz\Subscriptions\` | `subscription` (`cmz_subscription_contracts`, `_contract_lines`, `_billing_cycles`, `_renewal_orders`, `_processed_events`) | none (Outbox order listener + billing cycle runner) | core |
+| `packages/b2b` | `axiomasoft/commerz-b2b` | `Commerz\B2b\` | `b2b` (`cmz_b2b_business_units`, `_associates`, `_payment_terms`, `_credit_accounts`, `_credit_holds`, `_approval_rules`, `_approval_flows`, `_quote_requests`, `_staged_quotes`, `_negotiated_quotes`) | none (B2B quotes, credit limits, approval flows) | core |
 | `packages/full` | `axiomasoft/commerz-full` | — | — | — | all of the above (metapackage) |
-| `packages/testkit` | `axiomasoft/commerz-testkit` | `Commerz\Testkit\` | — | in-memory fakes of all ports, plugin contract tests, concurrency harness | core (dev use) |
+| `packages/testkit` | `axiomasoft/commerz-testkit` | `Commerz\Testkit\` | — | in-memory fakes of all ports, certification contract traits, plugin contract tests, PostgreSQL concurrency stress harness | core (dev use) |
 
 Stores and channels are a core module, not a package (D4): every package needs
 the channel, so a separate package would become a second core. Coupons are a
@@ -35,22 +38,33 @@ public categories it needs (see [Code layout](#code-layout)).
 | `Attributes` | `Api`, `Spi`, `SpiKind` |
 | `Money` | `Money`, `Currency`, `RoundingMode`, `Rate` (basis points), `MoneyAllocator` |
 | `Measures` | `Quantity` (int + unit), `Measure` (decimal string + unit, for attributes), `LocalizedText` |
-| `Identity` | `EntityId` (abstract, UUIDv7), `Uuid7` (generator, test seam), `SellableRef`, `CustomerRef`, `ActorRef`, `IdempotencyKey` |
+| `Identity` | `EntityId` (abstract, UUIDv7), `Uuid7` (generator, test seam), `SellableRef`, `CustomerRef`, `SellerRef`, `ActorRef`, `IdempotencyKey` |
 | `Context` | `CommerceContext`, `Contracts\ContextResolver` (SPI for hosts) |
 | `Errors` | `CommerzException`, `Packman\Errors\Enums\ErrorCategory`, `InvalidCommand`, `NotFound`, `IdempotencyConflict`, `InvalidConfiguration`, `UnsupportedContribution` |
-| `Configuration` | `CommerzConfig`, `StockMode`, `CustomersMode` |
-| `Schema` | `TableNames`, `CommerzMigration`, `ConstraintNames`, `Contracts\SchemaOwnership` |
-| `Operations` | `Contracts\Transactions`, `Contracts\OperationReceipts` |
+| `Configuration` | `CommerzConfig`, `StockMode`, `CustomersMode`, `FailurePolicy` |
+| `Schema` | `TableNames`, `CommerzMigration`, `ConstraintNames`, `Contracts\SchemaOwnership`, `SchemaScope` |
+| `Time` | `Contracts\Clock`, `SystemClock`, `FrozenClock` |
+| `Operations` | `Contracts\Transactions`, `Contracts\OperationReceipts`, `ConfigurableOperation` |
 | `Outbox` | `Contracts\Outbox`, `IntegrationEvent`, relay command |
+| `Links` | `Contracts\LinkRegistry`, `Contracts\CrossModuleQuery`, `EntityLink`, `LinkQuery` |
+| `CustomFields` | `Contracts\CustomFieldRegistry`, `Contracts\CustomFieldIndexer`, `Contracts\CustomFieldQuery` |
+| `Metadata` | `MetadataBag` (`public`, `private`) |
+| `Webhooks` | `Contracts\InboundWebhookGateway`, `Contracts\InboundWebhookHandler`, `Contracts\WebhookSubscriptions`, `Contracts\WebhookTransport` |
+| `Sellable` | `SellingPlan`, `BillingPolicy`, `DeliveryPolicy`, `PricingPolicy`, `BalanceDueTrigger`, `PricingAdjustmentKind`, `SellingPlanInterval` |
 | `Plugins` | `CorePlugin`, `CommerzPlugins`, `Packman\Plugins\Contracts\Registry\ExtensionPlugin`, `PluginManifest`, `PluginRegistrar`, `ContributionKind`, `PluginInspector`, `Contributions` |
 | `Stores` | `Contracts\Stores`, `Contracts\Channels`, `StoreId`, `ChannelId`, commands, views, events |
 | `Pagination` | `Page<T>`, `Cursor` |
 | `Ports\Sellables` | `Sellables`, `SellableProvider`, `SellableSnapshot`, `SellableKind`, `SellableUnavailable` |
 | `Ports\Stock` | `StockAvailability`, `StockReservations`, `StockReturns`, DTOs, `InsufficientStock` |
 | `Ports\Prices` | `PriceResolver`, `ResolvePrice`, `ResolvedPrice` |
+| `Ports\Taxes` | `TaxEngine`, tax calculation DTOs |
 | `Ports\Promotions` | `PromotionUsage`, `ConsumePromotionUsage`, `RestorePromotionUsage`, `UsageLimitReached` |
-| `Ports\Delivery` | `DeliveryOptions`, `ShipmentBooking`, `DeliveryRequest`, `DeliveryOption`, `Address`, `Parcel` |
+| `Ports\Delivery` | `DeliveryOptions`, `ShipmentBooking`, `PickupPointProvider`, `OrderRoutingRule`, `DeliveryRequest`, `DeliveryOption`, `Address`, `Parcel` |
 | `Ports\Customers` | `CustomerDirectory`, `CustomerProfile` |
+| `Ports\StoredValue` | `StoredValueTender`, hold/capture/release/refund DTOs |
+| `Ports\Assets` | `AssetResolverPort` |
+| `Ports\Digital` | `DigitalDeliveryPort` |
+| `Ports\Privacy` | `PiiCipherPort` |
 | `Quotes` | `QuotePipeline`, `QuoteStage`, `QuoteAnchor`, `QuoteInput`, `QuoteState`, `QuoteResult`, `Adjustment`, `TaxLine`, `QuoteTotals` |
 | root | `Commerz` (root API), `Facades\Commerz`, `CommerzServiceProvider` |
 
@@ -120,4 +134,4 @@ Not part of release 0.1; each gets its own plan:
   `commerz-chatom` (order chat).
 - Adapters: payment (`commerz-payment-yookassa`, `-stripe`), carriers
   (`commerz-shipping-cdek`), search engines.
-- Domains: `commerz-giftcards`, `commerz-loyalty`, extended WMS.
+- Domains: `commerz-loyalty`, extended WMS.
