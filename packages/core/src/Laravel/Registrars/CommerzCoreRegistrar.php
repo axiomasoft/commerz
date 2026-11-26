@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace Commerz\Laravel\Registrars;
 
 use Commerz\Configuration\CommerzOptions;
+use Commerz\CustomFields\Contracts\CustomFieldIndexer;
+use Commerz\CustomFields\Contracts\CustomFieldQuery;
+use Commerz\CustomFields\Contracts\CustomFieldRegistry;
+use Commerz\CustomFields\Internal\DatabaseCustomFieldIndexer;
+use Commerz\CustomFields\Internal\DatabaseCustomFieldQuery;
+use Commerz\CustomFields\Internal\InMemoryCustomFieldRegistry;
 use Commerz\Diagnostics\CommerzDoctorCheck;
 use Commerz\Internal\Console\InstallCommand;
 use Commerz\Links\Contracts\CrossModuleQuery;
@@ -72,6 +78,9 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         self::bindTableNames($app);
 
         $app->singletonIf(Clock::class, SystemClock::class);
+        $app->singletonIf(CustomFieldRegistry::class, InMemoryCustomFieldRegistry::class);
+        $app->singletonIf(CustomFieldIndexer::class, DatabaseCustomFieldIndexer::class);
+        $app->singletonIf(CustomFieldQuery::class, DatabaseCustomFieldQuery::class);
         $app->singleton(Transactions::class, DatabaseTransactions::class);
         $app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
         $app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);

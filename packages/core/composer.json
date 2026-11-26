@@ -45,6 +45,7 @@
             "owns": [
                 "Configuration",
                 "Context",
+                "CustomFields",
                 "Diagnostics",
                 "Errors",
                 "Facades",
@@ -52,6 +53,7 @@
                 "Internal",
                 "Laravel",
                 "Measures",
+                "Metadata",
                 "Money",
                 "Operations",
                 "Outbox",
@@ -61,7 +63,8 @@
                 "Ports",
                 "Quotes",
                 "Schema",
-                "Stores"
+                "Stores",
+                "Time"
             ]
         },
         "branch-alias": {
