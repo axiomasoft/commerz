@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Rules\Internal\Conditions;
 
 use Commerz\Money\Money;
-use Commerz\Promotions\Rules\Contracts\PromotionCondition;
+use Commerz\Promotions\Rules\Contracts\NearMissCondition;
 use Commerz\Promotions\Rules\Data\ConditionInput;
 use Commerz\Promotions\Rules\Data\ConditionOutcome;
 use Commerz\Promotions\Rules\Data\RuleParams;
@@ -13,11 +13,12 @@ use Commerz\Promotions\Rules\Data\RuleScope;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
+use Commerz\Quotes\Data\NearMissHint;
 use Packman\Attributes\Internal;
 
 /** The net of the lines (after the discounts already applied) reaches the amount; `lines` picks all of them or the eligible ones. */
 #[Internal]
-final readonly class CartSubtotalAtLeast implements PromotionCondition
+final readonly class CartSubtotalAtLeast implements NearMissCondition
 {
     public function key(): string
     {
@@ -80,5 +81,44 @@ final readonly class CartSubtotalAtLeast implements PromotionCondition
         return $subtotal->compare($minimum) >= 0
             ? ConditionOutcome::pass()
             : ConditionOutcome::fail('minimum_not_reached', "The cart is below the minimum of {$minimum->toDecimal()} {$currency->code}.");
+    }
+
+    public function nearMiss(ConditionInput $input): ?NearMissHint
+    {
+        $currency = $input->state->currency();
+        $minimum = $input->params->money('amount', $currency);
+
+        if (! $minimum->isPositive()) {
+            return null;
+        }
+
+        $onlyEligible = $input->params->choice('lines', ['all', 'eligible'], 'all') === 'eligible';
+        $subtotal = Money::zero($currency);
+
+        foreach ($input->state->lines as $line) {
+            if ($line->isGift) {
+                continue;
+            }
+
+            if (! $onlyEligible || in_array($line->lineId, $input->lines, true)) {
+                $subtotal = $subtotal->plus($input->state->lineNet($line->lineId));
+            }
+        }
+
+        if ($subtotal->compare($minimum) >= 0) {
+            return null;
+        }
+
+        $missing = $minimum->minus($subtotal);
+
+        return new NearMissHint(
+            promotionId: $input->promotion->id->value,
+            promotionCode: $input->promotion->code,
+            promotionName: $input->promotion->name,
+            reason: 'minimum_not_reached',
+            message: "Add {$missing->toDecimal()} {$currency->code} more to unlock {$input->promotion->name}.",
+            missingAmount: $missing,
+            thresholdAmount: $minimum,
+        );
     }
 }

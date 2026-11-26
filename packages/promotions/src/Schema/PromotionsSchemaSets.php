@@ -32,6 +32,7 @@ final readonly class PromotionsSchemaSets implements SchemaSetProvider
                 package: 'axiomasoft/commerz-promotions',
                 name: 'commerz-promotions',
                 path: dirname(__DIR__, 2).'/database/migrations',
+                version: 2,
             ),
         ];
     }

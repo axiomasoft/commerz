@@ -21,11 +21,13 @@ use Packman\Attributes\Api;
 final readonly class QuoteState
 {
     /**
-     * @param  list<QuoteLine>  $lines  priced lines, in input order
+     * @param  list<QuoteLine>  $lines  priced lines, in input order (followed by auto-added gift lines)
      * @param  list<Adjustment>  $adjustments
      * @param  list<TaxLine>  $taxLines
      * @param  list<Rejection>  $rejections
      * @param  list<QuotedLine>  $settledLines  set by the totals stage together with `$totals`
+     * @param  list<SelectableGiftOffer>  $giftOffers  selectable gift offers unlocked by promotions
+     * @param  list<NearMissHint>  $nearMissHints  non-blocking near-miss promotion hints
      */
     private function __construct(
         public QuoteInput $input,
@@ -36,11 +38,13 @@ final readonly class QuoteState
         public array $rejections,
         public array $settledLines,
         public ?QuoteTotals $totals,
+        public array $giftOffers = [],
+        public array $nearMissHints = [],
     ) {}
 
     public static function start(QuoteInput $input): self
     {
-        return new self($input, [], [], [], null, [], [], null);
+        return new self($input, [], [], [], null, [], [], null, [], []);
     }
 
     public function context(): CommerceContext
@@ -199,6 +203,76 @@ final readonly class QuoteState
         return $this->changed(taxLines: [...$this->taxLines, $tax]);
     }
 
+    /** Adds an auto-added free gift line (not from input). Must be marked `$isGift = true` with zero unit price. */
+    public function withGiftLine(QuoteLine $line): self
+    {
+        if (! $line->isGift) {
+            throw new InvalidCommand('line', 'gift lines must have isGift set to true', 'quotes.invalid_line');
+        }
+
+        if (! $line->unitPrice->isZero()) {
+            throw new InvalidCommand('unitPrice', 'gift line unit price must be zero', 'quotes.invalid_line');
+        }
+
+        if ($this->input->line($line->lineId) !== null) {
+            throw new InvalidCommand('lineId', "gift line id '{$line->lineId}' collides with an input line", 'quotes.invalid_line');
+        }
+
+        $this->assertCurrency($line->unitPrice, 'unitPrice');
+        $lines = $this->lines;
+        $index = array_find_key($lines, static fn (QuoteLine $existing): bool => $existing->lineId === $line->lineId);
+
+        if ($index === null) {
+            $lines[] = $line;
+        } else {
+            $lines[$index] = $line;
+        }
+
+        return $this->changed(lines: $lines);
+    }
+
+    /** Records a selectable gift offer without changing amounts. */
+    public function withGiftOffer(SelectableGiftOffer $offer): self
+    {
+        return new self(
+            $this->input,
+            $this->lines,
+            $this->adjustments,
+            $this->taxLines,
+            $this->delivery,
+            $this->rejections,
+            $this->settledLines,
+            $this->totals,
+            [...$this->giftOffers, $offer],
+            $this->nearMissHints,
+        );
+    }
+
+    /** Records a near-miss promotion hint without changing amounts, so it keeps settled totals. */
+    public function withNearMissHint(NearMissHint $hint): self
+    {
+        if ($hint->missingAmount !== null) {
+            $this->assertCurrency($hint->missingAmount, 'missingAmount');
+        }
+
+        if ($hint->thresholdAmount !== null) {
+            $this->assertCurrency($hint->thresholdAmount, 'thresholdAmount');
+        }
+
+        return new self(
+            $this->input,
+            $this->lines,
+            $this->adjustments,
+            $this->taxLines,
+            $this->delivery,
+            $this->rejections,
+            $this->settledLines,
+            $this->totals,
+            $this->giftOffers,
+            [...$this->nearMissHints, $hint],
+        );
+    }
+
     /** Recording a rejection does not change amounts, so it keeps settled totals. */
     public function withRejection(Rejection $rejection): self
     {
@@ -211,6 +285,8 @@ final readonly class QuoteState
             [...$this->rejections, $rejection],
             $this->settledLines,
             $this->totals,
+            $this->giftOffers,
+            $this->nearMissHints,
         );
     }
 
@@ -230,6 +306,8 @@ final readonly class QuoteState
             $this->rejections,
             $lines,
             $totals,
+            $this->giftOffers,
+            $this->nearMissHints,
         );
     }
 
@@ -254,6 +332,8 @@ final readonly class QuoteState
             $this->rejections,
             [],
             null,
+            $this->giftOffers,
+            $this->nearMissHints,
         );
     }
 

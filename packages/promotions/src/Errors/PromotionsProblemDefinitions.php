@@ -26,7 +26,13 @@ final readonly class PromotionsProblemDefinitions implements ProblemDefinitionPr
     public function definitions(): array
     {
         return [
+            $this->define(PromotionsErrorCode::CampaignArchived, 409, 'Campaign Archived', ErrorCategory::Conflict, ['campaign']),
+            $this->define(PromotionsErrorCode::CampaignBudgetExceeded, 429, 'Campaign Budget Exceeded', ErrorCategory::RateLimit, ['campaign', 'limit']),
+            $this->define(PromotionsErrorCode::CampaignNotFound, 404, 'Campaign Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(PromotionsErrorCode::CodeSpaceExhausted, 409, 'Coupon Code Space Exhausted', ErrorCategory::Conflict, ['pattern', 'missing']),
+            $this->define(PromotionsErrorCode::CouponHoldDisabled, 409, 'Coupon Hold Mode Disabled', ErrorCategory::Conflict, ['*']),
+            $this->define(PromotionsErrorCode::CouponHoldNotFound, 404, 'Coupon Hold Not Found', ErrorCategory::NotFound, ['entity', 'id']),
+            $this->define(PromotionsErrorCode::CouponHoldUnavailable, 409, 'Coupon Hold Unavailable', ErrorCategory::Conflict, ['hold', 'reason']),
             $this->define(PromotionsErrorCode::CouponNotFound, 404, 'Coupon Not Found', ErrorCategory::NotFound, ['entity', 'id']),
             $this->define(PromotionsErrorCode::CurrencyMismatch, 422, 'Promotion Currency Mismatch', ErrorCategory::Validation, ['*']),
             $this->define(PromotionsErrorCode::DuplicateCode, 409, 'Duplicate Promotion Code', ErrorCategory::Conflict, ['entity', 'code']),

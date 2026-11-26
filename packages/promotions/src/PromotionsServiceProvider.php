@@ -15,7 +15,7 @@ final class PromotionsServiceProvider extends CommerzPluginServiceProvider
 {
     protected const string PLUGIN = PromotionsPlugin::class;
 
-    public const array NOUNS = ['promotion', 'coupon'];
+    public const array NOUNS = ['promotion', 'coupon', 'campaign'];
 
     /** @var list<class-string<PackageRegistrar>> */
     protected const array REGISTRARS = [

@@ -27,6 +27,8 @@ final readonly class QuoteLine
         public string $priceSource,
         ?UnitPrice $pricePerUnit = null,
         public RoundingMode $rounding = RoundingMode::HalfUp,
+        public bool $isGift = false,
+        public ?string $giftPromotionId = null,
     ) {
         if ($quantity < 1) {
             throw new InvalidCommand('quantity', 'must be at least 1', 'quotes.invalid_line');

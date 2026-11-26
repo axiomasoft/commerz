@@ -137,6 +137,8 @@ final readonly class TotalsStage implements QuoteStage
                 $taxes,
                 $total,
                 $line->pricePerUnit,
+                $line->isGift,
+                $line->giftPromotionId,
             );
         }
 

@@ -26,6 +26,8 @@ final class PromotionUnavailable extends CommerzException
 
     public const string COUPON_DISABLED = 'coupon_disabled';
 
+    public const string CAMPAIGN_NOT_ACTIVE = 'campaign_not_active';
+
     public function __construct(
         public readonly string $promotionId,
         public readonly ?string $couponCode,

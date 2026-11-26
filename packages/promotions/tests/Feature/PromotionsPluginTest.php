@@ -12,6 +12,9 @@ use Commerz\Promotions\Rules\Contracts\PromotionActivator;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
 use Commerz\Quotes\Contracts\QuoteStage;
+use Commerz\Quotes\Contracts\QuoteStagePolicy;
+use Commerz\Quotes\Enums\FailurePolicy;
+use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Testkit\PackageTestCase;
 use Commerz\Testkit\PluginContractTests;
@@ -89,13 +92,19 @@ final class PromotionsPluginTest extends PackageTestCase
             }
         }
 
-        self::assertSame(['promotions.catalog', 'promotions.cart', 'promotions.delivery'], $stages);
+        self::assertSame(['promotions.catalog', 'promotions.cart', 'promotions.delivery', 'promotions.near_miss_hints'], $stages);
 
-        foreach ($stages as $key) {
+        foreach (['promotions.catalog', 'promotions.cart', 'promotions.delivery'] as $key) {
             $stage = $registry->get(QuoteStage::KIND, $key, QuoteStage::class);
 
             self::assertSame($key, $stage->anchor()->value);
             self::assertSame(StagePosition::At, $stage->position());
         }
+
+        $nearMiss = $registry->get(QuoteStage::KIND, 'promotions.near_miss_hints', QuoteStage::class);
+        self::assertSame(QuoteAnchor::DeliveryPromotions, $nearMiss->anchor());
+        self::assertSame(StagePosition::After, $nearMiss->position());
+        self::assertInstanceOf(QuoteStagePolicy::class, $nearMiss);
+        self::assertSame(FailurePolicy::IgnoreOnFailure, $nearMiss->failurePolicy());
     }
 }

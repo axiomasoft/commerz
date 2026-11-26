@@ -15,6 +15,10 @@ it('defaults to half-up rounding, five codes, restore on cancel and expiry, and 
         ->and($config->restoreOn)->toBe([RestoreReason::Cancelled, RestoreReason::Expired])
         ->and($config->couponAlphabet)->toBe('23456789ABCDEFGHJKMNPQRSTUVWXYZ')
         ->and($config->maxGenerate)->toBe(50000)
+        ->and($config->holdOnCheckout)->toBeFalse()
+        ->and($config->holdTtlSeconds)->toBe(900)
+        ->and($config->nearMissMinProgressBp)->toBe(0)
+        ->and($config->nearMissTimeoutMs)->toBe(200)
         ->and($config->restores(RestoreReason::Cancelled))->toBeTrue()
         ->and($config->restores(RestoreReason::Refunded))->toBeFalse();
 });
@@ -28,12 +32,19 @@ it('reads every key', function (): void {
         'rounding' => 'half_even',
         'max_codes' => 2,
         'restore_on' => ['refunded', RestoreReason::Refunded, 'cancelled'],
+        'hold_on_checkout' => true,
+        'hold_ttl_seconds' => 600,
+        'near_miss' => ['min_progress_bp' => 5000, 'timeout_ms' => 150],
         'coupons' => ['alphabet' => 'AB01', 'max_generate' => 10],
     ]);
 
     expect($config->rounding)->toBe(RoundingMode::HalfEven)
         ->and($config->maxCodes)->toBe(2)
         ->and($config->restoreOn)->toBe([RestoreReason::Refunded, RestoreReason::Cancelled])
+        ->and($config->holdOnCheckout)->toBeTrue()
+        ->and($config->holdTtlSeconds)->toBe(600)
+        ->and($config->nearMissMinProgressBp)->toBe(5000)
+        ->and($config->nearMissTimeoutMs)->toBe(150)
         ->and($config->couponAlphabet)->toBe('AB01')
         ->and($config->maxGenerate)->toBe(10);
 });

@@ -12,6 +12,7 @@ use Commerz\Promotions\Errors\PromotionsProblemDefinitions;
 use Commerz\Promotions\Evaluation\Internal\Stages\CartPromotionsStage;
 use Commerz\Promotions\Evaluation\Internal\Stages\CatalogPromotionsStage;
 use Commerz\Promotions\Evaluation\Internal\Stages\DeliveryPromotionsStage;
+use Commerz\Promotions\Evaluation\Internal\Stages\NearMissHintStage;
 use Commerz\Promotions\Panels\CouponsPanel;
 use Commerz\Promotions\Panels\PromotionsPanel;
 use Commerz\Promotions\PromotionsServiceProvider;
@@ -24,6 +25,7 @@ use Commerz\Promotions\Rules\Internal\Conditions\CartSubtotalAtLeast;
 use Commerz\Promotions\Rules\Internal\Conditions\CustomerInGroup;
 use Commerz\Promotions\Rules\Internal\Conditions\LineCategoryIn;
 use Commerz\Promotions\Rules\Internal\Conditions\LineSellableIn;
+use Commerz\Promotions\Rules\Internal\Effects\AutoAddGiftLine;
 use Commerz\Promotions\Rules\Internal\Effects\BuyXGetY;
 use Commerz\Promotions\Rules\Internal\Effects\DeliveryPercentOff;
 use Commerz\Promotions\Rules\Internal\Effects\LineFixedOff;
@@ -98,6 +100,7 @@ final class PromotionsPlugin implements ExtensionPlugin, WithConfiguration, With
             OrderFixedOff::class,
             DeliveryPercentOff::class,
             BuyXGetY::class,
+            AutoAddGiftLine::class,
         ] as $effect) {
             $registrar->contribute(PromotionEffect::KIND, $effect);
         }
@@ -108,6 +111,7 @@ final class PromotionsPlugin implements ExtensionPlugin, WithConfiguration, With
         $registrar->contribute(QuoteStage::KIND, CatalogPromotionsStage::class);
         $registrar->contribute(QuoteStage::KIND, CartPromotionsStage::class);
         $registrar->contribute(QuoteStage::KIND, DeliveryPromotionsStage::class);
+        $registrar->contribute(QuoteStage::KIND, NearMissHintStage::class);
     }
 
     #[Override]

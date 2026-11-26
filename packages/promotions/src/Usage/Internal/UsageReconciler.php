@@ -50,7 +50,14 @@ final readonly class UsageReconciler
                 $db->statement('set transaction isolation level repeatable read read only');
             }
 
-            return [...$this->promotions(), ...$this->coupons(), ...$this->customers(), ...$this->definitions()];
+            return [
+                ...$this->promotions(),
+                ...$this->campaigns(),
+                ...$this->coupons(),
+                ...$this->couponHolds(),
+                ...$this->customers(),
+                ...$this->definitions(),
+            ];
         } finally {
             $db->rollBack();
         }
@@ -84,6 +91,55 @@ final readonly class UsageReconciler
         }
 
         return $found;
+    }
+
+    /** @return list<Discrepancy> */
+    private function campaigns(): array
+    {
+        $rows = $this->db()->select(
+            'select g.code, g.used, g.spent_minor,'
+            .' case when g.usage_cap is null then 0 else coalesce(c.used, 0) end as expected_used,'
+            .' case when g.spend_cap_minor is null then 0 else coalesce(c.spent, 0) end as expected_spent'
+            ." from {$this->table('campaigns')} g left join ("
+            .'select u.campaign_id, count(*)::bigint as used, sum(u.discount_minor)::bigint as spent'
+            ." from {$this->consumed()} and u.campaign_id is not null group by u.campaign_id"
+            .') c on c.campaign_id = g.id order by g.code',
+        );
+
+        $found = [];
+
+        foreach ($this->objects($rows) as $row) {
+            $ref = 'campaign:'.Rows::string($row, 'code');
+
+            if (Rows::int($row, 'used') !== Rows::int($row, 'expected_used')) {
+                $found[] = new Discrepancy(Discrepancy::CAMPAIGN_USED, $ref, (string) Rows::int($row, 'expected_used'), (string) Rows::int($row, 'used'));
+            }
+
+            if (Rows::int($row, 'spent_minor') !== Rows::int($row, 'expected_spent')) {
+                $found[] = new Discrepancy(Discrepancy::CAMPAIGN_SPENT, $ref, (string) Rows::int($row, 'expected_spent'), (string) Rows::int($row, 'spent_minor'));
+            }
+        }
+
+        return $found;
+    }
+
+    /** @return list<Discrepancy> */
+    private function couponHolds(): array
+    {
+        $rows = $this->db()->select(
+            'select k.code, k.held, case when k.usage_limit is null then 0 else coalesce(h.held, 0) end as expected'
+            ." from {$this->table('coupons')} k left join ("
+            ."select coupon_id, count(*)::bigint as held from {$this->table('coupon_holds')} where state = 'held' group by coupon_id"
+            .') h on h.coupon_id = k.id'
+            .' where k.held <> case when k.usage_limit is null then 0 else coalesce(h.held, 0) end order by k.code',
+        );
+
+        return array_map(static fn (object $row): Discrepancy => new Discrepancy(
+            Discrepancy::COUPON_HELD,
+            'coupon:'.Rows::string($row, 'code'),
+            (string) Rows::int($row, 'expected'),
+            (string) Rows::int($row, 'held'),
+        ), $this->objects($rows));
     }
 
     /** @return list<Discrepancy> */

@@ -32,5 +32,7 @@ final readonly class QuotedLine
         public array $taxLines,
         public Money $total,
         public ?UnitPrice $pricePerUnit = null,
+        public bool $isGift = false,
+        public ?string $giftPromotionId = null,
     ) {}
 }

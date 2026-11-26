@@ -15,8 +15,8 @@ use Packman\Schema\Data\Compiler\ConstraintNames;
 uses(RefreshDatabase::class);
 
 const PROMOTIONS_TABLES = [
-    'promotions', 'promotion_channels', 'promotion_rules', 'promotion_customer_usages',
-    'coupon_batches', 'coupons', 'promotion_redemptions', 'promotion_usages',
+    'campaigns', 'promotions', 'promotion_channels', 'promotion_rules', 'promotion_customer_usages',
+    'coupon_batches', 'coupons', 'coupon_holds', 'promotion_redemptions', 'promotion_usages',
 ];
 
 function prmTable(string $logical): string
@@ -96,12 +96,13 @@ function prmRedemption(string $order = 'order:1', array $extra = []): string
     return $id;
 }
 
-it('declares the promotion and coupon nouns under commerz.promotions', function (): void {
+it('declares the promotion, coupon and campaign nouns under commerz.promotions', function (): void {
     $ownership = app(SchemaOwnership::class);
 
     expect($ownership->owners()['commerz.promotions'])->toBe(PromotionsServiceProvider::NOUNS)
         ->and($ownership->ownerOf('promotion'))->toBe('commerz.promotions')
-        ->and($ownership->ownerOf('coupon'))->toBe('commerz.promotions');
+        ->and($ownership->ownerOf('coupon'))->toBe('commerz.promotions')
+        ->and($ownership->ownerOf('campaign'))->toBe('commerz.promotions');
 });
 
 it('creates every table with canonical constraint names', function (): void {
@@ -152,7 +153,7 @@ it('has no foreign key to the core or other packages', function (): void {
         );
 
         foreach ($targets as $row) {
-            expect($row->target)->toMatch('/\A'.preg_quote($prefix, '/').'(promotion|coupon)/', "{$logical} references {$row->target}");
+            expect($row->target)->toMatch('/\A'.preg_quote($prefix, '/').'(promotion|coupon|campaign)/', "{$logical} references {$row->target}");
         }
     }
 });

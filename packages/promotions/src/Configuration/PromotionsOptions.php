@@ -22,7 +22,16 @@ final readonly class PromotionsOptions implements OptionsFactory
         'rounding',
         'max_codes',
         'restore_on',
+        'hold_on_checkout',
+        'hold_ttl_seconds',
+        'near_miss',
         'coupons',
+    ];
+
+    /** @var list<string> */
+    private const array NEAR_MISS_KEYS = [
+        'min_progress_bp',
+        'timeout_ms',
     ];
 
     /** @var list<string> */
@@ -40,6 +49,10 @@ final readonly class PromotionsOptions implements OptionsFactory
         public array $restoreOn = [RestoreReason::Cancelled, RestoreReason::Expired],
         public string $couponAlphabet = self::DEFAULT_ALPHABET,
         public int $maxGenerate = 50000,
+        public bool $holdOnCheckout = false,
+        public int $holdTtlSeconds = 900,
+        public int $nearMissMinProgressBp = 0,
+        public int $nearMissTimeoutMs = 200,
     ) {}
 
     /** @param array<array-key, mixed> $config */
@@ -62,6 +75,47 @@ final readonly class PromotionsOptions implements OptionsFactory
             $validator,
             array_key_exists('restore_on', $config) ? $config['restore_on'] : ['cancelled', 'expired'],
             $path.'.restore_on',
+        );
+
+        $holdOnCheckoutRaw = array_key_exists('hold_on_checkout', $config) ? $config['hold_on_checkout'] : false;
+
+        if (! is_bool($holdOnCheckoutRaw)) {
+            $validator->add($path.'.hold_on_checkout', 'expected a boolean');
+            $holdOnCheckout = false;
+        } else {
+            $holdOnCheckout = $holdOnCheckoutRaw;
+        }
+
+        $holdTtlSeconds = self::int(
+            $validator,
+            array_key_exists('hold_ttl_seconds', $config) ? $config['hold_ttl_seconds'] : 900,
+            1,
+            86_400,
+            $path.'.hold_ttl_seconds',
+        );
+
+        $nearMiss = array_key_exists('near_miss', $config) ? $config['near_miss'] : [];
+
+        if (! is_array($nearMiss)) {
+            $validator->add($path.'.near_miss', 'expected an array');
+            $nearMiss = [];
+        } else {
+            $validator->rejectUnknownKeys($nearMiss, self::NEAR_MISS_KEYS, $path.'.near_miss');
+        }
+
+        $nearMissMinProgressBp = self::int(
+            $validator,
+            array_key_exists('min_progress_bp', $nearMiss) ? $nearMiss['min_progress_bp'] : 0,
+            0,
+            9_999,
+            $path.'.near_miss.min_progress_bp',
+        );
+        $nearMissTimeoutMs = self::int(
+            $validator,
+            array_key_exists('timeout_ms', $nearMiss) ? $nearMiss['timeout_ms'] : 200,
+            1,
+            30_000,
+            $path.'.near_miss.timeout_ms',
         );
 
         $coupons = array_key_exists('coupons', $config) ? $config['coupons'] : [];
@@ -94,6 +148,10 @@ final readonly class PromotionsOptions implements OptionsFactory
             $restoreOn,
             $couponAlphabet,
             $maxGenerate,
+            $holdOnCheckout,
+            $holdTtlSeconds,
+            $nearMissMinProgressBp,
+            $nearMissTimeoutMs,
         );
     }
 

@@ -16,6 +16,12 @@ final readonly class Discrepancy
 
     public const string COUPON_USED = 'coupon_used';
 
+    public const string COUPON_HELD = 'coupon_held';
+
+    public const string CAMPAIGN_USED = 'campaign_used';
+
+    public const string CAMPAIGN_SPENT = 'campaign_spent';
+
     public const string CUSTOMER_USED = 'customer_used';
 
     public const string UNSUPPORTED_ACTIVATOR = 'unsupported_activator';

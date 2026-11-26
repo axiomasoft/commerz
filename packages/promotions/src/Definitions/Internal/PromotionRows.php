@@ -7,6 +7,7 @@ namespace Commerz\Promotions\Definitions\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignId;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Data\PromotionUsageSummary;
 use Commerz\Promotions\Definitions\Data\PromotionView;
@@ -141,7 +142,7 @@ final readonly class PromotionRows
             ->where('r.state', 'consumed')
             ->groupBy('u.promotion_id', 'u.currency')
             ->orderBy('u.currency')
-            ->selectRaw('u.promotion_id, u.currency, count(*) as orders, sum(u.discount_minor)::bigint as discount_minor')
+            ->selectRaw('u.promotion_id, u.currency, count(*) as orders, cast(sum(u.discount_minor) as bigint) as discount_minor')
             ->get()
             ->all();
 
@@ -173,6 +174,7 @@ final readonly class PromotionRows
         $id = Rows::string($row, 'id');
         $currency = Rows::nullableString($row, 'currency');
         $budget = Rows::nullableInt($row, 'budget_minor');
+        $campaignId = property_exists($row, 'campaign_id') ? Rows::nullableString($row, 'campaign_id') : null;
 
         return new PromotionView(
             new PromotionId($id),
@@ -181,7 +183,7 @@ final readonly class PromotionRows
             PromotionStage::from(Rows::string($row, 'stage')),
             Rows::string($row, 'activator'),
             Stacking::from(Rows::string($row, 'stacking')),
-            Rows::bool($row, 'stop_further'),
+            self::bool($row, 'stop_further'),
             Rows::int($row, 'priority'),
             $currency === null ? null : Currency::of($currency),
             PromotionStatus::from(Rows::string($row, 'status')),
@@ -196,7 +198,19 @@ final readonly class PromotionRows
             $usage[$id] ?? new PromotionUsageSummary(0, []),
             Rows::date($row, 'created_at'),
             Rows::date($row, 'updated_at'),
+            $campaignId === null ? null : new CampaignId($campaignId),
         );
+    }
+
+    private static function bool(object $row, string $column): bool
+    {
+        $value = get_object_vars($row)[$column] ?? null;
+
+        if ($value === 0 || $value === 1) {
+            return $value === 1;
+        }
+
+        return Rows::bool($row, $column);
     }
 
     private static function date(object $row, string $column): ?DateTimeImmutable

@@ -6,6 +6,7 @@ namespace Commerz\Promotions\Definitions\Data;
 
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Rules\Data\RuleSpec;
@@ -44,5 +45,6 @@ final readonly class PromotionView
         public PromotionUsageSummary $usage,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public ?CampaignId $campaignId = null,
     ) {}
 }

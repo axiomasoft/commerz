@@ -22,7 +22,7 @@ it('contributes the built-in conditions, effects and activator under their keys'
             ->and($contributions->get(PromotionCondition::KIND, $key, PromotionCondition::class))->toBeInstanceOf(PromotionCondition::class);
     }
 
-    foreach (['line.percent_off', 'line.fixed_off', 'order.percent_off', 'order.fixed_off', 'delivery.percent_off', 'buy_x_get_y'] as $key) {
+    foreach (['line.percent_off', 'line.fixed_off', 'order.percent_off', 'order.fixed_off', 'delivery.percent_off', 'buy_x_get_y', 'gift.auto_add_line'] as $key) {
         expect($contributions->has(PromotionEffect::KIND, $key))->toBeTrue("effect {$key}")
             ->and($contributions->get(PromotionEffect::KIND, $key, PromotionEffect::class))->toBeInstanceOf(PromotionEffect::class);
     }
@@ -48,7 +48,7 @@ it('registers each key once: the built-ins agree with their own key()', function
     }
 
     expect($contributions->keys(PromotionCondition::KIND))->toHaveCount(5)
-        ->and($contributions->keys(PromotionEffect::KIND))->toHaveCount(6)
+        ->and($contributions->keys(PromotionEffect::KIND))->toHaveCount(7)
         ->and($contributions->keys(PromotionActivator::KIND))->toBe(['automatic', 'coupon']);
 });
 
