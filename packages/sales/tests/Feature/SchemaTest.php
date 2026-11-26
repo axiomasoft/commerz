@@ -19,6 +19,7 @@ const SALES_TABLES = [
     'order_changes', 'order_change_actions',
     'fulfillments', 'fulfillment_lines', 'returns', 'return_lines',
     'payments', 'refunds', 'payment_events',
+    'payment_collections', 'payment_sessions', 'payment_captures',
 ];
 
 const SALES_NOW = '2026-10-14 10:00:00+00';

@@ -32,6 +32,7 @@ final class SalesFixturePlugin implements ExtensionPlugin
     {
         $registrar->contribute(SellableProvider::KIND, StaticSellables::class);
         $registrar->contribute(PaymentGateway::KIND, RecordingGateway::class);
+        $registrar->contribute(PaymentGateway::KIND, AcquiringRecordingGateway::class);
         $registrar->contribute(OrderNumberGenerator::KIND, DuplicateNumbers::class);
         $registrar->contribute(QuoteStage::KIND, PromotionAdjustmentStage::class);
         $registrar->contribute(QuoteStage::KIND, FlatDeliveryStage::class);

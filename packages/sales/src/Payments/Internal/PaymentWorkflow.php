@@ -13,10 +13,18 @@ use Commerz\Sales\Common\Internal\Lease;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderRow;
 use Commerz\Sales\Configuration\SalesOptions;
+use Commerz\Sales\Gateways\Contracts\AcquiringPaymentGateway;
 use Commerz\Sales\Gateways\Contracts\PaymentGateway;
+use Commerz\Sales\Gateways\Data\GatewayAuthorizeRequest;
+use Commerz\Sales\Gateways\Data\GatewayCaptureRequest;
+use Commerz\Sales\Gateways\Data\GatewayCaptureResult;
+use Commerz\Sales\Gateways\Data\GatewayIncrementalAuthRequest;
 use Commerz\Sales\Gateways\Data\GatewayPaymentRequest;
 use Commerz\Sales\Gateways\Data\GatewayPaymentResult;
+use Commerz\Sales\Gateways\Data\GatewayVoidRequest;
+use Commerz\Sales\Gateways\Data\PaymentCapabilities;
 use Commerz\Sales\Gateways\Enums\GatewayPaymentStatus;
+use Commerz\Sales\Gateways\Exceptions\GatewayCapabilityUnsupported;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Payments\Data\InitiatePayment;
@@ -168,6 +176,160 @@ final readonly class PaymentWorkflow
         }
 
         return $this->answered($claimed, $attempt, $gateway, $found)->view();
+    }
+
+    public function assertNotInTransaction(string $operation): void
+    {
+        if ($this->transactions->inTransaction()) {
+            throw new OperationInsideTransaction($operation);
+        }
+    }
+
+    public function capabilitiesOf(string $gatewayKey): PaymentCapabilities
+    {
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+
+        return PaymentCapabilities::of($gateway);
+    }
+
+    public function validateCapabilityForAuthorize(string $gatewayKey, bool $autoCapture, bool $hasLineItems): PaymentCapabilities
+    {
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $autoCapture && (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid)) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        if ($hasLineItems && ! $capabilities->lineItemsL3) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'lineItemsL3');
+        }
+
+        return $capabilities;
+    }
+
+    public function validateCapabilityForCapture(string $gatewayKey, bool $isFinalCapture, bool $isSubsequentCapture, bool $hasLineItems): PaymentCapabilities
+    {
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        if ((! $isFinalCapture || $isSubsequentCapture) && ! $capabilities->multicapture) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'multicapture');
+        }
+
+        if ($hasLineItems && ! $capabilities->lineItemsL3) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'lineItemsL3');
+        }
+
+        return $capabilities;
+    }
+
+    public function validateCapabilityForIncrementalAuth(string $gatewayKey): PaymentCapabilities
+    {
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->incrementalAuth) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'incrementalAuth');
+        }
+
+        return $capabilities;
+    }
+
+    public function validateCapabilityForVoid(string $gatewayKey): PaymentCapabilities
+    {
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        return $capabilities;
+    }
+
+    public function authorizeAtGateway(string $gatewayKey, GatewayAuthorizeRequest $request, bool $autoCapture): GatewayPaymentResult
+    {
+        $this->assertNotInTransaction('sales.payment_collections.authorize');
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if ($request->lineItems !== [] && ! $capabilities->lineItemsL3) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'lineItemsL3');
+        }
+
+        if ($autoCapture) {
+            return $gateway->initiate(new GatewayPaymentRequest(
+                reference: $request->reference,
+                orderRef: $request->targetRef,
+                orderNumber: $request->orderNumber ?? $request->targetRef,
+                amount: $request->amount,
+                customer: $request->customer,
+                customerEmail: $request->customerEmail,
+                meta: $request->meta,
+            ));
+        }
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        return $gateway->authorize($request);
+    }
+
+    public function captureAtGateway(string $gatewayKey, GatewayCaptureRequest $request, bool $isSubsequentCapture, bool $isOvercapture): GatewayCaptureResult
+    {
+        $this->assertNotInTransaction('sales.payment_collections.capture');
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        if ((! $request->isFinalCapture || $isSubsequentCapture) && ! $capabilities->multicapture) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'multicapture');
+        }
+
+        if ($isOvercapture && ! $capabilities->overcapture) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'overcapture');
+        }
+
+        if ($request->lineItems !== [] && ! $capabilities->lineItemsL3) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'lineItemsL3');
+        }
+
+        return $gateway->capture($request);
+    }
+
+    public function incrementalAuthorizeAtGateway(string $gatewayKey, GatewayIncrementalAuthRequest $request): GatewayPaymentResult
+    {
+        $this->assertNotInTransaction('sales.payment_collections.incremental_authorize');
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->incrementalAuth) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'incrementalAuth');
+        }
+
+        return $gateway->incrementalAuthorize($request);
+    }
+
+    public function voidAtGateway(string $gatewayKey, GatewayVoidRequest $request): GatewayPaymentResult
+    {
+        $this->assertNotInTransaction('sales.payment_collections.void');
+        $gateway = $this->contributions->get(PaymentGateway::KIND, $gatewayKey, PaymentGateway::class);
+        $capabilities = PaymentCapabilities::of($gateway);
+
+        if (! $gateway instanceof AcquiringPaymentGateway || ! $capabilities->authorizeCaptureVoid) {
+            throw new GatewayCapabilityUnsupported($gatewayKey, 'authorizeCaptureVoid');
+        }
+
+        return $gateway->void($request);
     }
 
     /** Validates and records an answer of the gateway; an invalid one leaves an initiating attempt unknown. */

@@ -28,6 +28,7 @@ use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotBookable;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotShipped;
 use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
+use Commerz\Sales\Gateways\Exceptions\GatewayCapabilityUnsupported;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Numbering\Exceptions\InvalidOrderNumber;
@@ -38,12 +39,16 @@ use Commerz\Sales\OrderChanges\Exceptions\OrderChangeVersionConflict;
 use Commerz\Sales\OrderChanges\Exceptions\OrderNotEditable;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Commerz\Sales\Payments\Exceptions\CaptureExceedsAuthorization;
 use Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent;
+use Commerz\Sales\Payments\Exceptions\InvalidPaymentSessionState;
 use Commerz\Sales\Payments\Exceptions\OrderNotPayable;
+use Commerz\Sales\Payments\Exceptions\PaymentCollectionNotFound;
 use Commerz\Sales\Payments\Exceptions\PaymentExceedsBalance;
 use Commerz\Sales\Payments\Exceptions\PaymentInProgress;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
 use Commerz\Sales\Payments\Exceptions\PaymentOutcomeUnknown;
+use Commerz\Sales\Payments\Exceptions\PaymentSessionNotFound;
 use Commerz\Sales\Refunds\Exceptions\RefundExceedsBalance;
 use Commerz\Sales\Refunds\Exceptions\RefundInProgress;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
@@ -94,6 +99,7 @@ it('exposes Packman error descriptors on sales exceptions', function (CommerzExc
     'fulfillment not found' => [new FulfillmentNotFound('f1'), SalesErrorCode::FulfillmentNotFound, ErrorCategory::NotFound],
     'fulfillment not shipped' => [new FulfillmentNotShipped('f1'), SalesErrorCode::FulfillmentNotShipped, ErrorCategory::Conflict],
     'order not fulfillable' => [new OrderNotFulfillable('o1', 'cancelled'), SalesErrorCode::OrderNotFulfillable, ErrorCategory::Conflict],
+    'gateway capability unsupported' => [new GatewayCapabilityUnsupported('manual', 'multicapture'), SalesErrorCode::GatewayCapabilityUnsupported, ErrorCategory::Validation],
     'invalid gateway result' => [new InvalidGatewayResult('manual', 'bad'), SalesErrorCode::InvalidGatewayResult, ErrorCategory::Unavailable],
     'payment declined' => [new PaymentDeclined('manual', 'declined'), SalesErrorCode::PaymentDeclined, ErrorCategory::Conflict],
     'invalid order number' => [new InvalidOrderNumber('sequence', '???'), SalesErrorCode::InvalidOrderNumber, ErrorCategory::Validation],
@@ -104,12 +110,16 @@ it('exposes Packman error descriptors on sales exceptions', function (CommerzExc
     'order change not open' => [new OrderChangeNotOpen('oc1', 'confirmed'), SalesErrorCode::OrderChangeNotOpen, ErrorCategory::Conflict],
     'order change version conflict' => [new OrderChangeVersionConflict('oc1', 'o1', 1, 2), SalesErrorCode::OrderChangeVersionConflict, ErrorCategory::Conflict],
     'order not found' => [new OrderNotFound('o1'), SalesErrorCode::OrderNotFound, ErrorCategory::NotFound],
+    'capture exceeds authorization' => [new CaptureExceedsAuthorization('s1', Money::of('20.00', 'RUB'), Money::of('10.00', 'RUB')), SalesErrorCode::CaptureExceedsAuthorization, ErrorCategory::Conflict],
     'invalid payment event' => [new InvalidPaymentEvent('amount', 'wrong currency'), SalesErrorCode::InvalidPaymentEvent, ErrorCategory::Validation],
+    'invalid payment session state' => [new InvalidPaymentSessionState('s1', 'captured', 'closed'), SalesErrorCode::InvalidPaymentSessionState, ErrorCategory::Conflict],
     'order not payable' => [new OrderNotPayable('o1', 'cancelled'), SalesErrorCode::OrderNotPayable, ErrorCategory::Conflict],
+    'payment collection not found' => [new PaymentCollectionNotFound('pc1'), SalesErrorCode::PaymentCollectionNotFound, ErrorCategory::NotFound],
     'payment exceeds balance' => [new PaymentExceedsBalance('o1', Money::of('20.00', Currency::of('RUB')), Money::of('10.00', 'RUB')), SalesErrorCode::PaymentExceedsBalance, ErrorCategory::Conflict],
     'payment in progress' => [new PaymentInProgress('p1'), SalesErrorCode::PaymentInProgress, ErrorCategory::Conflict],
     'payment not found' => [new PaymentNotFound('p1'), SalesErrorCode::PaymentNotFound, ErrorCategory::NotFound],
     'payment outcome unknown' => [new PaymentOutcomeUnknown('p1', 'manual'), SalesErrorCode::PaymentOutcomeUnknown, ErrorCategory::Unavailable],
+    'payment session not found' => [new PaymentSessionNotFound('ps1'), SalesErrorCode::PaymentSessionNotFound, ErrorCategory::NotFound],
     'refund exceeds balance' => [new RefundExceedsBalance('o1', Money::of('20.00', 'RUB'), Money::of('10.00', 'RUB')), SalesErrorCode::RefundExceedsBalance, ErrorCategory::Conflict],
     'refund in progress' => [new RefundInProgress('rf1'), SalesErrorCode::RefundInProgress, ErrorCategory::Conflict],
     'refund not found' => [new RefundNotFound('rf1'), SalesErrorCode::RefundNotFound, ErrorCategory::NotFound],

@@ -9,6 +9,8 @@ use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\Orders\Contracts\Orders;
+use Commerz\Sales\Payments\Contracts\PaymentCollections;
+use Commerz\Sales\Payments\Contracts\PaymentMethodResolver;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Refunds\Contracts\Refunds;
 use Commerz\Sales\Returns\Contracts\Returns;
@@ -47,6 +49,16 @@ final readonly class Sales
     public function payments(): Payments
     {
         return $this->container->make(Payments::class);
+    }
+
+    public function paymentCollections(): PaymentCollections
+    {
+        return $this->container->make(PaymentCollections::class);
+    }
+
+    public function paymentMethods(): PaymentMethodResolver
+    {
+        return $this->container->make(PaymentMethodResolver::class);
     }
 
     public function fulfillments(): Fulfillments

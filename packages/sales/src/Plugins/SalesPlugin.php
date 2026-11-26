@@ -16,6 +16,7 @@ use Commerz\Sales\Panels\FulfillmentsPanel;
 use Commerz\Sales\Panels\OrdersPanel;
 use Commerz\Sales\Panels\PaymentsPanel;
 use Commerz\Sales\Panels\ReturnsPanel;
+use Commerz\Sales\Payments\Contracts\PaymentCustomization;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Sales\Schema\SalesSchemaSets;
 use Override;
@@ -64,6 +65,7 @@ final class SalesPlugin implements ExtensionPlugin, WithConfiguration, WithDiagn
     {
         $registrar->declareKind(new ContributionKind(PaymentGateway::KIND, PaymentGateway::class, self::ID));
         $registrar->declareKind(new ContributionKind(OrderNumberGenerator::KIND, OrderNumberGenerator::class, self::ID));
+        $registrar->declareKind(new ContributionKind(PaymentCustomization::KIND, PaymentCustomization::class, self::ID));
         $registrar->contribute(PaymentGateway::KIND, ManualGateway::class);
         $registrar->contribute(OrderNumberGenerator::KIND, SequenceOrderNumbers::class);
     }
