@@ -89,7 +89,7 @@ it('records noun ownership and refuses a noun claimed twice', function (): void 
     $ownership->declare('commerz.inventory', ['stock']);
     $ownership->declare('acme.loyalty', ['x_acme']);
 
-    expect($ownership->owners()['commerz.core'])->toBe(['store', 'channel', 'schema', 'operation', 'outbox'])
+    expect($ownership->owners()['commerz.core'])->toBe(['store', 'channel', 'schema', 'operation', 'outbox', 'entity_link'])
         ->and($ownership->ownerOf('stock_levels'))->toBe('commerz.inventory')
         ->and($ownership->ownerOf('stores'))->toBe('commerz.core')
         ->and($ownership->ownerOf('operation_receipts'))->toBe('commerz.core')

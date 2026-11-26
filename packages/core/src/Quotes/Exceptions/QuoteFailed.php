@@ -35,6 +35,11 @@ final class QuoteFailed extends CommerzException
         return new self($stage, 'stage_error', $error->getMessage(), $error);
     }
 
+    public static function timedOut(string $stage, int $timeoutMs): self
+    {
+        return new self($stage, 'stage_timeout', "stage exceeded timeout of {$timeoutMs}ms");
+    }
+
     public function code(): string
     {
         return 'quotes.failed';

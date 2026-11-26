@@ -7,6 +7,10 @@ namespace Commerz\Laravel\Registrars;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Diagnostics\CommerzDoctorCheck;
 use Commerz\Internal\Console\InstallCommand;
+use Commerz\Links\Contracts\CrossModuleQuery;
+use Commerz\Links\Contracts\LinkRegistry;
+use Commerz\Links\Internal\DatabaseCrossModuleQuery;
+use Commerz\Links\Internal\DatabaseLinkRegistry;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
@@ -19,6 +23,7 @@ use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
 use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
 use Commerz\Plugins\CorePlugin;
+use Commerz\Plugins\PluginInspector as CommerzPluginInspector;
 use Commerz\Schema\CommerzSchemaSets;
 use Commerz\Schema\Internal\LegacyFingerprint;
 use Commerz\Schema\TableNames;
@@ -69,6 +74,9 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         $app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);
         $app->singleton(Outbox::class, DatabaseOutbox::class);
         $app->singleton(OutboxRelay::class);
+        $app->singleton(CommerzPluginInspector::class);
+        $app->singleton(LinkRegistry::class, DatabaseLinkRegistry::class);
+        $app->singleton(CrossModuleQuery::class, DatabaseCrossModuleQuery::class);
     }
 
     #[Override]
