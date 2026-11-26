@@ -43,7 +43,7 @@ final readonly class CommerzSchemaSets implements SchemaSetProvider
                 package: 'axiomasoft/commerz',
                 name: 'commerz',
                 path: dirname(__DIR__, 2).'/database/migrations',
-                version: 2,
+                version: 3,
             ),
         ];
     }

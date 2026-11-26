@@ -15,6 +15,7 @@ uses(CoreTestCase::class)->in('../packages/core/tests/Feature');
 uses()->group('pg')->in(
     '../packages/core/tests/Feature/CommittedEventsTest.php',
     '../packages/core/tests/Feature/ConcurrencyTest.php',
+    '../packages/core/tests/Feature/Links/LinksPgTest.php',
     '../packages/core/tests/Feature/OperationReceiptsTest.php',
     '../packages/core/tests/Feature/OutboxTest.php',
     '../packages/core/tests/Feature/SchemaTest.php',

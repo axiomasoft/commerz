@@ -8,11 +8,14 @@ use BackedEnum;
 use Commerz\Operations\Fingerprint;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Contracts\QuoteStage;
+use Commerz\Quotes\Contracts\QuoteStagePolicy;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Data\QuoteState;
+use Commerz\Quotes\Data\Rejection;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Commerz\Quotes\Enums\FailurePolicy;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use DateTimeInterface;
@@ -49,11 +52,34 @@ final class StagedQuotePipeline implements QuotePipeline
         $state = QuoteState::start($input);
 
         foreach ($stages as $stage) {
+            $policy = $stage instanceof QuoteStagePolicy ? $stage->failurePolicy() : FailurePolicy::BlockOnFailure;
+            $timeoutMs = $stage instanceof QuoteStagePolicy ? $stage->timeoutMilliseconds() : null;
+            $startedAt = hrtime(true);
+
             try {
-                $state = $stage->apply($state);
+                $nextState = $stage->apply($state);
+                $elapsedMs = (hrtime(true) - $startedAt) / 1_000_000;
+
+                if ($timeoutMs !== null && $elapsedMs > $timeoutMs) {
+                    throw QuoteFailed::timedOut($stage->key(), $timeoutMs);
+                }
+
+                $state = $nextState;
             } catch (QuoteFailed $failed) {
+                if ($policy === FailurePolicy::IgnoreOnFailure) {
+                    $state = $state->withRejection(new Rejection($stage->key(), $failed->reason, $failed->getMessage()));
+
+                    continue;
+                }
+
                 throw $failed;
             } catch (Throwable $error) {
+                if ($policy === FailurePolicy::IgnoreOnFailure) {
+                    $state = $state->withRejection(new Rejection($stage->key(), 'stage_error', $error->getMessage()));
+
+                    continue;
+                }
+
                 throw QuoteFailed::byStage($stage->key(), $error);
             }
         }
@@ -92,6 +118,15 @@ final class StagedQuotePipeline implements QuotePipeline
         $owners = [];
 
         foreach ($stages as $stage) {
+            if ($stage instanceof QuoteStagePolicy) {
+                $timeoutMs = $stage->timeoutMilliseconds();
+                if ($timeoutMs !== null && $timeoutMs <= 0) {
+                    throw InvalidConfiguration::fromProblems([
+                        "commerz.plugins: quote stage '{$stage->key()}' timeoutMilliseconds() must be a positive integer or null",
+                    ]);
+                }
+            }
+
             if ($stage->position() !== StagePosition::At) {
                 continue;
             }
