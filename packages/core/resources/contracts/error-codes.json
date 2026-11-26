@@ -71,6 +71,17 @@
         {
             "package": "axiomasoft/commerz",
             "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "DuplicateWebhookSubscription",
+            "code": "commerz.duplicate_webhook_subscription",
+            "type": "urn:packman:problem:commerz.duplicate_webhook_subscription",
+            "status": 409,
+            "title": "Duplicate Webhook Subscription Code",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
             "case": "IdempotencyConflict",
             "code": "commerz.idempotency_conflict",
             "type": "urn:packman:problem:commerz.idempotency_conflict",
@@ -225,6 +236,17 @@
         {
             "package": "axiomasoft/commerz",
             "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "InvalidWebhookSignature",
+            "code": "commerz.invalid_webhook_signature",
+            "type": "urn:packman:problem:commerz.invalid_webhook_signature",
+            "status": 401,
+            "title": "Invalid Webhook Signature",
+            "retryable": false,
+            "category": "authentication"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
             "case": "InvalidWeights",
             "code": "commerz.invalid_weights",
             "type": "urn:packman:problem:commerz.invalid_weights",
@@ -331,6 +353,39 @@
             "title": "Promotion Usage Limit Reached",
             "retryable": false,
             "category": "rate_limit"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "WebhookDeliveryNotFound",
+            "code": "commerz.webhook_delivery_not_found",
+            "type": "urn:packman:problem:commerz.webhook_delivery_not_found",
+            "status": 404,
+            "title": "Webhook Delivery Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "WebhookSubscriptionNotFound",
+            "code": "commerz.webhook_subscription_not_found",
+            "type": "urn:packman:problem:commerz.webhook_subscription_not_found",
+            "status": 404,
+            "title": "Webhook Subscription Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "WebhookTransportFailed",
+            "code": "commerz.webhook_transport_failed",
+            "type": "urn:packman:problem:commerz.webhook_transport_failed",
+            "status": 503,
+            "title": "Webhook Transport Failed",
+            "retryable": true,
+            "category": "unavailable"
         }
     ]
 }

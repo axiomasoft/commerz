@@ -15,6 +15,7 @@ use Commerz\Operations\Internal\Console\PruneOperationsCommand;
 use Commerz\Operations\Internal\DatabaseOperationReceipts;
 use Commerz\Operations\Internal\DatabaseTransactions;
 use Commerz\Outbox\Contracts\Outbox;
+use Commerz\Outbox\Events\IntegrationEventDelivered;
 use Commerz\Outbox\Internal\Console\RelayOutboxCommand;
 use Commerz\Outbox\Internal\DatabaseOutbox;
 use Commerz\Outbox\Internal\OutboxRelay;
@@ -24,6 +25,14 @@ use Commerz\Schema\Internal\LegacyFingerprint;
 use Commerz\Schema\TableNames;
 use Commerz\Time\Contracts\Clock;
 use Commerz\Time\Internal\SystemClock;
+use Commerz\Webhooks\Contracts\InboundWebhookGateway;
+use Commerz\Webhooks\Contracts\WebhookSubscriptions;
+use Commerz\Webhooks\Contracts\WebhookTransport;
+use Commerz\Webhooks\Internal\Console\DispatchWebhooksCommand;
+use Commerz\Webhooks\Internal\CurlWebhookTransport;
+use Commerz\Webhooks\Internal\DatabaseInboundWebhookGateway;
+use Commerz\Webhooks\Internal\DatabaseWebhookSubscriptions;
+use Commerz\Webhooks\Internal\WebhookOutboxListener;
 use Illuminate\Console\Events\ArtisanStarting;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -72,16 +81,23 @@ final class CommerzCoreRegistrar implements PackageRegistrar
         $app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);
         $app->singleton(Outbox::class, DatabaseOutbox::class);
         $app->singleton(OutboxRelay::class);
+        $app->singletonIf(WebhookTransport::class, CurlWebhookTransport::class);
+        $app->singletonIf(WebhookSubscriptions::class, DatabaseWebhookSubscriptions::class);
+        $app->singletonIf(InboundWebhookGateway::class, DatabaseInboundWebhookGateway::class);
     }
 
     #[Override]
     public function boot(Application $app): void
     {
+        $dispatcher = $app->make(Dispatcher::class);
+        $dispatcher->listen(IntegrationEventDelivered::class, WebhookOutboxListener::class);
+
         if ($app->runningInConsole()) {
-            $app->make(Dispatcher::class)->listen(ArtisanStarting::class, static function (ArtisanStarting $event): void {
+            $dispatcher->listen(ArtisanStarting::class, static function (ArtisanStarting $event): void {
                 $event->artisan->resolveCommands([
                     InstallCommand::class,
                     RelayOutboxCommand::class,
+                    DispatchWebhooksCommand::class,
                     PruneOperationsCommand::class,
                 ]);
             });

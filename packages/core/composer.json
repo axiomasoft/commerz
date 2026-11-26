@@ -61,7 +61,9 @@
                 "Ports",
                 "Quotes",
                 "Schema",
-                "Stores"
+                "Stores",
+                "Time",
+                "Webhooks"
             ]
         },
         "branch-alias": {

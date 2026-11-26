@@ -33,7 +33,8 @@
                 "Quotes",
                 "Schema",
                 "Stores",
-                "Time"
+                "Time",
+                "Webhooks"
             ]
         },
         {

@@ -22,6 +22,7 @@ uses()->group('pg')->in(
     '../packages/core/tests/Feature/Quotes/CrmScenarioTest.php',
     '../packages/core/tests/Feature/Stores/ConsoleTest.php',
     '../packages/core/tests/Feature/Stores/StoresTest.php',
+    '../packages/core/tests/Feature/Webhooks/WebhooksPgTest.php',
     '../packages/catalog/tests/Feature/Attributes/AttributesTest.php',
     '../packages/catalog/tests/Feature/CatalogScenarioTest.php',
     '../packages/catalog/tests/Feature/Categories/CategoriesTest.php',

@@ -6,13 +6,19 @@ namespace Commerz\Laravel\Registrars;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Configuration\StockMode;
+use Commerz\Ports\Assets\Contracts\AssetResolverPort;
+use Commerz\Ports\Assets\Internal\NullAssetResolver;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Internal\GuestOnlyDirectory;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
 use Commerz\Ports\Delivery\Internal\NoDelivery;
+use Commerz\Ports\Digital\Contracts\DigitalDeliveryPort;
+use Commerz\Ports\Digital\Internal\NullDigitalDelivery;
 use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Ports\Prices\Internal\SnapshotPriceResolver;
+use Commerz\Ports\Privacy\Contracts\PiiCipherPort;
+use Commerz\Ports\Privacy\Internal\NullPiiCipher;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Internal\NullPromotionUsage;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
@@ -38,6 +44,9 @@ final class CommerzPortsRegistrar implements PackageRegistrar
     #[Override]
     public function register(Application $app): void
     {
+        $app->singletonIf(AssetResolverPort::class, NullAssetResolver::class);
+        $app->singletonIf(DigitalDeliveryPort::class, NullDigitalDelivery::class);
+        $app->singletonIf(PiiCipherPort::class, NullPiiCipher::class);
         $app->singletonIf(PriceResolver::class, SnapshotPriceResolver::class);
         $app->singletonIf(PromotionUsage::class, NullPromotionUsage::class);
         $app->singletonIf(DeliveryOptions::class, NoDelivery::class);
