@@ -16,6 +16,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
+                    "axiomasoft/commerz-b2b": "0.1.x-dev",
                     "axiomasoft/commerz-catalog": "0.1.x-dev",
                     "axiomasoft/commerz": "0.1.x-dev",
                     "axiomasoft/commerz-full": "0.1.x-dev",
@@ -49,6 +50,7 @@
     "require": {
         "php": ">=8.4 <8.6",
         "axiomasoft/commerz": "^0.1@dev",
+        "axiomasoft/commerz-b2b": "^0.1@dev",
         "axiomasoft/commerz-catalog": "^0.1@dev",
         "axiomasoft/commerz-full": "^0.1@dev",
         "axiomasoft/commerz-inventory": "^0.1@dev",
@@ -79,6 +81,7 @@
     "autoload-dev": {
         "psr-4": {
             "Commerz\\Tests\\": "packages/core/tests/",
+            "Commerz\\B2b\\Tests\\": "packages/b2b/tests/",
             "Commerz\\Catalog\\Tests\\": "packages/catalog/tests/",
             "Commerz\\Inventory\\Tests\\": "packages/inventory/tests/",
             "Commerz\\Pricing\\Tests\\": "packages/pricing/tests/",

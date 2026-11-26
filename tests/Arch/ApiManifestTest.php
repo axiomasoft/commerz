@@ -88,6 +88,7 @@ it('keeps every php-api.json manifest in sync with the code', function (): void 
         ['name' => 'axiomasoft/commerz-shipping', 'path' => 'packages/shipping'],
         ['name' => 'axiomasoft/commerz-sales', 'path' => 'packages/sales'],
         ['name' => 'axiomasoft/commerz-stored-value', 'path' => 'packages/stored-value'],
+        ['name' => 'axiomasoft/commerz-b2b', 'path' => 'packages/b2b'],
     ];
 
     $packmanSync = (new ApiManifestGenerator)->sync($root, $packages, write: $update);

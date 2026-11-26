@@ -14,5 +14,6 @@ parameters:
         - packages/shipping/src
         - packages/sales/src
         - packages/stored-value/src
+        - packages/b2b/src
         - packages/testkit/src
         - packages/testkit/tests

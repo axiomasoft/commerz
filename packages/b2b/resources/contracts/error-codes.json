@@ -1,0 +1,259 @@
+{
+    "schema": "packman-error-codes/1",
+    "package": "axiomasoft/commerz-b2b",
+    "codes": [
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "ApprovalFlowClosed",
+            "code": "b2b.approval_flow_closed",
+            "type": "urn:packman:problem:b2b.approval_flow_closed",
+            "status": 409,
+            "title": "B2B Approval Flow Closed",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "ApprovalFlowNotFound",
+            "code": "b2b.approval_flow_not_found",
+            "type": "urn:packman:problem:b2b.approval_flow_not_found",
+            "status": 404,
+            "title": "B2B Approval Flow Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "ApprovalNotGranted",
+            "code": "b2b.approval_not_granted",
+            "type": "urn:packman:problem:b2b.approval_not_granted",
+            "status": 409,
+            "title": "B2B Approval Not Granted",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "ApprovalRequired",
+            "code": "b2b.approval_required",
+            "type": "urn:packman:problem:b2b.approval_required",
+            "status": 409,
+            "title": "B2B Approval Required",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "AssociateNotFound",
+            "code": "b2b.associate_not_found",
+            "type": "urn:packman:problem:b2b.associate_not_found",
+            "status": 404,
+            "title": "B2B Associate Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "AssociateUnauthorized",
+            "code": "b2b.associate_unauthorized",
+            "type": "urn:packman:problem:b2b.associate_unauthorized",
+            "status": 403,
+            "title": "B2B Associate Unauthorized",
+            "retryable": false,
+            "category": "authorization"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "BusinessUnitInactive",
+            "code": "b2b.business_unit_inactive",
+            "type": "urn:packman:problem:b2b.business_unit_inactive",
+            "status": 409,
+            "title": "B2B Business Unit Inactive",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "BusinessUnitNotFound",
+            "code": "b2b.business_unit_not_found",
+            "type": "urn:packman:problem:b2b.business_unit_not_found",
+            "status": 404,
+            "title": "B2B Business Unit Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "CreditAccountFrozen",
+            "code": "b2b.credit_account_frozen",
+            "type": "urn:packman:problem:b2b.credit_account_frozen",
+            "status": 409,
+            "title": "B2B Credit Account Frozen",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "CreditAccountNotFound",
+            "code": "b2b.credit_account_not_found",
+            "type": "urn:packman:problem:b2b.credit_account_not_found",
+            "status": 404,
+            "title": "B2B Credit Account Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "CreditHoldNotFound",
+            "code": "b2b.credit_hold_not_found",
+            "type": "urn:packman:problem:b2b.credit_hold_not_found",
+            "status": 404,
+            "title": "B2B Credit Hold Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "CreditLimitExceeded",
+            "code": "b2b.credit_limit_exceeded",
+            "type": "urn:packman:problem:b2b.credit_limit_exceeded",
+            "status": 409,
+            "title": "B2B Credit Limit Exceeded",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "CurrencyMismatch",
+            "code": "b2b.currency_mismatch",
+            "type": "urn:packman:problem:b2b.currency_mismatch",
+            "status": 422,
+            "title": "B2B Currency Mismatch",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "DuplicateBusinessUnitCode",
+            "code": "b2b.duplicate_business_unit_code",
+            "type": "urn:packman:problem:b2b.duplicate_business_unit_code",
+            "status": 409,
+            "title": "Duplicate B2B Business Unit Code",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "HierarchyDepthExceeded",
+            "code": "b2b.hierarchy_depth_exceeded",
+            "type": "urn:packman:problem:b2b.hierarchy_depth_exceeded",
+            "status": 422,
+            "title": "B2B Hierarchy Depth Exceeded",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "InvalidPaymentTerms",
+            "code": "b2b.invalid_payment_terms",
+            "type": "urn:packman:problem:b2b.invalid_payment_terms",
+            "status": 422,
+            "title": "Invalid B2B Payment Terms",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "InvalidQuoteState",
+            "code": "b2b.invalid_quote_state",
+            "type": "urn:packman:problem:b2b.invalid_quote_state",
+            "status": 409,
+            "title": "Invalid B2B Quote State",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "InvalidQuoteValidity",
+            "code": "b2b.invalid_quote_validity",
+            "type": "urn:packman:problem:b2b.invalid_quote_validity",
+            "status": 422,
+            "title": "Invalid B2B Quote Validity",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "PaymentTermsNotFound",
+            "code": "b2b.payment_terms_not_found",
+            "type": "urn:packman:problem:b2b.payment_terms_not_found",
+            "status": 404,
+            "title": "B2B Payment Terms Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "QuoteAlreadyConverted",
+            "code": "b2b.quote_already_converted",
+            "type": "urn:packman:problem:b2b.quote_already_converted",
+            "status": 409,
+            "title": "B2B Quote Already Converted",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "QuoteExpired",
+            "code": "b2b.quote_expired",
+            "type": "urn:packman:problem:b2b.quote_expired",
+            "status": 409,
+            "title": "B2B Quote Expired",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "QuoteNotFound",
+            "code": "b2b.quote_not_found",
+            "type": "urn:packman:problem:b2b.quote_not_found",
+            "status": 404,
+            "title": "B2B Quote Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-b2b",
+            "enum": "Commerz\\B2b\\Errors\\Enums\\B2bErrorCode",
+            "case": "RecurringSellingPlanForbidden",
+            "code": "b2b.recurring_selling_plan_forbidden",
+            "type": "urn:packman:problem:b2b.recurring_selling_plan_forbidden",
+            "status": 422,
+            "title": "Recurring SellingPlan Forbidden With PaymentTerms",
+            "retryable": false,
+            "category": "validation"
+        }
+    ]
+}
