@@ -420,6 +420,15 @@
                             "optional": false,
                             "default": null,
                             "flags": 1
+                        },
+                        {
+                            "name": "sellerRef",
+                            "type": "?Commerz\\Identity\\SellerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
                         }
                     ],
                     "return": null,
@@ -1664,6 +1673,45 @@
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
+        },
+        "Commerz\\Sales\\Checkout\\Contracts\\OrderSplitterPort": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "split": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "quote",
+                            "type": "Commerz\\Quotes\\Data\\QuoteResult",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
         },
         "Commerz\\Sales\\Checkout\\Data\\PlaceOrder": {
             "kind": "class",
@@ -5260,6 +5308,26 @@
                     "return": "Commerz\\Sales\\Carts\\Data\\CartView",
                     "doc": []
                 },
+                "erasePersonalData": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "customer",
+                            "type": "Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "int",
+                    "doc": []
+                },
                 "expireDue": {
                     "visibility": "public",
                     "static": false,
@@ -5531,6 +5599,15 @@
                             "variadic": false,
                             "optional": false,
                             "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "sellerRef",
+                            "type": "?Commerz\\Identity\\SellerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
                             "flags": 1
                         }
                     ],
@@ -6159,6 +6236,15 @@
                             "variadic": false,
                             "optional": false,
                             "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "sellerRef",
+                            "type": "?Commerz\\Identity\\SellerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
                             "flags": 1
                         }
                     ],

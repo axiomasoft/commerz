@@ -7,7 +7,9 @@ namespace Commerz\Sales\Laravel\Registrars;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Internal\DatabaseCarts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Checkout\Contracts\OrderSplitterPort;
 use Commerz\Sales\Checkout\Internal\OrderPlacement;
+use Commerz\Sales\Checkout\Internal\SingleOrderSplitter;
 use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Diagnostics\SalesDoctorCheck;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
@@ -54,6 +56,7 @@ final class SalesRegistrar implements PackageRegistrar
         CommerzSchemaSets::governMigrations($app);
 
         $app->singleton(Carts::class, DatabaseCarts::class);
+        $app->singletonIf(OrderSplitterPort::class, SingleOrderSplitter::class);
         $app->singleton(Checkout::class, OrderPlacement::class);
         $app->singleton(Orders::class, DatabaseOrders::class);
         $app->singleton(Payments::class, DatabasePayments::class);

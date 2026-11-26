@@ -6,6 +6,7 @@ namespace Commerz\Shipping\Laravel\Registrars;
 
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
 use Commerz\Ports\Delivery\Contracts\ShipmentBooking;
+use Commerz\Ports\Privacy\Events\CustomerPersonalDataErased;
 use Commerz\Schema\CommerzSchemaSets;
 use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Bookings\Internal\CarrierShipmentBooking;
@@ -21,11 +22,11 @@ use Commerz\Shipping\Shipping;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Commerz\Shipping\Zones\Internal\DatabaseZones;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
-use Packman\Foundation\Concerns\RegistersNothingOnBoot;
 use Packman\Foundation\Contracts\PackageRegistrar;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 
@@ -35,8 +36,6 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
 #[Spi(kind: SpiKind::Call, since: '0.1')]
 final class ShippingRegistrar implements PackageRegistrar
 {
-    use RegistersNothingOnBoot;
-
     #[Override]
     public function register(Application $app): void
     {
@@ -58,5 +57,13 @@ final class ShippingRegistrar implements PackageRegistrar
         $app->singleton(DeliveryOptions::class, DatabaseShippingOptions::class);
         $app->singleton(ShipmentBooking::class, CarrierShipmentBooking::class);
         $app->singleton(Shipping::class);
+    }
+
+    #[Override]
+    public function boot(Application $app): void
+    {
+        $app->make(Dispatcher::class)->listen(CustomerPersonalDataErased::class, static function (CustomerPersonalDataErased $event) use ($app): void {
+            $app->make(Bookings::class)->erasePersonalData($event->bookingReferences);
+        });
     }
 }

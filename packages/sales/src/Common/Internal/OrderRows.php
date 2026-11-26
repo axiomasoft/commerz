@@ -7,6 +7,7 @@ namespace Commerz\Sales\Common\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
@@ -156,6 +157,7 @@ final readonly class OrderRows
         $id = Rows::string($row, 'id');
         $currency = Currency::of(Rows::string($row, 'currency'));
         $compareAt = Rows::nullableInt($row, 'compare_at_minor');
+        $seller = Rows::nullableString($row, 'seller_ref');
 
         return new OrderLineView(
             new OrderLineId($id),
@@ -179,6 +181,7 @@ final readonly class OrderRows
             Rows::int($row, 'cancelled_quantity'),
             Rows::int($row, 'fulfilled_quantity'),
             Rows::int($row, 'returned_quantity'),
+            $seller === null ? null : SellerRef::fromString($seller),
         );
     }
 

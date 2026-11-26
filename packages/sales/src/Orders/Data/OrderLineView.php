@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Orders\Data;
 
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Commerz\Money\Money;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Quotes\Data\Adjustment;
@@ -42,6 +43,7 @@ final readonly class OrderLineView
         public int $cancelledQuantity,
         public int $fulfilledQuantity,
         public int $returnedQuantity,
+        public ?SellerRef $sellerRef = null,
     ) {}
 
     /** Units neither cancelled nor fulfilled yet. */

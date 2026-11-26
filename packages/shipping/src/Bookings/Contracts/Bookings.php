@@ -24,4 +24,12 @@ interface Bookings
      * @throws InvalidCommand common.invalid_cursor
      */
     public function list(ListBookings $query): Page;
+
+    /**
+     * Masks personal data (carrier result metadata and error messages) in `shipping_bookings` matching `$references`.
+     *
+     * @param  list<string>  $references
+     * @return int number of bookings anonymized
+     */
+    public function erasePersonalData(array $references): int;
 }

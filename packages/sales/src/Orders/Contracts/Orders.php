@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Orders\Contracts;
 
 use Commerz\Errors\InvalidCommand;
+use Commerz\Identity\CustomerRef;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Sales\Carts\Data\CartView;
@@ -89,4 +90,13 @@ interface Orders
      * payment under way, a captured payment or a fulfilled unit stays; drafts have no deadline. Safe to run in parallel.
      */
     public function expireDue(ExpireOrders $command): ExpireReport;
+
+    /**
+     * Anonymizes personal data (name, email, phone, street lines, city, postal code, recipient) in orders and carts
+     * belonging to `$customer`, while preserving country, region, monetary amounts, taxes, and line items for
+     * accounting invariants, and notifies peer packages to erase matching shipping booking metadata.
+     *
+     * @return int number of orders anonymized
+     */
+    public function erasePersonalData(CustomerRef $customer): int;
 }

@@ -6,9 +6,13 @@ namespace Commerz\Sales\Orders\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
+use Commerz\Identity\CustomerRef;
+use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Privacy\Events\CustomerPersonalDataErased;
 use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Common\Internal\CartLines;
@@ -30,6 +34,8 @@ use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\StoreId;
+use Commerz\Time\Contracts\Clock;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -50,6 +56,8 @@ final readonly class DatabaseOrders implements Orders
         private OrderJournal $journal,
         private OrderCancellation $cancellation,
         private OrderExpiry $expiry,
+        private CommittedEvents $events,
+        private Clock $clock,
     ) {}
 
     public function draft(DraftOrder $command): CartView
@@ -57,19 +65,21 @@ final readonly class DatabaseOrders implements Orders
         // Lines of the same sellable add up, as `Carts::addLine` does to an existing line.
         $quantities = [];
         $sellables = [];
+        $sellerRefs = [];
 
         foreach ($command->lines as $line) {
             $key = (string) $line->sellable;
             $quantities[$key] = ($quantities[$key] ?? 0) + $line->quantity;
             $sellables[$key] = $line->sellable;
+            $sellerRefs[$key] ??= $line->sellerRef;
         }
 
         // Sellables are read before the transaction, as for every cart change.
-        if ($sellables !== []) {
-            $this->cartLines->assertAllPurchasable($command->context, array_values($sellables));
-        }
+        $snapshots = $sellables !== []
+            ? $this->cartLines->assertAllPurchasable($command->context, array_values($sellables))
+            : [];
 
-        return $this->transactions->run(function () use ($command, $quantities, $sellables): CartView {
+        return $this->transactions->run(function () use ($command, $quantities, $sellables, $sellerRefs, $snapshots): CartView {
             $this->channels->assertActive($command->context->channel, $command->context->currency);
 
             $id = $this->carts->insert($command->context, CartKind::Draft, $command->actor, [
@@ -80,7 +90,7 @@ final readonly class DatabaseOrders implements Orders
             ]);
 
             foreach ($quantities as $key => $quantity) {
-                $this->cartLines->add($this->carts->get($id), $sellables[$key], $quantity);
+                $this->cartLines->add($this->carts->get($id), $sellables[$key], $quantity, $snapshots[$key]->sellerRef ?? $sellerRefs[$key]);
             }
 
             return $this->carts->view($this->carts->get($id));
@@ -161,6 +171,93 @@ final readonly class DatabaseOrders implements Orders
     public function expireDue(ExpireOrders $command): ExpireReport
     {
         return $this->expiry->expireDue($command);
+    }
+
+    public function erasePersonalData(CustomerRef $customer): int
+    {
+        return $this->transactions->run(function () use ($customer): int {
+            $customerRef = (string) $customer;
+            $now = PgTimestamp::now($this->clock);
+            $ordersTable = $this->tables->table('orders');
+            $cartsTable = $this->tables->table('carts');
+
+            $orderRows = $this->db()->table($ordersTable)
+                ->where('customer_ref', $customerRef)
+                ->get(['id', 'shipping_address', 'billing_address'])
+                ->all();
+
+            $orderIds = [];
+
+            foreach ($orderRows as $row) {
+                $id = Rows::string($row, 'id');
+                $orderIds[] = $id;
+                $shipping = Rows::nullableString($row, 'shipping_address');
+                $billing = Rows::nullableString($row, 'billing_address');
+
+                $this->db()->table($ordersTable)
+                    ->where('id', $id)
+                    ->update([
+                        'customer_email' => null,
+                        'customer_name' => null,
+                        'shipping_address' => self::maskAddressJson($shipping),
+                        'billing_address' => self::maskAddressJson($billing),
+                        'updated_at' => $now,
+                    ]);
+            }
+
+            $cartRows = $this->db()->table($cartsTable)
+                ->where('customer_ref', $customerRef)
+                ->get(['id', 'shipping_address', 'billing_address'])
+                ->all();
+
+            foreach ($cartRows as $row) {
+                $id = Rows::string($row, 'id');
+                $shipping = Rows::nullableString($row, 'shipping_address');
+                $billing = Rows::nullableString($row, 'billing_address');
+
+                if ($shipping === null && $billing === null) {
+                    continue;
+                }
+
+                $this->db()->table($cartsTable)
+                    ->where('id', $id)
+                    ->update([
+                        'shipping_address' => self::maskAddressJson($shipping),
+                        'billing_address' => self::maskAddressJson($billing),
+                        'updated_at' => $now,
+                    ]);
+            }
+
+            $bookingRefs = array_map(static fn (string $id): string => 'order:'.$id, $orderIds);
+
+            if ($orderIds !== []) {
+                foreach ($this->db()->table($this->tables->table('fulfillments'))
+                    ->whereIn('order_id', $orderIds)
+                    ->pluck('id') as $fulfillmentId) {
+                    if (is_string($fulfillmentId)) {
+                        $bookingRefs[] = 'fulfillment:'.$fulfillmentId;
+                    }
+                }
+            }
+
+            $this->events->dispatch(new CustomerPersonalDataErased($customer, $bookingRefs));
+
+            return count($orderRows);
+        });
+    }
+
+    private static function maskAddressJson(?string $json): ?string
+    {
+        if ($json === null) {
+            return null;
+        }
+
+        $address = SalesCodec::addressFromJson($json);
+
+        return SalesCodec::addressToJson(new Address(
+            country: $address->country,
+            region: $address->region,
+        ));
     }
 
     /** The keyset is (placed_at, id), newest first; the timestamp is PostgreSQL's own text of it, so no precision is lost. */

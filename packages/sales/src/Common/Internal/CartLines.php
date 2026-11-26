@@ -8,8 +8,10 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Commerz\Identity\Uuid7;
 use Commerz\Ports\Sellables\Contracts\Sellables;
+use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Sales\Carts\Exceptions\CartLineNotFound;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
@@ -43,26 +45,33 @@ final readonly class CartLines
      * @throws SellableNotPurchasable
      * @throws SellableUnavailable
      */
-    public function assertPurchasable(CartRow $cart, SellableRef $sellable): void
+    public function assertPurchasable(CartRow $cart, SellableRef $sellable): SellableSnapshot
     {
-        $this->assertAllPurchasable($cart->context(new DateTimeImmutable('now', new DateTimeZone('UTC'))), [$sellable]);
+        $snapshots = $this->assertAllPurchasable($cart->context(new DateTimeImmutable('now', new DateTimeZone('UTC'))), [$sellable]);
+
+        return $snapshots[(string) $sellable];
     }
 
     /**
      * The same check for the sellables of a cart that does not exist yet (a draft), in one read.
      *
      * @param  list<SellableRef>  $sellables
+     * @return array<string, SellableSnapshot>
      *
      * @throws SellableNotPurchasable
      * @throws SellableUnavailable
      */
-    public function assertAllPurchasable(CommerceContext $context, array $sellables): void
+    public function assertAllPurchasable(CommerceContext $context, array $sellables): array
     {
-        foreach ($this->sellables->resolveMany($sellables, $context) as $snapshot) {
+        $snapshots = $this->sellables->resolveMany($sellables, $context);
+
+        foreach ($snapshots as $snapshot) {
             if (! $snapshot->purchasable) {
                 throw new SellableNotPurchasable($snapshot->ref, $snapshot->unavailableReason);
             }
         }
+
+        return $snapshots;
     }
 
     /**
@@ -71,7 +80,7 @@ final readonly class CartLines
      * @throws InvalidCommand sales.invalid_quantity
      * @throws TooManyCartLines
      */
-    public function add(CartRow $cart, SellableRef $sellable, int $quantity): void
+    public function add(CartRow $cart, SellableRef $sellable, int $quantity, ?SellerRef $sellerRef = null): void
     {
         $existing = array_find($cart->lines, static fn (CartLineRow $line): bool => $line->sellable->equals($sellable));
         $total = ($existing->quantity ?? 0) + $quantity;
@@ -80,7 +89,13 @@ final readonly class CartLines
         $table = $this->db()->table($this->tables->table('cart_lines'));
 
         if ($existing !== null) {
-            $table->where('id', $existing->id)->update(['quantity' => $total, 'updated_at' => PgTimestamp::now()]);
+            $update = ['quantity' => $total, 'updated_at' => PgTimestamp::now()];
+
+            if ($sellerRef !== null && $existing->sellerRef === null) {
+                $update['seller_ref'] = (string) $sellerRef;
+            }
+
+            $table->where('id', $existing->id)->update($update);
 
             return;
         }
@@ -94,6 +109,7 @@ final readonly class CartLines
             'id' => Uuid7::generate(),
             'cart_id' => $cart->id,
             'sellable_ref' => (string) $sellable,
+            'seller_ref' => $sellerRef === null ? null : (string) $sellerRef,
             'quantity' => $quantity,
             'position' => $cart->lines === [] ? 1 : max(array_map(static fn (CartLineRow $line): int => $line->position, $cart->lines)) + 1,
             'created_at' => $now,

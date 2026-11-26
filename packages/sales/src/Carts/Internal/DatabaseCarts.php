@@ -82,10 +82,10 @@ final readonly class DatabaseCarts implements Carts
     public function addLine(AddCartLine $command): CartView
     {
         $cart = CartRows::assertOpen($this->rows->get($command->cart->value));
-        $this->lines->assertPurchasable($cart, $command->sellable);
+        $snapshot = $this->lines->assertPurchasable($cart, $command->sellable);
 
-        return $this->mutate($command->cart, function (CartRow $cart) use ($command): array {
-            $this->lines->add($cart, $command->sellable, $command->quantity);
+        return $this->mutate($command->cart, function (CartRow $cart) use ($command, $snapshot): array {
+            $this->lines->add($cart, $command->sellable, $command->quantity, $snapshot->sellerRef);
 
             return [];
         });

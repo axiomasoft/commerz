@@ -9,6 +9,7 @@ use Commerz\Context\CommerceContext;
 use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Currency;
 use Commerz\Sales\Carts\Data\CartId;
@@ -135,7 +136,7 @@ final readonly class CartRows
             $cart->locale,
             $cart->customer,
             $cart->groups,
-            array_map(static fn (CartLineRow $line): CartLineView => new CartLineView($line->id, $line->sellable, $line->quantity), $cart->lines),
+            array_map(static fn (CartLineRow $line): CartLineView => new CartLineView($line->id, $line->sellable, $line->quantity, $line->sellerRef), $cart->lines),
             $cart->codes,
             $cart->shippingAddress,
             $cart->billingAddress,
@@ -165,11 +166,13 @@ final readonly class CartRows
             ->whereIn('cart_id', array_map(static fn (object $row): string => Rows::string($row, 'id'), $rows))
             ->orderBy('position')
             ->get() as $line) {
+            $seller = Rows::nullableString($line, 'seller_ref');
             $lines[Rows::string($line, 'cart_id')][] = new CartLineRow(
                 Rows::string($line, 'id'),
                 SellableRef::fromString(Rows::string($line, 'sellable_ref')),
                 Rows::int($line, 'quantity'),
                 Rows::int($line, 'position'),
+                $seller === null ? null : SellerRef::fromString($seller),
             );
         }
 

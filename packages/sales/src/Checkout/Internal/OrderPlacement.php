@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Checkout\Internal;
 
+use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\OperationReceipts;
@@ -25,6 +26,7 @@ use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\ShippingAddressRequired;
 use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Checkout\Contracts\OrderSplitterPort;
 use Commerz\Sales\Checkout\Data\PlaceOrder;
 use Commerz\Sales\Checkout\Exceptions\CartAlreadyPlaced;
 use Commerz\Sales\Checkout\Exceptions\CartChanged;
@@ -80,6 +82,7 @@ final readonly class OrderPlacement implements Checkout
         private OrderRows $orders,
         private OrderWriter $writer,
         private OrderJournal $journal,
+        private OrderSplitterPort $splitter,
     ) {}
 
     public function place(PlaceOrder $command): OrderView
@@ -192,6 +195,12 @@ final readonly class OrderPlacement implements Checkout
         // The quote was made outside the transaction: a change of the cart since then makes it stale.
         if ($cart->version !== $prepared->version) {
             throw new CartChanged($cart->id, $prepared->version, $cart->version);
+        }
+
+        $splits = $this->splitter->split($placement->quote);
+
+        if (count($splits) > 1) {
+            throw new InvalidCommand('cart', 'multi-order splitting requires a marketplace checkout handler', 'sales.multi_order_split_unsupported');
         }
 
         $id = OrderId::generate();

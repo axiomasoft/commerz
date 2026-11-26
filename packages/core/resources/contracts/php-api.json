@@ -3572,6 +3572,25 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Identity\\SellerRef": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [
+                "Commerz\\Identity\\Ref"
+            ],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {},
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Identity\\Uuid7": {
             "kind": "class",
             "layer": "api",
@@ -10341,6 +10360,53 @@
             "enum_cases": [],
             "spi_kind": "implement"
         },
+        "Commerz\\Ports\\Privacy\\Events\\CustomerPersonalDataErased": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "customer",
+                            "type": "Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "bookingReferences",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Ports\\Promotions\\Contracts\\PromotionUsage": {
             "kind": "interface",
             "layer": "api",
@@ -11011,6 +11077,15 @@
                         {
                             "name": "customsDescription",
                             "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "sellerRef",
+                            "type": "?Commerz\\Identity\\SellerRef",
                             "by_reference": false,
                             "variadic": false,
                             "optional": true,
