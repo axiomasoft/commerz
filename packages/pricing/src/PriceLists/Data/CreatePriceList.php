@@ -23,10 +23,19 @@ final readonly class CreatePriceList
         public array $channels = [],
         public int $priority = 0,
         public TaxInclusion $taxInclusion = TaxInclusion::AsChannel,
+        public ?PriceListId $parentPriceListId = null,
+        public ?PriceListFormula $formula = null,
+        public ?RoundingRule $roundingRule = null,
     ) {
         PricingCodes::code('code', $code);
         self::assertName($name);
         self::assertPriority($priority);
+
+        if ($formula instanceof PriceListFormula && ! $parentPriceListId instanceof PriceListId) {
+            throw new InvalidCommand('parentPriceListId', 'a formula price list requires a parentPriceListId', 'pricing.invalid_formula');
+        }
+
+        $roundingRule?->assertCompatibleWith($currency);
     }
 
     /** @internal */

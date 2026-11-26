@@ -5,18 +5,27 @@ declare(strict_types=1);
 namespace Commerz\Pricing\Laravel\Registrars;
 
 use Commerz\Ports\Prices\Contracts\PriceResolver;
+use Commerz\Ports\Taxes\Contracts\TaxEngine;
 use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Diagnostics\PricingDoctorCheck;
+use Commerz\Pricing\Markets\Contracts\Markets;
+use Commerz\Pricing\Markets\Internal\DatabaseMarkets;
 use Commerz\Pricing\Plugins\PricingPlugin;
 use Commerz\Pricing\PriceLists\Contracts\PriceLists;
 use Commerz\Pricing\PriceLists\Internal\DatabasePriceLists;
 use Commerz\Pricing\Prices\Contracts\Prices;
+use Commerz\Pricing\Prices\Contracts\StagedPrices;
 use Commerz\Pricing\Prices\Internal\DatabasePriceResolver;
 use Commerz\Pricing\Prices\Internal\DatabasePrices;
+use Commerz\Pricing\Prices\Internal\DatabaseStagedPrices;
+use Commerz\Pricing\Prices\Internal\PriceCandidates;
+use Commerz\Pricing\Prices\Internal\PriceHistoryJournal;
 use Commerz\Pricing\Prices\Internal\PriceWrites;
+use Commerz\Pricing\Prices\Internal\StagedPriceOverlay;
 use Commerz\Pricing\Pricing;
 use Commerz\Pricing\Taxes\Contracts\Taxes;
 use Commerz\Pricing\Taxes\Internal\DatabaseTaxes;
+use Commerz\Pricing\Taxes\Internal\PricingTaxEngine;
 use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
 use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
 use Commerz\Schema\CommerzSchemaSets;
@@ -50,11 +59,17 @@ final class PricingRegistrar implements PackageRegistrar
 
         CommerzSchemaSets::governMigrations($app);
 
+        $app->singleton(StagedPriceOverlay::class);
+        $app->singleton(PriceHistoryJournal::class);
+        $app->singleton(PriceCandidates::class);
         $app->singleton(PriceWrites::class);
         $app->singleton(PriceLists::class, DatabasePriceLists::class);
-        // Replaces the core's snapshot default whichever provider registered first (the core binds it with `singletonIf`).
+        $app->singleton(Markets::class, DatabaseMarkets::class);
+        // Replaces the core's defaults whichever provider registered first (the core binds them with `singletonIf`).
         $app->singleton(PriceResolver::class, DatabasePriceResolver::class);
+        $app->singleton(TaxEngine::class, PricingTaxEngine::class);
         $app->singleton(Prices::class, DatabasePrices::class);
+        $app->singleton(StagedPrices::class, DatabaseStagedPrices::class);
         $app->singleton(TaxZoneLookup::class);
         $app->singleton(TaxRateLookup::class);
         $app->singleton(Taxes::class, DatabaseTaxes::class);

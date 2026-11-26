@@ -17,6 +17,7 @@ use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use Commerz\Pricing\Prices\Contracts\Prices;
 use Commerz\Pricing\Prices\Data\ExplainPrice;
+use Commerz\Pricing\Prices\Data\ListPriceHistory;
 use Commerz\Pricing\Prices\Data\ListPrices;
 use Commerz\Pricing\Prices\Data\PriceExplanation;
 use Commerz\Pricing\Prices\Data\PriceId;
@@ -25,6 +26,7 @@ use Commerz\Pricing\Prices\Data\RemovePrice;
 use Commerz\Pricing\Prices\Data\ReschedulePrice;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Data\SetPrices;
+use Commerz\Pricing\Prices\Enums\PriceHistoryEvent;
 use Commerz\Pricing\Prices\Events\PricesChanged;
 use Commerz\Pricing\Prices\Exceptions\PriceNotFoundById;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
@@ -53,6 +55,7 @@ final readonly class DatabasePrices implements Prices
         private CommittedEvents $events,
         private PriceWrites $writes,
         private DatabasePriceResolver $resolver,
+        private ?PriceHistoryJournal $history = null,
     ) {}
 
     public function set(SetPrice $command): PriceView
@@ -150,6 +153,20 @@ final readonly class DatabasePrices implements Prices
                 );
             }
 
+            $this->history?->record(
+                priceId: $command->price->value,
+                priceListId: $priceList->value,
+                sellableRef: Rows::string($row, 'sellable_ref'),
+                customerGroup: Rows::nullableString($row, 'customer_group'),
+                minQuantity: Rows::int($row, 'min_quantity'),
+                amountMinor: Rows::int($row, 'amount_minor'),
+                compareAtMinor: Rows::nullableInt($row, 'compare_at_minor'),
+                currency: Rows::string($row, 'currency'),
+                event: PriceHistoryEvent::Rescheduled,
+                validFrom: $command->validFrom,
+                validUntil: $command->validUntil,
+            );
+
             $this->events->dispatch(new PricesChanged($priceList, [Rows::string($row, 'sellable_ref')]));
 
             return $this->views([$command->price->value])[$command->price->value];
@@ -166,6 +183,22 @@ final readonly class DatabasePrices implements Prices
             if ($row === null) {
                 return;
             }
+
+            $from = Rows::nullableString($row, 'valid_from');
+            $until = Rows::nullableString($row, 'valid_until');
+            $this->history?->record(
+                priceId: $command->price->value,
+                priceListId: Rows::string($row, 'price_list_id'),
+                sellableRef: Rows::string($row, 'sellable_ref'),
+                customerGroup: Rows::nullableString($row, 'customer_group'),
+                minQuantity: Rows::int($row, 'min_quantity'),
+                amountMinor: Rows::int($row, 'amount_minor'),
+                compareAtMinor: Rows::nullableInt($row, 'compare_at_minor'),
+                currency: Rows::string($row, 'currency'),
+                event: PriceHistoryEvent::Removed,
+                validFrom: $from === null ? null : new DateTimeImmutable($from),
+                validUntil: $until === null ? null : new DateTimeImmutable($until),
+            );
 
             $db->table($table)->where('id', $command->price->value)->delete();
             $this->events->dispatch(new PricesChanged(
@@ -213,6 +246,11 @@ final readonly class DatabasePrices implements Prices
     public function explain(ExplainPrice $query): PriceExplanation
     {
         return $this->resolver->explain($query);
+    }
+
+    public function history(ListPriceHistory $query): array
+    {
+        return $this->history !== null ? $this->history->list($query) : [];
     }
 
     /**

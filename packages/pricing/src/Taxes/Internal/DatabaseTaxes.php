@@ -36,6 +36,7 @@ use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -341,14 +342,24 @@ final readonly class DatabaseTaxes implements Taxes
     /** The rate of the same key and window, locked. */
     private function exact(string $class, string $zone, SetTaxRate $command): ?string
     {
-        $id = $this->db()->table($this->tables->table('tax_rates'))
+        $db = $this->db();
+        $builder = $db->table($this->tables->table('tax_rates'))
             ->where('tax_class_id', $class)
             ->where('tax_zone_id', $zone)
-            ->where('code', $command->code)
-            ->whereRaw('valid_from is not distinct from ?::timestamptz', [Windows::format($command->validFrom)])
-            ->whereRaw('valid_until is not distinct from ?::timestamptz', [Windows::format($command->validUntil)])
-            ->lock('for no key update')
-            ->value('id');
+            ->where('code', $command->code);
+
+        $from = Windows::format($command->validFrom);
+        $until = Windows::format($command->validUntil);
+
+        if (! $db instanceof Connection || $db->getDriverName() === 'pgsql') {
+            $builder->whereRaw('valid_from is not distinct from ?::timestamptz', [$from])
+                ->whereRaw('valid_until is not distinct from ?::timestamptz', [$until]);
+        } else {
+            $from === null ? $builder->whereNull('valid_from') : $builder->where('valid_from', $from);
+            $until === null ? $builder->whereNull('valid_until') : $builder->where('valid_until', $until);
+        }
+
+        $id = $builder->lock('for no key update')->value('id');
 
         return is_string($id) ? $id : null;
     }

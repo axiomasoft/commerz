@@ -13,11 +13,13 @@ use Commerz\Pricing\PriceLists\Enums\PriceListStatus;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\SetPrice;
+use Commerz\Pricing\Prices\Enums\PriceHistoryEvent;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\QueryException;
@@ -39,6 +41,7 @@ final readonly class PriceWrites
         private ConnectionResolverInterface $connections,
         private CommerzOptions $config,
         private TableNames $tables,
+        private ?PriceHistoryJournal $history = null,
     ) {}
 
     /**
@@ -88,6 +91,7 @@ final readonly class PriceWrites
 
         if ($existing !== null) {
             $this->updateAmount($existing, $command);
+            $this->recordHistory($existing, $command);
 
             return $existing;
         }
@@ -112,6 +116,7 @@ final readonly class PriceWrites
                 'created_at' => $now,
                 'updated_at' => $now,
             ]));
+            $this->recordHistory($id, $command);
 
             return $id;
         } catch (QueryException $e) {
@@ -125,6 +130,7 @@ final readonly class PriceWrites
 
         if ($existing !== null) {
             $this->updateAmount($existing, $command);
+            $this->recordHistory($existing, $command);
 
             return $existing;
         }
@@ -226,17 +232,49 @@ final readonly class PriceWrites
 
     private function exact(SetPrice $command): ?string
     {
-        $id = $this->db()->table($this->tables->table('prices'))
+        $db = $this->db();
+        $builder = $db->table($this->tables->table('prices'))
             ->where('price_list_id', $command->priceList->value)
             ->where('sellable_ref', (string) $command->sellable)
-            ->whereRaw('customer_group is not distinct from ?', [$command->customerGroup])
-            ->where('min_quantity', $command->minQuantity)
-            ->whereRaw('valid_from is not distinct from ?::timestamptz', [self::format($command->validFrom)])
-            ->whereRaw('valid_until is not distinct from ?::timestamptz', [self::format($command->validUntil)])
-            ->lock('for no key update')
-            ->value('id');
+            ->where('min_quantity', $command->minQuantity);
+
+        if ($command->customerGroup === null) {
+            $builder->whereNull('customer_group');
+        } else {
+            $builder->where('customer_group', $command->customerGroup);
+        }
+
+        $from = self::format($command->validFrom);
+        $until = self::format($command->validUntil);
+
+        if (! $db instanceof Connection || $db->getDriverName() === 'pgsql') {
+            $builder->whereRaw('valid_from is not distinct from ?::timestamptz', [$from])
+                ->whereRaw('valid_until is not distinct from ?::timestamptz', [$until]);
+        } else {
+            $from === null ? $builder->whereNull('valid_from') : $builder->where('valid_from', $from);
+            $until === null ? $builder->whereNull('valid_until') : $builder->where('valid_until', $until);
+        }
+
+        $id = $builder->lock('for no key update')->value('id');
 
         return is_string($id) ? $id : null;
+    }
+
+    private function recordHistory(string $id, SetPrice $command): void
+    {
+        $this->history?->record(
+            priceId: $id,
+            priceListId: $command->priceList->value,
+            sellableRef: (string) $command->sellable,
+            customerGroup: $command->customerGroup,
+            minQuantity: $command->minQuantity,
+            amountMinor: $command->amount->amountMinor,
+            compareAtMinor: $command->compareAt?->amountMinor,
+            currency: $command->amount->currency->code,
+            event: PriceHistoryEvent::Set,
+            validFrom: $command->validFrom,
+            validUntil: $command->validUntil,
+        );
     }
 
     private function updateAmount(string $id, SetPrice $command): void

@@ -7,6 +7,7 @@ namespace Commerz\Pricing\Common\Internal;
 use Commerz\Errors\InvalidCommand;
 use DateTimeImmutable;
 use DateTimeZone;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Packman\Attributes\Internal;
@@ -37,7 +38,9 @@ final class Windows
     /** Queues the writers of one key until the current transaction ends (a transaction advisory lock). */
     public static function lock(ConnectionInterface $db, string $key): void
     {
-        $db->select('select pg_advisory_xact_lock(hashtextextended(?, 0))', [$key]);
+        if (! $db instanceof Connection || $db->getDriverName() === 'pgsql') {
+            $db->select('select pg_advisory_xact_lock(hashtextextended(?, 0))', [$key]);
+        }
     }
 
     /** A new window overlaps an existing one of the same key (`EXCLUDE USING gist`). */

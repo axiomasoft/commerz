@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Pricing\PriceLists\Internal;
 
 use Commerz\Configuration\CommerzOptions;
+use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
 use Commerz\Money\Currency;
 use Commerz\Operations\Contracts\CommittedEvents;
@@ -17,15 +18,18 @@ use Commerz\Pricing\PriceLists\Data\ArchivePriceList;
 use Commerz\Pricing\PriceLists\Data\AssignPriceListChannels;
 use Commerz\Pricing\PriceLists\Data\CreatePriceList;
 use Commerz\Pricing\PriceLists\Data\ListPriceLists;
+use Commerz\Pricing\PriceLists\Data\PriceListFormula;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use Commerz\Pricing\PriceLists\Data\PriceListView;
 use Commerz\Pricing\PriceLists\Data\RestorePriceList;
+use Commerz\Pricing\PriceLists\Data\RoundingRule;
 use Commerz\Pricing\PriceLists\Data\UnassignPriceListChannels;
 use Commerz\Pricing\PriceLists\Data\UpdatePriceList;
 use Commerz\Pricing\PriceLists\Enums\PriceListStatus;
 use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Pricing\PriceLists\Events\PriceListChanged;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
+use Commerz\Pricing\PriceLists\Exceptions\PriceListCycleDetected;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
@@ -35,6 +39,7 @@ use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
+use JsonException;
 use Packman\Attributes\Internal;
 
 /**
@@ -63,6 +68,10 @@ final readonly class DatabasePriceLists implements PriceLists
                 $this->channels->assertActive($channel, $command->currency);
             }
 
+            if ($command->parentPriceListId instanceof PriceListId) {
+                $this->assertValidParent(null, $command->code, $command->currency, $command->parentPriceListId, $command->formula);
+            }
+
             $id = Uuid7::generate();
             $now = PgTimestamp::now();
 
@@ -75,6 +84,9 @@ final readonly class DatabasePriceLists implements PriceLists
                     'currency' => $command->currency->code,
                     'priority' => $command->priority,
                     'tax_included' => $command->taxInclusion->toColumn(),
+                    'parent_price_list_id' => $command->parentPriceListId?->value,
+                    'formula' => $command->formula instanceof PriceListFormula ? json_encode($command->formula->toArray(), JSON_THROW_ON_ERROR) : null,
+                    'rounding_rule' => $command->roundingRule instanceof RoundingRule ? json_encode($command->roundingRule->toArray(), JSON_THROW_ON_ERROR) : null,
                     'status' => PriceListStatus::Active->value,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -94,6 +106,8 @@ final readonly class DatabasePriceLists implements PriceLists
     {
         return $this->transactions->run(function () use ($command): PriceListView {
             $row = $this->lockActive($command->priceList, 'for no key update');
+            $currency = Currency::of(Rows::string($row, 'currency'));
+            $code = Rows::string($row, 'code');
             $changes = [];
 
             if ($command->name !== null && $command->name !== Rows::string($row, 'name')) {
@@ -105,8 +119,54 @@ final readonly class DatabasePriceLists implements PriceLists
             }
 
             if ($command->taxInclusion instanceof TaxInclusion
-                && $command->taxInclusion !== TaxInclusion::fromColumn(Rows::nullableBool($row, 'tax_included'))) {
+                && $command->taxInclusion !== TaxInclusion::fromColumn(self::nullableBoolColumn($row, 'tax_included'))) {
                 $changes['tax_included'] = $command->taxInclusion->toColumn();
+            }
+
+            $currentParentRaw = Rows::nullableString($row, 'parent_price_list_id');
+            $currentFormulaRaw = Rows::nullableString($row, 'formula');
+            $currentRoundingRaw = Rows::nullableString($row, 'rounding_rule');
+
+            if ($command->clearParent) {
+                if ($currentParentRaw !== null || $currentFormulaRaw !== null) {
+                    $changes['parent_price_list_id'] = null;
+                    $changes['formula'] = null;
+                }
+            } elseif ($command->parentPriceListId instanceof PriceListId || $command->formula instanceof PriceListFormula) {
+                $nextParent = $command->parentPriceListId
+                    ?? ($currentParentRaw !== null ? new PriceListId($currentParentRaw) : null);
+
+                if (! $nextParent instanceof PriceListId) {
+                    throw new InvalidCommand('parentPriceListId', 'a formula price list requires a parentPriceListId', 'pricing.invalid_formula');
+                }
+
+                $nextFormula = $command->formula ?? self::decodeFormula($currentFormulaRaw);
+                $this->assertValidParent($command->priceList->value, $code, $currency, $nextParent, $nextFormula);
+
+                if ($nextParent->value !== $currentParentRaw) {
+                    $changes['parent_price_list_id'] = $nextParent->value;
+                }
+
+                $encodedFormula = $nextFormula instanceof PriceListFormula
+                    ? json_encode($nextFormula->toArray(), JSON_THROW_ON_ERROR)
+                    : null;
+
+                if ($encodedFormula !== $currentFormulaRaw) {
+                    $changes['formula'] = $encodedFormula;
+                }
+            }
+
+            if ($command->clearRoundingRule) {
+                if ($currentRoundingRaw !== null) {
+                    $changes['rounding_rule'] = null;
+                }
+            } elseif ($command->roundingRule instanceof RoundingRule) {
+                $command->roundingRule->assertCompatibleWith($currency);
+                $encodedRounding = json_encode($command->roundingRule->toArray(), JSON_THROW_ON_ERROR);
+
+                if ($encodedRounding !== $currentRoundingRaw) {
+                    $changes['rounding_rule'] = $encodedRounding;
+                }
             }
 
             if ($changes !== []) {
@@ -299,6 +359,9 @@ final readonly class DatabasePriceLists implements PriceLists
     private function view(object $row, array $channels): PriceListView
     {
         $id = Rows::string($row, 'id');
+        $parentRaw = property_exists($row, 'parent_price_list_id') ? Rows::nullableString($row, 'parent_price_list_id') : null;
+        $formulaRaw = property_exists($row, 'formula') ? Rows::nullableString($row, 'formula') : null;
+        $roundingRaw = property_exists($row, 'rounding_rule') ? Rows::nullableString($row, 'rounding_rule') : null;
 
         return new PriceListView(
             new PriceListId($id),
@@ -306,12 +369,100 @@ final readonly class DatabasePriceLists implements PriceLists
             Rows::string($row, 'name'),
             Currency::of(Rows::string($row, 'currency')),
             Rows::int($row, 'priority'),
-            TaxInclusion::fromColumn(Rows::nullableBool($row, 'tax_included')),
+            TaxInclusion::fromColumn(self::nullableBoolColumn($row, 'tax_included')),
             PriceListStatus::from(Rows::string($row, 'status')),
             $channels[$id] ?? [],
             Rows::date($row, 'created_at'),
             Rows::date($row, 'updated_at'),
+            $parentRaw === null ? null : new PriceListId($parentRaw),
+            self::decodeFormula($formulaRaw),
+            self::decodeRoundingRule($roundingRaw),
         );
+    }
+
+    private function assertValidParent(
+        ?string $selfId,
+        string $selfCode,
+        Currency $childCurrency,
+        PriceListId $parentId,
+        ?PriceListFormula $formula,
+    ): void {
+        if ($selfId !== null && $selfId === $parentId->value) {
+            throw new PriceListCycleDetected($selfCode, $selfCode);
+        }
+
+        $parent = $this->lockActive($parentId, 'for share');
+        $parentCurrency = Currency::of(Rows::string($parent, 'currency'));
+        $parentCode = Rows::string($parent, 'code');
+
+        if ($formula instanceof PriceListFormula) {
+            $formula->assertCurrenciesCompatible($parentCurrency, $childCurrency);
+        } elseif (! $parentCurrency->equals($childCurrency)) {
+            throw new InvalidCommand(
+                'parentPriceListId',
+                "parent price list '{$parentCode}' is in {$parentCurrency->code}, which differs from {$childCurrency->code}; provide an fx_rate_with_spread formula",
+                'pricing.currency_mismatch',
+            );
+        }
+
+        if ($selfId !== null) {
+            $seen = [$selfId => true, $parentId->value => true];
+            $cursor = property_exists($parent, 'parent_price_list_id') ? Rows::nullableString($parent, 'parent_price_list_id') : null;
+
+            while ($cursor !== null) {
+                if (isset($seen[$cursor])) {
+                    throw new PriceListCycleDetected($selfCode, $parentCode);
+                }
+
+                $seen[$cursor] = true;
+                $ancestor = $this->db()->table($this->tables->table('price_lists'))->where('id', $cursor)->first();
+                $cursor = $ancestor !== null && property_exists($ancestor, 'parent_price_list_id')
+                    ? Rows::nullableString($ancestor, 'parent_price_list_id')
+                    : null;
+            }
+        }
+    }
+
+    public static function decodeFormula(?string $raw): ?PriceListFormula
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        try {
+            $decoded = json_decode($raw, true, 8, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
+
+        return is_array($decoded) ? PriceListFormula::fromArray($decoded) : null;
+    }
+
+    public static function decodeRoundingRule(?string $raw): ?RoundingRule
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        try {
+            $decoded = json_decode($raw, true, 8, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
+
+        return is_array($decoded) ? RoundingRule::fromArray($decoded) : null;
+    }
+
+    public static function nullableBoolColumn(object $row, string $column): ?bool
+    {
+        $values = get_object_vars($row);
+        $raw = $values[$column] ?? null;
+
+        if ($raw === null) {
+            return null;
+        }
+
+        return is_bool($raw) ? $raw : (bool) Rows::int($row, $column);
     }
 
     /**

@@ -45,6 +45,37 @@ final readonly class RatesTaxCalculator implements TaxCalculator
 
     public function calculate(TaxRequest $request): TaxResult
     {
+        $exemptionReason = $request->exemption !== null ? $request->exemption->reason : null;
+
+        if ($request->isTaxExempt()) {
+            return new TaxResult(
+                amounts: [],
+                reverseCharge: false,
+                exempt: true,
+                exemptionReason: $exemptionReason ?? 'tax_exempt',
+            );
+        }
+
+        if ($request->isReverseCharge()) {
+            $zeroAmounts = array_map(
+                static fn (TaxableItem $item): TaxAmount => new TaxAmount(
+                    $item->target,
+                    $item->lineId,
+                    'reverse_charge',
+                    Rate::bp(0),
+                    Money::zero($request->context->currency),
+                ),
+                $request->items,
+            );
+
+            return new TaxResult(
+                amounts: $zeroAmounts,
+                reverseCharge: true,
+                exempt: false,
+                exemptionReason: $exemptionReason ?? 'b2b_reverse_charge',
+            );
+        }
+
         $options = $this->container->make(PricingOptions::class);
         $zone = $this->zoneOf($request, $options->defaultTaxZone);
 
