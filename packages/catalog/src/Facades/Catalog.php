@@ -14,6 +14,7 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\Relations\Contracts\ProductRelations;
 use Commerz\Catalog\Routes\Contracts\UrlRoutes;
+use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Illuminate\Support\Facades\Facade;
 use Packman\Attributes\Api;
@@ -30,6 +31,7 @@ use Packman\Attributes\Api;
  * @method static ProductRelations relations()
  * @method static Media media()
  * @method static UrlRoutes routes()
+ * @method static CatalogSearchPort search()
  *
  * @see \Commerz\Catalog\Catalog
  */

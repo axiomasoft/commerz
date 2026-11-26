@@ -14,6 +14,7 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\Relations\Contracts\ProductRelations;
 use Commerz\Catalog\Routes\Contracts\UrlRoutes;
+use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Packman\Attributes\Api;
 
@@ -33,6 +34,7 @@ final readonly class Catalog
         private ProductRelations $relations,
         private Media $media,
         private UrlRoutes $routes,
+        private CatalogSearchPort $search,
     ) {}
 
     public function products(): Products
@@ -88,5 +90,10 @@ final readonly class Catalog
     public function routes(): UrlRoutes
     {
         return $this->routes;
+    }
+
+    public function search(): CatalogSearchPort
+    {
+        return $this->search;
     }
 }

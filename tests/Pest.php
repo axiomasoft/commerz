@@ -36,6 +36,7 @@ uses()->group('pg')->in(
     '../packages/catalog/tests/Feature/Products/ProductsTest.php',
     '../packages/catalog/tests/Feature/Products/ProjectionConcurrencyTest.php',
     '../packages/catalog/tests/Feature/SchemaTest.php',
+    '../packages/catalog/tests/Feature/Search/CatalogSearchAndBatchPgTest.php',
     '../packages/catalog/tests/Feature/Sellables/VariantSellablesTest.php',
     '../packages/catalog/tests/Feature/Variants/GenerateConcurrencyTest.php',
     '../packages/catalog/tests/Feature/Variants/VariantsTest.php',
