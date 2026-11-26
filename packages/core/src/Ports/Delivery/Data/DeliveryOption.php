@@ -6,6 +6,7 @@ namespace Commerz\Ports\Delivery\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
@@ -19,6 +20,7 @@ final readonly class DeliveryOption
         public string $carrier,
         public ?int $etaDays = null,
         public array $meta = [],
+        public DeliveryMode $mode = DeliveryMode::Shipping,
     ) {
         if ($methodCode === '' || $carrier === '') {
             throw new InvalidCommand('methodCode', 'method code and carrier must not be empty', 'delivery.invalid_option');

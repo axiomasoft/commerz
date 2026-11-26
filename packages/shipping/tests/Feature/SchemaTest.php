@@ -16,6 +16,7 @@ uses(RefreshDatabase::class);
 
 const SHIPPING_TABLES = [
     'shipping_zones', 'shipping_zone_members', 'shipping_methods', 'shipping_method_channels', 'shipping_rates', 'shipping_bookings',
+    'shipping_pickup_points', 'shipping_booking_parcels',
 ];
 
 function shpTable(string $logical): string

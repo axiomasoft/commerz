@@ -7,6 +7,7 @@ namespace Commerz\Shipping\Options\Internal;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\DeliveryOption;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Shipping\Options\Data\MethodVerdict;
 use LogicException;
 use Packman\Attributes\Internal;
@@ -30,6 +31,7 @@ final readonly class PricedMethod
         public bool $taxIncluded = false,
         public ?int $etaDays = null,
         public bool $freeAbove = false,
+        public DeliveryMode $mode = DeliveryMode::Shipping,
     ) {}
 
     public static function notFound(string $methodCode): self
@@ -56,6 +58,7 @@ final readonly class PricedMethod
             $this->carrier,
             $this->etaDays,
             ['zone' => (string) $this->zoneCode, 'free_above' => $this->freeAbove, 'tax_included' => $this->taxIncluded],
+            $this->mode,
         );
     }
 

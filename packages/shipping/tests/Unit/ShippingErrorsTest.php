@@ -16,6 +16,9 @@ use Commerz\Shipping\Errors\ShippingProblemDefinitions;
 use Commerz\Shipping\Methods\Exceptions\MethodArchived;
 use Commerz\Shipping\Methods\Exceptions\MethodNotFound;
 use Commerz\Shipping\Options\Exceptions\DeliveryUnavailable;
+use Commerz\Shipping\Packing\Exceptions\UnpackableItem;
+use Commerz\Shipping\PickupPoints\Exceptions\PickupPointNotFound;
+use Commerz\Shipping\PickupPoints\Exceptions\PickupPointOversized;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
 use Commerz\Shipping\Rates\Exceptions\InvalidRateResult;
 use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
@@ -55,6 +58,9 @@ it('exposes Packman error descriptors on shipping exceptions', function (Commerz
     'delivery unavailable' => [new DeliveryUnavailable('courier', 'out_of_zone', 'cannot deliver'), ShippingErrorCode::DeliveryUnavailable, ErrorCategory::Conflict],
     'invalid rate config' => [new InvalidRateConfig('amount', 'must be non-negative'), ShippingErrorCode::InvalidRateConfig, ErrorCategory::Validation],
     'invalid rate result' => [new InvalidRateResult('flat', 'bad'), ShippingErrorCode::InvalidRateResult, ErrorCategory::Unavailable],
+    'pickup point not found' => [new PickupPointNotFound('cdek:msk-1'), ShippingErrorCode::PickupPointNotFound, ErrorCategory::NotFound],
+    'pickup point oversized' => [new PickupPointOversized('msk-1', 'cdek', 'too big'), ShippingErrorCode::PickupPointOversized, ErrorCategory::Validation],
+    'unpackable item' => [new UnpackableItem('sku-1', 'too heavy'), ShippingErrorCode::UnpackableItem, ErrorCategory::Validation],
     'zone archived' => [new ZoneArchived('ru'), ShippingErrorCode::ZoneArchived, ErrorCategory::Conflict],
     'zone not found' => [new ZoneNotFound('z1'), ShippingErrorCode::ZoneNotFound, ErrorCategory::NotFound],
 ]);

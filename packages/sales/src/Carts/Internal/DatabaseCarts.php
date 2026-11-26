@@ -13,26 +13,38 @@ use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Delivery\Contracts\DeliveryOptions;
+use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Data\DeliveryOption;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Ports\Delivery\Data\Parcel;
+use Commerz\Ports\Delivery\Data\PickupPointDestination;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteResult;
+use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Data\AddCartLine;
+use Commerz\Sales\Carts\Data\CartDeliveryGroup;
 use Commerz\Sales\Carts\Data\CartId;
 use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Data\ClearDelivery;
+use Commerz\Sales\Carts\Data\ClearGroupDelivery;
 use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Carts\Data\ListCarts;
+use Commerz\Sales\Carts\Data\PricedDeliveryGroup;
 use Commerz\Sales\Carts\Data\RemoveCartLine;
 use Commerz\Sales\Carts\Data\RemoveCode;
 use Commerz\Sales\Carts\Data\SelectDelivery;
+use Commerz\Sales\Carts\Data\SelectGroupDelivery;
 use Commerz\Sales\Carts\Data\SetCartAddress;
 use Commerz\Sales\Carts\Data\SetCartCustomer;
 use Commerz\Sales\Carts\Data\SetCartLineQuantity;
+use Commerz\Sales\Carts\Data\SetCartPickupPoint;
+use Commerz\Sales\Carts\Data\SplitDeliveryQuote;
 use Commerz\Sales\Carts\Enums\AddressRole;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
+use Commerz\Sales\Carts\Exceptions\CartLineNotFound;
 use Commerz\Sales\Carts\Exceptions\ShippingAddressRequired;
 use Commerz\Sales\Common\Internal\CartLines;
 use Commerz\Sales\Common\Internal\CartQuoter;
@@ -42,7 +54,7 @@ use Commerz\Sales\Common\Internal\SalesCodec;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
-use Commerz\Time\PgTimestamp;
+use Commerz\Time\Contracts\Clock;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -67,6 +79,7 @@ final readonly class DatabaseCarts implements Carts
         private CartLines $lines,
         private CartQuoter $quoter,
         private CustomerDirectory $customers,
+        private Clock $clock,
     ) {}
 
     public function create(CreateCart $command): CartView
@@ -93,7 +106,17 @@ final readonly class DatabaseCarts implements Carts
 
     public function setLineQuantity(SetCartLineQuantity $command): CartView
     {
-        return $this->mutate($command->cart, fn (CartRow $cart): ?array => $this->lines->setQuantity($cart, $command->lineId, $command->quantity) ? [] : null);
+        return $this->mutate($command->cart, function (CartRow $cart) use ($command): ?array {
+            if (! $this->lines->setQuantity($cart, $command->lineId, $command->quantity)) {
+                return null;
+            }
+
+            if ($command->quantity === 0) {
+                return self::pruneLineFromGroups($cart->deliveryGroups, $command->lineId);
+            }
+
+            return [];
+        });
     }
 
     public function removeLine(RemoveCartLine $command): CartView
@@ -101,7 +124,7 @@ final readonly class DatabaseCarts implements Carts
         return $this->mutate($command->cart, function (CartRow $cart) use ($command): array {
             $this->lines->remove($cart, $command->lineId);
 
-            return [];
+            return self::pruneLineFromGroups($cart->deliveryGroups, $command->lineId);
         });
     }
 
@@ -162,14 +185,120 @@ final readonly class DatabaseCarts implements Carts
         });
     }
 
+    public function setPickupPoint(SetCartPickupPoint $command): CartView
+    {
+        return $this->mutate($command->cart, static function (CartRow $cart) use ($command): ?array {
+            $same = $cart->pickupPoint === null || $command->pickupPoint === null
+                ? $cart->pickupPoint === $command->pickupPoint
+                : SalesCodec::pickupPointToJson($cart->pickupPoint) === SalesCodec::pickupPointToJson($command->pickupPoint);
+
+            if ($same) {
+                return null;
+            }
+
+            return [
+                'pickup_point' => $command->pickupPoint === null ? null : SalesCodec::pickupPointToJson($command->pickupPoint),
+            ];
+        });
+    }
+
     public function selectDelivery(SelectDelivery $command): CartView
     {
-        return $this->mutate($command->cart, static fn (CartRow $cart): ?array => $cart->deliveryMethod === $command->methodCode ? null : ['delivery_method' => $command->methodCode]);
+        return $this->mutate($command->cart, static function (CartRow $cart) use ($command): ?array {
+            $changes = [];
+
+            if ($cart->deliveryMethod !== $command->methodCode) {
+                $changes['delivery_method'] = $command->methodCode;
+            }
+
+            if ($command->pickupPoint !== null) {
+                $encoded = SalesCodec::pickupPointToJson($command->pickupPoint);
+                $current = $cart->pickupPoint === null ? null : SalesCodec::pickupPointToJson($cart->pickupPoint);
+
+                if ($encoded !== $current) {
+                    $changes['pickup_point'] = $encoded;
+                }
+            } elseif (! $command->mode->requiresPickupPoint() && $cart->pickupPoint !== null) {
+                $changes['pickup_point'] = null;
+            }
+
+            return $changes === [] ? null : $changes;
+        });
     }
 
     public function clearDelivery(ClearDelivery $command): CartView
     {
-        return $this->mutate($command->cart, static fn (CartRow $cart): ?array => $cart->deliveryMethod === null ? null : ['delivery_method' => null]);
+        return $this->mutate($command->cart, static function (CartRow $cart): ?array {
+            $changes = [];
+
+            if ($cart->deliveryMethod !== null) {
+                $changes['delivery_method'] = null;
+            }
+
+            if ($cart->pickupPoint !== null) {
+                $changes['pickup_point'] = null;
+            }
+
+            return $changes === [] ? null : $changes;
+        });
+    }
+
+    public function selectGroupDelivery(SelectGroupDelivery $command): CartView
+    {
+        return $this->mutate($command->cart, static function (CartRow $cart) use ($command): ?array {
+            foreach ($command->group->lineIds as $lineId) {
+                if ($cart->line($lineId) === null) {
+                    throw new CartLineNotFound($lineId);
+                }
+            }
+
+            $claimed = array_flip($command->group->lineIds);
+            $updated = [];
+            $replaced = false;
+
+            foreach ($cart->deliveryGroups as $existing) {
+                if ($existing->groupKey === $command->group->groupKey) {
+                    $updated[] = $command->group;
+                    $replaced = true;
+
+                    continue;
+                }
+
+                $remaining = array_values(array_filter(
+                    $existing->lineIds,
+                    static fn (string $id): bool => ! isset($claimed[$id]),
+                ));
+
+                if ($remaining !== []) {
+                    $updated[] = $existing->withLineIds($remaining);
+                }
+            }
+
+            if (! $replaced) {
+                $updated[] = $command->group;
+            }
+
+            $nextJson = SalesCodec::deliveryGroupsToJson($updated);
+            $currentJson = SalesCodec::deliveryGroupsToJson($cart->deliveryGroups);
+
+            return $nextJson === $currentJson ? null : ['delivery_groups' => $nextJson];
+        });
+    }
+
+    public function clearGroupDelivery(ClearGroupDelivery $command): CartView
+    {
+        return $this->mutate($command->cart, static function (CartRow $cart) use ($command): ?array {
+            $filtered = array_values(array_filter(
+                $cart->deliveryGroups,
+                static fn (CartDeliveryGroup $group): bool => $group->groupKey !== $command->groupKey,
+            ));
+
+            if (count($filtered) === count($cart->deliveryGroups)) {
+                return null;
+            }
+
+            return ['delivery_groups' => SalesCodec::deliveryGroupsToJson($filtered)];
+        });
     }
 
     public function find(CartId $id): CartView
@@ -215,19 +344,110 @@ final readonly class DatabaseCarts implements Carts
 
     public function quote(CartId $id): QuoteResult
     {
-        return $this->quoter->quoteCart($this->rows->get($id->value), self::now())->quote;
+        return $this->quoter->quoteCart($this->rows->get($id->value), $this->now())->quote;
+    }
+
+    public function quoteSplitDelivery(CartId $id): SplitDeliveryQuote
+    {
+        $cart = $this->rows->get($id->value);
+        $at = $this->now();
+        $quoted = $this->quoter->quoteCart($cart, $at, withDelivery: false);
+        $context = $cart->context($at);
+        $deliveryTotal = Money::zero($cart->currency);
+        $pricedGroups = [];
+
+        /** @var array<string, QuotedLine> $quotedByLine */
+        $quotedByLine = [];
+        foreach ($quoted->quote->lines as $qLine) {
+            $quotedByLine[$qLine->lineId] = $qLine;
+        }
+
+        foreach ($cart->deliveryGroups as $group) {
+            $groupCartLines = [];
+            $refs = [];
+            $groupValue = Money::zero($cart->currency);
+
+            foreach ($group->lineIds as $lineId) {
+                $cartLine = $cart->line($lineId) ?? throw new CartLineNotFound($lineId);
+                $groupCartLines[] = $cartLine;
+                $qLine = $quotedByLine[$lineId] ?? null;
+
+                if ($qLine instanceof QuotedLine) {
+                    $groupValue = $groupValue->plus($qLine->subtotal);
+                    foreach ($qLine->adjustments as $adjustment) {
+                        $groupValue = $groupValue->plus($adjustment->amount);
+                    }
+
+                    if ($qLine->sellable->requiresShipping) {
+                        $refs[] = $qLine->sellable->ref;
+                    }
+                }
+            }
+
+            if ($refs === []) {
+                continue;
+            }
+
+            $destination = $group->pickupPoint?->toDeliveryAddress()
+                ?? $group->shippingAddress
+                ?? $cart->pickupPoint?->toDeliveryAddress()
+                ?? $cart->shippingAddress
+                ?? throw new ShippingAddressRequired;
+
+            $parcel = new Parcel(
+                CartQuoter::shippingWeight($groupCartLines, $quoted->snapshots),
+                $groupValue->isNegative() ? Money::zero($cart->currency) : $groupValue,
+            );
+
+            $options = $this->delivery->options(new DeliveryRequest(
+                context: $context,
+                destination: $destination,
+                parcel: $parcel,
+                sellables: $refs,
+                pickupPoint: $group->pickupPoint ?? $cart->pickupPoint,
+                mode: $group->mode,
+            ));
+
+            $matched = array_find(
+                $options,
+                static fn (DeliveryOption $opt): bool => $opt->methodCode === $group->methodCode,
+            );
+
+            if (! $matched instanceof DeliveryOption) {
+                throw new QuoteFailed(
+                    'delivery',
+                    'method_unavailable',
+                    "delivery method '{$group->methodCode}' is unavailable for cart group '{$group->groupKey}'",
+                );
+            }
+
+            $deliveryTotal = $deliveryTotal->plus($matched->price);
+            $pricedGroups[] = new PricedDeliveryGroup(
+                group: $group,
+                option: $matched,
+                parcel: $parcel,
+                destination: $destination,
+            );
+        }
+
+        return new SplitDeliveryQuote(
+            goodsQuote: $quoted->quote,
+            groups: $pricedGroups,
+            deliveryTotal: $deliveryTotal,
+            grandTotal: $quoted->quote->total->plus($deliveryTotal),
+        );
     }
 
     public function deliveryOptions(CartId $id): array
     {
         $cart = $this->rows->get($id->value);
-        $address = $cart->shippingAddress ?? throw new ShippingAddressRequired;
+        $address = $cart->pickupPoint?->toDeliveryAddress() ?? $cart->shippingAddress ?? throw new ShippingAddressRequired;
 
         if ($cart->lines === []) {
             return [];
         }
 
-        $at = self::now();
+        $at = $this->now();
         $quoted = $this->quoter->quoteCart($cart, $at, withDelivery: false);
         $value = Money::zero($cart->currency);
         $refs = [];
@@ -255,7 +475,105 @@ final readonly class DatabaseCarts implements Carts
             $address,
             new Parcel(CartQuoter::shippingWeight($cart->lines, $quoted->snapshots), $value->isNegative() ? Money::zero($cart->currency) : $value),
             $refs,
+            $cart->pickupPoint,
         ));
+    }
+
+    public function groupDeliveryOptions(
+        CartId $id,
+        array $lineIds,
+        ?Address $destination = null,
+        ?PickupPointDestination $pickupPoint = null,
+    ): array {
+        if ($lineIds === []) {
+            throw new InvalidCommand('lineIds', 'must contain at least one cart line id', 'sales.invalid_lines');
+        }
+
+        $cart = $this->rows->get($id->value);
+        $groupLines = [];
+
+        foreach (array_values(array_unique($lineIds)) as $lineId) {
+            $groupLines[] = $cart->line($lineId) ?? throw new CartLineNotFound($lineId);
+        }
+
+        $effectivePickup = $pickupPoint ?? $cart->pickupPoint;
+        $address = $effectivePickup?->toDeliveryAddress()
+            ?? $destination
+            ?? $cart->shippingAddress
+            ?? throw new ShippingAddressRequired;
+
+        $at = $this->now();
+        $quoted = $this->quoter->quoteCart($cart, $at, withDelivery: false);
+
+        /** @var array<string, QuotedLine> $quotedByLine */
+        $quotedByLine = [];
+        foreach ($quoted->quote->lines as $qLine) {
+            $quotedByLine[$qLine->lineId] = $qLine;
+        }
+
+        $value = Money::zero($cart->currency);
+        $refs = [];
+
+        foreach ($groupLines as $cartLine) {
+            $qLine = $quotedByLine[$cartLine->id] ?? null;
+
+            if (! $qLine instanceof QuotedLine) {
+                continue;
+            }
+
+            $value = $value->plus($qLine->subtotal);
+            foreach ($qLine->adjustments as $adjustment) {
+                $value = $value->plus($adjustment->amount);
+            }
+
+            if ($qLine->sellable->requiresShipping) {
+                $refs[] = $qLine->sellable->ref;
+            }
+        }
+
+        if ($refs === []) {
+            return [];
+        }
+
+        return $this->delivery->options(new DeliveryRequest(
+            context: $cart->context($at),
+            destination: $address,
+            parcel: new Parcel(CartQuoter::shippingWeight($groupLines, $quoted->snapshots), $value->isNegative() ? Money::zero($cart->currency) : $value),
+            sellables: $refs,
+            pickupPoint: $effectivePickup,
+            mode: $effectivePickup?->mode,
+        ));
+    }
+
+    /**
+     * @param  list<CartDeliveryGroup>  $groups
+     * @return array<string, string>
+     */
+    private static function pruneLineFromGroups(array $groups, string $removedLineId): array
+    {
+        if ($groups === []) {
+            return [];
+        }
+
+        $next = [];
+        $changed = false;
+
+        foreach ($groups as $group) {
+            $remaining = array_values(array_filter(
+                $group->lineIds,
+                static fn (string $id): bool => $id !== $removedLineId,
+            ));
+
+            if (count($remaining) !== count($group->lineIds)) {
+                $changed = true;
+            }
+
+            if ($remaining !== []) {
+                $next[] = $group->withLineIds($remaining);
+            }
+        }
+
+        return $changed ? ['delivery_groups' => SalesCodec::deliveryGroupsToJson($next)] : [];
     }
 
     /**
@@ -291,9 +609,9 @@ final readonly class DatabaseCarts implements Carts
         $builder->whereRaw('(created_at, id) < (?::timestamptz, ?::uuid)', $parts);
     }
 
-    private static function now(): DateTimeImmutable
+    private function now(): DateTimeImmutable
     {
-        return PgTimestamp::current();
+        return $this->clock->now();
     }
 
     private function db(): ConnectionInterface

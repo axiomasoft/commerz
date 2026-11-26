@@ -203,6 +203,28 @@
         {
             "package": "axiomasoft/commerz-shipping",
             "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
+            "case": "InvalidPacking",
+            "code": "shipping.invalid_packing",
+            "type": "urn:packman:problem:shipping.invalid_packing",
+            "status": 422,
+            "title": "Invalid Parcel Packing Request",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-shipping",
+            "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
+            "case": "InvalidPickupPoint",
+            "code": "shipping.invalid_pickup_point",
+            "type": "urn:packman:problem:shipping.invalid_pickup_point",
+            "status": 422,
+            "title": "Invalid Pickup Point",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-shipping",
+            "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
             "case": "InvalidPosition",
             "code": "shipping.invalid_position",
             "type": "urn:packman:problem:shipping.invalid_position",
@@ -302,6 +324,28 @@
         {
             "package": "axiomasoft/commerz-shipping",
             "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
+            "case": "PickupPointNotFound",
+            "code": "shipping.pickup_point_not_found",
+            "type": "urn:packman:problem:shipping.pickup_point_not_found",
+            "status": 404,
+            "title": "Pickup Point Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-shipping",
+            "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
+            "case": "PickupPointOversized",
+            "code": "shipping.pickup_point_oversized",
+            "type": "urn:packman:problem:shipping.pickup_point_oversized",
+            "status": 422,
+            "title": "Parcel Exceeds Pickup Point Limits",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-shipping",
+            "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
             "case": "TooManyRates",
             "code": "shipping.too_many_rates",
             "type": "urn:packman:problem:shipping.too_many_rates",
@@ -340,6 +384,17 @@
             "type": "urn:packman:problem:shipping.unknown_rate",
             "status": 422,
             "title": "Unknown Delivery Rate",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-shipping",
+            "enum": "Commerz\\Shipping\\Errors\\Enums\\ShippingErrorCode",
+            "case": "UnpackableItem",
+            "code": "shipping.unpackable_item",
+            "type": "urn:packman:problem:shipping.unpackable_item",
+            "status": 422,
+            "title": "Item Exceeds Parcel Constraints",
             "retryable": false,
             "category": "validation"
         },

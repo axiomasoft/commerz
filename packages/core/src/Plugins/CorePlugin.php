@@ -11,6 +11,7 @@ use Commerz\Errors\CommerzProblemDefinitions;
 use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Panels\ChannelPanel;
 use Commerz\Panels\StorePanel;
+use Commerz\Ports\Delivery\Contracts\PickupPointProvider;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Internal\BaseStage;
@@ -62,6 +63,7 @@ final class CorePlugin implements ExtensionPlugin, WithConfiguration, WithDiagno
         $registrar->declareKind(new ContributionKind(OutboxConsumer::KIND, OutboxConsumer::class, self::ID));
         $registrar->declareKind(new ContributionKind(SellableProvider::KIND, SellableProvider::class, self::ID));
         $registrar->declareKind(new ContributionKind(QuoteStage::KIND, QuoteStage::class, self::ID));
+        $registrar->declareKind(new ContributionKind(PickupPointProvider::KIND, PickupPointProvider::class, self::ID));
 
         $registrar->contribute(QuoteStage::KIND, BaseStage::class);
         $registrar->contribute(QuoteStage::KIND, TotalsStage::class);

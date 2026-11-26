@@ -10,5 +10,16 @@ use Packman\Attributes\Api;
 #[Api(since: '0.1')]
 final readonly class ShipmentBooked
 {
-    public function __construct(public string $reference, public string $carrier, public string $tracking) {}
+    /** @var non-empty-list<string> */
+    public array $trackingNumbers;
+
+    /** @param  list<string>  $trackingNumbers */
+    public function __construct(
+        public string $reference,
+        public string $carrier,
+        public string $tracking,
+        array $trackingNumbers = [],
+    ) {
+        $this->trackingNumbers = $trackingNumbers === [] ? [$tracking] : $trackingNumbers;
+    }
 }

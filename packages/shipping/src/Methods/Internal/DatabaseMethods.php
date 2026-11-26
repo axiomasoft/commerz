@@ -91,6 +91,7 @@ final readonly class DatabaseMethods implements Methods
                     'code' => $command->code,
                     'name' => json_encode($command->name->texts, JSON_THROW_ON_ERROR),
                     'carrier' => $command->carrier,
+                    'delivery_mode' => $command->mode->value,
                     'status' => $command->status->value,
                     'position' => $command->position,
                     'created_at' => $now,
@@ -126,6 +127,10 @@ final readonly class DatabaseMethods implements Methods
 
             if ($command->position !== null && $command->position !== Rows::int($row, 'position')) {
                 $changes['position'] = $command->position;
+            }
+
+            if ($command->mode !== null && $command->mode->value !== (Rows::nullableString($row, 'delivery_mode') ?? 'shipping')) {
+                $changes['delivery_mode'] = $command->mode->value;
             }
 
             if ($changes !== []) {

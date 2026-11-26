@@ -9,6 +9,8 @@ use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Data\PickupPointDestination;
+use Commerz\Sales\Carts\Data\CartDeliveryGroup;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Stores\Data\ChannelId;
@@ -23,6 +25,7 @@ final readonly class CartRow
      * @param  list<string>  $groups
      * @param  list<string>  $codes
      * @param  list<CartLineRow>  $lines
+     * @param  list<CartDeliveryGroup>  $deliveryGroups
      */
     public function __construct(
         public string $id,
@@ -42,6 +45,8 @@ final readonly class CartRow
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
         public array $lines,
+        public ?PickupPointDestination $pickupPoint = null,
+        public array $deliveryGroups = [],
     ) {}
 
     /** The context of this cart at `$at`: channel, currency and locale are the cart's own, for good (CTX-01). */

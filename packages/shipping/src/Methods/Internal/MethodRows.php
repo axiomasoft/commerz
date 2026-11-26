@@ -9,6 +9,7 @@ use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Configuration\ShippingOptions;
@@ -69,6 +70,7 @@ final readonly class MethodRows
                 $channels[$id] ?? [],
                 $rates[$id] ?? [],
                 Rows::date($row, 'updated_at'),
+                DeliveryMode::from(Rows::nullableString($row, 'delivery_mode') ?? DeliveryMode::Shipping->value),
             );
         }, $rows);
     }

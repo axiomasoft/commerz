@@ -145,6 +145,8 @@ final readonly class CartRows
             $cart->createdBy,
             $cart->createdAt,
             $cart->updatedAt,
+            $cart->pickupPoint,
+            $cart->deliveryGroups,
         );
     }
 
@@ -181,6 +183,8 @@ final readonly class CartRows
             $createdBy = Rows::nullableString($row, 'created_by_ref');
             $shipping = Rows::nullableString($row, 'shipping_address');
             $billing = Rows::nullableString($row, 'billing_address');
+            $pickupPoint = property_exists($row, 'pickup_point') ? Rows::nullableString($row, 'pickup_point') : null;
+            $deliveryGroups = property_exists($row, 'delivery_groups') ? Rows::nullableString($row, 'delivery_groups') : null;
 
             return new CartRow(
                 Rows::string($row, 'id'),
@@ -200,6 +204,8 @@ final readonly class CartRows
                 Rows::date($row, 'created_at'),
                 Rows::date($row, 'updated_at'),
                 $lines[Rows::string($row, 'id')] ?? [],
+                $pickupPoint === null ? null : SalesCodec::pickupPointFromJson($pickupPoint),
+                $deliveryGroups === null ? [] : SalesCodec::deliveryGroupsFromJson($deliveryGroups),
             );
         }, $rows);
     }

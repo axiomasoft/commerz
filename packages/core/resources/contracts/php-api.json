@@ -9093,6 +9093,91 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Ports\\Delivery\\Contracts\\PickupPointProvider": {
+            "kind": "interface",
+            "layer": "spi",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "find": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "pointId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Ports\\Delivery\\Data\\PickupPoint",
+                    "doc": []
+                },
+                "key": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "search": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\PickupPointQuery",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [
+                {
+                    "name": "KIND",
+                    "type": "string",
+                    "visibility": "public",
+                    "final": false
+                }
+            ],
+            "enum_backing": null,
+            "enum_cases": [],
+            "spi_kind": "implement"
+        },
         "Commerz\\Ports\\Delivery\\Contracts\\ShipmentBooking": {
             "kind": "interface",
             "layer": "api",
@@ -9352,6 +9437,183 @@
                             "optional": true,
                             "default": "[]",
                             "flags": 1
+                        },
+                        {
+                            "name": "parcels",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "pickupPoint",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\PickupPointDestination",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "forParcels": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "carrier",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "methodCode",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "destination",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Address",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "parcels",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "pickupPoint",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\PickupPointDestination",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "parcels": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\BookedParcel": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "sequence",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "tracking",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "parcel",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Parcel",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "labelRef",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
                         }
                     ],
                     "return": null,
@@ -9417,9 +9679,144 @@
                             "optional": true,
                             "default": "[]",
                             "flags": 1
+                        },
+                        {
+                            "name": "parcels",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
                         }
                     ],
                     "return": null,
+                    "doc": []
+                },
+                "trackingNumbers": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\Coordinates": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "latitudeMicrodeg",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "longitudeMicrodeg",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "distanceMetersTo": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "other",
+                            "type": "self",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "int",
+                    "doc": []
+                },
+                "fromDecimal": {
+                    "visibility": "public",
+                    "static": true,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "latitude",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "longitude",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "latitudeDecimal": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "longitudeDecimal": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
                     "doc": []
                 }
             },
@@ -9500,6 +9897,15 @@
                             "optional": true,
                             "default": "[]",
                             "flags": 1
+                        },
+                        {
+                            "name": "mode",
+                            "type": "Commerz\\Ports\\Delivery\\Enums\\DeliveryMode",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "\\Commerz\\Ports\\Delivery\\Enums\\DeliveryMode::Shipping",
+                            "flags": 1
                         }
                     ],
                     "return": null,
@@ -9564,6 +9970,24 @@
                             "variadic": false,
                             "optional": true,
                             "default": "[]",
+                            "flags": 1
+                        },
+                        {
+                            "name": "pickupPoint",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\PickupPointDestination",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "mode",
+                            "type": "?Commerz\\Ports\\Delivery\\Enums\\DeliveryMode",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
                             "flags": 1
                         }
                     ],
@@ -9649,6 +10073,615 @@
             "constants": [],
             "enum_backing": null,
             "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\PickupPoint": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "provider",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "name",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "mode",
+                            "type": "Commerz\\Ports\\Delivery\\Enums\\DeliveryMode",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "address",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Address",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "coordinates",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\Coordinates",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "limits",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\PickupPointLimits",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "isLocker",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "openingHours",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "meta",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "accepts": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "parcel",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Parcel",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "items",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "allowRotation",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "bool",
+                    "doc": []
+                },
+                "toDestination": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "recipientName",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "recipientPhone",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\Delivery\\Data\\PickupPointDestination",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\PickupPointDestination": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "pointId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "provider",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "mode",
+                            "type": "Commerz\\Ports\\Delivery\\Enums\\DeliveryMode",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "address",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Address",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "recipientName",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "recipientPhone",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "name",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "toDeliveryAddress": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Ports\\Delivery\\Data\\Address",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\PickupPointLimits": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "maxWeightGrams",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "maxLengthMm",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "maxWidthMm",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "maxHeightMm",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "fitsAll": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "parcel",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Parcel",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "itemParcels",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "allowRotation",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "bool",
+                    "doc": []
+                },
+                "fitsParcel": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "parcel",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\Parcel",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "allowRotation",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "bool",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Data\\PickupPointQuery": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": true,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "country",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 1
+                        },
+                        {
+                            "name": "city",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "postalCode",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "near",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\Coordinates",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "radiusMeters",
+                            "type": "?int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "parcel",
+                            "type": "?Commerz\\Ports\\Delivery\\Data\\Parcel",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "items",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "[]",
+                            "flags": 0
+                        },
+                        {
+                            "name": "mode",
+                            "type": "?Commerz\\Ports\\Delivery\\Enums\\DeliveryMode",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "provider",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 1
+                        },
+                        {
+                            "name": "onlyLockers",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "false",
+                            "flags": 1
+                        },
+                        {
+                            "name": "limit",
+                            "type": "int",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "50",
+                            "flags": 1
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                }
+            },
+            "properties": {
+                "items": {
+                    "flags": 1,
+                    "type": "array",
+                    "readonly": true,
+                    "visibility": "public",
+                    "static": false,
+                    "default": null,
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Ports\\Delivery\\Enums\\DeliveryMode": {
+            "kind": "enum",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "requiresPickupPoint": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "bool",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": "string",
+            "enum_cases": [
+                {
+                    "name": "Shipping",
+                    "value": "'shipping'"
+                },
+                {
+                    "name": "PickupPoint",
+                    "value": "'pickup_point'"
+                },
+                {
+                    "name": "LocalPickup",
+                    "value": "'local_pickup'"
+                }
+            ]
         },
         "Commerz\\Ports\\Digital\\Contracts\\DigitalDeliveryPort": {
             "kind": "interface",
