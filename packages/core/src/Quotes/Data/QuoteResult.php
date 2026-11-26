@@ -17,6 +17,12 @@ final readonly class QuoteResult
     /** Same as `$totals->total`. */
     public Money $total;
 
+    /** Same as `$totals->dueNowAmount` unless explicitly overridden with a consistent split. */
+    public Money $dueNowAmount;
+
+    /** Same as `$totals->remainingBalanceAmount` unless explicitly overridden with a consistent split. */
+    public Money $remainingBalanceAmount;
+
     /**
      * @param  list<QuotedLine>  $lines  in input order (followed by auto-added gift lines)
      * @param  list<Adjustment>  $orderAdjustments  order-level adjustments as declared (their shares are on the lines)
@@ -41,8 +47,30 @@ final readonly class QuoteResult
         public string $fingerprint,
         public array $giftOffers = [],
         public array $nearMissHints = [],
+        ?Money $dueNowAmount = null,
+        ?Money $remainingBalanceAmount = null,
     ) {
         $this->total = $totals->total;
+
+        if ($dueNowAmount === null && $remainingBalanceAmount === null) {
+            $this->dueNowAmount = $totals->dueNowAmount;
+            $this->remainingBalanceAmount = $totals->remainingBalanceAmount;
+
+            return;
+        }
+
+        $validated = new QuoteTotals(
+            $totals->subtotal,
+            $totals->discountTotal,
+            $totals->deliveryTotal,
+            $totals->taxTotal,
+            $totals->total,
+            $dueNowAmount,
+            $remainingBalanceAmount,
+        );
+
+        $this->dueNowAmount = $validated->dueNowAmount;
+        $this->remainingBalanceAmount = $validated->remainingBalanceAmount;
     }
 
     /**

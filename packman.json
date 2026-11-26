@@ -35,6 +35,7 @@
                 "Ports",
                 "Quotes",
                 "Schema",
+                "Sellable",
                 "Stores",
                 "Time",
                 "Webhooks"
@@ -234,6 +235,28 @@
                 "Schema",
                 "Tender",
                 "Wallets"
+            ]
+        },
+        {
+            "name": "axiomasoft/commerz-subscriptions",
+            "path": "packages/subscriptions",
+            "namespace": "Commerz\\Subscriptions\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Billing",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Internal",
+                "Laravel",
+                "Lifecycle",
+                "Panels",
+                "Plugins",
+                "Renewals",
+                "Schema"
             ]
         },
         {

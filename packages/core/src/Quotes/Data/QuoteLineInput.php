@@ -8,6 +8,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Money\RoundingMode;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Commerz\Sellable\SellingPlan;
 use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
@@ -21,6 +22,7 @@ final readonly class QuoteLineInput
         public ?Money $fixedUnitPrice = null,
         public ?bool $taxIncluded = null,
         public ?string $priceSource = null,
+        public ?SellingPlan $sellingPlan = null,
     ) {
         if (preg_match('/\A[A-Za-z0-9_.:\-]{1,64}\z/', $lineId) !== 1) {
             throw new InvalidCommand('lineId', "'{$lineId}' must match [A-Za-z0-9_.:-]{1,64}", 'quotes.invalid_line');
@@ -43,11 +45,10 @@ final readonly class QuoteLineInput
         SellableSnapshot $sellable,
         int $quantity,
         RoundingMode $mode = RoundingMode::HalfUp,
+        ?SellingPlan $sellingPlan = null,
     ): self {
-        $resolvedQuantity = $sellable->quantityStepPolicy !== null
-            ? $sellable->quantityStepPolicy->normalize($quantity, $mode)
-            : $quantity;
+        $resolvedQuantity = $sellable->quantityStepPolicy?->normalize($quantity, $mode) ?? $quantity;
 
-        return new self($lineId, $sellable, $resolvedQuantity);
+        return new self($lineId, $sellable, $resolvedQuantity, sellingPlan: $sellingPlan);
     }
 }

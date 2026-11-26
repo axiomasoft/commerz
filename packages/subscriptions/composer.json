@@ -1,0 +1,70 @@
+{
+    "name": "axiomasoft/commerz-subscriptions",
+    "description": "Commerz subscriptions: recurring subscription contracts, billing cycles, retry dunning policy, Outbox order listener, and automatic renewal orders.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Vostrikov",
+            "email": "dv.vostrikov@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.4 <8.6",
+        "axiomasoft/commerz": "^0.1",
+        "axiomasoft/packman": "^0.1.1",
+        "axiomasoft/packman-panels": "^0.1.1",
+        "axiomasoft/packman-plugins": "^0.1.1",
+        "axiomasoft/packman-schema": "^0.1.1",
+        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
+        "illuminate/console": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Commerz\\Subscriptions\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Commerz\\Subscriptions\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Commerz\\Subscriptions\\SubscriptionsServiceProvider"
+            ]
+        },
+        "packman": {
+            "schema-version": 1,
+            "package-type": "addon",
+            "stability": "stable",
+            "error-prefix": "subscriptions",
+            "owns": [
+                "Billing",
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "Internal",
+                "Laravel",
+                "Lifecycle",
+                "Panels",
+                "Plugins",
+                "Renewals",
+                "Schema"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

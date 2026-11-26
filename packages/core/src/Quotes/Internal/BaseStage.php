@@ -11,13 +11,15 @@ use Commerz\Quotes\Data\QuoteLine;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
+use Commerz\Sellable\SellingPlan;
 use Illuminate\Contracts\Container\Container;
 use LogicException;
 use Packman\Attributes\Internal;
 
 /**
  * Prices every input line with one `PriceResolver::resolveMany()` call; the sellable's base price is the fallback.
- * The resolver is looked up per run, so a port rebound after the registry froze (a test fake) is still used.
+ * If a line (or quote) carries a {@see SellingPlan}, its pricing policy is applied to the resolved
+ * unit price. The resolver is looked up per run, so a port rebound after the registry froze (a test fake) is still used.
  */
 #[Internal]
 final readonly class BaseStage implements QuoteStage
@@ -76,33 +78,45 @@ final readonly class BaseStage implements QuoteStage
         }
 
         foreach ($inputs as $index => $input) {
+            $sellingPlan = $input->sellingPlan ?? $state->input->sellingPlan;
+
             if ($input->fixedUnitPrice !== null) {
+                $unitPrice = $sellingPlan?->unitPriceForCycle($input->fixedUnitPrice, 1, $state->input->rounding) ?? $input->fixedUnitPrice;
                 $state = $state->withLine(new QuoteLine(
                     $input->lineId,
                     $input->sellable,
                     $input->quantity,
-                    $input->fixedUnitPrice,
+                    $unitPrice,
                     $input->sellable->basePrice,
                     $input->taxIncluded ?? false,
                     $input->priceSource ?? 'cart_transform',
-                    $input->sellable->unitPrice?->withAmount($input->fixedUnitPrice),
+                    $input->sellable->unitPrice?->withAmount($unitPrice),
                     $state->input->rounding,
+                    isGift: false,
+                    sellingPlan: $sellingPlan,
                 ));
 
                 continue;
             }
 
             $price = $resolvedByIndex[$index];
+            $unitPrice = $sellingPlan?->unitPriceForCycle($price->unit, 1, $state->input->rounding) ?? $price->unit;
+            $compareAt = $price->compareAt ?? ($unitPrice->compare($price->unit) < 0 ? $price->unit : null);
+            $source = $sellingPlan !== null && ! $unitPrice->equals($price->unit)
+                ? "{$price->source}+selling_plan:{$sellingPlan->id}"
+                : $price->source;
             $state = $state->withLine(new QuoteLine(
                 $input->lineId,
                 $input->sellable,
                 $input->quantity,
-                $price->unit,
-                $price->compareAt,
+                $unitPrice,
+                $compareAt,
                 $price->taxIncluded,
-                $price->source,
-                $input->sellable->unitPrice?->withAmount($price->unit),
+                $source,
+                $input->sellable->unitPrice?->withAmount($unitPrice),
                 $state->input->rounding,
+                isGift: false,
+                sellingPlan: $sellingPlan,
             ));
         }
 

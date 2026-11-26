@@ -9,6 +9,7 @@ use Commerz\Measures\UnitPrice;
 use Commerz\Money\Money;
 use Commerz\Money\RoundingMode;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
+use Commerz\Sellable\SellingPlan;
 use Packman\Attributes\Api;
 
 /** A priced line inside the pipeline: what the base stage resolved, before adjustments and taxes. */
@@ -29,6 +30,7 @@ final readonly class QuoteLine
         public RoundingMode $rounding = RoundingMode::HalfUp,
         public bool $isGift = false,
         public ?string $giftPromotionId = null,
+        public ?SellingPlan $sellingPlan = null,
     ) {
         if ($quantity < 1) {
             throw new InvalidCommand('quantity', 'must be at least 1', 'quotes.invalid_line');

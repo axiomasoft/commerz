@@ -1,0 +1,149 @@
+{
+    "schema": "packman-error-codes/1",
+    "package": "axiomasoft/commerz-subscriptions",
+    "codes": [
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "ContractCanceled",
+            "code": "subscriptions.contract_canceled",
+            "type": "urn:packman:problem:subscriptions.contract_canceled",
+            "status": 409,
+            "title": "Subscription Contract Canceled",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "ContractNotFound",
+            "code": "subscriptions.contract_not_found",
+            "type": "urn:packman:problem:subscriptions.contract_not_found",
+            "status": 404,
+            "title": "Subscription Contract Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "CurrencyMismatch",
+            "code": "subscriptions.currency_mismatch",
+            "type": "urn:packman:problem:subscriptions.currency_mismatch",
+            "status": 422,
+            "title": "Subscription Currency Mismatch",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "CycleAlreadyProcessed",
+            "code": "subscriptions.cycle_already_processed",
+            "type": "urn:packman:problem:subscriptions.cycle_already_processed",
+            "status": 409,
+            "title": "Billing Cycle Already Processed",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "CycleNotFound",
+            "code": "subscriptions.cycle_not_found",
+            "type": "urn:packman:problem:subscriptions.cycle_not_found",
+            "status": 404,
+            "title": "Billing Cycle Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "IdempotencyConflict",
+            "code": "subscriptions.idempotency_conflict",
+            "type": "urn:packman:problem:subscriptions.idempotency_conflict",
+            "status": 409,
+            "title": "Subscription Idempotency Conflict",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "InvalidCommand",
+            "code": "subscriptions.invalid_command",
+            "type": "urn:packman:problem:subscriptions.invalid_command",
+            "status": 422,
+            "title": "Invalid Subscription Command",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "InvalidRetryPolicy",
+            "code": "subscriptions.invalid_retry_policy",
+            "type": "urn:packman:problem:subscriptions.invalid_retry_policy",
+            "status": 422,
+            "title": "Invalid Subscription Retry Policy",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "InvalidSellingPlan",
+            "code": "subscriptions.invalid_selling_plan",
+            "type": "urn:packman:problem:subscriptions.invalid_selling_plan",
+            "status": 422,
+            "title": "Invalid Subscription Selling Plan",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "InvalidStatusTransition",
+            "code": "subscriptions.invalid_status_transition",
+            "type": "urn:packman:problem:subscriptions.invalid_status_transition",
+            "status": 409,
+            "title": "Invalid Subscription Status Transition",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "MissingPaymentMethod",
+            "code": "subscriptions.missing_payment_method",
+            "type": "urn:packman:problem:subscriptions.missing_payment_method",
+            "status": 422,
+            "title": "Saved Payment Method Required",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "RenewalOrderNotFound",
+            "code": "subscriptions.renewal_order_not_found",
+            "type": "urn:packman:problem:subscriptions.renewal_order_not_found",
+            "status": 404,
+            "title": "Subscription Renewal Order Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-subscriptions",
+            "enum": "Commerz\\Subscriptions\\Errors\\Enums\\SubscriptionsErrorCode",
+            "case": "RenewalPaymentFailed",
+            "code": "subscriptions.renewal_payment_failed",
+            "type": "urn:packman:problem:subscriptions.renewal_payment_failed",
+            "status": 503,
+            "title": "Subscription Renewal Payment Failed",
+            "retryable": true,
+            "category": "unavailable"
+        }
+    ]
+}
