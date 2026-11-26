@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Options\Internal;
 
 use Commerz\Measures\LocalizedText;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Packman\Attributes\Internal;
 
@@ -34,5 +35,6 @@ final readonly class CandidateRate
         public ?int $etaDays,
         public ?string $zoneCode,
         public ?int $rank,
+        public DeliveryMode $mode = DeliveryMode::Shipping,
     ) {}
 }

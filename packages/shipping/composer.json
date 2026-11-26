@@ -16,6 +16,7 @@
         "axiomasoft/packman-panels": "^0.1.1",
         "axiomasoft/packman-plugins": "^0.1.1",
         "axiomasoft/packman-schema": "^0.1.1",
+        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17",
         "illuminate/contracts": "^13.0",
         "illuminate/database": "^13.0",
         "illuminate/support": "^13.0"
@@ -53,7 +54,9 @@
                 "Laravel",
                 "Methods",
                 "Options",
+                "Packing",
                 "Panels",
+                "PickupPoints",
                 "Plugins",
                 "Rates",
                 "Schema",

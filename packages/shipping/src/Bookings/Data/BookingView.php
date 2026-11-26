@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Bookings\Data;
 
+use Commerz\Ports\Delivery\Data\BookedParcel;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use DateTimeImmutable;
 use Packman\Attributes\Api;
@@ -12,7 +13,10 @@ use Packman\Attributes\Api;
 #[Api(since: '0.1')]
 final readonly class BookingView
 {
-    /** @param  array<array-key, mixed>  $meta  the carrier's `BookedShipment::$meta` of a booked shipment */
+    /**
+     * @param  array<array-key, mixed>  $meta  the carrier's `BookedShipment::$meta` of a booked shipment
+     * @param  list<BookedParcel>  $parcels  individual booked parcels for multi-parcel shipments
+     */
     public function __construct(
         public BookingId $id,
         public string $reference,
@@ -28,5 +32,16 @@ final readonly class BookingView
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
         public ?DateTimeImmutable $bookedAt,
+        public array $parcels = [],
     ) {}
+
+    /** @return list<string> */
+    public function trackingNumbers(): array
+    {
+        if ($this->parcels !== []) {
+            return array_map(static fn (BookedParcel $parcel): string => $parcel->tracking, $this->parcels);
+        }
+
+        return $this->tracking === null ? [] : [$this->tracking];
+    }
 }

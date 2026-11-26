@@ -51,12 +51,29 @@ final readonly class CartQuoter
         $delivery = null;
 
         if ($withDelivery && $cart->deliveryMethod !== null) {
-            $address = $cart->shippingAddress ?? throw new ShippingAddressRequired;
+            $address = $cart->pickupPoint?->toDeliveryAddress() ?? $cart->shippingAddress ?? throw new ShippingAddressRequired;
             // The delivery stage replaces the declared value with the value of the goods after discounts.
             $delivery = new DeliverySelection(
                 $cart->deliveryMethod,
                 $address,
                 new Parcel(self::shippingWeight($cart->lines, $snapshots), Money::zero($cart->currency)),
+            );
+        } elseif ($withDelivery && count($cart->deliveryGroups) === 1) {
+            $group = $cart->deliveryGroups[0];
+            $groupLines = array_values(array_filter(
+                $cart->lines,
+                static fn (CartLineRow $line): bool => in_array($line->id, $group->lineIds, true),
+            ));
+            $address = $group->pickupPoint?->toDeliveryAddress()
+                ?? $group->shippingAddress
+                ?? $cart->pickupPoint?->toDeliveryAddress()
+                ?? $cart->shippingAddress
+                ?? throw new ShippingAddressRequired;
+
+            $delivery = new DeliverySelection(
+                $group->methodCode,
+                $address,
+                new Parcel(self::shippingWeight($groupLines, $snapshots), Money::zero($cart->currency)),
             );
         }
 

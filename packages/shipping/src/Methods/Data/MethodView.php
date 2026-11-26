@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Methods\Data;
 
 use Commerz\Measures\LocalizedText;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;
@@ -27,5 +28,6 @@ final readonly class MethodView
         public array $channels,
         public array $rates,
         public DateTimeImmutable $updatedAt,
+        public DeliveryMode $mode = DeliveryMode::Shipping,
     ) {}
 }

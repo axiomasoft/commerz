@@ -86,7 +86,7 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
             }
 
             if ($found instanceof BookedShipment) {
-                return $this->booked($claim, $carrier, $found);
+                return $this->booked($claim, $command, $carrier, $found);
             }
         }
 
@@ -100,7 +100,7 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
             $this->unknown($claim, $command, $e);
         }
 
-        return $this->booked($claim, $carrier, $booked);
+        return $this->booked($claim, $command, $carrier, $booked);
     }
 
     /**
@@ -126,10 +126,10 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
     }
 
     /** Records the shipment; one the package cannot trust leaves the booking unknown, since the carrier may have made it. */
-    private function booked(BookingClaim $claim, Carrier $carrier, BookedShipment $shipment): BookedShipment
+    private function booked(BookingClaim $claim, BookShipment $command, Carrier $carrier, BookedShipment $shipment): BookedShipment
     {
         try {
-            self::validate($carrier->key(), $shipment);
+            self::validate($carrier->key(), $command, $shipment);
         } catch (InvalidCarrierResult $e) {
             $this->journal->finish($claim, BookingState::Unknown, error: $e);
 
@@ -150,19 +150,61 @@ final readonly class CarrierShipmentBooking implements ShipmentBooking
     }
 
     /** @throws InvalidCarrierResult */
-    private static function validate(string $carrier, BookedShipment $shipment): void
+    private static function validate(string $carrier, BookShipment $command, BookedShipment $shipment): void
     {
         $reason = match (true) {
             $shipment->carrier !== $carrier => "the booking is by '{$shipment->carrier}'",
             ! self::isText($shipment->tracking) => 'the tracking number must be 1..191 bytes of UTF-8',
             $shipment->labelRef !== null && ! self::isText($shipment->labelRef) => 'the label reference must be 1..191 bytes of UTF-8',
             ! self::isMeta($shipment->meta) => 'meta must map string keys to scalars representable as PostgreSQL JSON without NUL',
-            default => null,
+            count($command->parcels) > 1 && count($shipment->parcels) !== count($command->parcels) => sprintf(
+                'multi-parcel shipment expected %d booked parcels, got %d',
+                count($command->parcels),
+                count($shipment->parcels),
+            ),
+            default => self::validateParcels($shipment),
         };
 
         if ($reason !== null) {
             throw new InvalidCarrierResult($carrier, $reason);
         }
+    }
+
+    private static function validateParcels(BookedShipment $shipment): ?string
+    {
+        if ($shipment->parcels === []) {
+            return null;
+        }
+
+        $trackings = [];
+
+        foreach ($shipment->parcels as $index => $parcel) {
+            $expectedSeq = $index + 1;
+
+            if ($parcel->sequence !== $expectedSeq) {
+                return "parcel sequence at index {$index} must be {$expectedSeq}, got {$parcel->sequence}";
+            }
+
+            if (! self::isText($parcel->tracking)) {
+                return 'each parcel tracking number must be 1..191 bytes of UTF-8';
+            }
+
+            if ($parcel->labelRef !== null && ! self::isText($parcel->labelRef)) {
+                return 'each parcel label reference must be 1..191 bytes of UTF-8';
+            }
+
+            if (! self::isMeta($parcel->meta)) {
+                return 'each parcel meta must map string keys to scalars representable as PostgreSQL JSON without NUL';
+            }
+
+            $trackings[] = $parcel->tracking;
+        }
+
+        if (count($trackings) > 1 && count(array_unique($trackings)) !== count($trackings)) {
+            return 'multi-parcel booking must assign distinct tracking numbers to each parcel';
+        }
+
+        return null;
     }
 
     private static function isText(string $value): bool

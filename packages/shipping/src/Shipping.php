@@ -7,6 +7,8 @@ namespace Commerz\Shipping;
 use Commerz\Shipping\Bookings\Contracts\Bookings;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Options\Contracts\ShippingOptions;
+use Commerz\Shipping\Packing\Contracts\ParcelPacker;
+use Commerz\Shipping\PickupPoints\Contracts\PickupPoints;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Packman\Attributes\Api;
 
@@ -19,6 +21,8 @@ final readonly class Shipping
         private Methods $methods,
         private ShippingOptions $options,
         private Bookings $bookings,
+        private PickupPoints $pickupPoints,
+        private ParcelPacker $packer,
     ) {}
 
     public function zones(): Zones
@@ -39,5 +43,15 @@ final readonly class Shipping
     public function bookings(): Bookings
     {
         return $this->bookings;
+    }
+
+    public function pickupPoints(): PickupPoints
+    {
+        return $this->pickupPoints;
+    }
+
+    public function packer(): ParcelPacker
+    {
+        return $this->packer;
     }
 }

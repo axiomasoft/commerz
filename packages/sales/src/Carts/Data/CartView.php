@@ -8,6 +8,7 @@ use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Money\Currency;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Data\PickupPointDestination;
 use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Stores\Data\ChannelId;
@@ -22,6 +23,7 @@ final readonly class CartView
      * @param  list<CartLineView>  $lines  in the order they were added
      * @param  list<string>  $codes
      * @param  int  $version  grows with every change, so a caller can tell a cart changed under it
+     * @param  list<CartDeliveryGroup>  $deliveryGroups
      */
     public function __construct(
         public CartId $id,
@@ -41,5 +43,7 @@ final readonly class CartView
         public ?ActorRef $createdBy,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public ?PickupPointDestination $pickupPoint = null,
+        public array $deliveryGroups = [],
     ) {}
 }

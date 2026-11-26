@@ -32,6 +32,8 @@ enum ShippingErrorCode: string implements ErrorCode
     case InvalidEta = 'shipping.invalid_eta';
     case InvalidFreeAbove = 'shipping.invalid_free_above';
     case InvalidName = 'shipping.invalid_name';
+    case InvalidPacking = 'shipping.invalid_packing';
+    case InvalidPickupPoint = 'shipping.invalid_pickup_point';
     case InvalidPosition = 'shipping.invalid_position';
     case InvalidRate = 'shipping.invalid_rate';
     case InvalidRateConfig = 'shipping.invalid_rate_config';
@@ -41,10 +43,13 @@ enum ShippingErrorCode: string implements ErrorCode
     case InvalidZoneMember = 'shipping.invalid_zone_member';
     case MethodArchived = 'shipping.method_archived';
     case MethodNotFound = 'shipping.method_not_found';
+    case PickupPointNotFound = 'shipping.pickup_point_not_found';
+    case PickupPointOversized = 'shipping.pickup_point_oversized';
     case TooManyRates = 'shipping.too_many_rates';
     case TooManyZoneMembers = 'shipping.too_many_zone_members';
     case UnknownCarrier = 'shipping.unknown_carrier';
     case UnknownRate = 'shipping.unknown_rate';
+    case UnpackableItem = 'shipping.unpackable_item';
     case ZoneArchived = 'shipping.zone_archived';
     case ZoneNotFound = 'shipping.zone_not_found';
 

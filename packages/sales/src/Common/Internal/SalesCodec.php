@@ -9,10 +9,13 @@ use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Data\PickupPointDestination;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\DeliveryCharge;
 use Commerz\Quotes\Data\TaxLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
+use Commerz\Sales\Carts\Data\CartDeliveryGroup;
 use JsonException;
 use LogicException;
 use Packman\Attributes\Internal;
@@ -213,6 +216,91 @@ final class SalesCodec
 
             return self::stringList($decoded);
         });
+    }
+
+    public static function pickupPointToJson(PickupPointDestination $point): string
+    {
+        return self::encode(self::pickupPointArray($point));
+    }
+
+    public static function pickupPointFromJson(string $json): PickupPointDestination
+    {
+        return self::guard('pickup point', static fn (): PickupPointDestination => self::pickupPointFromArray(self::object($json)));
+    }
+
+    /** @param  list<CartDeliveryGroup>  $groups */
+    public static function deliveryGroupsToJson(array $groups): string
+    {
+        return self::encode(array_map(static fn (CartDeliveryGroup $group): array => [
+            'group_key' => $group->groupKey,
+            'line_ids' => $group->lineIds,
+            'method_code' => $group->methodCode,
+            'mode' => $group->mode->value,
+            'shipping_address' => $group->shippingAddress === null ? null : self::decode(self::addressToJson($group->shippingAddress)),
+            'pickup_point' => $group->pickupPoint === null ? null : self::pickupPointArray($group->pickupPoint),
+        ], $groups));
+    }
+
+    /** @return list<CartDeliveryGroup> */
+    public static function deliveryGroupsFromJson(string $json): array
+    {
+        return self::guard('delivery groups', static function () use ($json): array {
+            $groups = [];
+
+            foreach (self::list($json) as $data) {
+                $lineIds = self::stringList($data['line_ids'] ?? null);
+                if ($lineIds === []) {
+                    throw new LogicException("'line_ids' must not be empty");
+                }
+
+                $shippingRaw = $data['shipping_address'] ?? null;
+                $pickupRaw = $data['pickup_point'] ?? null;
+
+                $groups[] = new CartDeliveryGroup(
+                    groupKey: self::string($data, 'group_key'),
+                    lineIds: $lineIds,
+                    methodCode: self::string($data, 'method_code'),
+                    mode: DeliveryMode::from(self::string($data, 'mode')),
+                    shippingAddress: is_array($shippingRaw) ? self::addressFromJson(self::encode($shippingRaw)) : null,
+                    pickupPoint: is_array($pickupRaw) ? self::pickupPointFromArray($pickupRaw) : null,
+                );
+            }
+
+            return $groups;
+        });
+    }
+
+    /** @return array<string, mixed> */
+    private static function pickupPointArray(PickupPointDestination $point): array
+    {
+        return [
+            'point_id' => $point->pointId,
+            'provider' => $point->provider,
+            'mode' => $point->mode->value,
+            'address' => self::decode(self::addressToJson($point->address)),
+            'recipient_name' => $point->recipientName,
+            'recipient_phone' => $point->recipientPhone,
+            'name' => $point->name,
+        ];
+    }
+
+    /** @param  array<array-key, mixed>  $data */
+    private static function pickupPointFromArray(array $data): PickupPointDestination
+    {
+        $addrRaw = $data['address'] ?? null;
+        if (! is_array($addrRaw)) {
+            throw new LogicException("'address' is missing or not an object");
+        }
+
+        return new PickupPointDestination(
+            pointId: self::string($data, 'point_id'),
+            provider: self::string($data, 'provider'),
+            mode: DeliveryMode::from(self::string($data, 'mode')),
+            address: self::addressFromJson(self::encode($addrRaw)),
+            recipientName: self::nullableString($data, 'recipient_name'),
+            recipientPhone: self::nullableString($data, 'recipient_phone'),
+            name: self::nullableString($data, 'name'),
+        );
     }
 
     private static function encode(mixed $value): string

@@ -8,6 +8,7 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Measures\LocalizedText;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Data\PostalCode;
@@ -69,7 +70,7 @@ final readonly class CandidateRates
             ->orderBy('r.id')
             ->orderBy('zm.id')
             ->select([
-                'm.code as method_code', 'm.name', 'm.carrier', 'm.status', 'm.position', 'mc.channel_id',
+                'm.code as method_code', 'm.name', 'm.carrier', 'm.delivery_mode', 'm.status', 'm.position', 'mc.channel_id',
                 'r.id as rate_id', 'r.currency', 'r.rate_key', 'r.rate_version', 'r.params', 'r.free_above_minor',
                 'r.tax_included', 'r.eta_days', 'z.code as zone_code', 'zm.id as member_id', 'zm.region as member_region',
                 'zm.postal_prefix as member_prefix',
@@ -110,6 +111,7 @@ final readonly class CandidateRates
                 Rows::nullableInt($row, 'eta_days'),
                 Rows::nullableString($row, 'zone_code'),
                 $candidate['rank'],
+                DeliveryMode::from(Rows::nullableString($row, 'delivery_mode') ?? DeliveryMode::Shipping->value),
             );
         }, $candidates));
     }

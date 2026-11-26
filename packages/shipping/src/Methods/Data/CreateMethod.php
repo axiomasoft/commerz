@@ -6,6 +6,7 @@ namespace Commerz\Shipping\Methods\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Shipping\Common\Data\ShippingCodes;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Commerz\Stores\Data\ChannelId;
@@ -28,6 +29,7 @@ final readonly class CreateMethod
         public array $rates = [],
         public int $position = 0,
         public MethodStatus $status = MethodStatus::Active,
+        public DeliveryMode $mode = DeliveryMode::Shipping,
     ) {
         ShippingCodes::code('code', $code);
         ShippingCodes::carrierKey('carrier', $carrier);

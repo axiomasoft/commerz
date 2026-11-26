@@ -6,6 +6,7 @@ namespace Commerz\Ports\Delivery\Data;
 
 use Commerz\Context\CommerceContext;
 use Commerz\Identity\SellableRef;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Packman\Attributes\Api;
 
 #[Api(since: '0.1')]
@@ -17,5 +18,7 @@ final readonly class DeliveryRequest
         public Address $destination,
         public Parcel $parcel,
         public array $sellables = [],
+        public ?PickupPointDestination $pickupPoint = null,
+        public ?DeliveryMode $mode = null,
     ) {}
 }

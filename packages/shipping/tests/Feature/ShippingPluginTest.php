@@ -7,6 +7,7 @@ namespace Commerz\Shipping\Tests\Feature;
 use Commerz\CommerzServiceProvider;
 use Commerz\Plugins\CorePlugin;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
+use Commerz\Shipping\Packing\Contracts\ParcelPacker;
 use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Rates\Contracts\DeliveryRate;
 use Commerz\Shipping\ShippingServiceProvider;
@@ -50,6 +51,7 @@ final class ShippingPluginTest extends PackageTestCase
         self::assertSame([
             'delivery_rate' => DeliveryRate::class,
             'carrier' => Carrier::class,
+            'parcel_packer' => ParcelPacker::class,
         ], $kinds);
     }
 }

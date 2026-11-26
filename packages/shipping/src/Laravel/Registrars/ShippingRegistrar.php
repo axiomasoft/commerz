@@ -17,6 +17,10 @@ use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Methods\Internal\DatabaseMethods;
 use Commerz\Shipping\Options\Contracts\ShippingOptions as ShippingOptionsContract;
 use Commerz\Shipping\Options\Internal\DatabaseShippingOptions;
+use Commerz\Shipping\Packing\Contracts\ParcelPacker;
+use Commerz\Shipping\Packing\Internal\WeightAndVolumeParcelPacker;
+use Commerz\Shipping\PickupPoints\Contracts\PickupPoints;
+use Commerz\Shipping\PickupPoints\Internal\DefaultPickupPoints;
 use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Shipping;
 use Commerz\Shipping\Zones\Contracts\Zones;
@@ -53,6 +57,8 @@ final class ShippingRegistrar implements PackageRegistrar
         $app->singleton(Methods::class, DatabaseMethods::class);
         $app->singleton(ShippingOptionsContract::class, DatabaseShippingOptions::class);
         $app->singleton(Bookings::class, DatabaseBookings::class);
+        $app->singleton(PickupPoints::class, DefaultPickupPoints::class);
+        $app->singletonIf(ParcelPacker::class, WeightAndVolumeParcelPacker::class);
         // Plain singletons replace the kernel's `singletonIf` NoDelivery defaults.
         $app->singleton(DeliveryOptions::class, DatabaseShippingOptions::class);
         $app->singleton(ShipmentBooking::class, CarrierShipmentBooking::class);

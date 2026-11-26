@@ -9,11 +9,15 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\CommerzException;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\Uuid7;
+use Commerz\Money\Currency;
+use Commerz\Money\Money;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
+use Commerz\Ports\Delivery\Data\BookedParcel;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Delivery\Data\BookShipment;
+use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Bookings\Enums\BookingState;
@@ -21,9 +25,8 @@ use Commerz\Shipping\Bookings\Events\ShipmentBooked;
 use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
 use Commerz\Shipping\Carriers\Exceptions\CarrierRejected;
 use Commerz\Shipping\Configuration\ShippingOptions;
+use Commerz\Time\Contracts\Clock;
 use Commerz\Time\PgTimestamp;
-use DateTimeImmutable;
-use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -47,6 +50,7 @@ final readonly class BookingJournal
         private TableNames $tables,
         private Transactions $transactions,
         private CommittedEvents $events,
+        private Clock $clock,
     ) {}
 
     /**
@@ -67,7 +71,7 @@ final readonly class BookingJournal
             $db = $this->db();
             $table = $this->tables->table('shipping_bookings');
             $id = Uuid7::generate();
-            $now = PgTimestamp::now();
+            $now = PgTimestamp::now($this->clock);
 
             // ON CONFLICT never raises, so the caller's transaction is not poisoned; a concurrent insert of the same
             // reference waits here until the first claim commits.
@@ -93,7 +97,7 @@ final readonly class BookingJournal
 
             if ($state === BookingState::Booked) {
                 return $same
-                    ? BookingClaim::done($id, $command->reference, $attempt - 1, self::stored($row))
+                    ? BookingClaim::done($id, $command->reference, $attempt - 1, self::stored($row, $this->loadParcels($id)))
                     : throw new IdempotencyConflict(self::OPERATION, $command->reference);
             }
 
@@ -133,7 +137,7 @@ final readonly class BookingJournal
      */
     public function finish(BookingClaim $claim, BookingState $state, ?BookedShipment $shipment = null, ?Throwable $error = null): bool
     {
-        $now = PgTimestamp::now();
+        $now = PgTimestamp::now($this->clock);
         $values = match ($state) {
             BookingState::Booked => self::shipment($shipment ?? throw new RuntimeException('A booked outcome needs the shipment.'), $now),
             BookingState::Rejected, BookingState::Unknown => self::error($error ?? throw new RuntimeException('A failed outcome needs the error.')),
@@ -152,7 +156,13 @@ final readonly class BookingJournal
             }
 
             if ($shipment instanceof BookedShipment) {
-                $this->events->dispatch(new ShipmentBooked($claim->reference, $shipment->carrier, $shipment->tracking));
+                $this->saveParcels($claim->id, $shipment->parcels, $now);
+                $this->events->dispatch(new ShipmentBooked(
+                    $claim->reference,
+                    $shipment->carrier,
+                    $shipment->tracking,
+                    $shipment->trackingNumbers(),
+                ));
             }
 
             return true;
@@ -165,7 +175,7 @@ final readonly class BookingJournal
         $address = $command->destination;
         $parcel = $command->parcel;
 
-        return Fingerprint::of([
+        $payload = [
             'carrier' => $command->carrier,
             'method' => $command->methodCode,
             'destination' => [
@@ -177,19 +187,34 @@ final readonly class BookingJournal
                 'recipient' => $address->recipient,
                 'phone' => $address->phone,
             ],
-            'parcel' => [
-                'weight_grams' => $parcel->weightGrams,
-                'value' => [$parcel->value->amountMinor, $parcel->value->currency->code],
-                'length_mm' => $parcel->lengthMm,
-                'width_mm' => $parcel->widthMm,
-                'height_mm' => $parcel->heightMm,
-            ],
+            'parcel' => self::parcelFingerprint($parcel),
             'meta' => $command->meta,
-        ]);
+        ];
+
+        if (count($command->parcels) > 1 || self::parcelFingerprint($command->parcels[0]) !== self::parcelFingerprint($parcel)) {
+            $payload['parcels'] = array_map(self::parcelFingerprint(...), $command->parcels);
+        }
+
+        if ($command->pickupPoint !== null) {
+            $point = $command->pickupPoint;
+            $payload['pickup_point'] = [
+                'point_id' => $point->pointId,
+                'provider' => $point->provider,
+                'mode' => $point->mode->value,
+                'recipient_name' => $point->recipientName,
+                'recipient_phone' => $point->recipientPhone,
+            ];
+        }
+
+        return Fingerprint::of($payload);
     }
 
-    /** The shipment a booked row recorded. */
-    public static function stored(object $row): BookedShipment
+    /**
+     * The shipment a booked row recorded.
+     *
+     * @param  list<BookedParcel>  $parcels
+     */
+    public static function stored(object $row, array $parcels = []): BookedShipment
     {
         $meta = [];
 
@@ -202,12 +227,107 @@ final readonly class BookingJournal
             Rows::string($row, 'tracking'),
             Rows::nullableString($row, 'label_ref'),
             $meta,
+            $parcels,
         );
+    }
+
+    /**
+     * @param  list<object>  $rows
+     * @return list<BookedParcel>
+     */
+    public static function hydrateParcelRows(array $rows): array
+    {
+        $parcels = [];
+
+        foreach ($rows as $row) {
+            $currency = Currency::of(Rows::string($row, 'currency'));
+            $meta = [];
+
+            foreach (Rows::json($row, 'meta') as $key => $value) {
+                $meta[(string) $key] = is_scalar($value) ? $value : throw new RuntimeException("Booking parcel meta '{$key}' is not a scalar.");
+            }
+
+            $parcels[] = new BookedParcel(
+                sequence: Rows::int($row, 'sequence'),
+                tracking: Rows::string($row, 'tracking'),
+                parcel: new Parcel(
+                    weightGrams: Rows::int($row, 'weight_grams'),
+                    value: Money::ofMinor(Rows::int($row, 'value_minor'), $currency),
+                    lengthMm: Rows::nullableInt($row, 'length_mm'),
+                    widthMm: Rows::nullableInt($row, 'width_mm'),
+                    heightMm: Rows::nullableInt($row, 'height_mm'),
+                ),
+                labelRef: Rows::nullableString($row, 'label_ref'),
+                meta: $meta,
+            );
+        }
+
+        return $parcels;
+    }
+
+    /** @return array<string, mixed> */
+    private static function parcelFingerprint(Parcel $parcel): array
+    {
+        return [
+            'weight_grams' => $parcel->weightGrams,
+            'value' => [$parcel->value->amountMinor, $parcel->value->currency->code],
+            'length_mm' => $parcel->lengthMm,
+            'width_mm' => $parcel->widthMm,
+            'height_mm' => $parcel->heightMm,
+        ];
+    }
+
+    /** @param  list<BookedParcel>  $parcels */
+    private function saveParcels(string $bookingId, array $parcels, string $now): void
+    {
+        $table = $this->tables->table('shipping_booking_parcels');
+        $db = $this->db();
+
+        $db->table($table)->where('shipping_booking_id', $bookingId)->delete();
+
+        if ($parcels === []) {
+            return;
+        }
+
+        $rows = [];
+
+        foreach ($parcels as $bookedParcel) {
+            $rows[] = [
+                'id' => Uuid7::generate(),
+                'shipping_booking_id' => $bookingId,
+                'sequence' => $bookedParcel->sequence,
+                'tracking' => $bookedParcel->tracking,
+                'label_ref' => $bookedParcel->labelRef,
+                'weight_grams' => $bookedParcel->parcel->weightGrams,
+                'currency' => $bookedParcel->parcel->value->currency->code,
+                'value_minor' => $bookedParcel->parcel->value->amountMinor,
+                'length_mm' => $bookedParcel->parcel->lengthMm,
+                'width_mm' => $bookedParcel->parcel->widthMm,
+                'height_mm' => $bookedParcel->parcel->heightMm,
+                'meta' => $bookedParcel->meta === [] ? '{}' : json_encode($bookedParcel->meta, JSON_THROW_ON_ERROR),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        $db->table($table)->insert($rows);
+    }
+
+    /** @return list<BookedParcel> */
+    private function loadParcels(string $bookingId): array
+    {
+        $rows = array_values($this->db()->table($this->tables->table('shipping_booking_parcels'))
+            ->where('shipping_booking_id', $bookingId)
+            ->orderBy('sequence')
+            ->get()
+            ->all());
+
+        return self::hydrateParcelRows($rows);
     }
 
     private function leased(object $row): bool
     {
-        $since = new DateTimeImmutable('now', new DateTimeZone('UTC'))->modify("-{$this->shipping->bookingLeaseSeconds} seconds");
+        $since = $this->clock->now()->modify("-{$this->shipping->bookingLeaseSeconds} seconds");
 
         return Rows::date($row, 'claimed_at') > $since;
     }
@@ -215,7 +335,7 @@ final readonly class BookingJournal
     /** @param  array<string, string>  $changes */
     private function lease(string $id, int $attempt, array $changes = []): void
     {
-        $now = PgTimestamp::now();
+        $now = PgTimestamp::now($this->clock);
 
         $this->db()->table($this->tables->table('shipping_bookings'))->where('id', $id)->update([
             'state' => BookingState::Pending->value,

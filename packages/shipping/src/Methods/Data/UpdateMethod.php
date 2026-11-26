@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Shipping\Methods\Data;
 
 use Commerz\Measures\LocalizedText;
+use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Shipping\Common\Data\ShippingCodes;
 use Packman\Attributes\Api;
 
@@ -17,6 +18,7 @@ final readonly class UpdateMethod
         public ?LocalizedText $name = null,
         public ?string $carrier = null,
         public ?int $position = null,
+        public ?DeliveryMode $mode = null,
     ) {
         if ($name instanceof LocalizedText) {
             CreateMethod::assertName($name);

@@ -11,6 +11,9 @@ use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Methods\Enums\MethodStatus;
 use Commerz\Shipping\Options\Data\MethodVerdict;
+use Commerz\Shipping\PickupPoints\Contracts\PickupPoints;
+use Commerz\Shipping\PickupPoints\Exceptions\PickupPointNotFound;
+use Commerz\Shipping\PickupPoints\Exceptions\PickupPointOversized;
 use Commerz\Shipping\Rates\Data\RateInput;
 use Commerz\Shipping\Rates\Data\RateScope;
 use Commerz\Shipping\Rates\Internal\RateCodec;
@@ -33,6 +36,7 @@ final readonly class MethodPricer
         private CandidateRates $candidates,
         private RateCodec $codec,
         private Contributions $contributions,
+        private ?PickupPoints $pickupPoints = null,
     ) {}
 
     /**
@@ -79,10 +83,23 @@ final readonly class MethodPricer
             $rate?->zoneCode,
             taxIncluded: $rate !== null && $rate->taxIncluded,
             etaDays: $rate?->etaDays,
+            mode: $method->mode,
         );
 
         if ($method->status === MethodStatus::Disabled) {
             return $verdict('method_disabled', 'the method is disabled');
+        }
+
+        if ($request->mode !== null && $method->mode !== $request->mode) {
+            return $verdict('mode_mismatch', "the method delivers via {$method->mode->value}, not {$request->mode->value}");
+        }
+
+        if ($method->mode->requiresPickupPoint() && $request->pickupPoint !== null && $this->pickupPoints !== null) {
+            try {
+                $this->pickupPoints->validateSelection($request->pickupPoint, $request->parcel, $request->context);
+            } catch (PickupPointNotFound|PickupPointOversized $e) {
+                return $verdict('pickup_point_unavailable', $e->getMessage());
+            }
         }
 
         if (! $method->inChannel) {
@@ -147,6 +164,7 @@ final readonly class MethodPricer
             $rate->taxIncluded,
             $rate->etaDays,
             $free,
+            $method->mode,
         );
     }
 }
