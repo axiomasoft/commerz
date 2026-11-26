@@ -6,6 +6,7 @@ namespace Commerz\Quotes\Internal;
 
 use BackedEnum;
 use Commerz\Operations\Fingerprint;
+use Commerz\Quotes\Contracts\CartTransformRule;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Contracts\QuoteStagePolicy;
@@ -145,17 +146,38 @@ final class StagedQuotePipeline implements QuotePipeline
         }
 
         $versions = [];
+        $transformVersions = [];
 
         foreach ($this->plugins->describe() as $plugin) {
             foreach ($plugin->contributions as $contribution) {
                 if ($contribution->kind === QuoteStage::KIND) {
                     $versions[$contribution->key] = "{$plugin->id}@{$plugin->version}";
+                } elseif ($contribution->kind === CartTransformRule::KIND) {
+                    $transformVersions[$contribution->key] = "{$plugin->id}@{$plugin->version}";
                 }
             }
         }
 
         foreach ($stages as $stage) {
             $this->recipe[$stage->key()] = $versions[$stage->key()] ?? 'unknown';
+        }
+
+        $transformKeys = $this->contributions->keys(CartTransformRule::KIND);
+        sort($transformKeys, SORT_STRING);
+
+        foreach ($transformKeys as $key) {
+            $rule = $this->contributions->get(CartTransformRule::KIND, $key, CartTransformRule::class);
+
+            if ($rule instanceof QuoteStagePolicy) {
+                $timeoutMs = $rule->timeoutMilliseconds();
+                if ($timeoutMs !== null && $timeoutMs <= 0) {
+                    throw InvalidConfiguration::fromProblems([
+                        "commerz.plugins: cart transform rule '{$rule->key()}' timeoutMilliseconds() must be a positive integer or null",
+                    ]);
+                }
+            }
+
+            $this->recipe['cart_transform_rule:'.$key] = $transformVersions[$key] ?? 'unknown';
         }
 
         return $this->stages = $stages;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Sales\Returns\Internal;
 
+use Commerz\Identity\SellableRef;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
@@ -15,6 +16,8 @@ use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\RestockLine;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Commerz\Ports\Stock\Data\WriteOffLine;
+use Commerz\Ports\Stock\Data\WriteOffStock;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Internal\OrderJournal;
@@ -31,6 +34,8 @@ use Commerz\Sales\Returns\Data\RequestReturn;
 use Commerz\Sales\Returns\Data\ReturnId;
 use Commerz\Sales\Returns\Data\ReturnLineView;
 use Commerz\Sales\Returns\Data\ReturnView;
+use Commerz\Sales\Returns\Enums\ReturnDisposition;
+use Commerz\Sales\Returns\Enums\ReturnReason;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use Commerz\Sales\Returns\Events\ReturnReceived;
 use Commerz\Sales\Returns\Exceptions\RestockExceedsReceived;
@@ -70,11 +75,16 @@ final readonly class DatabaseReturns implements Returns
             }
 
             $lines = array_map(static fn (LineQuantity $line): array => [$line->lineId->value, $line->quantity], self::byLine($command->lines));
+            $payload = ['order' => $command->order->value, 'lines' => $lines, 'reason' => $command->reason];
+
+            if ($command->returnReason !== null) {
+                $payload['return_reason'] = $command->returnReason->value;
+            }
 
             return $this->receipts->once(
                 self::SCOPE,
                 $command->idempotencyKey,
-                Fingerprint::of(['order' => $command->order->value, 'lines' => $lines, 'reason' => $command->reason]),
+                Fingerprint::of($payload),
                 fn (): ReturnView => $this->requestLocked($command),
                 static fn (ReturnView $view): array => ['return_id' => $view->id->value],
                 fn (array $stored): ReturnView => $this->rows->get(is_string($stored['return_id'] ?? null) ? $stored['return_id'] : throw new LogicException('A return receipt holds no return id.')),
@@ -104,48 +114,167 @@ final readonly class DatabaseReturns implements Returns
                 $received[$line->lineId->value] = $line->quantity;
             }
 
+            /** @var array<string, int> $restock */
             $restock = [];
+            /** @var array<string, int> $writeOff */
+            $writeOff = [];
+            /** @var array<string, ReturnDisposition> $lineDispositions */
+            $lineDispositions = [];
+            /** @var array<string, ReturnReason> $lineReasons */
+            $lineReasons = [];
 
-            foreach (self::byLine($command->restock) as $line) {
-                $held = $received[$line->lineId->value] ?? throw new LineNotFound($line->lineId->value);
+            if ($command->dispositions !== []) {
+                $dispositions = $command->dispositions;
+                usort($dispositions, static fn ($a, $b): int => strcmp($a->lineId->value, $b->lineId->value));
 
-                if ($line->quantity > $held) {
-                    throw new RestockExceedsReceived($line->lineId->value, $line->quantity, $held);
+                foreach ($dispositions as $item) {
+                    $lineId = $item->lineId->value;
+                    $held = $received[$lineId] ?? throw new LineNotFound($lineId);
+                    $nextTotal = ($restock[$lineId] ?? 0) + ($writeOff[$lineId] ?? 0) + $item->quantity;
+
+                    if ($nextTotal > $held) {
+                        throw new RestockExceedsReceived($lineId, $nextTotal, $held);
+                    }
+
+                    if ($item->disposition === ReturnDisposition::Restock) {
+                        $restock[$lineId] = ($restock[$lineId] ?? 0) + $item->quantity;
+                    } else {
+                        $writeOff[$lineId] = ($writeOff[$lineId] ?? 0) + $item->quantity;
+                    }
+
+                    $lineDispositions[$lineId] = isset($restock[$lineId], $writeOff[$lineId])
+                        ? ($restock[$lineId] >= $writeOff[$lineId] ? ReturnDisposition::Restock : ReturnDisposition::DamagedWriteOff)
+                        : $item->disposition;
+
+                    if ($item->reason !== null) {
+                        $lineReasons[$lineId] = $item->reason;
+                    }
                 }
+            } elseif ($command->restock !== []) {
+                foreach (self::byLine($command->restock) as $line) {
+                    $held = $received[$line->lineId->value] ?? throw new LineNotFound($line->lineId->value);
 
-                $restock[$line->lineId->value] = $line->quantity;
+                    if ($line->quantity > $held) {
+                        throw new RestockExceedsReceived($line->lineId->value, $line->quantity, $held);
+                    }
+
+                    $restock[$line->lineId->value] = $line->quantity;
+                    $lineDispositions[$line->lineId->value] = ReturnDisposition::Restock;
+                }
+            } elseif ($command->disposition === ReturnDisposition::Restock) {
+                foreach ($current->lines as $line) {
+                    $restock[$line->lineId->value] = $line->quantity;
+                    $lineDispositions[$line->lineId->value] = ReturnDisposition::Restock;
+                }
+            } elseif ($command->disposition === ReturnDisposition::DamagedWriteOff) {
+                foreach ($current->lines as $line) {
+                    $writeOff[$line->lineId->value] = $line->quantity;
+                    $lineDispositions[$line->lineId->value] = ReturnDisposition::DamagedWriteOff;
+                }
+            }
+
+            $effectiveReason = $command->reason ?? $current->returnReason;
+
+            if ($effectiveReason !== null) {
+                foreach ($current->lines as $line) {
+                    $lineReasons[$line->lineId->value] ??= $effectiveReason;
+                }
             }
 
             foreach ($current->lines as $line) {
                 $this->ledger->returnReceived($order->id, new LineQuantity($line->lineId, $line->quantity));
             }
 
-            // Only physical goods go back on hand; a service or a digital line is received without touching the stock.
+            // Only physical goods touch stock: Restock goes back on hand; DamagedWriteOff journals write_off without increasing on_hand (INV-INV-002).
             $restocked = [];
-            $lines = [];
+            $restockBySellable = [];
+            $restockRefs = [];
 
             foreach ($restock as $lineId => $quantity) {
                 $stored = $order->line($lineId) ?? throw new LineNotFound($lineId);
 
                 if ($stored->kind === SellableKind::Physical) {
                     $restocked[$lineId] = $quantity;
-                    $lines[] = new RestockLine($stored->sellable, $quantity);
+                    $refKey = (string) $stored->sellable;
+                    $restockBySellable[$refKey] = ($restockBySellable[$refKey] ?? 0) + $quantity;
+                    $restockRefs[$refKey] = $stored->sellable;
                 }
             }
 
-            $this->rows->markReceived($current->id, $command->locationCode, $restocked);
+            $writtenOff = [];
+            $writeOffBySellable = [];
+            $writeOffRefs = [];
 
-            if ($lines !== []) {
-                $this->stock->restock(new RestockStock('return:'.$current->id->value, $this->rows->channelOf($order->id), $lines, $command->locationCode));
+            foreach ($writeOff as $lineId => $quantity) {
+                $stored = $order->line($lineId) ?? throw new LineNotFound($lineId);
+
+                if ($stored->kind === SellableKind::Physical) {
+                    $writtenOff[$lineId] = $quantity;
+                    $refKey = (string) $stored->sellable;
+                    $writeOffBySellable[$refKey] = ($writeOffBySellable[$refKey] ?? 0) + $quantity;
+                    $writeOffRefs[$refKey] = $stored->sellable;
+                }
+            }
+
+            $headerDisposition = $command->disposition;
+            if ($headerDisposition === null) {
+                if ($restocked !== [] && $writtenOff === []) {
+                    $headerDisposition = ReturnDisposition::Restock;
+                } elseif ($writtenOff !== [] && $restocked === []) {
+                    $headerDisposition = ReturnDisposition::DamagedWriteOff;
+                }
+            }
+
+            $this->rows->markReceived(
+                $current->id,
+                $command->locationCode,
+                $restocked,
+                $writtenOff,
+                $headerDisposition,
+                $command->reason,
+                $lineDispositions,
+                $lineReasons,
+            );
+
+            $channel = ($restockBySellable !== [] || $writeOffBySellable !== []) ? $this->rows->channelOf($order->id) : null;
+
+            if ($channel !== null && $restockBySellable !== []) {
+                $restockLines = array_map(
+                    static fn (SellableRef $sellable, int $qty): RestockLine => new RestockLine($sellable, $qty),
+                    array_values($restockRefs),
+                    array_values($restockBySellable),
+                );
+                $this->stock->restock(new RestockStock('return:'.$current->id->value, $channel, $restockLines, $command->locationCode));
+            }
+
+            if ($channel !== null && $writeOffBySellable !== []) {
+                $writeOffLines = array_map(
+                    static fn (SellableRef $sellable, int $qty): WriteOffLine => new WriteOffLine($sellable, $qty),
+                    array_values($writeOffRefs),
+                    array_values($writeOffBySellable),
+                );
+                $reasonText = $effectiveReason !== null
+                    ? $effectiveReason->value
+                    : ($current->reason ?? ReturnDisposition::DamagedWriteOff->value);
+                $this->stock->writeOff(new WriteOffStock(
+                    'return:'.$current->id->value.':write_off',
+                    $channel,
+                    $writeOffLines,
+                    $command->locationCode,
+                    $reasonText,
+                    $command->actor,
+                ));
             }
 
             $this->journal->append($order->id, 'return_received', $command->actor, [
                 'return_id' => $current->id->value,
                 'location_code' => $command->locationCode,
+                'disposition' => $headerDisposition?->value,
                 'restocked_quantity' => array_sum($restocked),
+                'written_off_quantity' => array_sum($writtenOff),
             ]);
             $this->status->refresh($order, actor: $command->actor);
-            $this->announceReceived($order, $current, array_sum($restocked));
+            $this->announceReceived($order, $current, array_sum($restocked), array_sum($writtenOff), $headerDisposition);
 
             return $this->rows->get($current->id);
         });
@@ -203,20 +332,31 @@ final readonly class DatabaseReturns implements Returns
         }
 
         $id = ReturnId::generate();
-        $this->rows->insert($id, $order->id, $command->reason, $lines);
-        $this->journal->append($order->id, 'return_requested', $command->actor, ['return_id' => $id->value, 'reason' => $command->reason]);
+        $this->rows->insert($id, $order->id, $command->reason, $lines, $command->returnReason);
+        $this->journal->append($order->id, 'return_requested', $command->actor, [
+            'return_id' => $id->value,
+            'reason' => $command->reason,
+            'reason_code' => $command->returnReason?->value,
+        ]);
 
         return $this->rows->get($id);
     }
 
-    private function announceReceived(OrderRow $order, ReturnView $return, int $restocked): void
-    {
+    private function announceReceived(
+        OrderRow $order,
+        ReturnView $return,
+        int $restocked,
+        int $writtenOff = 0,
+        ?ReturnDisposition $disposition = null,
+    ): void {
         $this->outbox->record(IntegrationEvent::of('sales.return_received', 'order:'.$order->id->value, [
             'order_id' => $order->id->value,
             'number' => $order->number,
             'return_id' => $return->id->value,
             'quantity' => array_sum(array_map(static fn (ReturnLineView $line): int => $line->quantity, $return->lines)),
             'restocked_quantity' => $restocked,
+            'written_off_quantity' => $writtenOff,
+            'disposition' => $disposition?->value,
         ]));
         $this->events->dispatch(new ReturnReceived($return->id, $order->id));
     }

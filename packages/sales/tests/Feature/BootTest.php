@@ -39,5 +39,6 @@ it('loads the sales migrations', function (): void {
         '2026_10_14_100006_add_commerz_seller_ref_to_lines.php',
         '2026_11_26_400003_create_fulfillment_orders_table.php',
         '2026_11_26_500001_create_payment_collections_tables.php',
+        '2026_11_26_500003_create_exchanges_and_rma_disposition.php',
     );
 })->group('boot');

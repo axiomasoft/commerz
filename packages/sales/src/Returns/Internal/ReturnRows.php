@@ -15,6 +15,8 @@ use Commerz\Sales\Returns\Data\ListReturns;
 use Commerz\Sales\Returns\Data\ReturnId;
 use Commerz\Sales\Returns\Data\ReturnLineView;
 use Commerz\Sales\Returns\Data\ReturnView;
+use Commerz\Sales\Returns\Enums\ReturnDisposition;
+use Commerz\Sales\Returns\Enums\ReturnReason;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
 use Commerz\Schema\Rows;
@@ -22,6 +24,7 @@ use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -42,7 +45,7 @@ final readonly class ReturnRows
     ) {}
 
     /** @param  list<LineQuantity>  $lines */
-    public function insert(ReturnId $id, OrderId $order, ?string $reason, array $lines): void
+    public function insert(ReturnId $id, OrderId $order, ?string $reason, array $lines, ?ReturnReason $returnReason = null): void
     {
         $now = PgTimestamp::now();
 
@@ -51,12 +54,18 @@ final readonly class ReturnRows
             'order_id' => $order->value,
             'status' => ReturnStatus::Requested->value,
             'reason' => $reason,
+            'reason_code' => $returnReason?->value,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
 
         $this->db()->table($this->tables->table('return_lines'))->insert(array_map(
-            static fn (LineQuantity $line): array => ['return_id' => $id->value, 'order_line_id' => $line->lineId->value, 'quantity' => $line->quantity],
+            static fn (LineQuantity $line): array => [
+                'return_id' => $id->value,
+                'order_line_id' => $line->lineId->value,
+                'quantity' => $line->quantity,
+                'reason_code' => $returnReason?->value,
+            ],
             $lines,
         ));
     }
@@ -70,12 +79,17 @@ final readonly class ReturnRows
     {
         $open = [];
 
+        $db = $this->db();
+        $sumExpr = $db instanceof Connection && $db->getDriverName() === 'pgsql'
+            ? 'l.order_line_id, sum(l.quantity)::bigint as held'
+            : 'l.order_line_id, cast(sum(l.quantity) as integer) as held';
+
         foreach ($this->db()->table($this->tables->table('return_lines').' as l')
             ->join($this->tables->table('returns').' as r', 'r.id', '=', 'l.return_id')
             ->where('r.order_id', $order->value)
             ->where('r.status', ReturnStatus::Requested->value)
             ->groupBy('l.order_line_id')
-            ->selectRaw('l.order_line_id, sum(l.quantity)::bigint as held')
+            ->selectRaw($sumExpr)
             ->get() as $row) {
             $open[Rows::string($row, 'order_line_id')] = Rows::int($row, 'held');
         }
@@ -116,24 +130,70 @@ final readonly class ReturnRows
         return $this->hydrate([$row ?? throw new ReturnNotFound($id->value)])[0];
     }
 
-    /** @param  array<string, int>  $restocked  units put back on hand, by line id */
-    public function markReceived(ReturnId $id, ?string $locationCode, array $restocked): void
-    {
+    /**
+     * @param  array<string, int>  $restocked  units put back on hand, by line id
+     * @param  array<string, int>  $writtenOff  units written off as damaged, by line id
+     * @param  array<string, ReturnDisposition>  $lineDispositions
+     * @param  array<string, ReturnReason>  $lineReasons
+     */
+    public function markReceived(
+        ReturnId $id,
+        ?string $locationCode,
+        array $restocked,
+        array $writtenOff = [],
+        ?ReturnDisposition $disposition = null,
+        ?ReturnReason $reason = null,
+        array $lineDispositions = [],
+        array $lineReasons = [],
+    ): void {
         $now = PgTimestamp::now();
+        $touchedLines = array_values(array_unique([
+            ...array_keys($restocked),
+            ...array_keys($writtenOff),
+            ...array_keys($lineDispositions),
+            ...array_keys($lineReasons),
+        ]));
 
-        foreach ($restocked as $line => $quantity) {
-            $this->db()->table($this->tables->table('return_lines'))
-                ->where('return_id', $id->value)
-                ->where('order_line_id', $line)
-                ->update(['restocked_quantity' => $quantity]);
+        foreach ($touchedLines as $line) {
+            $update = [];
+
+            if (isset($restocked[$line])) {
+                $update['restocked_quantity'] = $restocked[$line];
+            }
+
+            if (isset($writtenOff[$line])) {
+                $update['written_off_quantity'] = $writtenOff[$line];
+            }
+
+            if (isset($lineDispositions[$line])) {
+                $update['disposition'] = $lineDispositions[$line]->value;
+            }
+
+            if (isset($lineReasons[$line])) {
+                $update['reason_code'] = $lineReasons[$line]->value;
+            }
+
+            if ($update !== []) {
+                $this->db()->table($this->tables->table('return_lines'))
+                    ->where('return_id', $id->value)
+                    ->where('order_line_id', $line)
+                    ->update($update);
+            }
         }
 
-        $this->db()->table($this->tables->table('returns'))->where('id', $id->value)->update([
+        $headerUpdate = [
             'status' => ReturnStatus::Received->value,
             'location_code' => $locationCode,
+            'disposition' => $disposition?->value,
             'received_at' => $now,
             'updated_at' => $now,
-        ]);
+        ];
+
+        if ($reason !== null) {
+            $headerUpdate['reason_code'] = $reason->value;
+        }
+
+        $this->db()->table($this->tables->table('returns'))->where('id', $id->value)->update($headerUpdate);
     }
 
     public function markCancelled(ReturnId $id): void
@@ -198,15 +258,23 @@ final readonly class ReturnRows
             ->whereIn('return_id', array_map(static fn (object $row): string => Rows::string($row, 'id'), $rows))
             ->orderBy('order_line_id')
             ->get() as $line) {
+            $lineDisposition = Rows::nullableString($line, 'disposition');
+            $lineReason = Rows::nullableString($line, 'reason_code');
+
             $lines[Rows::string($line, 'return_id')][] = new ReturnLineView(
                 new OrderLineId(Rows::string($line, 'order_line_id')),
                 Rows::int($line, 'quantity'),
                 Rows::int($line, 'restocked_quantity'),
+                Rows::nullableInt($line, 'written_off_quantity') ?? 0,
+                $lineDisposition === null ? null : ReturnDisposition::from($lineDisposition),
+                $lineReason === null ? null : ReturnReason::from($lineReason),
             );
         }
 
         return array_map(static function (object $row) use ($lines): ReturnView {
             $received = Rows::nullableString($row, 'received_at');
+            $disposition = Rows::nullableString($row, 'disposition');
+            $reasonCode = Rows::nullableString($row, 'reason_code');
 
             return new ReturnView(
                 new ReturnId(Rows::string($row, 'id')),
@@ -217,6 +285,8 @@ final readonly class ReturnRows
                 Rows::nullableString($row, 'location_code'),
                 $received === null ? null : new DateTimeImmutable($received),
                 Rows::date($row, 'created_at'),
+                $disposition === null ? null : ReturnDisposition::from($disposition),
+                $reasonCode === null ? null : ReturnReason::from($reasonCode),
             );
         }, $rows);
     }

@@ -79,6 +79,37 @@ final readonly class FulfillmentBooking
         }
 
         if (! $ships) {
+            foreach ($this->db()->table($this->tables->table('exchange_outbound_lines').' as el')
+                ->join($this->tables->table('exchanges').' as ex', 'ex.id', '=', 'el.exchange_id')
+                ->where('ex.fulfillment_id', $id)
+                ->orderBy('el.position')
+                ->get(['el.quantity', 'el.weight_grams', 'el.total_minor', 'el.requires_shipping']) as $line) {
+                if (! Rows::bool($line, 'requires_shipping')) {
+                    continue;
+                }
+
+                $ships = true;
+                $weight += (Rows::nullableInt($line, 'weight_grams') ?? 0) * Rows::int($line, 'quantity');
+                $value += Rows::int($line, 'total_minor');
+            }
+        }
+
+        if (! $ships) {
+            foreach ($this->db()->table($this->tables->table('claim_lines').' as cl')
+                ->join($this->tables->table('claims').' as c', 'c.id', '=', 'cl.claim_id')
+                ->where('c.fulfillment_id', $id)
+                ->orderBy('cl.position')
+                ->get(['cl.quantity', 'cl.weight_grams', 'cl.requires_shipping']) as $line) {
+                if (! Rows::bool($line, 'requires_shipping')) {
+                    continue;
+                }
+
+                $ships = true;
+                $weight += (Rows::nullableInt($line, 'weight_grams') ?? 0) * Rows::int($line, 'quantity');
+            }
+        }
+
+        if (! $ships) {
             throw new FulfillmentNotBookable($id, 'nothing_to_ship');
         }
 

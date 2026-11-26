@@ -17,4 +17,5 @@ enum MovementKind: string
     case TransferOut = 'transfer_out';
     case TransferIn = 'transfer_in';
     case Return = 'return';
+    case WriteOff = 'write_off';
 }

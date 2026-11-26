@@ -18,6 +18,7 @@ use Commerz\Ports\Stock\Data\ReservedLine;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Commerz\Ports\Stock\Data\WriteOffStock;
 use Packman\Attributes\Internal;
 
 /** `commerz.stock = unlimited`: everything is available, nothing is held or written. */
@@ -45,4 +46,6 @@ final readonly class UnlimitedStock implements StockAvailability, StockReservati
     public function consume(ConsumeReservation $command): void {}
 
     public function restock(RestockStock $command): void {}
+
+    public function writeOff(WriteOffStock $command): void {}
 }

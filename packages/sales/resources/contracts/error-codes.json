@@ -82,6 +82,28 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "ClaimNotFound",
+            "code": "sales.claim_not_found",
+            "type": "urn:packman:problem:sales.claim_not_found",
+            "status": 404,
+            "title": "Order Claim Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "ClaimNotOpen",
+            "code": "sales.claim_not_open",
+            "type": "urn:packman:problem:sales.claim_not_open",
+            "status": 409,
+            "title": "Order Claim Not Open",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "CurrencyMismatch",
             "code": "sales.currency_mismatch",
             "type": "urn:packman:problem:sales.currency_mismatch",
@@ -109,6 +131,28 @@
             "type": "urn:packman:problem:sales.duplicate_order_number",
             "status": 409,
             "title": "Duplicate Order Number",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "ExchangeNotFound",
+            "code": "sales.exchange_not_found",
+            "type": "urn:packman:problem:sales.exchange_not_found",
+            "status": 404,
+            "title": "Order Exchange Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "ExchangeNotOpen",
+            "code": "sales.exchange_not_open",
+            "type": "urn:packman:problem:sales.exchange_not_open",
+            "status": 409,
+            "title": "Order Exchange Not Open",
             "retryable": false,
             "category": "conflict"
         },
@@ -181,6 +225,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "InvalidClaim",
+            "code": "sales.invalid_claim",
+            "type": "urn:packman:problem:sales.invalid_claim",
+            "status": 422,
+            "title": "Invalid Order Claim Request",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "InvalidCode",
             "code": "sales.invalid_code",
             "type": "urn:packman:problem:sales.invalid_code",
@@ -197,6 +252,17 @@
             "type": "urn:packman:problem:sales.invalid_delivery_method",
             "status": 422,
             "title": "Invalid Delivery Method",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "InvalidExchange",
+            "code": "sales.invalid_exchange",
+            "type": "urn:packman:problem:sales.invalid_exchange",
+            "status": 422,
+            "title": "Invalid Order Exchange Request",
             "retryable": false,
             "category": "validation"
         },

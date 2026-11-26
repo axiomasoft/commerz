@@ -13,8 +13,10 @@ use Commerz\Panels\ChannelPanel;
 use Commerz\Panels\StorePanel;
 use Commerz\Ports\Delivery\Contracts\PickupPointProvider;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
+use Commerz\Quotes\Contracts\CartTransformRule;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Internal\BaseStage;
+use Commerz\Quotes\Internal\CartTransformStage;
 use Commerz\Quotes\Internal\TotalsStage;
 use Commerz\Schema\CommerzSchemaSets;
 use Override;
@@ -64,7 +66,9 @@ final class CorePlugin implements ExtensionPlugin, WithConfiguration, WithDiagno
         $registrar->declareKind(new ContributionKind(SellableProvider::KIND, SellableProvider::class, self::ID));
         $registrar->declareKind(new ContributionKind(QuoteStage::KIND, QuoteStage::class, self::ID));
         $registrar->declareKind(new ContributionKind(PickupPointProvider::KIND, PickupPointProvider::class, self::ID));
+        $registrar->declareKind(new ContributionKind(CartTransformRule::KIND, CartTransformRule::class, self::ID));
 
+        $registrar->contribute(QuoteStage::KIND, CartTransformStage::class);
         $registrar->contribute(QuoteStage::KIND, BaseStage::class);
         $registrar->contribute(QuoteStage::KIND, TotalsStage::class);
     }

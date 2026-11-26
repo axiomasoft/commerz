@@ -47,6 +47,20 @@ final readonly class QuoteState
         return new self($input, [], [], [], null, [], [], null, [], []);
     }
 
+    /** Replaces the quote input before lines are priced (used by Stage 01 `cart_transform`). */
+    public function withInput(QuoteInput $input): self
+    {
+        if ($this->lines !== []) {
+            throw new InvalidCommand('input', 'cannot replace quote input after lines have been priced', 'quotes.already_priced');
+        }
+
+        if (! $input->context->currency->equals($this->currency())) {
+            throw new InvalidCommand('currency', 'transformed input must preserve the quote currency', 'quotes.currency_mismatch');
+        }
+
+        return new self($input, [], [], [], null, $this->rejections, [], null);
+    }
+
     public function context(): CommerceContext
     {
         return $this->input->context;

@@ -10,6 +10,7 @@ use Packman\Attributes\Api;
 #[Api(since: '0.1')]
 enum QuoteAnchor: string
 {
+    case CartTransform = 'cart_transform';
     case Base = 'base';
     case CatalogPromotions = 'promotions.catalog';
     case CartPromotions = 'promotions.cart';

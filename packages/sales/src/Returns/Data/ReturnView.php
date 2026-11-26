@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Commerz\Sales\Returns\Data;
 
 use Commerz\Sales\Orders\Data\OrderId;
+use Commerz\Sales\Returns\Enums\ReturnDisposition;
+use Commerz\Sales\Returns\Enums\ReturnReason;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use DateTimeImmutable;
 use Packman\Attributes\Api;
@@ -23,5 +25,7 @@ final readonly class ReturnView
         public ?string $locationCode,
         public ?DateTimeImmutable $receivedAt,
         public DateTimeImmutable $createdAt,
+        public ?ReturnDisposition $disposition = null,
+        public ?ReturnReason $returnReason = null,
     ) {}
 }

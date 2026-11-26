@@ -15,7 +15,7 @@ final class SalesServiceProvider extends CommerzPluginServiceProvider
 {
     protected const string PLUGIN = SalesPlugin::class;
 
-    public const array NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'];
+    public const array NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund', 'exchange', 'claim'];
 
     /** @var list<class-string<PackageRegistrar>> */
     protected const array REGISTRARS = [

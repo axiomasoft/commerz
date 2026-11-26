@@ -12,6 +12,7 @@ use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Data\DeliverySelection;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Exceptions\QuoteFailed;
@@ -79,8 +80,12 @@ final readonly class CartQuoter
 
         $quote = $this->pipeline->run(new QuoteInput($context, $lines, $cart->codes, $delivery));
 
+        foreach ($quote->lines as $quotedLine) {
+            $snapshots[(string) $quotedLine->sellable->ref] = $quotedLine->sellable;
+        }
+
         // No stage prices delivery without the shipping package; a selected method must not be silently dropped from the total.
-        if ($delivery !== null && $quote->delivery === null && self::shippingLines($cart->lines, $snapshots) !== []) {
+        if ($delivery !== null && $quote->delivery === null && self::quotedShippingLines($quote->lines) !== []) {
             throw new QuoteFailed('delivery', 'method_unpriced', "no stage priced the selected delivery method '{$delivery->methodCode}'");
         }
 
@@ -102,6 +107,19 @@ final readonly class CartQuoter
     }
 
     /**
+     * Grams of the post-transform quoted lines that ship: weight × quantity, an unknown weight counting as 0.
+     *
+     * @param  list<QuotedLine>  $lines
+     */
+    public static function quotedShippingWeight(array $lines): int
+    {
+        return array_sum(array_map(
+            static fn (QuotedLine $line): int => ($line->sellable->weightGrams ?? 0) * $line->quantity,
+            self::quotedShippingLines($lines),
+        ));
+    }
+
+    /**
      * @param  list<CartLineRow>  $lines
      * @param  array<string, SellableSnapshot>  $snapshots
      * @return list<CartLineRow> the lines that ship
@@ -111,6 +129,18 @@ final readonly class CartQuoter
         return array_values(array_filter(
             $lines,
             static fn (CartLineRow $line): bool => $snapshots[(string) $line->sellable]->requiresShipping,
+        ));
+    }
+
+    /**
+     * @param  list<QuotedLine>  $lines
+     * @return list<QuotedLine>
+     */
+    private static function quotedShippingLines(array $lines): array
+    {
+        return array_values(array_filter(
+            $lines,
+            static fn (QuotedLine $line): bool => $line->sellable->requiresShipping,
         ));
     }
 }

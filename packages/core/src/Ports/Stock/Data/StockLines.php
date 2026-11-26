@@ -35,7 +35,7 @@ final class StockLines
         }
     }
 
-    /** @param  list<AvailabilityLine|ReserveLine|RestockLine>  $lines */
+    /** @param  list<AvailabilityLine|ReserveLine|RestockLine|WriteOffLine>  $lines */
     public static function assertUnique(array $lines): void
     {
         if ($lines === []) {

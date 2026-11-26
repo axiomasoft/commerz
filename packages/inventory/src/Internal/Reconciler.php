@@ -12,6 +12,7 @@ use Commerz\Inventory\Internal\Data\ReconciliationReport;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -111,10 +112,15 @@ final readonly class Reconciler
     /** @return list<Discrepancy> */
     private function ledgerSum(): array
     {
+        $db = $this->db();
+        $isPg = $db instanceof Connection && $db->getDriverName() === 'pgsql';
+        $cast = $isPg ? '::numeric' : '';
+        $textCast = $isPg ? '::text' : '';
+
         $rows = $this->db()->select(
-            'select lv.id, lv.on_hand::text as actual, coalesce(sum(m.delta::numeric), 0)::text as expected'
+            "select lv.id, cast(lv.on_hand as text) as actual, cast(coalesce(sum(case when m.kind = 'write_off' then 0 else m.delta{$cast} end), 0) as text){$textCast} as expected"
             ." from {$this->levels()} lv left join {$this->movements()} m on m.stock_level_id = lv.id"
-            .' group by lv.id, lv.on_hand having lv.on_hand::numeric <> coalesce(sum(m.delta::numeric), 0) order by lv.id',
+            ." group by lv.id, lv.on_hand having lv.on_hand{$cast} <> coalesce(sum(case when m.kind = 'write_off' then 0 else m.delta{$cast} end), 0) order by lv.id",
         );
 
         return $this->map($rows, Discrepancy::LEDGER_SUM, 'stock_level:');
