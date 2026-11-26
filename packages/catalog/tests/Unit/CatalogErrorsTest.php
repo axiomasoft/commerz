@@ -10,6 +10,8 @@ use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Exceptions\InvalidStatusTransition;
 use Commerz\Catalog\Attributes\Exceptions\MissingRequiredAttributes;
+use Commerz\Catalog\Brands\Exceptions\BrandArchived;
+use Commerz\Catalog\Brands\Exceptions\BrandNotFound;
 use Commerz\Catalog\Categories\Exceptions\CategoryArchived;
 use Commerz\Catalog\Categories\Exceptions\CategoryCycle;
 use Commerz\Catalog\Categories\Exceptions\CategoryHasChildren;
@@ -18,6 +20,7 @@ use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Errors\CatalogProblemDefinitions;
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
 use Commerz\Catalog\Listings\Exceptions\ListingNotFound;
+use Commerz\Catalog\Media\Exceptions\AssetAttachmentNotFound;
 use Commerz\Catalog\Options\Exceptions\OptionNotFound;
 use Commerz\Catalog\Options\Exceptions\UnknownOptionValue;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
@@ -26,6 +29,9 @@ use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
 use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
+use Commerz\Catalog\Relations\Exceptions\ProductRelationNotFound;
+use Commerz\Catalog\Routes\Exceptions\DuplicateSlug;
+use Commerz\Catalog\Routes\Exceptions\RouteNotFound;
 use Commerz\Catalog\Variants\Exceptions\DuplicateCombination;
 use Commerz\Catalog\Variants\Exceptions\InvalidAxes;
 use Commerz\Catalog\Variants\Exceptions\TooManyVariants;
@@ -78,4 +84,10 @@ it('exposes Packman error descriptors on catalog exceptions', function (CommerzE
     'invalid axes' => [new InvalidAxes('missing'), CatalogErrorCode::InvalidAxes, ErrorCategory::Validation],
     'too many variants' => [new TooManyVariants(200, 100), CatalogErrorCode::TooManyVariants, ErrorCategory::RateLimit],
     'variant not found' => [new VariantNotFound('SKU-1'), CatalogErrorCode::VariantNotFound, ErrorCategory::NotFound],
+    'brand archived' => [new BrandArchived('acme'), CatalogErrorCode::BrandArchived, ErrorCategory::Conflict],
+    'brand not found' => [new BrandNotFound('acme'), CatalogErrorCode::BrandNotFound, ErrorCategory::NotFound],
+    'product relation not found' => [new ProductRelationNotFound('p1'), CatalogErrorCode::ProductRelationNotFound, ErrorCategory::NotFound],
+    'asset attachment not found' => [new AssetAttachmentNotFound('a1'), CatalogErrorCode::AssetAttachmentNotFound, ErrorCategory::NotFound],
+    'route not found' => [new RouteNotFound('slug'), CatalogErrorCode::RouteNotFound, ErrorCategory::NotFound],
+    'duplicate slug' => [new DuplicateSlug('c1', 'en', 'slug'), CatalogErrorCode::DuplicateSlug, ErrorCategory::Conflict],
 ]);

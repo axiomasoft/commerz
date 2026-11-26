@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Commerz\Catalog;
 
 use Commerz\Catalog\Attributes\Contracts\Attributes;
+use Commerz\Catalog\Brands\Contracts\Brands;
 use Commerz\Catalog\Categories\Contracts\Categories;
 use Commerz\Catalog\Listings\Contracts\Listings;
+use Commerz\Catalog\Media\Contracts\Media;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Relations\Contracts\ProductRelations;
+use Commerz\Catalog\Routes\Contracts\UrlRoutes;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Packman\Attributes\Api;
 
@@ -25,6 +29,10 @@ final readonly class Catalog
         private Variants $variants,
         private Categories $categories,
         private Listings $listings,
+        private Brands $brands,
+        private ProductRelations $relations,
+        private Media $media,
+        private UrlRoutes $routes,
     ) {}
 
     public function products(): Products
@@ -60,5 +68,25 @@ final readonly class Catalog
     public function listings(): Listings
     {
         return $this->listings;
+    }
+
+    public function brands(): Brands
+    {
+        return $this->brands;
+    }
+
+    public function relations(): ProductRelations
+    {
+        return $this->relations;
+    }
+
+    public function media(): Media
+    {
+        return $this->media;
+    }
+
+    public function routes(): UrlRoutes
+    {
+        return $this->routes;
     }
 }

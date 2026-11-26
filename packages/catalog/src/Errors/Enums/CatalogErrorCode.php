@@ -14,16 +14,20 @@ use Packman\Errors\Contracts\ErrorCode;
 #[Api(since: '0.1')]
 enum CatalogErrorCode: string implements ErrorCode
 {
+    case AssetAttachmentNotFound = 'catalog.asset_attachment_not_found';
     case AttributeNotAllowed = 'catalog.attribute_not_allowed';
     case AttributeNotFilterable = 'catalog.attribute_not_filterable';
     case AttributeNotFound = 'catalog.attribute_not_found';
     case AttributeNotWritable = 'catalog.attribute_not_writable';
+    case BrandArchived = 'catalog.brand_archived';
+    case BrandNotFound = 'catalog.brand_not_found';
     case CategoryArchived = 'catalog.category_archived';
     case CategoryCycle = 'catalog.category_cycle';
     case CategoryHasChildren = 'catalog.category_has_children';
     case CategoryNotFound = 'catalog.category_not_found';
     case DuplicateCode = 'catalog.duplicate_code';
     case DuplicateCombination = 'catalog.duplicate_combination';
+    case DuplicateSlug = 'catalog.duplicate_slug';
     case InvalidAttributeConfig = 'catalog.invalid_attribute_config';
     case InvalidAttributeValue = 'catalog.invalid_attribute_value';
     case InvalidAttributes = 'catalog.invalid_attributes';
@@ -45,8 +49,10 @@ enum CatalogErrorCode: string implements ErrorCode
     case OptionNotFound = 'catalog.option_not_found';
     case ProductArchived = 'catalog.product_archived';
     case ProductNotFound = 'catalog.product_not_found';
+    case ProductRelationNotFound = 'catalog.product_relation_not_found';
     case ProductTypeArchived = 'catalog.product_type_archived';
     case ProductTypeNotFound = 'catalog.product_type_not_found';
+    case RouteNotFound = 'catalog.route_not_found';
     case TooManyAxes = 'catalog.too_many_axes';
     case TooManyVariants = 'catalog.too_many_variants';
     case UnknownOptionValue = 'catalog.unknown_option_value';

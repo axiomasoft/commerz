@@ -44,6 +44,7 @@
             "error-prefix": "catalog",
             "owns": [
                 "Attributes",
+                "Brands",
                 "Categories",
                 "Common",
                 "Configuration",
@@ -53,11 +54,14 @@
                 "Internal",
                 "Laravel",
                 "Listings",
+                "Media",
                 "Options",
                 "Panels",
                 "Plugins",
                 "Products",
                 "ProductTypes",
+                "Relations",
+                "Routes",
                 "Schema",
                 "Variants"
             ]
