@@ -161,6 +161,859 @@
             "enum_backing": null,
             "enum_cases": []
         },
+        "Commerz\\Testkit\\Contracts\\AssertsCarrierCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "bookShipmentIsIdempotentByReference": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "carrier": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Shipping\\Carriers\\Contracts\\Carrier",
+                    "doc": []
+                },
+                "carrierCurrency": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Money\\Currency",
+                    "doc": []
+                },
+                "carrierFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "carrierKeyIsNonEmptyAndBounded": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "findUnknownShipmentReturnsNullOrBookedShipment": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "multiParcelBookingProducesNonEmptyTrackingNumbers": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "rejectedCarrierBookingCarriesTypedErrorCodeAndHonorsFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "rejectedCarrierBookings": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "sampleCarrierBooking": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "reference",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "'fulfillment:compliance-1'",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Shipping\\Carriers\\Data\\CarrierBooking",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Contracts\\AssertsPaymentProviderCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "declinedPaymentCarriesTypedErrorCodeAndHonorsFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "declinedPaymentRequests": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "findUnknownPaymentReturnsNullOrValidResult": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "initiatePaymentIsIdempotentByReferenceAndRespectsCurrencyRounding": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "paymentCurrency": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Money\\Currency",
+                    "doc": []
+                },
+                "paymentFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "paymentGateway": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Sales\\Gateways\\Contracts\\PaymentGateway",
+                    "doc": []
+                },
+                "paymentGatewayKeyIsNonEmptyAndBounded": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "refundIsIdempotentByReference": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Contracts\\AssertsPickupPointCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "findKnownPickupPointReturnsMatchingPoint": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "findUnknownPickupPointReturnsNull": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "invalidPickupQueryCarriesTypedErrorCodeAndHonorsFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "knownPickupPointIds": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "pickupPointContext": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Context\\CommerceContext",
+                    "doc": []
+                },
+                "pickupPointFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "pickupPointProvider": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Ports\\Delivery\\Contracts\\PickupPointProvider",
+                    "doc": []
+                },
+                "pickupPointProviderKeyIsNonEmptyAndBounded": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "pickupPointQuery": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Ports\\Delivery\\Data\\PickupPointQuery",
+                    "doc": []
+                },
+                "searchIsIdempotentAndRespectsCountryModeAndLimit": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Contracts\\AssertsSearchEngineCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "complianceProductId": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "?Commerz\\Catalog\\Products\\Data\\ProductId",
+                    "doc": []
+                },
+                "indexingAndRemovingProductsIsIdempotent": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "invalidSearchInputsThrowTypedErrorCodesAndRespectFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "invalidSearchQuery": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "?Commerz\\Catalog\\Search\\Data\\CatalogSearchQuery",
+                    "doc": []
+                },
+                "searchEngine": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Catalog\\Search\\Contracts\\CatalogSearchPort",
+                    "doc": []
+                },
+                "searchFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "searchReturnsDeterministicAndBoundedResult": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Contracts\\AssertsSellableProviderCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "invalidSellableRefCarriesTypedErrorCodeAndHonorsFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "knownSellableRefs": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "resolveEmptyRefsReturnsEmptyArray": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "resolveKnownRefsIsIdempotentAndKeyedByRefString": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "resolveUnknownRefOmitsItWithoutThrowing": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "sellableContext": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Context\\CommerceContext",
+                    "doc": []
+                },
+                "sellableFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "sellableProvider": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Ports\\Sellables\\Contracts\\SellableProvider",
+                    "doc": []
+                },
+                "sellableProviderKeyIsNonEmptyAndBounded": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Contracts\\AssertsTaxCalculatorCompliance": {
+            "kind": "trait",
+            "layer": "api",
+            "since": "0.1",
+            "final": false,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "calculateHonorsTaxExemptionAndReverseCharge": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "calculateIsDeterministicAndPreservesCurrencyAndRoundingInvariants": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "taxCalculator": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": true,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Pricing\\Calculation\\Contracts\\TaxCalculator",
+                    "doc": []
+                },
+                "taxCalculatorKeyIsNonEmptyAndBounded": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                },
+                "taxContext": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Context\\CommerceContext",
+                    "doc": []
+                },
+                "taxFailurePolicy": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "Commerz\\Quotes\\Enums\\FailurePolicy",
+                    "doc": []
+                },
+                "taxableRequest": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "context",
+                            "type": "?Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Pricing\\Calculation\\Data\\TaxRequest",
+                    "doc": []
+                },
+                "unresolvableTaxRequests": {
+                    "visibility": "protected",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "array",
+                    "doc": []
+                },
+                "unresolvableTaxThrowsTypedErrorCodeAndHonorsFailurePolicy": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "void",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Fakes\\FakeAssetResolver": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [
+                "Commerz\\Ports\\Assets\\Contracts\\AssetResolverPort"
+            ],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "add": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "assets",
+                            "type": "Commerz\\Ports\\Assets\\Data\\ResolvedAsset",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "forget": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "asset",
+                            "type": "Commerz\\Ports\\Assets\\Data\\AssetRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "markProtected": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "asset",
+                            "type": "Commerz\\Ports\\Assets\\Data\\AssetRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "protected",
+                            "type": "bool",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "true",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "resolve": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "asset",
+                            "type": "Commerz\\Ports\\Assets\\Data\\AssetRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "variant",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Ports\\Assets\\Data\\ResolvedAsset",
+                    "doc": []
+                },
+                "resolveMany": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "assets",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "variant",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                },
+                "signedUrl": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "asset",
+                            "type": "Commerz\\Ports\\Assets\\Data\\AssetRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "expiresAt",
+                            "type": "DateTimeImmutable",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "variant",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?string",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
         "Commerz\\Testkit\\Fakes\\FakeCustomers": {
             "kind": "class",
             "layer": "api",
@@ -309,6 +1162,146 @@
                     "hooks": []
                 },
                 "requests": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Fakes\\FakePickupPoints": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [
+                "Commerz\\Ports\\Delivery\\Contracts\\PickupPointProvider"
+            ],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "__construct": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "key",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "'fake'",
+                            "flags": 68
+                        }
+                    ],
+                    "return": null,
+                    "doc": []
+                },
+                "add": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "points",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\PickupPoint",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "find": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "pointId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "context",
+                            "type": "Commerz\\Context\\CommerceContext",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "?Commerz\\Ports\\Delivery\\Data\\PickupPoint",
+                    "doc": []
+                },
+                "key": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [],
+                    "return": "string",
+                    "doc": []
+                },
+                "search": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "Commerz\\Ports\\Delivery\\Data\\PickupPointQuery",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "array",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "lookups": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "queries": {
                     "flags": 513,
                     "type": "array",
                     "readonly": false,
@@ -557,6 +1550,137 @@
                     "hooks": []
                 },
                 "restored": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                }
+            },
+            "constants": [],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Fakes\\FakeSearchEngine": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [
+                "Commerz\\Catalog\\Search\\Contracts\\CatalogSearchPort"
+            ],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "add": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "products",
+                            "type": "Commerz\\Catalog\\Products\\Data\\ProductView",
+                            "by_reference": false,
+                            "variadic": true,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "indexProducts": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "productIds",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "removeProducts": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "productIds",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "search": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "Commerz\\Catalog\\Search\\Data\\CatalogSearchQuery",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Catalog\\Search\\Data\\CatalogSearchResult",
+                    "doc": []
+                }
+            },
+            "properties": {
+                "indexedIds": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "queries": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "removedIds": {
                     "flags": 513,
                     "type": "array",
                     "readonly": false,
@@ -1141,6 +2265,280 @@
                     "final": false
                 }
             ],
+            "enum_backing": null,
+            "enum_cases": []
+        },
+        "Commerz\\Testkit\\Fakes\\FakeStoredValue": {
+            "kind": "class",
+            "layer": "api",
+            "since": "0.1",
+            "final": true,
+            "readonly": false,
+            "abstract": false,
+            "extends": [],
+            "implements": [
+                "Commerz\\Ports\\StoredValue\\Contracts\\StoredValueTender"
+            ],
+            "uses": [],
+            "doc": [],
+            "methods": {
+                "applyToQuote": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "quote",
+                            "type": "Commerz\\Quotes\\Data\\QuoteResult",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "tenders",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\StoredValue\\Data\\TenderSettlement",
+                    "doc": []
+                },
+                "balanceOf": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Money\\Money",
+                    "doc": []
+                },
+                "capture": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\StoredValue\\Data\\CaptureStoredValue",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\StoredValue\\Data\\StoredValueCapture",
+                    "doc": []
+                },
+                "freeze": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "reason",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "'frozen'",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "heldOf": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Money\\Money",
+                    "doc": []
+                },
+                "hold": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\StoredValue\\Data\\HoldStoredValue",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\StoredValue\\Data\\StoredValueHold",
+                    "doc": []
+                },
+                "refundCredit": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\StoredValue\\Data\\RefundToStoredValue",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "Commerz\\Ports\\StoredValue\\Data\\StoredValueCredit",
+                    "doc": []
+                },
+                "release": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\StoredValue\\Data\\ReleaseStoredValue",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
+                "seed": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "balance",
+                            "type": "Commerz\\Money\\Money",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        },
+                        {
+                            "name": "kind",
+                            "type": "Commerz\\Ports\\StoredValue\\Enums\\StoredValueKind",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "\\Commerz\\Ports\\StoredValue\\Enums\\StoredValueKind::GiftCard",
+                            "flags": 0
+                        },
+                        {
+                            "name": "customer",
+                            "type": "?Commerz\\Identity\\CustomerRef",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        },
+                        {
+                            "name": "giftCardCode",
+                            "type": "?string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": true,
+                            "default": "null",
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                },
+                "unfreeze": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "accountId",
+                            "type": "string",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "self",
+                    "doc": []
+                }
+            },
+            "properties": {},
+            "constants": [],
             "enum_backing": null,
             "enum_cases": []
         },
