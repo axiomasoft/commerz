@@ -6,6 +6,7 @@ namespace Commerz\Sales\Facades;
 
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Fulfillments\Contracts\FulfillmentOrders;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\Orders\Contracts\Orders;
@@ -26,6 +27,7 @@ use Packman\Attributes\Api;
  * @method static PaymentCollections paymentCollections()
  * @method static PaymentMethodResolver paymentMethods()
  * @method static Fulfillments fulfillments()
+ * @method static FulfillmentOrders fulfillmentOrders()
  * @method static Returns returns()
  * @method static Refunds refunds()
  *

@@ -28,10 +28,12 @@ enum SalesErrorCode: string implements ErrorCode
     case FulfillmentNotBookable = 'sales.fulfillment_not_bookable';
     case FulfillmentNotFound = 'sales.fulfillment_not_found';
     case FulfillmentNotShipped = 'sales.fulfillment_not_shipped';
+    case FulfillmentOrderNotFound = 'sales.fulfillment_order_not_found';
     case GatewayCapabilityUnsupported = 'sales.gateway_capability_unsupported';
     case InvalidCode = 'sales.invalid_code';
     case InvalidDeliveryMethod = 'sales.invalid_delivery_method';
     case InvalidFulfillment = 'sales.invalid_fulfillment';
+    case InvalidFulfillmentOrderState = 'sales.invalid_fulfillment_order_state';
     case InvalidGatewayPayment = 'sales.invalid_gateway_payment';
     case InvalidGatewayRefund = 'sales.invalid_gateway_refund';
     case InvalidGatewayResult = 'sales.invalid_gateway_result';

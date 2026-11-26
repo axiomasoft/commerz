@@ -27,6 +27,15 @@ final class InventoryPluginTest extends PackageTestCase
     /** @return array<string, list<string>> */
     protected function expectedContributions(): array
     {
-        return ['allocation_strategy' => ['priority', 'single_location']];
+        return [
+            'allocation_strategy' => ['priority', 'single_location'],
+            'order_routing_rule' => [
+                'fulfillment_constraints',
+                'daily_location_quota',
+                'minimize_split_shipments',
+                'geo_proximity',
+                'market_affinity',
+            ],
+        ];
     }
 }

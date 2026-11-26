@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Facades;
 
+use Commerz\Inventory\Allocation\Contracts\OrderRouter;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Movements\Contracts\Movements;
@@ -24,6 +25,7 @@ use Packman\Attributes\Api;
  * @method static Reservations reservations()
  * @method static StockAvailability availability()
  * @method static Transfers transfers()
+ * @method static OrderRouter orderRouter()
  *
  * @see \Commerz\Inventory\Inventory
  */

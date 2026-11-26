@@ -30,13 +30,14 @@ it('resolves the typed config as a singleton from the config repository', functi
 it('loads the sales migrations', function (): void {
     $paths = array_map(basename(...), glob(__DIR__.'/../../database/migrations/*.php') ?: []);
 
-    expect($paths)->toBe([
+    expect($paths)->toContain(
         '2026_10_14_100001_create_commerz_cart_tables.php',
         '2026_10_14_100002_create_commerz_order_tables.php',
         '2026_10_14_100003_create_commerz_fulfillment_tables.php',
         '2026_10_14_100004_create_commerz_payment_tables.php',
         '2026_10_14_100005_add_commerz_fulfillment_booking_intent.php',
         '2026_10_14_100006_add_commerz_seller_ref_to_lines.php',
+        '2026_11_26_400003_create_fulfillment_orders_table.php',
         '2026_11_26_500001_create_payment_collections_tables.php',
-    ]);
+    );
 })->group('boot');

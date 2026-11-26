@@ -20,5 +20,6 @@ final readonly class DeliveryRequest
         public array $sellables = [],
         public ?PickupPointDestination $pickupPoint = null,
         public ?DeliveryMode $mode = null,
+        public FulfillmentConstraints $constraints = new FulfillmentConstraints,
     ) {}
 }

@@ -7,6 +7,11 @@ namespace Commerz\Inventory\Plugins;
 use Commerz\Inventory\Allocation\Contracts\AllocationStrategy;
 use Commerz\Inventory\Allocation\Internal\PriorityAllocation;
 use Commerz\Inventory\Allocation\Internal\SingleLocationAllocation;
+use Commerz\Inventory\Allocation\Rules\DailyLocationQuotaRule;
+use Commerz\Inventory\Allocation\Rules\FulfillmentConstraintsRule;
+use Commerz\Inventory\Allocation\Rules\GeoProximityRule;
+use Commerz\Inventory\Allocation\Rules\MarketAffinityRule;
+use Commerz\Inventory\Allocation\Rules\MinimizeSplitShipmentsRule;
 use Commerz\Inventory\Configuration\InventoryOptions;
 use Commerz\Inventory\Diagnostics\InventoryDoctorCheck;
 use Commerz\Inventory\Errors\InventoryProblemDefinitions;
@@ -15,6 +20,7 @@ use Commerz\Inventory\Panels\StockLevelsPanel;
 use Commerz\Inventory\Panels\StockLocationsPanel;
 use Commerz\Inventory\Schema\InventorySchemaSets;
 use Commerz\Plugins\CorePlugin;
+use Commerz\Ports\Delivery\Contracts\OrderRoutingRule;
 use Override;
 use Packman\Attributes\Api;
 use Packman\Extensions\Concerns\Composition\ProvidesPanels;
@@ -60,9 +66,20 @@ final class InventoryPlugin implements ExtensionPlugin, WithConfiguration, WithD
     public function register(PluginRegistrar $registrar): void
     {
         $registrar->declareKind(new ContributionKind(AllocationStrategy::KIND, AllocationStrategy::class, self::ID));
+        $registrar->declareKind(new ContributionKind(OrderRoutingRule::KIND, OrderRoutingRule::class, self::ID));
 
         foreach ([PriorityAllocation::class, SingleLocationAllocation::class] as $strategy) {
             $registrar->contribute(AllocationStrategy::KIND, $strategy);
+        }
+
+        foreach ([
+            FulfillmentConstraintsRule::class,
+            DailyLocationQuotaRule::class,
+            MinimizeSplitShipmentsRule::class,
+            GeoProximityRule::class,
+            MarketAffinityRule::class,
+        ] as $rule) {
+            $registrar->contribute(OrderRoutingRule::KIND, $rule);
         }
     }
 

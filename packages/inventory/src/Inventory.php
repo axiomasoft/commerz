@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory;
 
+use Commerz\Inventory\Allocation\Contracts\OrderRouter;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Movements\Contracts\Movements;
@@ -27,6 +28,7 @@ final readonly class Inventory
         private Reservations $reservations,
         private StockAvailability $availability,
         private Transfers $transfers,
+        private OrderRouter $orderRouter,
     ) {}
 
     public function locations(): Locations
@@ -67,5 +69,10 @@ final readonly class Inventory
     public function transfers(): Transfers
     {
         return $this->transfers;
+    }
+
+    public function orderRouter(): OrderRouter
+    {
+        return $this->orderRouter;
     }
 }

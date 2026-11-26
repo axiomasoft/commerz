@@ -12,7 +12,9 @@ use Commerz\Sales\Checkout\Internal\OrderPlacement;
 use Commerz\Sales\Checkout\Internal\SingleOrderSplitter;
 use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Sales\Diagnostics\SalesDoctorCheck;
+use Commerz\Sales\Fulfillments\Contracts\FulfillmentOrders;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
+use Commerz\Sales\Fulfillments\Internal\DatabaseFulfillmentOrders;
 use Commerz\Sales\Fulfillments\Internal\DatabaseFulfillments;
 use Commerz\Sales\Internal\Console\ExpireOrdersCommand;
 use Commerz\Sales\OrderChanges\Contracts\OrderChangeCompensator;
@@ -73,6 +75,7 @@ final class SalesRegistrar implements PackageRegistrar
         $app->singleton(PaymentCollections::class, DatabasePaymentCollections::class);
         $app->singleton(PaymentMethodResolver::class, ContributedPaymentMethodResolver::class);
         $app->singleton(Fulfillments::class, DatabaseFulfillments::class);
+        $app->singleton(FulfillmentOrders::class, DatabaseFulfillmentOrders::class);
         $app->singleton(Returns::class, DatabaseReturns::class);
         $app->singleton(Refunds::class, DatabaseRefunds::class);
         $app->singleton(Sales::class);

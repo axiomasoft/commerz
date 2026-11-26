@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Inventory\Laravel\Registrars;
 
+use Commerz\Inventory\Allocation\Contracts\OrderRouter;
+use Commerz\Inventory\Allocation\OrderRouterPipeline;
 use Commerz\Inventory\Availability\Internal\DatabaseAvailability;
 use Commerz\Inventory\Common\Internal\LevelQueries;
 use Commerz\Inventory\Common\Internal\StockLedger;
@@ -62,6 +64,7 @@ final class InventoryPortsRegistrar implements PackageRegistrar
         $app->singleton(StockAvailability::class, DatabaseAvailability::class);
         $app->singleton(StockReturns::class, DatabaseStockReturns::class);
         $app->singleton(Transfers::class, DatabaseTransfers::class);
+        $app->singletonIf(OrderRouter::class, static fn (): OrderRouter => OrderRouterPipeline::default());
         $app->singleton(Reconciler::class);
         $app->singleton(Inventory::class);
     }

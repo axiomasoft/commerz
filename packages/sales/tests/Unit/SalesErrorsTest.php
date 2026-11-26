@@ -27,6 +27,8 @@ use Commerz\Sales\Fulfillments\Exceptions\FulfillmentAlreadyShipped;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotBookable;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotShipped;
+use Commerz\Sales\Fulfillments\Exceptions\FulfillmentOrderNotFound;
+use Commerz\Sales\Fulfillments\Exceptions\InvalidFulfillmentOrderState;
 use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
 use Commerz\Sales\Gateways\Exceptions\GatewayCapabilityUnsupported;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
@@ -98,6 +100,8 @@ it('exposes Packman error descriptors on sales exceptions', function (CommerzExc
     'fulfillment not bookable' => [new FulfillmentNotBookable('f1', 'no_delivery'), SalesErrorCode::FulfillmentNotBookable, ErrorCategory::Conflict],
     'fulfillment not found' => [new FulfillmentNotFound('f1'), SalesErrorCode::FulfillmentNotFound, ErrorCategory::NotFound],
     'fulfillment not shipped' => [new FulfillmentNotShipped('f1'), SalesErrorCode::FulfillmentNotShipped, ErrorCategory::Conflict],
+    'fulfillment order not found' => [new FulfillmentOrderNotFound('fo1'), SalesErrorCode::FulfillmentOrderNotFound, ErrorCategory::NotFound],
+    'invalid fulfillment order state' => [new InvalidFulfillmentOrderState('fo1', 'fulfilled', 'reassign'), SalesErrorCode::InvalidFulfillmentOrderState, ErrorCategory::Conflict],
     'order not fulfillable' => [new OrderNotFulfillable('o1', 'cancelled'), SalesErrorCode::OrderNotFulfillable, ErrorCategory::Conflict],
     'gateway capability unsupported' => [new GatewayCapabilityUnsupported('manual', 'multicapture'), SalesErrorCode::GatewayCapabilityUnsupported, ErrorCategory::Validation],
     'invalid gateway result' => [new InvalidGatewayResult('manual', 'bad'), SalesErrorCode::InvalidGatewayResult, ErrorCategory::Unavailable],
