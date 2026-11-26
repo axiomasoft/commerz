@@ -103,6 +103,7 @@ uses()->group('pg')->in(
     '../packages/sales/tests/Feature/CrmScenarioTest.php',
     '../packages/sales/tests/Feature/Fulfillments/BookFulfillmentTest.php',
     '../packages/sales/tests/Feature/Fulfillments/FulfillmentConcurrencyTest.php',
+    '../packages/sales/tests/Feature/Fulfillments/FulfillmentOrdersTest.php',
     '../packages/sales/tests/Feature/Fulfillments/FulfillmentsTest.php',
     '../packages/sales/tests/Feature/Numbering/SequenceOrderNumbersTest.php',
     '../packages/sales/tests/Feature/Orders/CancelConcurrencyTest.php',

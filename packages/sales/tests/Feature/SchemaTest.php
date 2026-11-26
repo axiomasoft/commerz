@@ -16,7 +16,8 @@ uses(RefreshDatabase::class);
 
 const SALES_TABLES = [
     'carts', 'cart_lines', 'orders', 'order_lines', 'order_events',
-    'fulfillments', 'fulfillment_lines', 'returns', 'return_lines',
+    'fulfillments', 'fulfillment_lines', 'fulfillment_orders', 'fulfillment_order_lines',
+    'returns', 'return_lines',
     'payments', 'refunds', 'payment_events',
 ];
 

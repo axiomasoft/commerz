@@ -17,5 +17,6 @@ final readonly class DeliveryRequest
         public Address $destination,
         public Parcel $parcel,
         public array $sellables = [],
+        public FulfillmentConstraints $constraints = new FulfillmentConstraints,
     ) {}
 }

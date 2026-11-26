@@ -148,6 +148,17 @@
         {
             "package": "axiomasoft/commerz-sales",
             "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "FulfillmentOrderNotFound",
+            "code": "sales.fulfillment_order_not_found",
+            "type": "urn:packman:problem:sales.fulfillment_order_not_found",
+            "status": 404,
+            "title": "Fulfillment Order Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
             "case": "InvalidCode",
             "code": "sales.invalid_code",
             "type": "urn:packman:problem:sales.invalid_code",
@@ -177,6 +188,17 @@
             "title": "Invalid Fulfillment Command",
             "retryable": false,
             "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-sales",
+            "enum": "Commerz\\Sales\\Errors\\Enums\\SalesErrorCode",
+            "case": "InvalidFulfillmentOrderState",
+            "code": "sales.invalid_fulfillment_order_state",
+            "type": "urn:packman:problem:sales.invalid_fulfillment_order_state",
+            "status": 409,
+            "title": "Invalid Fulfillment Order State",
+            "retryable": false,
+            "category": "conflict"
         },
         {
             "package": "axiomasoft/commerz-sales",
