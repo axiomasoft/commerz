@@ -20,6 +20,7 @@ use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
 use Commerz\Ports\Stock\Data\RestockStock;
 use Commerz\Ports\Stock\Data\StockAllocation;
+use Commerz\Ports\Stock\Data\WriteOffStock;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 use Packman\Attributes\Api;
@@ -52,8 +53,14 @@ final class FakeStock implements StockAvailability, StockReservations, StockRetu
     /** @var list<RestockStock> */
     public private(set) array $restocked = [];
 
+    /** @var list<WriteOffStock> */
+    public private(set) array $writtenOff = [];
+
     /** @var array<string, true> references already restocked */
     private array $restockedReferences = [];
+
+    /** @var array<string, true> references already written off */
+    private array $writtenOffReferences = [];
 
     public function limit(SellableRef $sellable, int $onHand): self
     {
@@ -172,6 +179,18 @@ final class FakeStock implements StockAvailability, StockReservations, StockRetu
                 $this->onHand[$key] += $line->quantity;
             }
         }
+    }
+
+    public function writeOff(WriteOffStock $command): void
+    {
+        $this->writtenOff[] = $command;
+
+        if (isset($this->writtenOffReferences[$command->reference])) {
+            return;
+        }
+
+        // INV-INV-002: DamagedWriteOff NEVER increases sellable on_hand.
+        $this->writtenOffReferences[$command->reference] = true;
     }
 
     private function hold(string $demand, string $key, int $quantity): void

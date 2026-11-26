@@ -17,7 +17,7 @@ use Commerz\Stores\Data\ChannelId;
 
 it('keeps all quoted line ids in a single group by default', function (): void {
     $usd = Currency::of('USD');
-    $context = new CommerceContext(ChannelId::generate(), $usd, 'en-US');
+    $context = CommerceContext::for(ChannelId::generate(), $usd, 'en-US');
 
     $line1 = new QuotedLine(
         'line-1',
@@ -60,6 +60,8 @@ it('keeps all quoted line ids in a single group by default', function (): void {
             Money::zero($usd),
             Money::ofMinor(2000, $usd),
         ),
+        [],
+        [],
         str_repeat('a', 64),
     );
 

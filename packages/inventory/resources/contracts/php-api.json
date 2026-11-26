@@ -6003,6 +6003,10 @@
                 {
                     "name": "Return",
                     "value": "'return'"
+                },
+                {
+                    "name": "WriteOff",
+                    "value": "'write_off'"
                 }
             ]
         },

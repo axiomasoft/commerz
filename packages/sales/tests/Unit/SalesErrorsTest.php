@@ -23,6 +23,10 @@ use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Errors\Enums\SalesErrorCode;
 use Commerz\Sales\Errors\SalesProblemDefinitions;
+use Commerz\Sales\Exchanges\Exceptions\ClaimNotFound;
+use Commerz\Sales\Exchanges\Exceptions\ClaimNotOpen;
+use Commerz\Sales\Exchanges\Exceptions\ExchangeNotFound;
+use Commerz\Sales\Exchanges\Exceptions\ExchangeNotOpen;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentAlreadyShipped;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotBookable;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
@@ -108,4 +112,8 @@ it('exposes Packman error descriptors on sales exceptions', function (CommerzExc
     'return exceeds fulfilled' => [new ReturnExceedsFulfilled('ol1', 3, 1), SalesErrorCode::ReturnExceedsFulfilled, ErrorCategory::Conflict],
     'return not found' => [new ReturnNotFound('rt1'), SalesErrorCode::ReturnNotFound, ErrorCategory::NotFound],
     'return not open' => [new ReturnNotOpen('rt1', 'received'), SalesErrorCode::ReturnNotOpen, ErrorCategory::Conflict],
+    'exchange not found' => [new ExchangeNotFound('ex1'), SalesErrorCode::ExchangeNotFound, ErrorCategory::NotFound],
+    'exchange not open' => [new ExchangeNotOpen('ex1', 'cancelled'), SalesErrorCode::ExchangeNotOpen, ErrorCategory::Conflict],
+    'claim not found' => [new ClaimNotFound('clm1'), SalesErrorCode::ClaimNotFound, ErrorCategory::NotFound],
+    'claim not open' => [new ClaimNotOpen('clm1', 'cancelled'), SalesErrorCode::ClaimNotOpen, ErrorCategory::Conflict],
 ]);

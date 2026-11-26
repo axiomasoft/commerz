@@ -1059,6 +1059,26 @@
                     ],
                     "return": "void",
                     "doc": []
+                },
+                "writeOff": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "command",
+                            "type": "Commerz\\Ports\\Stock\\Data\\WriteOffStock",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
                 }
             },
             "properties": {
@@ -1093,6 +1113,16 @@
                     "hooks": []
                 },
                 "restocked": {
+                    "flags": 513,
+                    "type": "array",
+                    "readonly": false,
+                    "visibility": "public",
+                    "static": false,
+                    "default": "[]",
+                    "doc": [],
+                    "hooks": []
+                },
+                "writtenOff": {
                     "flags": 513,
                     "type": "array",
                     "readonly": false,

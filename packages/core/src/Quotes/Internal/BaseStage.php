@@ -8,7 +8,6 @@ use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Ports\Prices\Data\ResolvePrice;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\QuoteLine;
-use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Quotes\Data\QuoteState;
 use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
@@ -48,24 +47,52 @@ final readonly class BaseStage implements QuoteStage
             return $state;
         }
 
-        $prices = $this->container->make(PriceResolver::class)->resolveMany(
-            array_map(
-                static fn (QuoteLineInput $line): ResolvePrice => new ResolvePrice(
+        $toResolve = [];
+        $resolveIndexes = [];
+
+        foreach ($inputs as $index => $line) {
+            if ($line->fixedUnitPrice === null) {
+                $toResolve[] = new ResolvePrice(
                     $line->sellable->ref,
                     $line->quantity,
                     $line->sellable->basePrice ?? $line->sellable->unitPrice?->amount,
-                ),
-                $inputs,
-            ),
-            $state->context(),
-        );
+                );
+                $resolveIndexes[] = $index;
+            }
+        }
 
-        if (count($prices) !== count($inputs)) {
-            throw new LogicException('PriceResolver returned '.count($prices).' prices for '.count($inputs).' requests.');
+        $resolvedByIndex = [];
+
+        if ($toResolve !== []) {
+            $prices = $this->container->make(PriceResolver::class)->resolveMany($toResolve, $state->context());
+
+            if (count($prices) !== count($toResolve)) {
+                throw new LogicException('PriceResolver returned '.count($prices).' prices for '.count($toResolve).' requests.');
+            }
+
+            foreach ($resolveIndexes as $pos => $originalIndex) {
+                $resolvedByIndex[$originalIndex] = $prices[$pos];
+            }
         }
 
         foreach ($inputs as $index => $input) {
-            $price = $prices[$index];
+            if ($input->fixedUnitPrice !== null) {
+                $state = $state->withLine(new QuoteLine(
+                    $input->lineId,
+                    $input->sellable,
+                    $input->quantity,
+                    $input->fixedUnitPrice,
+                    $input->sellable->basePrice,
+                    $input->taxIncluded ?? false,
+                    $input->priceSource ?? 'cart_transform',
+                    $input->sellable->unitPrice?->withAmount($input->fixedUnitPrice),
+                    $state->input->rounding,
+                ));
+
+                continue;
+            }
+
+            $price = $resolvedByIndex[$index];
             $state = $state->withLine(new QuoteLine(
                 $input->lineId,
                 $input->sellable,

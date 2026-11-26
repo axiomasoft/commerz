@@ -102,5 +102,5 @@ it('validates quote inputs, adjustments and taxes', function (): void {
 });
 
 it('orders anchors by declaration', function (): void {
-    expect(array_map(static fn (QuoteAnchor $a): int => $a->order(), QuoteAnchor::cases()))->toBe([0, 1, 2, 3, 4, 5, 6]);
+    expect(array_map(static fn (QuoteAnchor $a): int => $a->order(), QuoteAnchor::cases()))->toBe([0, 1, 2, 3, 4, 5, 6, 7]);
 });

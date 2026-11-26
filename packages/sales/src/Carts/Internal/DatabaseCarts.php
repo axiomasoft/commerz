@@ -253,7 +253,7 @@ final readonly class DatabaseCarts implements Carts
         return $this->delivery->options(new DeliveryRequest(
             $cart->context($at),
             $address,
-            new Parcel(CartQuoter::shippingWeight($cart->lines, $quoted->snapshots), $value->isNegative() ? Money::zero($cart->currency) : $value),
+            new Parcel(CartQuoter::quotedShippingWeight($quoted->quote->lines), $value->isNegative() ? Money::zero($cart->currency) : $value),
             $refs,
         ));
     }

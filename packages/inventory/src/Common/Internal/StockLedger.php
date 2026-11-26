@@ -23,6 +23,7 @@ use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Time\PgTimestamp;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
@@ -116,14 +117,17 @@ final class StockLedger
         $levels = $this->tables->table('stock_levels');
         $items = $this->tables->table('stock_items');
         $locations = $this->tables->table('stock_locations');
-        $tuples = implode(', ', array_fill(0, count($pairs), '(?::uuid, ?::uuid)'));
+        $db = $this->db();
+        $isPg = $db instanceof Connection && $db->getDriverName() === 'pgsql';
+        $tuples = implode(', ', array_fill(0, count($pairs), $isPg ? '(?::uuid, ?::uuid)' : '(?, ?)'));
+        $lockClause = $isPg ? ' for no key update of lv' : '';
 
         $rows = $this->db()->select(
             'select lv.id, lv.stock_item_id, lv.location_id, lv.on_hand, lv.reserved, lv.safety_stock, lv.version,'
             .' lv.updated_at, i.sku, i.policy, i.status as item_status, l.code as location_code, l.status as location_status'
             ." from {$levels} lv join {$items} i on i.id = lv.stock_item_id join {$locations} l on l.id = lv.location_id"
             ." where (lv.stock_item_id, lv.location_id) in ({$tuples})"
-            .' order by lv.stock_item_id, lv.location_id for no key update of lv',
+            .' order by lv.stock_item_id, lv.location_id'.$lockClause,
             array_merge(...$pairs),
             useReadPdo: false,
         );
@@ -180,6 +184,40 @@ final class StockLedger
         ) ?? throw new NegativeStock($level->sku, $level->locationCode, $this->current($level)->onHand, $delta);
 
         return $this->journal($level, $returned, $delta, $kind, $reference, $reason, $actor);
+    }
+
+    /**
+     * Journals damaged returned units (`write_off`) without ever increasing sellable `on_hand` (`INV-INV-002`).
+     * The movement records `delta = -$quantity` and `balance_after = $level->onHand`.
+     */
+    public function recordWriteOff(
+        LevelRow $level,
+        int $quantity,
+        ?string $reference = null,
+        ?string $reason = null,
+        ?ActorRef $actor = null,
+    ): LevelRow {
+        self::assertQuantity($quantity);
+
+        $returned = $this->update($level, 'on_hand = on_hand', [], 'on_hand >= 0', [])
+            ?? throw new LogicException("Level {$level->id} vanished under its lock.");
+
+        $after = $level->with($returned);
+
+        $this->db()->table($this->tables->table('stock_movements'))->insert([
+            'stock_level_id' => $level->id,
+            'stock_item_id' => $level->item,
+            'location_id' => $level->location,
+            'kind' => MovementKind::WriteOff->value,
+            'delta' => -$quantity,
+            'balance_after' => $after->onHand,
+            'reference' => $reference,
+            'reason' => $reason,
+            'actor_ref' => $actor instanceof ActorRef ? (string) $actor : null,
+            'occurred_at' => $after->updatedAt,
+        ]);
+
+        return $this->track($level, $after, 0, MovementKind::WriteOff, $reference);
     }
 
     /**

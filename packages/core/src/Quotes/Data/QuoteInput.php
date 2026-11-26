@@ -52,4 +52,18 @@ final readonly class QuoteInput
     {
         return array_find($this->lines, static fn (QuoteLineInput $line): bool => $line->lineId === $lineId);
     }
+
+    /**
+     * @param  list<QuoteLineInput>  $lines
+     */
+    public function withLines(array $lines, ?DeliverySelection $delivery = null): self
+    {
+        return new self(
+            $this->context,
+            $lines,
+            $this->codes,
+            $delivery ?? $this->delivery,
+            $this->rounding,
+        );
+    }
 }

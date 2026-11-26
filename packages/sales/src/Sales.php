@@ -6,6 +6,7 @@ namespace Commerz\Sales;
 
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
+use Commerz\Sales\Exchanges\Contracts\Exchanges;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
@@ -56,5 +57,10 @@ final readonly class Sales
     public function refunds(): Refunds
     {
         return $this->container->make(Refunds::class);
+    }
+
+    public function exchanges(): Exchanges
+    {
+        return $this->container->make(Exchanges::class);
     }
 }

@@ -36,5 +36,7 @@ it('loads the sales migrations', function (): void {
         '2026_10_14_100003_create_commerz_fulfillment_tables.php',
         '2026_10_14_100004_create_commerz_payment_tables.php',
         '2026_10_14_100005_add_commerz_fulfillment_booking_intent.php',
+        '2026_10_14_100006_add_commerz_seller_ref_to_lines.php',
+        '2026_11_26_500003_create_exchanges_and_rma_disposition.php',
     ]);
 })->group('boot');

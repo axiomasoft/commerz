@@ -24,9 +24,12 @@ use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\RestockLine;
 use Commerz\Ports\Stock\Data\RestockStock;
+use Commerz\Ports\Stock\Data\WriteOffLine;
+use Commerz\Ports\Stock\Data\WriteOffStock;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
+use Commerz\Stores\Data\ChannelId;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -73,6 +76,27 @@ final readonly class DatabaseStockReturns implements StockReturns
         );
     }
 
+    public function writeOff(WriteOffStock $command): void
+    {
+        $this->channels->find($command->channel);
+
+        $fingerprint = Fingerprint::of([
+            'channel' => $command->channel->value,
+            'location' => $command->locationCode,
+            'reason' => $command->reason,
+            'lines' => array_map(static fn (WriteOffLine $line): array => [(string) $line->sellable, $line->quantity], $command->lines),
+        ]);
+
+        $this->receipts->once(
+            'inventory.write_off',
+            IdempotencyKey::of($command->reference),
+            $fingerprint,
+            fn (): bool => $this->ledger->within(fn (): bool => $this->applyWriteOff($command)),
+            static fn (bool $writtenOff): array => ['written_off' => $writtenOff],
+            static fn (array $stored): bool => ($stored['written_off'] ?? false) === true,
+        );
+    }
+
     /** @return bool whether any unit went back on hand */
     private function apply(RestockStock $command): bool
     {
@@ -97,7 +121,7 @@ final readonly class DatabaseStockReturns implements StockReturns
             return false;
         }
 
-        $location = $this->location($command);
+        $location = $this->resolveLocation($command->channel, $command->locationCode);
 
         if (Rows::string($location, 'status') === LocationStatus::Archived->value) {
             throw new LocationArchived(Rows::string($location, 'code'));
@@ -118,15 +142,59 @@ final readonly class DatabaseStockReturns implements StockReturns
         return true;
     }
 
+    /** @return bool whether any damaged unit was journalled as `write_off` */
+    private function applyWriteOff(WriteOffStock $command): bool
+    {
+        $units = $this->componentUnits($command->lines);
+
+        if ($units === []) {
+            return false;
+        }
+
+        $items = $this->entities->items(array_keys($units));
+
+        foreach ($items as $id => $row) {
+            if (Rows::string($row, 'policy') === StockPolicy::Untracked->value) {
+                unset($units[$id]);
+            } elseif (Rows::string($row, 'status') === StockItemStatus::Archived->value) {
+                throw new StockItemArchived(Rows::string($row, 'sku'));
+            }
+        }
+
+        if ($units === []) {
+            return false;
+        }
+
+        $location = $this->resolveLocation($command->channel, $command->locationCode);
+
+        if (Rows::string($location, 'status') === LocationStatus::Archived->value) {
+            throw new LocationArchived(Rows::string($location, 'code'));
+        }
+
+        $locationId = Rows::string($location, 'id');
+        $pairs = array_map(static fn (string $item): array => [$item, $locationId], array_keys($units));
+        $this->ledger->ensureLevels($pairs);
+        $levels = $this->ledger->lock($pairs);
+
+        foreach ($units as $item => $quantity) {
+            $level = $levels[LevelRow::key($item, $locationId)]
+                ?? throw new RuntimeException("The level of {$item} at {$locationId} vanished under its locks.");
+
+            $this->ledger->recordWriteOff($level, $quantity, $command->reference, $command->reason, $command->actor);
+        }
+
+        return true;
+    }
+
     /**
-     * Units to put back per stock item of the non-untracked links; validates every line before anything is written.
+     * Units per stock item of the non-untracked links; validates every line before anything is written.
      *
-     * @param  list<RestockLine>  $lines
+     * @param  list<RestockLine|WriteOffLine>  $lines
      * @return array<string, int> by stock item id
      */
     private function componentUnits(array $lines): array
     {
-        $refs = array_map(static fn (RestockLine $line): string => (string) $line->sellable, $lines);
+        $refs = array_map(static fn (RestockLine|WriteOffLine $line): string => (string) $line->sellable, $lines);
         $links = [];
 
         $rows = $this->db()->table($this->tables->table('stock_item_links').' as l')
@@ -169,15 +237,15 @@ final readonly class DatabaseStockReturns implements StockReturns
         return $units;
     }
 
-    private function location(RestockStock $command): object
+    private function resolveLocation(ChannelId $channel, ?string $locationCode): object
     {
-        if ($command->locationCode !== null) {
-            return $this->entities->locationByCode($command->locationCode);
+        if ($locationCode !== null) {
+            return $this->entities->locationByCode($locationCode);
         }
 
         $first = $this->db()->table($this->tables->table('stock_sources').' as s')
             ->join($this->tables->table('stock_locations').' as l', 'l.id', '=', 's.location_id')
-            ->where('s.channel_id', $command->channel->value)
+            ->where('s.channel_id', $channel->value)
             ->where('l.status', LocationStatus::Active->value)
             ->orderBy('s.priority')
             ->orderBy('l.code')
