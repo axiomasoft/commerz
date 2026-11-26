@@ -20,7 +20,7 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
 final class CommerzServiceProvider extends CommerzPluginServiceProvider
 {
     /** Table nouns owned by the core package. */
-    public const array NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox'];
+    public const array NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox', 'custom_field'];
 
     /** @var list<class-string<PackageRegistrar>> */
     protected const array REGISTRARS = [

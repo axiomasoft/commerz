@@ -16,6 +16,7 @@
             "owns": [
                 "Configuration",
                 "Context",
+                "CustomFields",
                 "Diagnostics",
                 "Errors",
                 "Facades",
@@ -23,6 +24,7 @@
                 "Internal",
                 "Laravel",
                 "Measures",
+                "Metadata",
                 "Money",
                 "Operations",
                 "Outbox",
