@@ -21,6 +21,11 @@ use Commerz\Stores\Exceptions\ChannelNotFound;
 use Commerz\Stores\Exceptions\CurrencyNotAllowed;
 use Commerz\Stores\Exceptions\DuplicateCode;
 use Commerz\Stores\Exceptions\StoreNotFound;
+use Commerz\Webhooks\Exceptions\DuplicateWebhookSubscription;
+use Commerz\Webhooks\Exceptions\InvalidWebhookSignature;
+use Commerz\Webhooks\Exceptions\WebhookDeliveryNotFound;
+use Commerz\Webhooks\Exceptions\WebhookSubscriptionNotFound;
+use Commerz\Webhooks\Exceptions\WebhookTransportFailed;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
 use Packman\Errors\Exceptions\CodedException;
@@ -53,6 +58,11 @@ it('exposes stable codes, categories, descriptors and scalar context', function 
     'sellable unavailable' => [new SellableUnavailable('variant:1'), 'sellables.unavailable', ErrorCategory::NotFound, CommerzErrorCode::SellableUnavailable, ErrorCategory::NotFound, ['sellable' => 'variant:1', 'reason' => 'unknown']],
     'insufficient stock' => [new InsufficientStock('variant:1', 5, 2), 'stock.insufficient_stock', ErrorCategory::Conflict, CommerzErrorCode::InsufficientStock, ErrorCategory::Conflict, ['sellable' => 'variant:1', 'requested' => 5, 'available' => 2]],
     'reservation not found' => [new ReservationNotFound('order:1', 'variant:1'), 'stock.reservation_not_found', ErrorCategory::NotFound, CommerzErrorCode::ReservationNotFound, ErrorCategory::NotFound, ['entity' => 'Reservation', 'id' => 'order:1/variant:1']],
+    'duplicate webhook subscription' => [new DuplicateWebhookSubscription('erp-sync'), 'webhooks.duplicate_subscription', ErrorCategory::Conflict, CommerzErrorCode::DuplicateWebhookSubscription, ErrorCategory::Conflict, ['code' => 'erp-sync']],
+    'invalid webhook signature' => [new InvalidWebhookSignature('erp', 'bad hmac'), 'webhooks.invalid_signature', ErrorCategory::Authentication, CommerzErrorCode::InvalidWebhookSignature, ErrorCategory::Authentication, ['source' => 'erp', 'reason' => 'bad hmac']],
+    'webhook delivery not found' => [new WebhookDeliveryNotFound('d1'), 'webhooks.delivery_not_found', ErrorCategory::NotFound, CommerzErrorCode::WebhookDeliveryNotFound, ErrorCategory::NotFound, ['entity' => 'WebhookDelivery', 'id' => 'd1']],
+    'webhook subscription not found' => [new WebhookSubscriptionNotFound('s1'), 'webhooks.subscription_not_found', ErrorCategory::NotFound, CommerzErrorCode::WebhookSubscriptionNotFound, ErrorCategory::NotFound, ['entity' => 'WebhookSubscription', 'id' => 's1']],
+    'webhook transport failed' => [new WebhookTransportFailed('https://example.test/hook', 'timeout', 504), 'webhooks.transport_failed', ErrorCategory::Unavailable, CommerzErrorCode::WebhookTransportFailed, ErrorCategory::Unavailable, ['url' => 'https://example.test/hook', 'reason' => 'timeout', 'status_code' => 504]],
 ]);
 
 it('covers every CommerzErrorCode case with a matching ProblemDefinition', function (): void {

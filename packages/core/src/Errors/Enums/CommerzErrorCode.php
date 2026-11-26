@@ -19,6 +19,7 @@ enum CommerzErrorCode: string implements ErrorCode
     case CurrencyMismatch = 'commerz.currency_mismatch';
     case CurrencyNotAllowed = 'commerz.currency_not_allowed';
     case DuplicateCode = 'commerz.duplicate_code';
+    case DuplicateWebhookSubscription = 'commerz.duplicate_webhook_subscription';
     case IdempotencyConflict = 'commerz.idempotency_conflict';
     case InsufficientStock = 'commerz.insufficient_stock';
     case InvalidAmount = 'commerz.invalid_amount';
@@ -33,6 +34,7 @@ enum CommerzErrorCode: string implements ErrorCode
     case InvalidPageSize = 'commerz.invalid_page_size';
     case InvalidRate = 'commerz.invalid_rate';
     case InvalidRef = 'commerz.invalid_ref';
+    case InvalidWebhookSignature = 'commerz.invalid_webhook_signature';
     case InvalidWeights = 'commerz.invalid_weights';
     case NotFound = 'commerz.not_found';
     case PriceNotFound = 'commerz.price_not_found';
@@ -43,6 +45,9 @@ enum CommerzErrorCode: string implements ErrorCode
     case StoreNotFound = 'commerz.store_not_found';
     case UnsupportedContribution = 'commerz.unsupported_contribution';
     case UsageLimitReached = 'commerz.usage_limit_reached';
+    case WebhookDeliveryNotFound = 'commerz.webhook_delivery_not_found';
+    case WebhookSubscriptionNotFound = 'commerz.webhook_subscription_not_found';
+    case WebhookTransportFailed = 'commerz.webhook_transport_failed';
 
     public function value(): string
     {

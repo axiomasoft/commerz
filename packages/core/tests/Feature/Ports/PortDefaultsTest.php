@@ -7,6 +7,9 @@ use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Ports\Assets\Contracts\AssetResolverPort;
+use Commerz\Ports\Assets\Data\AssetRef;
+use Commerz\Ports\Assets\Internal\NullAssetResolver;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Customers\Internal\GuestOnlyDirectory;
@@ -16,8 +19,13 @@ use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\BookShipment;
 use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Ports\Delivery\Data\Parcel;
+use Commerz\Ports\Digital\Contracts\DigitalDeliveryPort;
+use Commerz\Ports\Digital\Data\GrantDigitalDelivery;
+use Commerz\Ports\Digital\Internal\NullDigitalDelivery;
 use Commerz\Ports\Prices\Contracts\PriceResolver;
 use Commerz\Ports\Prices\Internal\SnapshotPriceResolver;
+use Commerz\Ports\Privacy\Contracts\PiiCipherPort;
+use Commerz\Ports\Privacy\Internal\NullPiiCipher;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Data\AppliedPromotion;
 use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
@@ -71,13 +79,19 @@ it('binds the core defaults when no package implements a port', function (): voi
     config(['commerz.stock' => 'unlimited']);
 
     expect(app(PriceResolver::class))->toBeInstanceOf(SnapshotPriceResolver::class)
+        ->and(app(AssetResolverPort::class))->toBeInstanceOf(NullAssetResolver::class)
+        ->and(app(DigitalDeliveryPort::class))->toBeInstanceOf(NullDigitalDelivery::class)
+        ->and(app(PiiCipherPort::class))->toBeInstanceOf(NullPiiCipher::class)
         ->and(app(PromotionUsage::class))->toBeInstanceOf(NullPromotionUsage::class)
         ->and(app(CustomerDirectory::class))->toBeInstanceOf(GuestOnlyDirectory::class)
         ->and(app(StockAvailability::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(StockReservations::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(StockReturns::class))->toBeInstanceOf(UnlimitedStock::class)
         ->and(app(DeliveryOptions::class)->options(new DeliveryRequest(pdContext(), new Address('RU'), new Parcel(100, Money::zero('RUB')))))->toBe([])
-        ->and(app(CustomerDirectory::class)->find(CustomerRef::of('user', '1')))->toBeNull();
+        ->and(app(CustomerDirectory::class)->find(CustomerRef::of('user', '1')))->toBeNull()
+        ->and(app(AssetResolverPort::class)->resolve(AssetRef::of('media', '1')))->toBeNull()
+        ->and(app(DigitalDeliveryPort::class)->grant(new GrantDigitalDelivery('ful:1', SellableRef::of('file', '1'), 'order:1')))->toBeNull()
+        ->and(app(PiiCipherPort::class)->encrypt('alice@example.com', 'customer.email'))->toBe('alice@example.com');
 });
 
 it('fails inventory stock mode without an inventory package on first use', function (): void {

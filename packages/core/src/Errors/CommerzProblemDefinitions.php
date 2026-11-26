@@ -54,6 +54,11 @@ final readonly class CommerzProblemDefinitions implements ProblemDefinitionProvi
             $this->define(CommerzErrorCode::SellableUnavailable, 404, 'Sellable Unavailable', ErrorCategory::NotFound, ['sellable', 'reason']),
             $this->define(CommerzErrorCode::InsufficientStock, 409, 'Insufficient Stock', ErrorCategory::Conflict, ['sellable', 'requested', 'available']),
             $this->define(CommerzErrorCode::ReservationNotFound, 404, 'Stock Reservation Not Found', ErrorCategory::NotFound, ['entity', 'id']),
+            $this->define(CommerzErrorCode::DuplicateWebhookSubscription, 409, 'Duplicate Webhook Subscription Code', ErrorCategory::Conflict, ['code']),
+            $this->define(CommerzErrorCode::InvalidWebhookSignature, 401, 'Invalid Webhook Signature', ErrorCategory::Authentication, ['source', 'reason']),
+            $this->define(CommerzErrorCode::WebhookDeliveryNotFound, 404, 'Webhook Delivery Not Found', ErrorCategory::NotFound, ['entity', 'id']),
+            $this->define(CommerzErrorCode::WebhookSubscriptionNotFound, 404, 'Webhook Subscription Not Found', ErrorCategory::NotFound, ['entity', 'id']),
+            $this->define(CommerzErrorCode::WebhookTransportFailed, 503, 'Webhook Transport Failed', ErrorCategory::Unavailable, ['url', 'reason', 'status_code'], retryable: true),
         ];
     }
 
@@ -64,13 +69,14 @@ final readonly class CommerzProblemDefinitions implements ProblemDefinitionProvi
         string $title,
         ErrorCategory $category,
         array $detailKeys = [],
+        bool $retryable = false,
     ): ProblemDefinition {
         return new ProblemDefinition(
             code: $code,
             type: $this->urnPrefix.$code->value(),
             defaultStatus: $defaultStatus,
             title: $title,
-            retryable: false,
+            retryable: $retryable,
             category: $category,
             detailKeys: $detailKeys,
         );

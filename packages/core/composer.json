@@ -64,7 +64,8 @@
                 "Quotes",
                 "Schema",
                 "Stores",
-                "Time"
+                "Time",
+                "Webhooks"
             ]
         },
         "branch-alias": {
