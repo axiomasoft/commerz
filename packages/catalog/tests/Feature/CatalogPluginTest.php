@@ -31,6 +31,7 @@ final class CatalogPluginTest extends PackageTestCase
             'attribute_type' => [
                 'text', 'localized_text', 'integer', 'decimal', 'boolean', 'date', 'enum', 'multi_enum', 'measure', 'reference',
             ],
+            'outbox_consumer' => ['catalog.storefront_projection'],
             'product_kind' => ['physical', 'digital', 'service'],
             'sellable_provider' => ['variant'],
         ];

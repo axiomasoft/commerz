@@ -32,6 +32,7 @@ final readonly class CatalogSchemaSets implements SchemaSetProvider
                 package: 'axiomasoft/commerz-catalog',
                 name: 'commerz-catalog',
                 path: dirname(__DIR__, 2).'/database/migrations',
+                version: 2,
             ),
         ];
     }

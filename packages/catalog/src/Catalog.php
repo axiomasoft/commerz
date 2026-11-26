@@ -7,11 +7,13 @@ namespace Commerz\Catalog;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Brands\Contracts\Brands;
 use Commerz\Catalog\Categories\Contracts\Categories;
+use Commerz\Catalog\Collections\Contracts\Collections;
 use Commerz\Catalog\Listings\Contracts\Listings;
 use Commerz\Catalog\Media\Contracts\Media;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Projection\Contracts\StorefrontProjection;
 use Commerz\Catalog\Relations\Contracts\ProductRelations;
 use Commerz\Catalog\Routes\Contracts\UrlRoutes;
 use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
@@ -35,6 +37,8 @@ final readonly class Catalog
         private Media $media,
         private UrlRoutes $routes,
         private CatalogSearchPort $search,
+        private Collections $collections,
+        private StorefrontProjection $storefront,
     ) {}
 
     public function products(): Products
@@ -95,5 +99,15 @@ final readonly class Catalog
     public function search(): CatalogSearchPort
     {
         return $this->search;
+    }
+
+    public function collections(): Collections
+    {
+        return $this->collections;
+    }
+
+    public function storefront(): StorefrontProjection
+    {
+        return $this->storefront;
     }
 }

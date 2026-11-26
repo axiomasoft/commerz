@@ -16,6 +16,9 @@ use Commerz\Catalog\Categories\Exceptions\CategoryArchived;
 use Commerz\Catalog\Categories\Exceptions\CategoryCycle;
 use Commerz\Catalog\Categories\Exceptions\CategoryHasChildren;
 use Commerz\Catalog\Categories\Exceptions\CategoryNotFound;
+use Commerz\Catalog\Collections\Exceptions\CollectionArchived;
+use Commerz\Catalog\Collections\Exceptions\CollectionNotFound;
+use Commerz\Catalog\Collections\Exceptions\InvalidCollectionOperation;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Errors\CatalogProblemDefinitions;
 use Commerz\Catalog\Errors\Enums\CatalogErrorCode;
@@ -29,6 +32,7 @@ use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
 use Commerz\Catalog\ProductTypes\Exceptions\InvalidProductType;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
+use Commerz\Catalog\Projection\Exceptions\StorefrontProductNotFound;
 use Commerz\Catalog\Relations\Exceptions\ProductRelationNotFound;
 use Commerz\Catalog\Routes\Exceptions\DuplicateSlug;
 use Commerz\Catalog\Routes\Exceptions\RouteNotFound;
@@ -71,6 +75,9 @@ it('exposes Packman error descriptors on catalog exceptions', function (CommerzE
     'category cycle' => [new CategoryCycle('c1', 'c2'), CatalogErrorCode::CategoryCycle, ErrorCategory::Conflict],
     'category has children' => [new CategoryHasChildren('tops'), CatalogErrorCode::CategoryHasChildren, ErrorCategory::Conflict],
     'category not found' => [new CategoryNotFound('tops'), CatalogErrorCode::CategoryNotFound, ErrorCategory::NotFound],
+    'collection archived' => [new CollectionArchived('summer'), CatalogErrorCode::CollectionArchived, ErrorCategory::Conflict],
+    'collection not found' => [new CollectionNotFound('summer'), CatalogErrorCode::CollectionNotFound, ErrorCategory::NotFound],
+    'invalid collection operation' => [new InvalidCollectionOperation('summer', 'bad'), CatalogErrorCode::InvalidCollectionOperation, ErrorCategory::Validation],
     'duplicate code' => [new DuplicateCode('Product', 'tee'), CatalogErrorCode::DuplicateCode, ErrorCategory::Conflict],
     'listing not found' => [new ListingNotFound('p1', 'c1'), CatalogErrorCode::ListingNotFound, ErrorCategory::NotFound],
     'option not found' => [new OptionNotFound('size'), CatalogErrorCode::OptionNotFound, ErrorCategory::NotFound],
@@ -80,6 +87,7 @@ it('exposes Packman error descriptors on catalog exceptions', function (CommerzE
     'invalid product type' => [new InvalidProductType('bad'), CatalogErrorCode::InvalidProductType, ErrorCategory::Validation],
     'product type archived' => [new ProductTypeArchived('shirt'), CatalogErrorCode::ProductTypeArchived, ErrorCategory::Conflict],
     'product type not found' => [new ProductTypeNotFound('shirt'), CatalogErrorCode::ProductTypeNotFound, ErrorCategory::NotFound],
+    'storefront product not found' => [new StorefrontProductNotFound('tee'), CatalogErrorCode::StorefrontProductNotFound, ErrorCategory::NotFound],
     'duplicate combination' => [new DuplicateCombination(['size' => 's']), CatalogErrorCode::DuplicateCombination, ErrorCategory::Conflict],
     'invalid axes' => [new InvalidAxes('missing'), CatalogErrorCode::InvalidAxes, ErrorCategory::Validation],
     'too many variants' => [new TooManyVariants(200, 100), CatalogErrorCode::TooManyVariants, ErrorCategory::RateLimit],

@@ -25,6 +25,8 @@ enum CatalogErrorCode: string implements ErrorCode
     case CategoryCycle = 'catalog.category_cycle';
     case CategoryHasChildren = 'catalog.category_has_children';
     case CategoryNotFound = 'catalog.category_not_found';
+    case CollectionArchived = 'catalog.collection_archived';
+    case CollectionNotFound = 'catalog.collection_not_found';
     case DuplicateCode = 'catalog.duplicate_code';
     case DuplicateCombination = 'catalog.duplicate_combination';
     case DuplicateSlug = 'catalog.duplicate_slug';
@@ -35,6 +37,7 @@ enum CatalogErrorCode: string implements ErrorCode
     case InvalidBarcode = 'catalog.invalid_barcode';
     case InvalidChoices = 'catalog.invalid_choices';
     case InvalidCode = 'catalog.invalid_code';
+    case InvalidCollectionOperation = 'catalog.invalid_collection_operation';
     case InvalidDimensions = 'catalog.invalid_dimensions';
     case InvalidFilter = 'catalog.invalid_filter';
     case InvalidHandle = 'catalog.invalid_handle';
@@ -53,6 +56,7 @@ enum CatalogErrorCode: string implements ErrorCode
     case ProductTypeArchived = 'catalog.product_type_archived';
     case ProductTypeNotFound = 'catalog.product_type_not_found';
     case RouteNotFound = 'catalog.route_not_found';
+    case StorefrontProductNotFound = 'catalog.storefront_product_not_found';
     case TooManyAxes = 'catalog.too_many_axes';
     case TooManyVariants = 'catalog.too_many_variants';
     case UnknownOptionValue = 'catalog.unknown_option_value';

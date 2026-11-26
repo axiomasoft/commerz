@@ -13,6 +13,8 @@ use Commerz\Catalog\Brands\Internal\DatabaseBrands;
 use Commerz\Catalog\Catalog;
 use Commerz\Catalog\Categories\Contracts\Categories;
 use Commerz\Catalog\Categories\Internal\DatabaseCategories;
+use Commerz\Catalog\Collections\Contracts\Collections;
+use Commerz\Catalog\Collections\Internal\DatabaseCollections;
 use Commerz\Catalog\Common\Internal\BatchAttributeProcessor;
 use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Diagnostics\CatalogDoctorCheck;
@@ -27,6 +29,9 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\Products\Internal\DatabaseProducts;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
+use Commerz\Catalog\Projection\Contracts\StorefrontProjection;
+use Commerz\Catalog\Projection\Internal\DatabaseStorefrontProjection;
+use Commerz\Catalog\Projection\Internal\StorefrontOutboxProjector;
 use Commerz\Catalog\Relations\Contracts\ProductRelations;
 use Commerz\Catalog\Relations\Internal\DatabaseProductRelations;
 use Commerz\Catalog\Routes\Contracts\UrlRoutes;
@@ -75,6 +80,7 @@ final class CatalogRegistrar implements PackageRegistrar
         $app->singleton(Products::class, DatabaseProducts::class);
         $app->singleton(Variants::class, DatabaseVariants::class);
         $app->singleton(Categories::class, DatabaseCategories::class);
+        $app->singleton(Collections::class, DatabaseCollections::class);
         $app->singleton(Listings::class, DatabaseListings::class);
         $app->singleton(Brands::class, DatabaseBrands::class);
         $app->singleton(ProductRelations::class, DatabaseProductRelations::class);
@@ -82,6 +88,9 @@ final class CatalogRegistrar implements PackageRegistrar
         $app->singleton(UrlRoutes::class, DatabaseUrlRoutes::class);
         $app->singletonIf(CatalogSearchPort::class, PgCatalogSearch::class);
         $app->singleton(CatalogSearchOutboxSubscriber::class);
+        $app->singleton(DatabaseStorefrontProjection::class);
+        $app->singleton(StorefrontProjection::class, DatabaseStorefrontProjection::class);
+        $app->singleton(StorefrontOutboxProjector::class);
         $app->singleton(Catalog::class);
     }
 

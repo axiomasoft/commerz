@@ -27,8 +27,10 @@ use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\DigitalKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\PhysicalKind;
 use Commerz\Catalog\ProductTypes\Internal\Kinds\ServiceKind;
+use Commerz\Catalog\Projection\Internal\StorefrontOutboxProjector;
 use Commerz\Catalog\Schema\CatalogSchemaSets;
 use Commerz\Catalog\Variants\Internal\VariantSellables;
+use Commerz\Outbox\Contracts\OutboxConsumer;
 use Commerz\Plugins\CorePlugin;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Override;
@@ -90,6 +92,7 @@ final class CatalogPlugin implements ExtensionPlugin, WithConfiguration, WithDia
         }
 
         $registrar->contribute(SellableProvider::KIND, VariantSellables::class);
+        $registrar->contribute(OutboxConsumer::KIND, StorefrontOutboxProjector::class);
     }
 
     #[Override]

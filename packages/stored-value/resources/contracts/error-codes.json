@@ -6,155 +6,85 @@
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "AccountExpired",
-            "code": "stored-value.account_expired",
-            "type": "urn:packman:problem:stored-value.account_expired",
-            "status": 409,
-            "title": "Stored Value Account Expired",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.account_expired"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "AccountFrozen",
-            "code": "stored-value.account_frozen",
-            "type": "urn:packman:problem:stored-value.account_frozen",
-            "status": 409,
-            "title": "Stored Value Account Frozen",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.account_frozen"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "AccountNotFound",
-            "code": "stored-value.account_not_found",
-            "type": "urn:packman:problem:stored-value.account_not_found",
-            "status": 404,
-            "title": "Stored Value Account Not Found",
-            "retryable": false,
-            "category": "not_found"
+            "code": "stored-value.account_not_found"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "AccountVoided",
-            "code": "stored-value.account_voided",
-            "type": "urn:packman:problem:stored-value.account_voided",
-            "status": 409,
-            "title": "Stored Value Account Voided",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.account_voided"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "CurrencyMismatch",
-            "code": "stored-value.currency_mismatch",
-            "type": "urn:packman:problem:stored-value.currency_mismatch",
-            "status": 422,
-            "title": "Stored Value Currency Mismatch",
-            "retryable": false,
-            "category": "validation"
+            "code": "stored-value.currency_mismatch"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "DuplicateCode",
-            "code": "stored-value.duplicate_code",
-            "type": "urn:packman:problem:stored-value.duplicate_code",
-            "status": 409,
-            "title": "Duplicate Gift Card Code",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.duplicate_code"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "HoldClosed",
-            "code": "stored-value.hold_closed",
-            "type": "urn:packman:problem:stored-value.hold_closed",
-            "status": 409,
-            "title": "Stored Value Hold Closed",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.hold_closed"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "HoldNotFound",
-            "code": "stored-value.hold_not_found",
-            "type": "urn:packman:problem:stored-value.hold_not_found",
-            "status": 404,
-            "title": "Stored Value Hold Not Found",
-            "retryable": false,
-            "category": "not_found"
+            "code": "stored-value.hold_not_found"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InsufficientBalance",
-            "code": "stored-value.insufficient_balance",
-            "type": "urn:packman:problem:stored-value.insufficient_balance",
-            "status": 409,
-            "title": "Insufficient Stored Value Balance",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.insufficient_balance"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InvalidAmount",
-            "code": "stored-value.invalid_amount",
-            "type": "urn:packman:problem:stored-value.invalid_amount",
-            "status": 422,
-            "title": "Invalid Stored Value Amount",
-            "retryable": false,
-            "category": "validation"
+            "code": "stored-value.invalid_amount"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InvalidCode",
-            "code": "stored-value.invalid_code",
-            "type": "urn:packman:problem:stored-value.invalid_code",
-            "status": 422,
-            "title": "Invalid Gift Card Code",
-            "retryable": false,
-            "category": "validation"
+            "code": "stored-value.invalid_code"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InvalidIdempotencyKey",
-            "code": "stored-value.invalid_idempotency_key",
-            "type": "urn:packman:problem:stored-value.invalid_idempotency_key",
-            "status": 422,
-            "title": "Invalid Idempotency Key",
-            "retryable": false,
-            "category": "validation"
+            "code": "stored-value.invalid_idempotency_key"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InvalidReference",
-            "code": "stored-value.invalid_reference",
-            "type": "urn:packman:problem:stored-value.invalid_reference",
-            "status": 422,
-            "title": "Invalid Stored Value Reference",
-            "retryable": false,
-            "category": "validation"
+            "code": "stored-value.invalid_reference"
         },
         {
             "package": "axiomasoft/commerz-stored-value",
             "enum": "Commerz\\StoredValue\\Errors\\Enums\\StoredValueErrorCode",
             "case": "InvalidStatusTransition",
-            "code": "stored-value.invalid_status_transition",
-            "type": "urn:packman:problem:stored-value.invalid_status_transition",
-            "status": 409,
-            "title": "Invalid Stored Value Status Transition",
-            "retryable": false,
-            "category": "conflict"
+            "code": "stored-value.invalid_status_transition"
         }
     ]
 }

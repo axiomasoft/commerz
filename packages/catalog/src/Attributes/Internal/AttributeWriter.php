@@ -15,14 +15,19 @@ use Commerz\Catalog\Attributes\Exceptions\AttributeNotWritable;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Exceptions\MissingRequiredAttributes;
 use Commerz\Catalog\Common\Internal\Documents;
+use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
+use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
+use Commerz\Catalog\Variants\Data\VariantId;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Time\PgTimestamp;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 
@@ -31,6 +36,10 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
  * (CAT-02). It runs inside the caller's transaction, after the caller locked the owner row; it opens no transaction.
  * Every check happens in `prepare()`, before anything is written, so a refused value leaves no partial change even
  * when the caller's transaction is the host's and the host goes on after the exception.
+ *
+ * For `overridable_variant` slots, effective values (variant local override or product fallback) materialize
+ * synchronously per variant (`variant_id = V`) in `attribute_index`; changing a product's overridable attribute
+ * reindexes only variants without a local override and leaves overridden variants untouched.
  */
 #[Internal]
 final readonly class AttributeWriter implements AttributeIndexer
@@ -63,8 +72,9 @@ final readonly class AttributeWriter implements AttributeIndexer
     }
 
     /**
-     * Validates the change, locks the definitions it reads `for share` and computes the document and its facts.
-     * Writes nothing; for a new owner it runs before the owner row is inserted.
+     * Validates the change, locks any affected variants (`id ASC`) then attribute definitions (`for share`), and
+     * computes the document and its projection facts. Writes nothing; for a new owner it runs before the owner row
+     * is inserted.
      *
      * @param  array<array-key, mixed>  $current  stored document of the owner
      * @param  array<array-key, mixed>  $set  code => input
@@ -94,9 +104,61 @@ final readonly class AttributeWriter implements AttributeIndexer
             }
         }
 
+        $overridableCodes = [];
+        $required = [];
+
+        foreach ($slots as $code => $slot) {
+            if ($slot['level'] === AttributeLevel::OverridableVariant) {
+                $overridableCodes[] = $code;
+            }
+
+            if ($slot['required']) {
+                $required[] = $code;
+            }
+        }
+
         $next = array_diff_key($current, array_flip($remove));
-        $required = array_map(strval(...), array_keys(array_filter($slots)));
-        $definitions = $this->definitions($db, [...array_map(strval(...), array_keys($next)), ...$setCodes, ...$remove, ...$required]);
+        $productDocument = [];
+
+        if ($owner->variant !== null && $overridableCodes !== []) {
+            $productRaw = $db->table($this->tables->table('products'))->where('id', $owner->product)->value('attributes');
+            $productDocument = is_string($productRaw) ? Documents::decode($productRaw) : [];
+        }
+
+        $changedOverridable = [];
+        $lockedVariants = [];
+
+        if ($owner->variant === null && ! $creating && $overridableCodes !== []) {
+            foreach ($overridableCodes as $code) {
+                if (in_array($code, $setCodes, true) || (in_array($code, $remove, true) && array_key_exists($code, $current))) {
+                    $changedOverridable[] = $code;
+                }
+            }
+
+            if ($changedOverridable !== []) {
+                // Catalog lock order: product -> variants by id ASC -> attribute definitions by id ASC.
+                $lockedVariants = $db->table($this->tables->table('variants'))
+                    ->where('product_id', $owner->product)
+                    ->orderBy('id')
+                    ->lock('for no key update')
+                    ->select('id', 'attributes')
+                    ->get()
+                    ->all();
+            }
+        }
+
+        $fallbackCodes = array_values(array_intersect(
+            $overridableCodes,
+            array_map(strval(...), array_keys($productDocument)),
+        ));
+
+        $definitions = $this->definitions($db, [
+            ...array_map(strval(...), array_keys($next)),
+            ...$setCodes,
+            ...$remove,
+            ...$required,
+            ...$fallbackCodes,
+        ]);
 
         foreach ($set as $code => $input) {
             $definition = $definitions[(string) $code];
@@ -113,7 +175,15 @@ final readonly class AttributeWriter implements AttributeIndexer
 
         foreach ($required as $code) {
             $active = ($definitions[$code] ?? null)?->status === AttributeStatus::Active;
-            $absent = $creating ? ! array_key_exists($code, $next) : in_array($code, $remove, true);
+
+            if ($owner->variant !== null && $slots[$code]['level'] === AttributeLevel::OverridableVariant) {
+                $hasFallback = array_key_exists($code, $productDocument);
+                $absent = $creating
+                    ? (! array_key_exists($code, $next) && ! $hasFallback)
+                    : (in_array($code, $remove, true) && ! $hasFallback);
+            } else {
+                $absent = $creating ? ! array_key_exists($code, $next) : in_array($code, $remove, true);
+            }
 
             if ($active && $absent) {
                 $missing[] = $code;
@@ -124,34 +194,255 @@ final readonly class AttributeWriter implements AttributeIndexer
             throw new MissingRequiredAttributes($missing);
         }
 
+        if ($owner->variant !== null) {
+            $effective = $next;
+
+            foreach ($overridableCodes as $code) {
+                if (! array_key_exists($code, $effective) && array_key_exists($code, $productDocument)) {
+                    $effective[$code] = $productDocument[$code];
+                }
+            }
+
+            $facts = [];
+
+            foreach ($effective as $code => $value) {
+                $definition = $definitions[(string) $code] ?? null;
+
+                if ($definition instanceof StoredAttribute) {
+                    array_push($facts, ...$this->facts($definition, $owner->product, $owner->variant, $value));
+                }
+            }
+
+            return new PreparedAttributes($owner, $next, $facts);
+        }
+
         $facts = [];
 
         foreach ($next as $code => $value) {
-            $definition = $definitions[(string) $code] ?? null;
+            $codeStr = (string) $code;
+            $slot = $slots[$codeStr] ?? null;
+
+            // Overridable variant attributes materialize per variant, never as `variant_id is null` rows.
+            if ($slot !== null && $slot['level'] === AttributeLevel::OverridableVariant) {
+                continue;
+            }
+
+            $definition = $definitions[$codeStr] ?? null;
 
             if ($definition instanceof StoredAttribute) {
-                array_push($facts, ...$this->facts($definition, $owner->product, $owner->variant, $value));
+                array_push($facts, ...$this->facts($definition, $owner->product, null, $value));
             }
         }
 
-        return new PreparedAttributes($owner, $next, $facts);
+        $variantFallbacks = [];
+
+        if ($changedOverridable !== [] && $lockedVariants !== []) {
+            $decodedVariants = [];
+
+            foreach ($lockedVariants as $variantRow) {
+                $decodedVariants[Rows::string($variantRow, 'id')] = Documents::decode(Rows::string($variantRow, 'attributes'));
+            }
+
+            foreach ($changedOverridable as $code) {
+                $definition = $definitions[$code] ?? null;
+
+                if (! $definition instanceof StoredAttribute) {
+                    continue;
+                }
+
+                $unoverriddenIds = [];
+                $fallbackFacts = [];
+                $hasProductValue = array_key_exists($code, $next);
+
+                foreach ($decodedVariants as $variantId => $variantDocument) {
+                    if (array_key_exists($code, $variantDocument)) {
+                        // Variant carries a local override: leave its projection untouched.
+                        continue;
+                    }
+
+                    $unoverriddenIds[] = $variantId;
+
+                    if ($hasProductValue) {
+                        array_push($fallbackFacts, ...$this->facts($definition, $owner->product, $variantId, $next[$code]));
+                    }
+                }
+
+                if ($unoverriddenIds !== []) {
+                    $variantFallbacks[] = [
+                        'attributeId' => $definition->id,
+                        'variantIds' => $unoverriddenIds,
+                        'facts' => $fallbackFacts,
+                    ];
+                }
+            }
+        }
+
+        return new PreparedAttributes($owner, $next, $facts, $variantFallbacks);
     }
 
-    /** Writes a prepared change: the owner's projection rows, then its document. The owner row must exist. */
+    /** Writes a prepared change: the owner's projection rows, any unoverridden variant fallbacks, then its document. */
     public function apply(PreparedAttributes $prepared): void
     {
         $db = $this->db();
         $owner = $prepared->owner;
+        $index = $this->tables->table('attribute_index');
 
-        $projection = $db->table($this->tables->table('attribute_index'))->where('product_id', $owner->product);
+        $projection = $db->table($index)->where('product_id', $owner->product);
         $owner->variant === null ? $projection->whereNull('variant_id') : $projection->where('variant_id', $owner->variant);
         $projection->delete();
 
         $this->insert($db, $prepared->facts);
 
+        foreach ($prepared->variantFallbacks as $fallback) {
+            $db->table($index)
+                ->where('product_id', $owner->product)
+                ->where('attribute_id', $fallback['attributeId'])
+                ->whereIn('variant_id', $fallback['variantIds'])
+                ->delete();
+
+            $this->insert($db, $fallback['facts']);
+        }
+
         $db->table($this->tables->table($owner->table()))
             ->where('id', $owner->id())
             ->update(['attributes' => Documents::encode($prepared->document), 'updated_at' => PgTimestamp::now()]);
+    }
+
+    /** Rebuilds all projection facts of one product and all of its variants (respecting local overrides). */
+    public function reindexProduct(ProductId $product): void
+    {
+        $db = $this->db();
+        $productRow = $db->table($this->tables->table('products'))->where('id', $product->value)->first();
+
+        if ($productRow === null) {
+            return;
+        }
+
+        $typeId = new ProductTypeId(Rows::string($productRow, 'product_type_id'));
+        $productDoc = Documents::decode(Rows::string($productRow, 'attributes'));
+        $variantRows = $db->table($this->tables->table('variants'))
+            ->where('product_id', $product->value)
+            ->orderBy('id')
+            ->select('id', 'attributes')
+            ->get()
+            ->all();
+
+        $slotRows = $db->table($this->tables->table('product_type_attributes').' as s')
+            ->join($this->tables->table('attributes').' as a', 'a.id', '=', 's.attribute_id')
+            ->where('s.product_type_id', $typeId->value)
+            ->select('a.code', 's.level')
+            ->get();
+
+        $levels = [];
+
+        foreach ($slotRows as $slotRow) {
+            $levels[Rows::string($slotRow, 'code')] = AttributeLevel::from(Rows::string($slotRow, 'level'));
+        }
+
+        $allCodes = array_map(strval(...), array_keys($productDoc));
+        $variantDocs = [];
+
+        foreach ($variantRows as $variantRow) {
+            $doc = Documents::decode(Rows::string($variantRow, 'attributes'));
+            $variantDocs[Rows::string($variantRow, 'id')] = $doc;
+            array_push($allCodes, ...array_map(strval(...), array_keys($doc)));
+        }
+
+        $definitions = $this->read($allCodes);
+        $facts = [];
+
+        foreach ($productDoc as $code => $value) {
+            $codeStr = (string) $code;
+
+            if (($levels[$codeStr] ?? AttributeLevel::Product) === AttributeLevel::OverridableVariant) {
+                continue;
+            }
+
+            $definition = $definitions[$codeStr] ?? null;
+
+            if ($definition instanceof StoredAttribute) {
+                array_push($facts, ...$this->facts($definition, $product->value, null, $value));
+            }
+        }
+
+        $overridableCodes = array_keys(array_filter(
+            $levels,
+            static fn (AttributeLevel $level): bool => $level === AttributeLevel::OverridableVariant,
+        ));
+
+        foreach ($variantDocs as $variantId => $variantDoc) {
+            $effective = $variantDoc;
+
+            foreach ($overridableCodes as $code) {
+                if (! array_key_exists($code, $effective) && array_key_exists($code, $productDoc)) {
+                    $effective[$code] = $productDoc[$code];
+                }
+            }
+
+            foreach ($effective as $code => $value) {
+                $definition = $definitions[(string) $code] ?? null;
+
+                if ($definition instanceof StoredAttribute) {
+                    array_push($facts, ...$this->facts($definition, $product->value, $variantId, $value));
+                }
+            }
+        }
+
+        $db->table($this->tables->table('attribute_index'))->where('product_id', $product->value)->delete();
+        $this->insert($db, $facts);
+    }
+
+    /** Rebuilds all projection facts of a single variant (local override or product fallback). */
+    public function reindexVariant(VariantId $variant): void
+    {
+        $db = $this->db();
+        $variantRow = $db->table($this->tables->table('variants').' as v')
+            ->join($this->tables->table('products').' as p', 'p.id', '=', 'v.product_id')
+            ->where('v.id', $variant->value)
+            ->select('v.id', 'v.product_id', 'v.attributes as variant_attributes', 'p.product_type_id', 'p.attributes as product_attributes')
+            ->first();
+
+        if ($variantRow === null) {
+            return;
+        }
+
+        $productId = Rows::string($variantRow, 'product_id');
+        $typeId = Rows::string($variantRow, 'product_type_id');
+        $variantDoc = Documents::decode(Rows::string($variantRow, 'variant_attributes'));
+        $productDoc = Documents::decode(Rows::string($variantRow, 'product_attributes'));
+
+        $overridableRows = $db->table($this->tables->table('product_type_attributes').' as s')
+            ->join($this->tables->table('attributes').' as a', 'a.id', '=', 's.attribute_id')
+            ->where('s.product_type_id', $typeId)
+            ->where('s.level', AttributeLevel::OverridableVariant->value)
+            ->pluck('a.code')
+            ->all();
+
+        $effective = $variantDoc;
+
+        foreach ($overridableRows as $code) {
+            if (is_string($code) && ! array_key_exists($code, $effective) && array_key_exists($code, $productDoc)) {
+                $effective[$code] = $productDoc[$code];
+            }
+        }
+
+        $definitions = $this->read(array_map(strval(...), array_keys($effective)));
+        $facts = [];
+
+        foreach ($effective as $code => $value) {
+            $definition = $definitions[(string) $code] ?? null;
+
+            if ($definition instanceof StoredAttribute) {
+                array_push($facts, ...$this->facts($definition, $productId, $variant->value, $value));
+            }
+        }
+
+        $db->table($this->tables->table('attribute_index'))
+            ->where('product_id', $productId)
+            ->where('variant_id', $variant->value)
+            ->delete();
+
+        $this->insert($db, $facts);
     }
 
     /** Rebuilds all facts of one attribute; the caller holds its definition row `for no key update`. */
@@ -175,37 +466,34 @@ final readonly class AttributeWriter implements AttributeIndexer
             return;
         }
 
-        foreach (['products', 'variants'] as $table) {
-            $after = null;
+        $slots = $db->table($this->tables->table('product_type_attributes'))
+            ->where('attribute_id', $attribute->value)
+            ->select('product_type_id', 'level')
+            ->get();
 
-            do {
-                $query = $db->table($this->tables->table($table))
-                    ->whereRaw('jsonb_exists(attributes, ?)', [$code])
-                    ->orderBy('id')
-                    ->limit(self::BATCH)
-                    ->select($table === 'products' ? ['id', 'id as product_id', 'attributes'] : ['id', 'product_id', 'attributes']);
+        $productTypes = [];
+        $variantTypes = [];
+        $overridableTypes = [];
 
-                if ($after !== null) {
-                    $query->where('id', '>', $after);
-                }
+        foreach ($slots as $slot) {
+            $typeId = Rows::string($slot, 'product_type_id');
+            match (AttributeLevel::from(Rows::string($slot, 'level'))) {
+                AttributeLevel::Product => $productTypes[] = $typeId,
+                AttributeLevel::Variant => $variantTypes[] = $typeId,
+                AttributeLevel::OverridableVariant => $overridableTypes[] = $typeId,
+            };
+        }
 
-                $owners = $query->get()->all();
-                $facts = [];
+        if ($productTypes !== []) {
+            $this->reindexProductSlots($db, $definition, $code, $productTypes);
+        }
 
-                foreach ($owners as $owner) {
-                    $document = Documents::decode(Rows::string($owner, 'attributes'));
+        if ($variantTypes !== []) {
+            $this->reindexVariantSlots($db, $definition, $code, $variantTypes);
+        }
 
-                    if (array_key_exists($code, $document)) {
-                        $product = Rows::string($owner, 'product_id');
-                        $variant = $table === 'variants' ? Rows::string($owner, 'id') : null;
-                        array_push($facts, ...$this->facts($definition, $product, $variant, $document[$code]));
-                    }
-
-                    $after = Rows::string($owner, 'id');
-                }
-
-                $this->insert($db, $facts);
-            } while (count($owners) === self::BATCH);
+        if ($overridableTypes !== []) {
+            $this->reindexOverridableSlots($db, $definition, $code, $overridableTypes);
         }
     }
 
@@ -229,23 +517,159 @@ final readonly class AttributeWriter implements AttributeIndexer
     }
 
     /**
-     * Attribute slots of the type on the owner's level.
+     * @param  list<string>  $productTypes
+     */
+    private function reindexProductSlots(ConnectionInterface $db, StoredAttribute $definition, string $code, array $productTypes): void
+    {
+        $after = null;
+
+        do {
+            $query = $db->table($this->tables->table('products'))
+                ->whereIn('product_type_id', $productTypes)
+                ->orderBy('id')
+                ->limit(self::BATCH)
+                ->select(['id', 'attributes']);
+
+            if ($db instanceof Connection && $db->getDriverName() === 'pgsql') {
+                $query->whereRaw('jsonb_exists(attributes, ?)', [$code]);
+            }
+
+            if ($after !== null) {
+                $query->where('id', '>', $after);
+            }
+
+            $owners = $query->get()->all();
+            $facts = [];
+
+            foreach ($owners as $owner) {
+                $document = Documents::decode(Rows::string($owner, 'attributes'));
+                $id = Rows::string($owner, 'id');
+
+                if (array_key_exists($code, $document)) {
+                    array_push($facts, ...$this->facts($definition, $id, null, $document[$code]));
+                }
+
+                $after = $id;
+            }
+
+            $this->insert($db, $facts);
+        } while (count($owners) === self::BATCH);
+    }
+
+    /**
+     * @param  list<string>  $variantTypes
+     */
+    private function reindexVariantSlots(ConnectionInterface $db, StoredAttribute $definition, string $code, array $variantTypes): void
+    {
+        $after = null;
+
+        do {
+            $query = $db->table($this->tables->table('variants').' as v')
+                ->join($this->tables->table('products').' as p', 'p.id', '=', 'v.product_id')
+                ->whereIn('p.product_type_id', $variantTypes)
+                ->orderBy('v.id')
+                ->limit(self::BATCH)
+                ->select(['v.id', 'v.product_id', 'v.attributes']);
+
+            if ($db instanceof Connection && $db->getDriverName() === 'pgsql') {
+                $query->whereRaw('jsonb_exists(v.attributes, ?)', [$code]);
+            }
+
+            if ($after !== null) {
+                $query->where('v.id', '>', $after);
+            }
+
+            $owners = $query->get()->all();
+            $facts = [];
+
+            foreach ($owners as $owner) {
+                $document = Documents::decode(Rows::string($owner, 'attributes'));
+                $id = Rows::string($owner, 'id');
+
+                if (array_key_exists($code, $document)) {
+                    array_push($facts, ...$this->facts($definition, Rows::string($owner, 'product_id'), $id, $document[$code]));
+                }
+
+                $after = $id;
+            }
+
+            $this->insert($db, $facts);
+        } while (count($owners) === self::BATCH);
+    }
+
+    /**
+     * @param  list<string>  $overridableTypes
+     */
+    private function reindexOverridableSlots(ConnectionInterface $db, StoredAttribute $definition, string $code, array $overridableTypes): void
+    {
+        $after = null;
+
+        do {
+            $query = $db->table($this->tables->table('variants').' as v')
+                ->join($this->tables->table('products').' as p', 'p.id', '=', 'v.product_id')
+                ->whereIn('p.product_type_id', $overridableTypes)
+                ->orderBy('v.id')
+                ->limit(self::BATCH)
+                ->select(['v.id', 'v.product_id', 'v.attributes as variant_attributes', 'p.attributes as product_attributes']);
+
+            if ($db instanceof Connection && $db->getDriverName() === 'pgsql') {
+                $query->where(static function (Builder $has) use ($code): void {
+                    $has->whereRaw('jsonb_exists(v.attributes, ?)', [$code])
+                        ->orWhereRaw('jsonb_exists(p.attributes, ?)', [$code]);
+                });
+            }
+
+            if ($after !== null) {
+                $query->where('v.id', '>', $after);
+            }
+
+            $owners = $query->get()->all();
+            $facts = [];
+
+            foreach ($owners as $owner) {
+                $variantDoc = Documents::decode(Rows::string($owner, 'variant_attributes'));
+                $productDoc = Documents::decode(Rows::string($owner, 'product_attributes'));
+                $id = Rows::string($owner, 'id');
+                $productId = Rows::string($owner, 'product_id');
+
+                if (array_key_exists($code, $variantDoc)) {
+                    array_push($facts, ...$this->facts($definition, $productId, $id, $variantDoc[$code]));
+                } elseif (array_key_exists($code, $productDoc)) {
+                    array_push($facts, ...$this->facts($definition, $productId, $id, $productDoc[$code]));
+                }
+
+                $after = $id;
+            }
+
+            $this->insert($db, $facts);
+        } while (count($owners) === self::BATCH);
+    }
+
+    /**
+     * Attribute slots of the type allowed on the owner (including `overridable_variant` for both product and variant).
      *
-     * @return array<string, bool> code => required
+     * @return array<string, array{level: AttributeLevel, required: bool}> code => slot metadata
      */
     private function slots(ConnectionInterface $db, ProductTypeId $type, AttributeOwner $owner): array
     {
+        $levels = $owner->variant === null
+            ? [AttributeLevel::Product->value, AttributeLevel::OverridableVariant->value]
+            : [AttributeLevel::Variant->value, AttributeLevel::OverridableVariant->value];
+
         $rows = $db->table($this->tables->table('product_type_attributes').' as s')
             ->join($this->tables->table('attributes').' as a', 'a.id', '=', 's.attribute_id')
             ->where('s.product_type_id', $type->value)
-            ->where('s.level', $owner->level->value)
-            ->select('a.code', 's.required')
+            ->whereIn('s.level', $levels)
+            ->select('a.code', 's.level', 's.required')
             ->get();
 
         $slots = [];
 
         foreach ($rows as $row) {
-            $slots[Rows::string($row, 'code')] = Rows::bool($row, 'required');
+            $slots[Rows::string($row, 'code')] = [
+                'level' => AttributeLevel::from(Rows::string($row, 'level')),
+                'required' => Rows::bool($row, 'required'),
+            ];
         }
 
         return $slots;

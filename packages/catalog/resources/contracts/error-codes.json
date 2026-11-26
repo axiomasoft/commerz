@@ -5,6 +5,17 @@
         {
             "package": "axiomasoft/commerz-catalog",
             "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "AssetAttachmentNotFound",
+            "code": "catalog.asset_attachment_not_found",
+            "type": "urn:packman:problem:catalog.asset_attachment_not_found",
+            "status": 404,
+            "title": "Asset Attachment Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
             "case": "AttributeNotAllowed",
             "code": "catalog.attribute_not_allowed",
             "type": "urn:packman:problem:catalog.attribute_not_allowed",
@@ -45,6 +56,28 @@
             "title": "Attribute Not Writable",
             "retryable": false,
             "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "BrandArchived",
+            "code": "catalog.brand_archived",
+            "type": "urn:packman:problem:catalog.brand_archived",
+            "status": 409,
+            "title": "Brand Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "BrandNotFound",
+            "code": "catalog.brand_not_found",
+            "type": "urn:packman:problem:catalog.brand_not_found",
+            "status": 404,
+            "title": "Brand Not Found",
+            "retryable": false,
+            "category": "not_found"
         },
         {
             "package": "axiomasoft/commerz-catalog",
@@ -93,6 +126,28 @@
         {
             "package": "axiomasoft/commerz-catalog",
             "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "CollectionArchived",
+            "code": "catalog.collection_archived",
+            "type": "urn:packman:problem:catalog.collection_archived",
+            "status": 409,
+            "title": "Collection Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "CollectionNotFound",
+            "code": "catalog.collection_not_found",
+            "type": "urn:packman:problem:catalog.collection_not_found",
+            "status": 404,
+            "title": "Collection Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
             "case": "DuplicateCode",
             "code": "catalog.duplicate_code",
             "type": "urn:packman:problem:catalog.duplicate_code",
@@ -109,6 +164,17 @@
             "type": "urn:packman:problem:catalog.duplicate_combination",
             "status": 409,
             "title": "Duplicate Variant Option Combination",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "DuplicateSlug",
+            "code": "catalog.duplicate_slug",
+            "type": "urn:packman:problem:catalog.duplicate_slug",
+            "status": 409,
+            "title": "Duplicate Route Slug",
             "retryable": false,
             "category": "conflict"
         },
@@ -186,6 +252,17 @@
             "type": "urn:packman:problem:catalog.invalid_code",
             "status": 422,
             "title": "Invalid Catalog Code",
+            "retryable": false,
+            "category": "validation"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "InvalidCollectionOperation",
+            "code": "catalog.invalid_collection_operation",
+            "type": "urn:packman:problem:catalog.invalid_collection_operation",
+            "status": 422,
+            "title": "Invalid Collection Operation",
             "retryable": false,
             "category": "validation"
         },
@@ -346,6 +423,17 @@
         {
             "package": "axiomasoft/commerz-catalog",
             "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "ProductRelationNotFound",
+            "code": "catalog.product_relation_not_found",
+            "type": "urn:packman:problem:catalog.product_relation_not_found",
+            "status": 404,
+            "title": "Product Relation Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
             "case": "ProductTypeArchived",
             "code": "catalog.product_type_archived",
             "type": "urn:packman:problem:catalog.product_type_archived",
@@ -362,6 +450,28 @@
             "type": "urn:packman:problem:catalog.product_type_not_found",
             "status": 404,
             "title": "Product Type Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "RouteNotFound",
+            "code": "catalog.route_not_found",
+            "type": "urn:packman:problem:catalog.route_not_found",
+            "status": 404,
+            "title": "URL Route Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-catalog",
+            "enum": "Commerz\\Catalog\\Errors\\Enums\\CatalogErrorCode",
+            "case": "StorefrontProductNotFound",
+            "code": "catalog.storefront_product_not_found",
+            "type": "urn:packman:problem:catalog.storefront_product_not_found",
+            "status": 404,
+            "title": "Storefront Product Not Found",
             "retryable": false,
             "category": "not_found"
         },

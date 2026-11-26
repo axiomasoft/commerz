@@ -16,20 +16,26 @@ final readonly class UpdateProductType
     /**
      * @param  list<string>  $addProductAttributes  new optional product-level slots
      * @param  list<string>  $addVariantAttributes  new optional variant-level slots
+     * @param  list<string>  $addOverridableVariantAttributes  new optional overridable-variant slots
      */
     public function __construct(
         public ProductTypeId $type,
         public ?LocalizedText $name = null,
         public array $addProductAttributes = [],
         public array $addVariantAttributes = [],
+        public array $addOverridableVariantAttributes = [],
     ) {
-        foreach (['addProductAttributes' => $addProductAttributes, 'addVariantAttributes' => $addVariantAttributes] as $field => $codes) {
+        foreach ([
+            'addProductAttributes' => $addProductAttributes,
+            'addVariantAttributes' => $addVariantAttributes,
+            'addOverridableVariantAttributes' => $addOverridableVariantAttributes,
+        ] as $field => $codes) {
             foreach ($codes as $code) {
                 CatalogCodes::code($field, $code);
             }
         }
 
-        $all = [...$addProductAttributes, ...$addVariantAttributes];
+        $all = [...$addProductAttributes, ...$addVariantAttributes, ...$addOverridableVariantAttributes];
 
         if (count(array_unique($all)) !== count($all)) {
             throw new InvalidProductType('an attribute is added twice');

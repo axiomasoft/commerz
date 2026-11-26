@@ -19,6 +19,7 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
@@ -93,21 +94,27 @@ final readonly class FilterCompiler
             throw new InvalidCommand('filters', "'{$filter->attribute}' does not support the {$filter->operator->value} filter", 'catalog.unsupported_filter');
         }
 
+        $pgsql = $this->isPgsql();
+
         if ($definition->type === 'text') {
-            return [$this->text($filter, $type, $definition)];
+            return [$this->text($filter, $type, $definition, $pgsql)];
         }
 
         return match ($filter->operator) {
             // Every fact of the value must be present: for a multi-choice value equals means "contains".
             FilterOperator::Equals => array_map(
-                fn (IndexFact $fact): Closure => $this->exists($definition, static function (Builder $i) use ($fact): void {
+                fn (IndexFact $fact): Closure => $this->exists($definition, static function (Builder $i) use ($fact, $pgsql): void {
                     [$column, $value] = self::column($fact);
-                    $i->whereRaw("i.{$column} = ?::".self::CASTS[$column], [$value]);
+                    if ($pgsql) {
+                        $i->whereRaw("i.{$column} = ?::".self::CASTS[$column], [$value]);
+                    } else {
+                        $i->where("i.{$column}", self::sqliteBind($column, $value));
+                    }
                 }),
                 $this->facts($type, $definition, $filter->values[0]),
             ),
-            FilterOperator::In => [$this->exists($definition, $this->any($type, $definition, $filter->values))],
-            FilterOperator::Range => [$this->exists($definition, $this->range($type, $definition, $filter->values[0], $filter->values[1] ?? null))],
+            FilterOperator::In => [$this->exists($definition, $this->any($type, $definition, $filter->values, $pgsql))],
+            FilterOperator::Range => [$this->exists($definition, $this->range($type, $definition, $filter->values[0], $filter->values[1] ?? null, $pgsql))],
         };
     }
 
@@ -116,7 +123,7 @@ final readonly class FilterCompiler
      *
      * @return Closure(Builder): void
      */
-    private function text(AttributeFilter $filter, AttributeType $type, StoredAttribute $definition): Closure
+    private function text(AttributeFilter $filter, AttributeType $type, StoredAttribute $definition, bool $pgsql): Closure
     {
         $values = [];
 
@@ -130,13 +137,21 @@ final readonly class FilterCompiler
             $values[] = $value;
         }
 
-        return $this->exists($definition, static function (Builder $i) use ($values, $filter): void {
-            $i->where(static function (Builder $any) use ($values, $filter): void {
+        return $this->exists($definition, static function (Builder $i) use ($values, $filter, $pgsql): void {
+            $i->where(static function (Builder $any) use ($values, $filter, $pgsql): void {
                 foreach ($values as $value) {
-                    $any->orWhereRaw(
-                        '(i.term = ?::varchar and (case when i.variant_id is null then p.attributes else v.attributes end) ->> ? = ?::text)',
-                        [mb_substr($value, 0, 255), $filter->attribute, $value],
-                    );
+                    if ($pgsql) {
+                        $any->orWhereRaw(
+                            '(i.term = ?::varchar and (case when i.variant_id is null then p.attributes ->> ? else coalesce(v.attributes ->> ?, p.attributes ->> ?) end) = ?::text)',
+                            [mb_substr($value, 0, 255), $filter->attribute, $filter->attribute, $filter->attribute, $value],
+                        );
+                    } else {
+                        $path = '$.'.$filter->attribute;
+                        $any->orWhereRaw(
+                            '(i.term = ? and (case when i.variant_id is null then json_extract(p.attributes, ?) else coalesce(json_extract(v.attributes, ?), json_extract(p.attributes, ?)) end) = ?)',
+                            [mb_substr($value, 0, 255), $path, $path, $path, $value],
+                        );
+                    }
                 }
             });
         });
@@ -146,7 +161,7 @@ final readonly class FilterCompiler
      * @param  list<mixed>  $values
      * @return Closure(Builder): void
      */
-    private function any(AttributeType $type, StoredAttribute $definition, array $values): Closure
+    private function any(AttributeType $type, StoredAttribute $definition, array $values, bool $pgsql): Closure
     {
         $byColumn = [];
 
@@ -157,18 +172,25 @@ final readonly class FilterCompiler
             }
         }
 
-        return static function (Builder $i) use ($byColumn): void {
-            $i->where(static function (Builder $any) use ($byColumn): void {
+        return static function (Builder $i) use ($byColumn, $pgsql): void {
+            $i->where(static function (Builder $any) use ($byColumn, $pgsql): void {
                 foreach ($byColumn as $column => $columnValues) {
-                    $placeholders = implode(', ', array_fill(0, count($columnValues), '?::'.self::CASTS[$column]));
-                    $any->orWhereRaw("i.{$column} in ({$placeholders})", array_values($columnValues));
+                    if ($pgsql) {
+                        $placeholders = implode(', ', array_fill(0, count($columnValues), '?::'.self::CASTS[$column]));
+                        $any->orWhereRaw("i.{$column} in ({$placeholders})", array_values($columnValues));
+                    } else {
+                        $any->orWhereIn(
+                            "i.{$column}",
+                            array_map(static fn (string $v): string|int => self::sqliteBind($column, $v), array_values($columnValues)),
+                        );
+                    }
                 }
             });
         };
     }
 
     /** @return Closure(Builder): void */
-    private function range(AttributeType $type, StoredAttribute $definition, mixed $min, mixed $max): Closure
+    private function range(AttributeType $type, StoredAttribute $definition, mixed $min, mixed $max, bool $pgsql): Closure
     {
         $bounds = [];
 
@@ -187,11 +209,29 @@ final readonly class FilterCompiler
             $bounds[] = [$column, $operator, $value];
         }
 
-        return static function (Builder $i) use ($bounds): void {
+        return static function (Builder $i) use ($bounds, $pgsql): void {
             foreach ($bounds as [$column, $operator, $value]) {
-                $i->whereRaw("i.{$column} {$operator} ?::".self::CASTS[$column], [$value]);
+                if ($pgsql) {
+                    $i->whereRaw("i.{$column} {$operator} ?::".self::CASTS[$column], [$value]);
+                } elseif ($column === 'num') {
+                    $i->whereRaw("cast(i.num as real) {$operator} cast(? as real)", [$value]);
+                } else {
+                    $i->where("i.{$column}", $operator, $value);
+                }
             }
         };
+    }
+
+    private function isPgsql(): bool
+    {
+        $db = $this->connections->connection($this->config->connection);
+
+        return $db instanceof Connection && $db->getDriverName() === 'pgsql';
+    }
+
+    private static function sqliteBind(string $column, string $value): string|int
+    {
+        return $column === 'flag' ? ($value === 'true' ? 1 : 0) : $value;
     }
 
     /**

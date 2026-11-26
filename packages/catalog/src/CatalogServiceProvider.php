@@ -15,7 +15,7 @@ final class CatalogServiceProvider extends CommerzPluginServiceProvider
 {
     protected const string PLUGIN = CatalogPlugin::class;
 
-    public const array NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing', 'brand', 'asset_attachment', 'url_route'];
+    public const array NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing', 'brand', 'asset_attachment', 'url_route', 'collection', 'storefront_product'];
 
     /** @var list<class-string<PackageRegistrar>> */
     protected const array REGISTRARS = [
