@@ -24,6 +24,7 @@ final readonly class OrderRow
         public Currency $currency,
         public ?DateTimeImmutable $paymentDueAt,
         public array $lines,
+        public int $version = 1,
     ) {}
 
     public function fulfilled(): int

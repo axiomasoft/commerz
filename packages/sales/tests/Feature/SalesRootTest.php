@@ -6,6 +6,7 @@ use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Checkout\Contracts\Checkout;
 use Commerz\Sales\Facades\Sales as SalesFacade;
 use Commerz\Sales\Fulfillments\Contracts\Fulfillments;
+use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\Orders\Contracts\Orders;
 use Commerz\Sales\Payments\Contracts\Payments;
 use Commerz\Sales\Returns\Contracts\Returns;
@@ -19,6 +20,7 @@ it('hands out the module contracts from the root', function (): void {
     expect($root->carts())->toBe(app(Carts::class))
         ->and($root->checkout())->toBe(app(Checkout::class))
         ->and($root->orders())->toBe(app(Orders::class))
+        ->and($root->orderChanges())->toBe(app(OrderChanges::class))
         ->and($root->payments())->toBe(app(Payments::class))
         ->and($root->fulfillments())->toBe(app(Fulfillments::class))
         ->and($root->returns())->toBe(app(Returns::class))
@@ -31,6 +33,7 @@ it('reaches the same modules through the facade', function (): void {
     expect(SalesFacade::carts())->toBe(app(Carts::class))
         ->and(SalesFacade::checkout())->toBe(app(Checkout::class))
         ->and(SalesFacade::orders())->toBe(app(Orders::class))
+        ->and(SalesFacade::orderChanges())->toBe(app(OrderChanges::class))
         ->and(SalesFacade::payments())->toBe(app(Payments::class))
         ->and(SalesFacade::fulfillments())->toBe(app(Fulfillments::class))
         ->and(SalesFacade::returns())->toBe(app(Returns::class));

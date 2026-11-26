@@ -75,6 +75,7 @@ final readonly class OrderLocks
             Currency::of(Rows::string($row, 'currency')),
             $due === null ? null : new DateTimeImmutable($due),
             $lines,
+            Rows::int($row, 'version'),
         );
     }
 

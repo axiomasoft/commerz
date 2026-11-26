@@ -14,11 +14,14 @@ use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Data\TaxLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Sales\Checkout\Exceptions\DuplicateOrderNumber;
+use Commerz\Sales\OrderChanges\Data\OrderExcerpt;
+use Commerz\Sales\OrderChanges\Data\OrderExcerptLine;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Enums\FulfillmentState;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelView;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -101,6 +104,7 @@ final readonly class OrderWriter
             'payment_due_at' => $paymentDueAt?->format('Y-m-d H:i:s.uP'),
             'placed_at' => $now,
             'created_by_ref' => $actor === null ? null : (string) $actor,
+            'version' => 1,
             'created_at' => $now,
             'updated_at' => $now,
         ];
@@ -127,6 +131,129 @@ final readonly class OrderWriter
 
             $db->table($this->tables->table('order_lines'))->insert($lines);
         });
+    }
+
+    /**
+     * Atomically applies a confirmed `OrderChange` snapshot to `orders` and `order_lines` under the order lock,
+     * guarded by OCC (`WHERE id = ? AND version = ?`, `INV-OMS-001`). Never writes line ledger counters (`ORD-03`).
+     *
+     * @return bool false when the order's version no longer matches `$expectedVersion`
+     */
+    public function applyOrderChange(
+        OrderId $orderId,
+        int $expectedVersion,
+        OrderExcerpt $after,
+        string $quoteFingerprint,
+        DateTimeImmutable $at,
+    ): bool {
+        $db = $this->connections->connection($this->config->connection);
+        $orders = $this->tables->table('orders');
+        $orderLines = $this->tables->table('order_lines');
+        $now = PgTimestamp::format($at);
+
+        $updated = $db->table($orders)
+            ->where('id', $orderId->value)
+            ->where('version', $expectedVersion)
+            ->update([
+                'version' => $expectedVersion + 1,
+                'delivery' => $after->delivery === null ? null : SalesCodec::deliveryToJson($after->delivery),
+                'order_adjustments' => SalesCodec::adjustmentsToJson($after->orderAdjustments),
+                'delivery_adjustments' => SalesCodec::adjustmentsToJson($after->deliveryAdjustments),
+                'delivery_tax_lines' => SalesCodec::taxLinesToJson($after->deliveryTaxLines),
+                'subtotal_minor' => $after->totals->subtotal->amountMinor,
+                'discount_total_minor' => $after->totals->discountTotal->amountMinor,
+                'delivery_total_minor' => $after->totals->deliveryTotal->amountMinor,
+                'tax_total_minor' => $after->totals->taxTotal->amountMinor,
+                'total_minor' => $after->totals->total->amountMinor,
+                'amount_due_minor' => $after->amountDue->amountMinor,
+                'quote_fingerprint' => $quoteFingerprint,
+                'updated_at' => $now,
+            ]);
+
+        if ($updated !== 1) {
+            return false;
+        }
+
+        $existingIds = [];
+
+        foreach ($db->table($orderLines)->where('order_id', $orderId->value)->pluck('id') as $existingId) {
+            if (is_string($existingId)) {
+                $existingIds[$existingId] = true;
+            }
+        }
+
+        $keptIds = [];
+        $inserts = [];
+
+        foreach ($after->lines as $index => $line) {
+            $position = $index + 1;
+            $lineId = $line->id->value;
+            $keptIds[$lineId] = true;
+
+            if (isset($existingIds[$lineId])) {
+                $db->table($orderLines)
+                    ->where('id', $lineId)
+                    ->where('order_id', $orderId->value)
+                    ->update([
+                        'position' => $position,
+                        'quantity' => $line->quantity,
+                        'unit_price_minor' => $line->unitPrice->amountMinor,
+                        'compare_at_minor' => $line->compareAt?->amountMinor,
+                        'tax_included' => $line->taxIncluded,
+                        'price_source' => $line->priceSource,
+                        'subtotal_minor' => $line->subtotal->amountMinor,
+                        'total_minor' => $line->total->amountMinor,
+                        'adjustments' => SalesCodec::adjustmentsToJson($line->adjustments),
+                        'tax_lines' => SalesCodec::taxLinesToJson($line->taxLines),
+                    ]);
+            } else {
+                $inserts[] = self::excerptLine($orderId, $line, $position);
+            }
+        }
+
+        $removedIds = array_keys(array_diff_key($existingIds, $keptIds));
+
+        if ($removedIds !== []) {
+            $db->table($orderLines)
+                ->where('order_id', $orderId->value)
+                ->whereIn('id', $removedIds)
+                ->delete();
+        }
+
+        if ($inserts !== []) {
+            $db->table($orderLines)->insert($inserts);
+        }
+
+        return true;
+    }
+
+    /** @return array<string, mixed> */
+    private static function excerptLine(OrderId $order, OrderExcerptLine $line, int $position): array
+    {
+        return [
+            'id' => $line->id->value,
+            'order_id' => $order->value,
+            'position' => $position,
+            'sellable_ref' => (string) $line->sellable,
+            'seller_ref' => $line->sellerRef === null ? null : (string) $line->sellerRef,
+            'sku' => $line->sku,
+            'name' => $line->name,
+            'kind' => $line->kind->value,
+            'requires_shipping' => $line->requiresShipping,
+            'options' => SalesCodec::optionsToJson($line->options),
+            'tax_class' => $line->taxClass,
+            'weight_grams' => $line->weightGrams,
+            'quantity' => $line->quantity,
+            'currency' => $line->unitPrice->currency->code,
+            'unit_price_minor' => $line->unitPrice->amountMinor,
+            'compare_at_minor' => $line->compareAt?->amountMinor,
+            'tax_included' => $line->taxIncluded,
+            'price_source' => $line->priceSource,
+            'subtotal_minor' => $line->subtotal->amountMinor,
+            'total_minor' => $line->total->amountMinor,
+            'adjustments' => SalesCodec::adjustmentsToJson($line->adjustments),
+            'tax_lines' => SalesCodec::taxLinesToJson($line->taxLines),
+        ];
     }
 
     /** @return array<string, mixed> */

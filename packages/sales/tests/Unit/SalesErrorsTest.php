@@ -31,6 +31,11 @@ use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
 use Commerz\Sales\Gateways\Exceptions\PaymentDeclined;
 use Commerz\Sales\Numbering\Exceptions\InvalidOrderNumber;
+use Commerz\Sales\OrderChanges\Exceptions\OrderChangeLineLocked;
+use Commerz\Sales\OrderChanges\Exceptions\OrderChangeNotFound;
+use Commerz\Sales\OrderChanges\Exceptions\OrderChangeNotOpen;
+use Commerz\Sales\OrderChanges\Exceptions\OrderChangeVersionConflict;
+use Commerz\Sales\OrderChanges\Exceptions\OrderNotEditable;
 use Commerz\Sales\Orders\Exceptions\OrderNotCancellable;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
 use Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent;
@@ -93,6 +98,11 @@ it('exposes Packman error descriptors on sales exceptions', function (CommerzExc
     'payment declined' => [new PaymentDeclined('manual', 'declined'), SalesErrorCode::PaymentDeclined, ErrorCategory::Conflict],
     'invalid order number' => [new InvalidOrderNumber('sequence', '???'), SalesErrorCode::InvalidOrderNumber, ErrorCategory::Validation],
     'order not cancellable' => [new OrderNotCancellable('o1', 'completed'), SalesErrorCode::OrderNotCancellable, ErrorCategory::Conflict],
+    'order not editable' => [new OrderNotEditable('o1', 'cancelled'), SalesErrorCode::OrderNotEditable, ErrorCategory::Conflict],
+    'order change line locked' => [new OrderChangeLineLocked('ol1', 1, 2), SalesErrorCode::OrderChangeLineLocked, ErrorCategory::Conflict],
+    'order change not found' => [new OrderChangeNotFound('oc1'), SalesErrorCode::OrderChangeNotFound, ErrorCategory::NotFound],
+    'order change not open' => [new OrderChangeNotOpen('oc1', 'confirmed'), SalesErrorCode::OrderChangeNotOpen, ErrorCategory::Conflict],
+    'order change version conflict' => [new OrderChangeVersionConflict('oc1', 'o1', 1, 2), SalesErrorCode::OrderChangeVersionConflict, ErrorCategory::Conflict],
     'order not found' => [new OrderNotFound('o1'), SalesErrorCode::OrderNotFound, ErrorCategory::NotFound],
     'invalid payment event' => [new InvalidPaymentEvent('amount', 'wrong currency'), SalesErrorCode::InvalidPaymentEvent, ErrorCategory::Validation],
     'order not payable' => [new OrderNotPayable('o1', 'cancelled'), SalesErrorCode::OrderNotPayable, ErrorCategory::Conflict],

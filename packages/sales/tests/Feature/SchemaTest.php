@@ -16,6 +16,7 @@ uses(RefreshDatabase::class);
 
 const SALES_TABLES = [
     'carts', 'cart_lines', 'orders', 'order_lines', 'order_events',
+    'order_changes', 'order_change_actions',
     'fulfillments', 'fulfillment_lines', 'returns', 'return_lines',
     'payments', 'refunds', 'payment_events',
 ];
@@ -466,4 +467,48 @@ it('has the order number sequence starting at 1001 that only goes forward', func
     $second = DB::selectOne('select nextval(?::regclass) as n', [$sequence])->n;
 
     expect($first)->toBeGreaterThanOrEqual(1001)->and($second)->toBe($first + 1);
+});
+
+it('checks order OCC version, order_changes, and order_change_actions constraints', function (): void {
+    $order = slsOrder();
+
+    expect(slsSqlState(static fn () => slsUpdate('orders', 'id', $order, ['version' => 0])))->toBe(SLS_CHECK)
+        ->and(DB::table(slsTable('orders'))->where('id', $order)->value('version'))->toBe(1);
+
+    $changeId = Uuid7::generate();
+    $insertChange = static fn (array $extra = []): Closure => static fn () => slsInsert('order_changes', [
+        'id' => Uuid7::generate(),
+        'order_id' => $order,
+        'base_order_version' => 1,
+        'currency' => 'RUB',
+        ...$extra,
+    ]);
+
+    expect(slsSqlState($insertChange(['id' => $changeId])))->toBeNull()
+        ->and(slsSqlState($insertChange(['status' => 'pending'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['base_order_version' => 0])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['status' => 'confirmed'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['status' => 'confirmed', 'confirmed_order_version' => 1, 'confirmed_at' => SALES_NOW])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['status' => 'confirmed', 'confirmed_order_version' => 2, 'confirmed_at' => SALES_NOW])))->toBeNull()
+        ->and(slsSqlState($insertChange(['status' => 'cancelled'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['status' => 'cancelled', 'cancelled_at' => SALES_NOW])))->toBeNull()
+        ->and(slsSqlState($insertChange(['currency' => 'rub'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertChange(['order_id' => Uuid7::generate()])))->toBe(SLS_FOREIGN);
+
+    $insertAction = static fn (array $extra = []): Closure => static fn () => slsInsert('order_change_actions', [
+        'id' => Uuid7::generate(),
+        'order_change_id' => $changeId,
+        'position' => 1,
+        'type' => 'add_line',
+        'payload' => '{}',
+        'created_at' => SALES_NOW,
+        ...$extra,
+    ]);
+
+    expect(slsSqlState($insertAction()))->toBeNull()
+        ->and(slsSqlState($insertAction()))->toBe(SLS_UNIQUE)
+        ->and(slsSqlState($insertAction(['position' => 0])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertAction(['position' => 2, 'type' => 'unknown'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertAction(['position' => 2, 'payload' => '[]'])))->toBe(SLS_CHECK)
+        ->and(slsSqlState($insertAction(['order_change_id' => Uuid7::generate(), 'position' => 2])))->toBe(SLS_FOREIGN);
 });
