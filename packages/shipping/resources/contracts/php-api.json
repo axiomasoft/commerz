@@ -14,6 +14,26 @@
             "uses": [],
             "doc": [],
             "methods": {
+                "erasePersonalData": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "references",
+                            "type": "array",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "int",
+                    "doc": []
+                },
                 "find": {
                     "visibility": "public",
                     "static": false,
@@ -1718,11 +1738,29 @@
             "implements": [
                 "Packman\\Foundation\\Contracts\\PackageRegistrar"
             ],
-            "uses": [
-                "Packman\\Foundation\\Concerns\\RegistersNothingOnBoot"
-            ],
+            "uses": [],
             "doc": [],
             "methods": {
+                "boot": {
+                    "visibility": "public",
+                    "static": false,
+                    "final": false,
+                    "abstract": false,
+                    "by_reference": false,
+                    "parameters": [
+                        {
+                            "name": "app",
+                            "type": "Illuminate\\Contracts\\Foundation\\Application",
+                            "by_reference": false,
+                            "variadic": false,
+                            "optional": false,
+                            "default": null,
+                            "flags": 0
+                        }
+                    ],
+                    "return": "void",
+                    "doc": []
+                },
                 "register": {
                     "visibility": "public",
                     "static": false,

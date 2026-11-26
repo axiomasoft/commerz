@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Sales\Common\Internal;
 
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Packman\Attributes\Internal;
 
 /** A stored cart line. */
@@ -16,5 +17,6 @@ final readonly class CartLineRow
         public SellableRef $sellable,
         public int $quantity,
         public int $position,
+        public ?SellerRef $sellerRef = null,
     ) {}
 }

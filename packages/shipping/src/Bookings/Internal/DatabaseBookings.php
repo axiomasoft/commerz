@@ -16,6 +16,8 @@ use Commerz\Shipping\Bookings\Data\BookingView;
 use Commerz\Shipping\Bookings\Data\ListBookings;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use Commerz\Shipping\Bookings\Exceptions\BookingNotFound;
+use Commerz\Time\Contracts\Clock;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -28,6 +30,7 @@ final readonly class DatabaseBookings implements Bookings
         private ConnectionResolverInterface $connections,
         private CommerzOptions $config,
         private TableNames $tables,
+        private Clock $clock,
     ) {}
 
     public function find(string $reference): BookingView
@@ -63,6 +66,21 @@ final readonly class DatabaseBookings implements Bookings
             array_map(self::view(...), $rows),
             $more && $last !== null ? Cursor::after(Rows::string($last, 'created_position').'|'.Rows::string($last, 'id')) : null,
         );
+    }
+
+    public function erasePersonalData(array $references): int
+    {
+        if ($references === []) {
+            return 0;
+        }
+
+        return $this->query()
+            ->whereIn('reference', $references)
+            ->update([
+                'result' => null,
+                'error_message' => null,
+                'updated_at' => PgTimestamp::now($this->clock),
+            ]);
     }
 
     /** The keyset is (created_at, id); the timestamp is PostgreSQL's own text of it, so no precision is lost. */

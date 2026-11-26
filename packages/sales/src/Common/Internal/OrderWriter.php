@@ -139,6 +139,7 @@ final readonly class OrderWriter
             'order_id' => $order->value,
             'position' => $position,
             'sellable_ref' => (string) $sellable->ref,
+            'seller_ref' => $sellable->sellerRef === null ? null : (string) $sellable->sellerRef,
             'sku' => $sellable->sku,
             'name' => $sellable->name,
             'kind' => $sellable->kind->value,

@@ -6,6 +6,7 @@ namespace Commerz\Ports\Sellables\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\SellerRef;
 use Commerz\Measures\QuantityStepPolicy;
 use Commerz\Measures\UnitPrice;
 use Commerz\Money\Money;
@@ -43,6 +44,7 @@ final readonly class SellableSnapshot
         public ?string $originCountryCode = null,
         public ?string $material = null,
         public ?string $customsDescription = null,
+        public ?SellerRef $sellerRef = null,
     ) {
         if ($sku === '' || strlen($sku) > 191) {
             throw new InvalidCommand('sku', 'must be 1..191 bytes', 'sellables.invalid_snapshot');
