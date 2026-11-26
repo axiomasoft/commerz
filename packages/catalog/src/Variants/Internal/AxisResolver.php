@@ -19,34 +19,68 @@ final readonly class AxisResolver
     /** @return list<Axis> the product's axes by position */
     public function axes(ConnectionInterface $db, string $product): array
     {
-        $rows = $db->table($this->tables->table('product_options').' as p')
-            ->join($this->tables->table('options').' as o', 'o.id', '=', 'p.option_id')
-            ->where('p.product_id', $product)
-            ->orderBy('p.position')
-            ->select('o.id', 'o.code')
-            ->get()
-            ->all();
+        return $this->axesForMany($db, [$product])[$product] ?? [];
+    }
 
-        if ($rows === []) {
+    /**
+     * Loads the axes of many products in 2 SQL queries (zero N+1 for batch variant upserts).
+     *
+     * @param  list<string>  $productIds
+     * @return array<string, list<Axis>> product id => axes by position
+     */
+    public function axesForMany(ConnectionInterface $db, array $productIds): array
+    {
+        $productIds = array_values(array_unique($productIds));
+
+        if ($productIds === []) {
             return [];
         }
 
-        $values = [];
+        $rows = [];
 
-        $valueRows = $db->table($this->tables->table('option_values'))
-            ->whereIn('option_id', array_map(static fn (object $row): string => Rows::string($row, 'id'), $rows))
-            ->select('id', 'option_id', 'code')
-            ->get();
+        foreach (array_chunk($productIds, 500) as $chunk) {
+            $chunkRows = $db->table($this->tables->table('product_options').' as p')
+                ->join($this->tables->table('options').' as o', 'o.id', '=', 'p.option_id')
+                ->whereIn('p.product_id', $chunk)
+                ->orderBy('p.product_id')
+                ->orderBy('p.position')
+                ->select('p.product_id', 'o.id', 'o.code')
+                ->get()
+                ->all();
 
-        foreach ($valueRows as $value) {
-            $values[Rows::string($value, 'option_id')][Rows::string($value, 'code')] = Rows::string($value, 'id');
+            array_push($rows, ...array_values(array_filter($chunkRows, is_object(...))));
         }
 
-        return array_values(array_map(static fn (object $row): Axis => new Axis(
-            Rows::string($row, 'id'),
-            Rows::string($row, 'code'),
-            $values[Rows::string($row, 'id')] ?? [],
-        ), $rows));
+        $result = array_fill_keys($productIds, []);
+
+        if ($rows === []) {
+            return $result;
+        }
+
+        $optionIds = array_values(array_unique(array_map(static fn (object $row): string => Rows::string($row, 'id'), $rows)));
+        $values = [];
+
+        foreach (array_chunk($optionIds, 500) as $chunk) {
+            $valueRows = $db->table($this->tables->table('option_values'))
+                ->whereIn('option_id', $chunk)
+                ->select('id', 'option_id', 'code')
+                ->get();
+
+            foreach ($valueRows as $value) {
+                $values[Rows::string($value, 'option_id')][Rows::string($value, 'code')] = Rows::string($value, 'id');
+            }
+        }
+
+        foreach ($rows as $row) {
+            $optionId = Rows::string($row, 'id');
+            $result[Rows::string($row, 'product_id')][] = new Axis(
+                $optionId,
+                Rows::string($row, 'code'),
+                $values[$optionId] ?? [],
+            );
+        }
+
+        return $result;
     }
 
     /**

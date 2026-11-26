@@ -10,6 +10,7 @@ use Commerz\Catalog\Listings\Contracts\Listings;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
+use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Illuminate\Support\Facades\Facade;
 use Packman\Attributes\Api;
@@ -22,6 +23,7 @@ use Packman\Attributes\Api;
  * @method static ProductTypes productTypes()
  * @method static Categories categories()
  * @method static Listings listings()
+ * @method static CatalogSearchPort search()
  *
  * @see \Commerz\Catalog\Catalog
  */

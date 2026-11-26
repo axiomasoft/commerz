@@ -8,6 +8,7 @@ use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Attributes\Internal\AttributeOwner;
 use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
+use Commerz\Catalog\Common\Internal\BatchAttributeProcessor;
 use Commerz\Catalog\Common\Internal\Documents;
 use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Products\Data\ProductId;
@@ -15,6 +16,7 @@ use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
+use Commerz\Catalog\ProductTypes\Enums\AttributeLevel;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Commerz\Catalog\Variants\Data\ArchiveVariant;
 use Commerz\Catalog\Variants\Data\CreateVariant;
@@ -26,24 +28,33 @@ use Commerz\Catalog\Variants\Data\PlannedVariant;
 use Commerz\Catalog\Variants\Data\RestoreVariant;
 use Commerz\Catalog\Variants\Data\SetVariantAttributes;
 use Commerz\Catalog\Variants\Data\UpdateVariant;
+use Commerz\Catalog\Variants\Data\UpsertVariants;
+use Commerz\Catalog\Variants\Data\UpsertVariantsResult;
 use Commerz\Catalog\Variants\Data\VariantId;
 use Commerz\Catalog\Variants\Data\VariantView;
 use Commerz\Catalog\Variants\Enums\VariantStatus;
 use Commerz\Catalog\Variants\Events\VariantCreated;
+use Commerz\Catalog\Variants\Events\VariantsUpserted;
 use Commerz\Catalog\Variants\Events\VariantUpdated;
 use Commerz\Catalog\Variants\Exceptions\DuplicateCombination;
+use Commerz\Catalog\Variants\Exceptions\InvalidAxes;
 use Commerz\Catalog\Variants\Exceptions\TooManyVariants;
 use Commerz\Catalog\Variants\Exceptions\VariantNotFound;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
+use Commerz\Identity\Uuid7;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Outbox\Contracts\Outbox;
+use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\Contracts\Clock;
 use Commerz\Time\PgTimestamp;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
@@ -63,6 +74,12 @@ final readonly class DatabaseVariants implements Variants
     /** Variant rows per generated INSERT; 7 bindings each stay far below the 65535 bind limit. */
     private const int INSERT_CHUNK = 1000;
 
+    /** Variant rows per bulk `INSERT ... ON CONFLICT (sku) DO UPDATE` statement (15 cols x 500 = 7,500 bindings). */
+    private const int UPSERT_CHUNK = 500;
+
+    /** Maximum variant IDs packed into one compressed outbox event. */
+    private const int OUTBOX_EVENT_CHUNK = 5000;
+
     public function __construct(
         private ConnectionResolverInterface $connections,
         private CommerzOptions $config,
@@ -72,6 +89,9 @@ final readonly class DatabaseVariants implements Variants
         private CommittedEvents $events,
         private AttributeWriter $writer,
         private AxisResolver $resolver,
+        private BatchAttributeProcessor $batchAttributes,
+        private Outbox $outbox,
+        private Clock $clock,
     ) {}
 
     public function create(CreateVariant $command): VariantView
@@ -311,6 +331,328 @@ final readonly class DatabaseVariants implements Variants
         $row = $this->db()->table($this->tables->table('variants'))->where('sku', $sku)->first();
 
         return $this->views([$row ?? throw new VariantNotFound($sku)])[0];
+    }
+
+    public function upsertMany(UpsertVariants $command): UpsertVariantsResult
+    {
+        if ($command->items === []) {
+            return new UpsertVariantsResult([], [], [], 0, 0, 0, 0);
+        }
+
+        return $this->transactions->run(function () use ($command): UpsertVariantsResult {
+            $db = $this->db();
+            $isPg = $db instanceof Connection && $db->getDriverName() === 'pgsql';
+            $variantsTable = $this->tables->table('variants');
+
+            // 1. Load & lock all referenced products in deterministic id order (CAT-01, deadlock-free).
+            $productIds = array_values(array_unique(array_map(
+                static fn ($item): string => $item->product->value,
+                $command->items,
+            )));
+            sort($productIds);
+
+            $productsById = [];
+
+            foreach (array_chunk($productIds, self::UPSERT_CHUNK) as $chunk) {
+                $productQuery = $db->table($this->tables->table('products'))
+                    ->whereIn('id', $chunk)
+                    ->orderBy('id');
+
+                if ($isPg) {
+                    $productQuery->lock('for no key update');
+                }
+
+                foreach ($productQuery->get() as $row) {
+                    $productsById[Rows::string($row, 'id')] = $row;
+                }
+            }
+
+            foreach ($productIds as $productId) {
+                $productRow = $productsById[$productId] ?? throw new ProductNotFound($productId);
+                self::checked($productRow, writable: true);
+            }
+
+            // 2. Preload axes for all referenced products in 2 queries total.
+            $axesByProduct = $this->resolver->axesForMany($db, $productIds);
+
+            // 3. Load & lock existing variants by SKU in chunked queries.
+            $skus = array_map(static fn ($item): string => $item->sku, $command->items);
+            $existingBySku = [];
+
+            foreach (array_chunk($skus, self::UPSERT_CHUNK) as $chunk) {
+                $existingQuery = $db->table($variantsTable)
+                    ->whereIn('sku', $chunk)
+                    ->orderBy('id');
+
+                if ($isPg) {
+                    $existingQuery->lock('for no key update');
+                }
+
+                foreach ($existingQuery->get() as $row) {
+                    $existingBySku[Rows::string($row, 'sku')] = $row;
+                }
+            }
+
+            // 4. Load existing option signatures and max positions per product in 2 queries total.
+            $existingSignatures = [];
+            $nextPositions = array_fill_keys($productIds, 0);
+
+            foreach (array_chunk($productIds, self::UPSERT_CHUNK) as $chunk) {
+                $sigRows = $db->table($variantsTable)
+                    ->whereIn('product_id', $chunk)
+                    ->select('id', 'product_id', 'option_signature')
+                    ->get();
+
+                foreach ($sigRows as $sigRow) {
+                    $key = Rows::string($sigRow, 'product_id')."\0".Rows::string($sigRow, 'option_signature');
+                    $existingSignatures[$key] = Rows::string($sigRow, 'id');
+                }
+
+                $posRows = $db->table($variantsTable)
+                    ->whereIn('product_id', $chunk)
+                    ->selectRaw('product_id, max(position) as max_pos')
+                    ->groupBy('product_id')
+                    ->get();
+
+                foreach ($posRows as $posRow) {
+                    $max = get_object_vars($posRow)['max_pos'] ?? null;
+                    $nextPositions[Rows::string($posRow, 'product_id')] = is_numeric($max) ? (int) $max + 1 : 0;
+                }
+            }
+
+            // 5. Validate all items (axes, combinations, positions, attributes) in memory BEFORE any write.
+            $planned = [];
+            $attrInputs = [];
+            $createdIds = [];
+            $updatedIds = [];
+            $newOptionValues = [];
+            $batchSignatures = [];
+
+            foreach ($command->items as $item) {
+                $productId = $item->product->value;
+                $productRow = $productsById[$productId];
+                $axes = $axesByProduct[$productId] ?? [];
+                $resolvedValues = AxisResolver::resolve($axes, $item->axes);
+                $combination = AxisResolver::ordered($axes, $item->axes);
+                $signature = OptionSignature::of($resolvedValues);
+                $sigKey = "{$productId}\0{$signature}";
+
+                $existing = $existingBySku[$item->sku] ?? null;
+
+                if ($existing !== null) {
+                    if (Rows::string($existing, 'product_id') !== $productId) {
+                        throw new DuplicateCode('Variant SKU', $item->sku);
+                    }
+
+                    if (Rows::string($existing, 'option_signature') !== $signature) {
+                        throw new InvalidAxes("axes of existing variant '{$item->sku}' cannot be changed");
+                    }
+
+                    $id = Rows::string($existing, 'id');
+                    $position = $item->position ?? Rows::int($existing, 'position');
+                    $currentDoc = Documents::decode(Rows::string($existing, 'attributes'));
+                    $creating = false;
+                    $updatedIds[] = $id;
+                } else {
+                    if (isset($existingSignatures[$sigKey]) || isset($batchSignatures[$sigKey])) {
+                        throw new DuplicateCombination($combination);
+                    }
+
+                    $batchSignatures[$sigKey] = true;
+                    $id = Uuid7::generate();
+
+                    if ($item->position !== null) {
+                        $position = $item->position;
+                    } else {
+                        $nextPos = $nextPositions[$productId];
+
+                        if ($nextPos === PHP_INT_MAX) {
+                            throw new InvalidCommand('position', 'no larger int64 position is available');
+                        }
+
+                        $position = $nextPos;
+                        $nextPositions[$productId] = $nextPos + 1;
+                    }
+
+                    $currentDoc = [];
+                    $creating = true;
+                    $createdIds[] = $id;
+
+                    foreach ($resolvedValues as $optionId => $optionValueId) {
+                        $newOptionValues[] = [
+                            'variant_id' => $id,
+                            'product_id' => $productId,
+                            'option_id' => $optionId,
+                            'option_value_id' => $optionValueId,
+                        ];
+                    }
+                }
+
+                $planned[] = [
+                    'id' => $id,
+                    'item' => $item,
+                    'signature' => $signature,
+                    'position' => $position,
+                    'creating' => $creating,
+                ];
+
+                $attrInputs[] = [
+                    'productId' => $productId,
+                    'variantId' => $id,
+                    'typeId' => Rows::string($productRow, 'product_type_id'),
+                    'current' => $currentDoc,
+                    'set' => $item->attributes,
+                    'creating' => $creating,
+                    'replace' => $item->replaceAttributes,
+                ];
+            }
+
+            $prepared = $this->batchAttributes->prepareBatch($db, AttributeLevel::Variant, $attrInputs);
+            $now = PgTimestamp::now($this->clock);
+            $wrappedVariants = $db->table($variantsTable)->getGrammar()->wrapTable($variantsTable);
+            $rowPlaceholder = $isPg
+                ? '(?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?::timestamptz, ?::timestamptz)'
+                : '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+            // 6. Bulk INSERT ... ON CONFLICT (sku) DO UPDATE inside a savepoint so barcode collisions roll back cleanly.
+            try {
+                $db->transaction(function () use ($db, $wrappedVariants, $rowPlaceholder, $planned, $prepared, $now, $newOptionValues): void {
+                    foreach (array_chunk($planned, self::UPSERT_CHUNK) as $chunk) {
+                        $placeholders = [];
+                        $bindings = [];
+
+                        foreach ($chunk as $entry) {
+                            $item = $entry['item'];
+                            $id = $entry['id'];
+                            $dims = $this->dimensionColumns($item->dimensions);
+
+                            $placeholders[] = $rowPlaceholder;
+                            $bindings[] = $id;
+                            $bindings[] = $item->product->value;
+                            $bindings[] = $item->sku;
+                            $bindings[] = $item->barcode;
+                            $bindings[] = $entry['signature'];
+                            $bindings[] = $item->status->value;
+                            $bindings[] = $entry['position'];
+                            $bindings[] = Documents::encode($prepared['documents'][$id] ?? []);
+                            $bindings[] = $item->taxClass;
+                            $bindings[] = $item->weightGrams;
+                            $bindings[] = $dims['length_mm'];
+                            $bindings[] = $dims['width_mm'];
+                            $bindings[] = $dims['height_mm'];
+                            $bindings[] = $now;
+                            $bindings[] = $now;
+                        }
+
+                        $db->select(
+                            "insert into {$wrappedVariants}"
+                            .' (id, product_id, sku, barcode, option_signature, status, position, attributes, tax_class, weight_grams, length_mm, width_mm, height_mm, created_at, updated_at)'
+                            .' values '.implode(', ', $placeholders)
+                            .' on conflict (sku) do update set'
+                            .' barcode = excluded.barcode,'
+                            .' status = excluded.status,'
+                            .' position = excluded.position,'
+                            .' attributes = excluded.attributes,'
+                            .' tax_class = excluded.tax_class,'
+                            .' weight_grams = excluded.weight_grams,'
+                            .' length_mm = excluded.length_mm,'
+                            .' width_mm = excluded.width_mm,'
+                            .' height_mm = excluded.height_mm,'
+                            .' updated_at = excluded.updated_at'
+                            .' returning id',
+                            $bindings,
+                            useReadPdo: false,
+                        );
+                    }
+
+                    // 7. Insert variant_option_values for newly created variants in chunks.
+                    foreach (array_chunk($newOptionValues, self::UPSERT_CHUNK) as $chunk) {
+                        $db->table($this->tables->table('variant_option_values'))->insert($chunk);
+                    }
+                });
+            } catch (UniqueConstraintViolationException $e) {
+                throw $this->batchCollision($db, $e, $command);
+            }
+
+            // 8. Grouped reindex of cmz_attribute_index for all upserted variants.
+            $allVariantIds = array_map(static fn (array $entry): string => $entry['id'], $planned);
+            $this->batchAttributes->reindexVariants($db, $allVariantIds, $prepared['facts']);
+
+            // 9. Record compressed Outbox event(s).
+            $batchId = Uuid7::generate();
+            $occurredAt = PgTimestamp::current($this->clock);
+            $outboxEventCount = 0;
+            $createdSet = array_fill_keys($createdIds, true);
+            $variantToProduct = [];
+
+            foreach ($planned as $entry) {
+                $variantToProduct[$entry['id']] = $entry['item']->product->value;
+            }
+
+            foreach (array_chunk($allVariantIds, self::OUTBOX_EVENT_CHUNK) as $chunkIds) {
+                $chunkCreated = array_values(array_filter($chunkIds, static fn (string $id): bool => isset($createdSet[$id])));
+                $chunkUpdated = array_values(array_filter($chunkIds, static fn (string $id): bool => ! isset($createdSet[$id])));
+                $chunkProducts = array_values(array_unique(array_map(
+                    static fn (string $id): string => $variantToProduct[$id],
+                    $chunkIds,
+                )));
+
+                $this->outbox->record(IntegrationEvent::of(
+                    type: 'catalog.variants_upserted',
+                    aggregateRef: 'catalog:batch',
+                    payload: [
+                        'batch_id' => $batchId,
+                        'product_ids' => $chunkProducts,
+                        'variant_ids' => $chunkIds,
+                        'created_ids' => $chunkCreated,
+                        'updated_ids' => $chunkUpdated,
+                        'count' => count($chunkIds),
+                    ],
+                    occurredAt: $occurredAt,
+                ));
+                $outboxEventCount++;
+            }
+
+            // 10. Hydrate VariantViews in batched queries and preserve input order.
+            $rowsById = [];
+
+            foreach (array_chunk($allVariantIds, self::UPSERT_CHUNK) as $chunk) {
+                foreach ($db->table($variantsTable)->whereIn('id', $chunk)->get() as $row) {
+                    $rowsById[Rows::string($row, 'id')] = $row;
+                }
+            }
+
+            $orderedRows = [];
+
+            foreach ($allVariantIds as $id) {
+                if (isset($rowsById[$id])) {
+                    $orderedRows[] = $rowsById[$id];
+                }
+            }
+
+            $views = $this->views($orderedRows);
+            $createdVariantIds = array_map(static fn (string $id): VariantId => new VariantId($id), $createdIds);
+            $updatedVariantIds = array_map(static fn (string $id): VariantId => new VariantId($id), $updatedIds);
+            $affectedProductIds = array_map(static fn (string $id): ProductId => new ProductId($id), $productIds);
+
+            $this->events->dispatch(new VariantsUpserted(
+                batchId: $batchId,
+                productIds: $affectedProductIds,
+                createdIds: $createdVariantIds,
+                updatedIds: $updatedVariantIds,
+                count: count($views),
+            ));
+
+            return new UpsertVariantsResult(
+                variants: $views,
+                createdIds: $createdVariantIds,
+                updatedIds: $updatedVariantIds,
+                createdCount: count($createdVariantIds),
+                updatedCount: count($updatedVariantIds),
+                indexedFactCount: count($prepared['facts']),
+                outboxEventCount: $outboxEventCount,
+            );
+        });
     }
 
     public function list(ListVariants $query): Page
@@ -556,6 +898,31 @@ final readonly class DatabaseVariants implements Variants
         };
     }
 
+    private function batchCollision(ConnectionInterface $db, UniqueConstraintViolationException $e, UpsertVariants $command): Throwable
+    {
+        $table = $this->tables->table('variants');
+        $message = $e->getMessage();
+
+        if (str_contains($message, ConstraintNames::unique($table, 'barcode')) || str_contains($message, 'barcode')) {
+            $barcodes = array_values(array_filter(
+                array_map(static fn ($item): ?string => $item->barcode, $command->items),
+                is_string(...),
+            ));
+
+            if ($barcodes !== []) {
+                $taken = $db->table($table)->whereIn('barcode', array_slice($barcodes, 0, self::UPSERT_CHUNK))->orderBy('barcode')->value('barcode');
+
+                return new DuplicateCode('Variant barcode', is_string($taken) ? $taken : $barcodes[0]);
+            }
+        }
+
+        if (str_contains($message, ConstraintNames::unique($table, ['product_id', 'option_signature'])) || str_contains($message, 'option_signature')) {
+            return new DuplicateCombination($command->items[0]->axes);
+        }
+
+        return $e;
+    }
+
     /**
      * After the savepoint rolled back, the SKU that collided is the one another variant holds.
      *
@@ -617,19 +984,21 @@ final readonly class DatabaseVariants implements Variants
         $retired = $this->retired($db, $codes);
         $axes = [];
 
-        $axisRows = $db->table($this->tables->table('variant_option_values').' as v')
-            ->join($this->tables->table('product_options').' as p', static function (JoinClause $join): void {
-                $join->on('p.product_id', '=', 'v.product_id')->on('p.option_id', '=', 'v.option_id');
-            })
-            ->join($this->tables->table('options').' as o', 'o.id', '=', 'v.option_id')
-            ->join($this->tables->table('option_values').' as ov', 'ov.id', '=', 'v.option_value_id')
-            ->whereIn('v.variant_id', $ids)
-            ->orderBy('p.position')
-            ->select('v.variant_id', 'o.code as option', 'ov.code as value')
-            ->get();
+        foreach (array_chunk($ids, self::UPSERT_CHUNK) as $chunk) {
+            $axisRows = $db->table($this->tables->table('variant_option_values').' as v')
+                ->join($this->tables->table('product_options').' as p', static function (JoinClause $join): void {
+                    $join->on('p.product_id', '=', 'v.product_id')->on('p.option_id', '=', 'v.option_id');
+                })
+                ->join($this->tables->table('options').' as o', 'o.id', '=', 'v.option_id')
+                ->join($this->tables->table('option_values').' as ov', 'ov.id', '=', 'v.option_value_id')
+                ->whereIn('v.variant_id', $chunk)
+                ->orderBy('p.position')
+                ->select('v.variant_id', 'o.code as option', 'ov.code as value')
+                ->get();
 
-        foreach ($axisRows as $axis) {
-            $axes[Rows::string($axis, 'variant_id')][Rows::string($axis, 'option')] = Rows::string($axis, 'value');
+            foreach ($axisRows as $axis) {
+                $axes[Rows::string($axis, 'variant_id')][Rows::string($axis, 'option')] = Rows::string($axis, 'value');
+            }
         }
 
         return array_map(static function (object $row) use ($documents, $retired, $axes): VariantView {

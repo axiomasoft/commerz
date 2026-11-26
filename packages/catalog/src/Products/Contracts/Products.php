@@ -18,6 +18,8 @@ use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Data\ProductView;
 use Commerz\Catalog\Products\Data\SetProductAttributes;
 use Commerz\Catalog\Products\Data\UpdateProduct;
+use Commerz\Catalog\Products\Data\UpsertProducts;
+use Commerz\Catalog\Products\Data\UpsertProductsResult;
 use Commerz\Catalog\Products\Exceptions\ProductArchived;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeArchived;
@@ -57,6 +59,15 @@ interface Products
 
     /** @throws ProductNotFound */
     public function findByHandle(string $handle): ProductView;
+
+    /**
+     * Batch upserts products by `handle` in one atomic transaction with bounded SQL queries, grouped `cmz_attribute_index`
+     * reindexing, and compressed Outbox events.
+     *
+     * @throws ProductTypeNotFound|ProductTypeArchived|DuplicateCode|InvalidCommand
+     * @throws AttributeNotAllowed|AttributeNotWritable|InvalidAttributeValue|MissingRequiredAttributes|UnsupportedContribution
+     */
+    public function upsertMany(UpsertProducts $command): UpsertProductsResult;
 
     /**
      * @return Page<ProductView>

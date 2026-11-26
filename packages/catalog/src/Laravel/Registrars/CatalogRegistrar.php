@@ -11,6 +11,7 @@ use Commerz\Catalog\Attributes\Internal\DatabaseAttributes;
 use Commerz\Catalog\Catalog;
 use Commerz\Catalog\Categories\Contracts\Categories;
 use Commerz\Catalog\Categories\Internal\DatabaseCategories;
+use Commerz\Catalog\Common\Internal\BatchAttributeProcessor;
 use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Diagnostics\CatalogDoctorCheck;
 use Commerz\Catalog\Listings\Contracts\Listings;
@@ -22,15 +23,19 @@ use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\Products\Internal\DatabaseProducts;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
 use Commerz\Catalog\ProductTypes\Internal\DatabaseProductTypes;
+use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
+use Commerz\Catalog\Search\Internal\CatalogSearchOutboxSubscriber;
+use Commerz\Catalog\Search\Internal\PgCatalogSearch;
 use Commerz\Catalog\Variants\Contracts\Variants;
 use Commerz\Catalog\Variants\Internal\DatabaseVariants;
+use Commerz\Outbox\Events\IntegrationEventDelivered;
 use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
-use Packman\Foundation\Concerns\RegistersNothingOnBoot;
 use Packman\Foundation\Contracts\PackageRegistrar;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 
@@ -40,8 +45,6 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
 #[Spi(kind: SpiKind::Call, since: '0.1')]
 final class CatalogRegistrar implements PackageRegistrar
 {
-    use RegistersNothingOnBoot;
-
     #[Override]
     public function register(Application $app): void
     {
@@ -57,6 +60,7 @@ final class CatalogRegistrar implements PackageRegistrar
 
         $app->singleton(AttributeWriter::class);
         $app->singleton(AttributeIndexer::class, AttributeWriter::class);
+        $app->singleton(BatchAttributeProcessor::class);
         $app->singleton(Attributes::class, DatabaseAttributes::class);
         $app->singleton(Options::class, DatabaseOptions::class);
         $app->singleton(ProductTypes::class, DatabaseProductTypes::class);
@@ -64,6 +68,17 @@ final class CatalogRegistrar implements PackageRegistrar
         $app->singleton(Variants::class, DatabaseVariants::class);
         $app->singleton(Categories::class, DatabaseCategories::class);
         $app->singleton(Listings::class, DatabaseListings::class);
+        $app->singletonIf(CatalogSearchPort::class, PgCatalogSearch::class);
+        $app->singleton(CatalogSearchOutboxSubscriber::class);
         $app->singleton(Catalog::class);
+    }
+
+    #[Override]
+    public function boot(Application $app): void
+    {
+        $app->make(Dispatcher::class)->listen(
+            IntegrationEventDelivered::class,
+            CatalogSearchOutboxSubscriber::class,
+        );
     }
 }

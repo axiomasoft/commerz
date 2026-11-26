@@ -19,6 +19,8 @@ use Commerz\Catalog\Variants\Data\ListVariants;
 use Commerz\Catalog\Variants\Data\RestoreVariant;
 use Commerz\Catalog\Variants\Data\SetVariantAttributes;
 use Commerz\Catalog\Variants\Data\UpdateVariant;
+use Commerz\Catalog\Variants\Data\UpsertVariants;
+use Commerz\Catalog\Variants\Data\UpsertVariantsResult;
 use Commerz\Catalog\Variants\Data\VariantId;
 use Commerz\Catalog\Variants\Data\VariantView;
 use Commerz\Catalog\Variants\Exceptions\DuplicateCombination;
@@ -71,6 +73,15 @@ interface Variants
 
     /** @throws VariantNotFound */
     public function findBySku(string $sku): VariantView;
+
+    /**
+     * Batch upserts variants by `sku` in one atomic transaction with bounded SQL queries, grouped `cmz_attribute_index`
+     * reindexing, and compressed Outbox events.
+     *
+     * @throws ProductNotFound|ProductArchived|InvalidAxes|DuplicateCombination|DuplicateCode|InvalidCommand
+     * @throws AttributeNotAllowed|AttributeNotWritable|InvalidAttributeValue|MissingRequiredAttributes|UnsupportedContribution
+     */
+    public function upsertMany(UpsertVariants $command): UpsertVariantsResult;
 
     /**
      * @return Page<VariantView>
