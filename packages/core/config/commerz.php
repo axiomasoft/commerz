@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Commerz\Configuration\StockMode;
+use Packman\Schema\Enums\SchemaScope;
 
 return [
     /*
@@ -42,4 +43,10 @@ return [
          */
         'receipt_ttl_days' => 30,
     ],
+
+    /*
+     | Packman schema scope for all Commerz migrations: 'central', 'tenant', or 'dedicated'.
+     | 'dedicated' requires a non-null 'connection'. Zero tenant_id coupling (ADR D6).
+     */
+    'schema_scope' => SchemaScope::Central->value,
 ];

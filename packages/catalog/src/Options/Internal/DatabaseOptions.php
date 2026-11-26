@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Catalog\Options\Internal;
 
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Options\Contracts\Options;
 use Commerz\Catalog\Options\Data\AddOptionValues;
 use Commerz\Catalog\Options\Data\DefineOption;
@@ -25,7 +23,9 @@ use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -46,7 +46,7 @@ final readonly class DatabaseOptions implements Options
         return $this->transactions->run(function () use ($command): OptionView {
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -83,7 +83,7 @@ final readonly class DatabaseOptions implements Options
             }
 
             $last = $db->table($table)->where('option_id', $command->option->value)->max('position');
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             $this->insertValues($db, $command->option->value, $command->values, is_numeric($last) ? (int) $last + 1 : 0, $now);
 
@@ -105,7 +105,7 @@ final readonly class DatabaseOptions implements Options
 
             $table = $this->tables->table('option_values');
             $known = $db->table($table)->where('option_id', $command->option->value)->pluck('code')->all();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             foreach ($command->valueLabels as $code => $label) {
                 if (! in_array((string) $code, $known, true)) {

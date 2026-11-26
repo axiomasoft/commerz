@@ -11,8 +11,6 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Pricing\Common\Exceptions\DuplicateCode;
-use Commerz\Pricing\Common\Internal\Clock;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Pricing\Taxes\Contracts\Taxes;
 use Commerz\Pricing\Taxes\Data\DefineTaxClass;
@@ -34,7 +32,9 @@ use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateOverlap;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -67,7 +67,7 @@ final readonly class DatabaseTaxes implements Taxes
         return $this->transactions->run(function () use ($command): TaxClassView {
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -92,7 +92,7 @@ final readonly class DatabaseTaxes implements Taxes
             $this->lockMembers();
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 $db->transaction(fn () => $db->table($this->tables->table('tax_zones'))->insert([
@@ -148,7 +148,7 @@ final readonly class DatabaseTaxes implements Taxes
 
             $this->db()->table($this->tables->table('tax_rates'))->where('id', $id)->update([
                 'rate_bp' => $command->rateBp,
-                'updated_at' => Clock::now(),
+                'updated_at' => PgTimestamp::now(),
             ]);
             $this->events->dispatch(new TaxRatesChanged($command->taxClass, $command->zone));
 
@@ -175,7 +175,7 @@ final readonly class DatabaseTaxes implements Taxes
                 $db->transaction(fn () => $db->table($table)->where('id', $id)->update([
                     'valid_from' => Windows::format($command->validFrom),
                     'valid_until' => Windows::format($command->validUntil),
-                    'updated_at' => Clock::now(),
+                    'updated_at' => PgTimestamp::now(),
                 ]));
             } catch (QueryException $e) {
                 if (! Windows::isExclusionViolation($e)) {
@@ -312,7 +312,7 @@ final readonly class DatabaseTaxes implements Taxes
     {
         $db = $this->db();
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         try {
             // A savepoint: the violation must not poison the transaction of the caller.

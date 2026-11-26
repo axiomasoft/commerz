@@ -8,9 +8,7 @@ use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Attributes\Internal\AttributeOwner;
 use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Configuration\CatalogOptions;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Enums\ProductStatus;
@@ -43,7 +41,9 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\JoinClause;
@@ -93,7 +93,7 @@ final readonly class DatabaseVariants implements Variants
                 [],
                 creating: true,
             );
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -151,7 +151,7 @@ final readonly class DatabaseVariants implements Variants
                 throw new InvalidCommand('position', 'generated positions would exceed int64');
             }
 
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // One savepoint for the whole generation: a SKU collision undoes every variant of it.
@@ -262,7 +262,7 @@ final readonly class DatabaseVariants implements Variants
             try {
                 $db->transaction(fn () => $db->table($this->tables->table('variants'))
                     ->where('id', $command->variant->value)
-                    ->update($changes + ['updated_at' => Clock::now()]));
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]));
             } catch (UniqueConstraintViolationException $e) {
                 throw $this->duplicate($e, [], (string) $command->sku, $command->barcode);
             }
@@ -454,7 +454,7 @@ final readonly class DatabaseVariants implements Variants
 
             $this->db()->table($this->tables->table('variants'))
                 ->where('id', $id->value)
-                ->update(['status' => $status->value, 'updated_at' => Clock::now()]);
+                ->update(['status' => $status->value, 'updated_at' => PgTimestamp::now()]);
 
             return $this->updated($id);
         });

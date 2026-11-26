@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Pricing\Common\Data\PricingCodes;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
+use Commerz\Schema\Rows;
 use Illuminate\Database\QueryException;
 
 it('accepts well-formed codes, groups and tax codes', function (): void {

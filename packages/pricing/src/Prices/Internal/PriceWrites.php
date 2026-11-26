@@ -7,8 +7,6 @@ namespace Commerz\Pricing\Prices\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\Uuid7;
-use Commerz\Pricing\Common\Internal\Clock;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use Commerz\Pricing\PriceLists\Enums\PriceListStatus;
@@ -16,7 +14,9 @@ use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -94,7 +94,7 @@ final readonly class PriceWrites
 
         $db = $this->db();
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         try {
             // A savepoint: the violation must not poison the transaction of the caller.
@@ -244,7 +244,7 @@ final readonly class PriceWrites
         $this->db()->table($this->tables->table('prices'))->where('id', $id)->update([
             'amount_minor' => $command->amount->amountMinor,
             'compare_at_minor' => $command->compareAt?->amountMinor,
-            'updated_at' => Clock::now(),
+            'updated_at' => PgTimestamp::now(),
         ]);
     }
 

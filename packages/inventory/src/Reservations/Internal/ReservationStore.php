@@ -7,16 +7,16 @@ namespace Commerz\Inventory\Reservations\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
-use Commerz\Inventory\Common\Internal\Clock;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Reservations\Data\ReservationId;
 use Commerz\Inventory\Reservations\Data\ReservationLineView;
 use Commerz\Inventory\Reservations\Data\ReservationView;
 use Commerz\Inventory\Reservations\Enums\ReservationState;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Database\ConnectionInterface;
@@ -49,7 +49,7 @@ final readonly class ReservationStore
     public function insert(string $demand, ?ChannelId $channel, ?DateTimeImmutable $expiresAt): ?string
     {
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $row = $this->db()->selectOne(
             "insert into {$this->headerTable()} (id, demand, channel_id, state, generation, expires_at, created_at, updated_at)"
@@ -79,7 +79,7 @@ final readonly class ReservationStore
     {
         $this->db()->update(
             "update {$this->headerTable()} set state = 'active', generation = ?, expires_at = ?, updated_at = ? where id = ?",
-            [$generation, self::timestamp($expiresAt), Clock::now(), $id],
+            [$generation, self::timestamp($expiresAt), PgTimestamp::now(), $id],
         );
     }
 
@@ -89,7 +89,7 @@ final readonly class ReservationStore
         $this->db()->update(
             "update {$this->headerTable()} r set state = 'closed', updated_at = ? where r.id = ? and r.state = 'active'"
             ." and not exists (select 1 from {$this->lineTable()} ln where ln.reservation_id = r.id and ln.generation = r.generation and ".self::OUTSTANDING.')',
-            [Clock::now(), $id],
+            [PgTimestamp::now(), $id],
         );
     }
 
@@ -264,7 +264,7 @@ final readonly class ReservationStore
             return;
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $rows = [];
 
         foreach ($lines as $line) {
@@ -296,7 +296,7 @@ final readonly class ReservationStore
 
         $this->db()->update(
             "update {$this->lineTable()} set {$counter} = {$counter} + ?, updated_at = ? where id = ?",
-            [$units, Clock::now(), $line->id],
+            [$units, PgTimestamp::now(), $line->id],
         );
     }
 

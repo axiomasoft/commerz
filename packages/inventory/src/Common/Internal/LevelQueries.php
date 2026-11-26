@@ -18,6 +18,7 @@ use Commerz\Inventory\Stock\Data\StockLevelView;
 use Commerz\Inventory\Stock\Enums\MovementKind;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;

@@ -6,7 +6,7 @@ namespace Commerz\Pricing\Prices\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Currency;
-use Commerz\Pricing\Common\Internal\Rows;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
 use DateTimeImmutable;

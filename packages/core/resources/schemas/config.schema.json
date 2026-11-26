@@ -42,6 +42,17 @@
                         "object"
                     ]
                 },
+                "schema_scope": {
+                    "type": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "null"
+                    ]
+                },
                 "stock": {
                     "type": [
                         "string",

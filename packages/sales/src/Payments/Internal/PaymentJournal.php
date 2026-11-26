@@ -16,12 +16,10 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Sales\Common\Internal\Clock;
 use Commerz\Sales\Common\Internal\OrderJournal;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderRow;
 use Commerz\Sales\Common\Internal\OrderStatus;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Payments\Data\InitiatePayment;
 use Commerz\Sales\Payments\Data\ListPayments;
@@ -32,7 +30,9 @@ use Commerz\Sales\Payments\Events\PaymentStatusChanged;
 use Commerz\Sales\Payments\Exceptions\OrderNotPayable;
 use Commerz\Sales\Payments\Exceptions\PaymentExceedsBalance;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -97,7 +97,7 @@ final readonly class PaymentJournal
         }
 
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $db->table($this->tables->table('payments'))->insert([
             'id' => $id,
@@ -181,7 +181,7 @@ final readonly class PaymentJournal
     /** Takes the next attempt of a payment locked by the caller: a new lease from now. */
     public function lease(PaymentRow $payment): PaymentRow
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('payments'))->where('id', $payment->id->value)->update([
             'attempts' => $payment->attempts + 1,
@@ -246,7 +246,7 @@ final readonly class PaymentJournal
             return $current;
         }
 
-        $this->db()->table($this->tables->table('payments'))->where('id', $current->id->value)->update($values + ['updated_at' => Clock::now()]);
+        $this->db()->table($this->tables->table('payments'))->where('id', $current->id->value)->update($values + ['updated_at' => PgTimestamp::now()]);
 
         if ($changed) {
             $this->journal->append($order->id, 'payment_status_changed', $actor, [

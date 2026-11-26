@@ -12,8 +12,6 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Pricing\Common\Exceptions\DuplicateCode;
-use Commerz\Pricing\Common\Internal\Clock;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\PriceLists\Contracts\PriceLists;
 use Commerz\Pricing\PriceLists\Data\ArchivePriceList;
 use Commerz\Pricing\PriceLists\Data\AssignPriceListChannels;
@@ -29,9 +27,11 @@ use Commerz\Pricing\PriceLists\Enums\TaxInclusion;
 use Commerz\Pricing\PriceLists\Events\PriceListChanged;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListArchived;
 use Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -64,7 +64,7 @@ final readonly class DatabasePriceLists implements PriceLists
             }
 
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -229,7 +229,7 @@ final readonly class DatabasePriceLists implements PriceLists
             return 0;
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         return $this->db()->table($this->tables->table('price_list_channels'))->insertOrIgnore(array_map(
             static fn (ChannelId $channel): array => [
@@ -246,7 +246,7 @@ final readonly class DatabasePriceLists implements PriceLists
     {
         $this->db()->table($this->tables->table('price_lists'))
             ->where('id', $id->value)
-            ->update($changes + ['updated_at' => Clock::now()]);
+            ->update($changes + ['updated_at' => PgTimestamp::now()]);
     }
 
     private function lock(PriceListId $id, string $mode): object

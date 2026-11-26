@@ -13,12 +13,12 @@ use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Data\TaxResult;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Taxes\Exceptions\TaxRateNotFound;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Commerz\Pricing\Taxes\Internal\TaxRateLookup;
 use Commerz\Pricing\Taxes\Internal\TaxZoneLookup;
+use Commerz\Schema\Rows;
 use Illuminate\Contracts\Container\Container;
 use Packman\Attributes\Internal;
 

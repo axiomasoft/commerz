@@ -14,14 +14,14 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Ports\Delivery\Data\BookShipment;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Bookings\Enums\BookingState;
 use Commerz\Shipping\Bookings\Events\ShipmentBooked;
 use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
 use Commerz\Shipping\Carriers\Exceptions\CarrierRejected;
-use Commerz\Shipping\Common\Internal\Clock;
-use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Configuration\ShippingOptions;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
@@ -67,7 +67,7 @@ final readonly class BookingJournal
             $db = $this->db();
             $table = $this->tables->table('shipping_bookings');
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             // ON CONFLICT never raises, so the caller's transaction is not poisoned; a concurrent insert of the same
             // reference waits here until the first claim commits.
@@ -133,7 +133,7 @@ final readonly class BookingJournal
      */
     public function finish(BookingClaim $claim, BookingState $state, ?BookedShipment $shipment = null, ?Throwable $error = null): bool
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $values = match ($state) {
             BookingState::Booked => self::shipment($shipment ?? throw new RuntimeException('A booked outcome needs the shipment.'), $now),
             BookingState::Rejected, BookingState::Unknown => self::error($error ?? throw new RuntimeException('A failed outcome needs the error.')),
@@ -215,7 +215,7 @@ final readonly class BookingJournal
     /** @param  array<string, string>  $changes */
     private function lease(string $id, int $attempt, array $changes = []): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('shipping_bookings'))->where('id', $id)->update([
             'state' => BookingState::Pending->value,

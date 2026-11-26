@@ -7,7 +7,9 @@ namespace Commerz\Sales\Common\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Money\Money;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
@@ -75,7 +77,7 @@ final readonly class PaymentEventInbox
                 $amount?->amountMinor,
                 json_encode((object) $payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 $occurredAt?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP'),
-                Clock::now(),
+                PgTimestamp::now(),
             ],
         );
 

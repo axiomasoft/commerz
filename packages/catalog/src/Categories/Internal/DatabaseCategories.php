@@ -19,10 +19,8 @@ use Commerz\Catalog\Categories\Exceptions\CategoryCycle;
 use Commerz\Catalog\Categories\Exceptions\CategoryHasChildren;
 use Commerz\Catalog\Categories\Exceptions\CategoryNotFound;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
 use Commerz\Catalog\Common\Internal\Locks;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Configuration\CommerzOptions;
@@ -31,7 +29,9 @@ use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -62,7 +62,7 @@ final readonly class DatabaseCategories implements Categories
             }
 
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -100,7 +100,7 @@ final readonly class DatabaseCategories implements Categories
             if ($changes !== []) {
                 $this->db()->table($this->tables->table('categories'))
                     ->where('id', $command->category->value)
-                    ->update($changes + ['updated_at' => Clock::now()]);
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]);
             }
 
             return $this->find($command->category);
@@ -129,7 +129,7 @@ final readonly class DatabaseCategories implements Categories
 
             $db->table($this->tables->table('categories'))
                 ->where('id', $command->category->value)
-                ->update(['parent_id' => $parent, 'updated_at' => Clock::now()]);
+                ->update(['parent_id' => $parent, 'updated_at' => PgTimestamp::now()]);
 
             return $this->find($command->category);
         });
@@ -157,7 +157,7 @@ final readonly class DatabaseCategories implements Categories
 
             $db->table($table)
                 ->where('id', $command->category->value)
-                ->update(['status' => CategoryStatus::Archived->value, 'updated_at' => Clock::now()]);
+                ->update(['status' => CategoryStatus::Archived->value, 'updated_at' => PgTimestamp::now()]);
 
             return $this->find($command->category);
         });

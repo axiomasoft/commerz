@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Commerz\Inventory\Stock\Internal;
 
 use Commerz\Configuration\CommerzOptions;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Items\Exceptions\StockItemNotFound;
 use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;

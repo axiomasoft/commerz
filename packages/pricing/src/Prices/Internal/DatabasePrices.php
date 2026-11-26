@@ -13,8 +13,6 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
-use Commerz\Pricing\Common\Internal\Clock;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
 use Commerz\Pricing\PriceLists\Data\PriceListId;
 use Commerz\Pricing\Prices\Contracts\Prices;
@@ -30,7 +28,9 @@ use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Events\PricesChanged;
 use Commerz\Pricing\Prices\Exceptions\PriceNotFoundById;
 use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -128,7 +128,7 @@ final readonly class DatabasePrices implements Prices
                 $db->transaction(fn () => $db->table($table)->where('id', $command->price->value)->update([
                     'valid_from' => PriceWrites::format($command->validFrom),
                     'valid_until' => PriceWrites::format($command->validUntil),
-                    'updated_at' => Clock::now(),
+                    'updated_at' => PgTimestamp::now(),
                 ]));
             } catch (QueryException $e) {
                 if (! Windows::isExclusionViolation($e)) {

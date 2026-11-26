@@ -6,8 +6,8 @@ namespace Commerz\Pricing\Taxes\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Money\Rate;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Common\Internal\Windows;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;

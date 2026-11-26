@@ -18,8 +18,10 @@ use Commerz\Sales\Carts\Enums\CartKind;
 use Commerz\Sales\Carts\Enums\CartState;
 use Commerz\Sales\Carts\Exceptions\CartNotFound;
 use Commerz\Sales\Carts\Exceptions\CartNotOpen;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -77,7 +79,7 @@ final readonly class CartRows
     public function insert(CommerceContext $context, CartKind $kind, ?ActorRef $actor, array $columns = []): string
     {
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('carts'))->insert([
             'id' => $id,
@@ -106,7 +108,7 @@ final readonly class CartRows
     {
         $this->db()->table($this->tables->table('carts'))
             ->where('id', $cart->id)
-            ->update($changes + ['version' => $cart->version + 1, 'updated_at' => Clock::now()]);
+            ->update($changes + ['version' => $cart->version + 1, 'updated_at' => PgTimestamp::now()]);
     }
 
     /**
@@ -115,7 +117,7 @@ final readonly class CartRows
      */
     public function convert(CartRow $cart): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('carts'))
             ->where('id', $cart->id)

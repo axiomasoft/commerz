@@ -12,11 +12,10 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
-use Commerz\Shipping\Common\Internal\Clock;
-use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Methods\Contracts\Methods;
 use Commerz\Shipping\Methods\Data\ArchiveMethod;
 use Commerz\Shipping\Methods\Data\AssignMethodChannels;
@@ -42,6 +41,7 @@ use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
 use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -82,7 +82,7 @@ final readonly class DatabaseMethods implements Methods
 
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -357,7 +357,7 @@ final readonly class DatabaseMethods implements Methods
     {
         $this->db()->table($this->tables->table('shipping_methods'))
             ->where('id', $id->value)
-            ->update($changes + ['updated_at' => Clock::now()]);
+            ->update($changes + ['updated_at' => PgTimestamp::now()]);
     }
 
     private function lock(MethodId $id): object

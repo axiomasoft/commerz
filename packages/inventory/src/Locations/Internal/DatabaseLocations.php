@@ -7,9 +7,7 @@ namespace Commerz\Inventory\Locations\Internal;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
-use Commerz\Inventory\Common\Internal\Clock;
 use Commerz\Inventory\Common\Internal\LevelQueries;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Locations\Contracts\Locations;
 use Commerz\Inventory\Locations\Data\ArchiveLocation;
 use Commerz\Inventory\Locations\Data\CreateLocation;
@@ -26,7 +24,9 @@ use Commerz\Inventory\Locations\Exceptions\LocationNotFound;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -54,7 +54,7 @@ final readonly class DatabaseLocations implements Locations
         return $this->transactions->run(function () use ($command): LocationView {
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -96,7 +96,7 @@ final readonly class DatabaseLocations implements Locations
             if ($changes !== []) {
                 $this->db()->table($this->tables->table('stock_locations'))
                     ->where('id', $command->location->value)
-                    ->update($changes + ['updated_at' => Clock::now()]);
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]);
             }
 
             return $this->find($command->location);
@@ -179,7 +179,7 @@ final readonly class DatabaseLocations implements Locations
     {
         $this->db()->table($this->tables->table('stock_locations'))
             ->where('id', $id->value)
-            ->update(['status' => $status->value, 'updated_at' => Clock::now()]);
+            ->update(['status' => $status->value, 'updated_at' => PgTimestamp::now()]);
     }
 
     private function lock(LocationId $id): object

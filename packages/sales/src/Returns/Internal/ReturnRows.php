@@ -9,8 +9,6 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Sales\Common\Data\LineQuantity;
-use Commerz\Sales\Common\Internal\Clock;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Returns\Data\ListReturns;
@@ -19,8 +17,10 @@ use Commerz\Sales\Returns\Data\ReturnLineView;
 use Commerz\Sales\Returns\Data\ReturnView;
 use Commerz\Sales\Returns\Enums\ReturnStatus;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -44,7 +44,7 @@ final readonly class ReturnRows
     /** @param  list<LineQuantity>  $lines */
     public function insert(ReturnId $id, OrderId $order, ?string $reason, array $lines): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('returns'))->insert([
             'id' => $id->value,
@@ -119,7 +119,7 @@ final readonly class ReturnRows
     /** @param  array<string, int>  $restocked  units put back on hand, by line id */
     public function markReceived(ReturnId $id, ?string $locationCode, array $restocked): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($restocked as $line => $quantity) {
             $this->db()->table($this->tables->table('return_lines'))
@@ -138,7 +138,7 @@ final readonly class ReturnRows
 
     public function markCancelled(ReturnId $id): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('returns'))->where('id', $id->value)->update([
             'status' => ReturnStatus::Cancelled->value,

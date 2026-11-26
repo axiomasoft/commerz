@@ -17,14 +17,14 @@ use Commerz\Ports\Promotions\Data\ConsumePromotionUsage;
 use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Exceptions\UsageLimitReached;
 use Commerz\Promotions\Common\Data\PromotionCodes;
-use Commerz\Promotions\Common\Internal\Clock;
-use Commerz\Promotions\Common\Internal\Rows;
 use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Enums\CouponStatus;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Usage\Exceptions\PromotionUnavailable;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -118,7 +118,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
             $db->table($redemptions)->where('id', $id)->update([
                 'state' => 'restored',
                 'restore_reason' => $command->reason->value,
-                'restored_at' => Clock::now(),
+                'restored_at' => PgTimestamp::now(),
             ]);
         });
     }
@@ -184,7 +184,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
         $inserted = $db->select(
             "insert into {$this->wrap($table)} (id, order_ref, customer_ref, fingerprint, state, consumed_at)"
             ." values (?, ?, ?, ?, 'consumed', ?) on conflict (order_ref) do nothing returning id",
-            [$id, $orderRef, $customer, $fingerprint, Clock::now()],
+            [$id, $orderRef, $customer, $fingerprint, PgTimestamp::now()],
         );
 
         if ($inserted !== []) {
@@ -256,7 +256,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
             $ids[$promotion->promotionId] = Rows::string($row, 'id');
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($rows as $row) {
             if (Rows::nullableInt($row, 'usage_limit') === null) {
@@ -313,7 +313,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
             }
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($applied as $promotion) {
             $row = $rows[$promotion->promotionId];
@@ -356,7 +356,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
     private function consumeCustomers(array $applied, array $promotions, ?string $customer): void
     {
         $table = $this->wrap($this->tables->table('promotion_customer_usages'));
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($applied as $promotion) {
             $limit = Rows::nullableInt($promotions[$promotion->promotionId], 'per_customer_limit');
@@ -390,7 +390,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
      */
     private function record(string $redemption, array $applied, array $coupons): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('promotion_usages'))->insert(array_map(
             static fn (AppliedPromotion $a): array => [
@@ -414,7 +414,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
 
         $db = $this->db();
         $table = $this->tables->table('coupons');
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($db->table($table)->whereIn('id', $ids)->orderBy('id')->lock('for key share')->get(['id', 'usage_limit'])->all() as $row) {
             if (Rows::nullableInt($row, 'usage_limit') !== null) {
@@ -448,7 +448,7 @@ final readonly class DatabasePromotionUsage implements PromotionUsage
             ->lock('for key share')
             ->get(['id', 'usage_limit', 'budget_minor', 'per_customer_limit'])
             ->all();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($rows as $row) {
             if (Rows::nullableInt($row, 'usage_limit') === null && Rows::nullableInt($row, 'budget_minor') === null) {

@@ -6,10 +6,10 @@ namespace Commerz\Pricing\Taxes\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Ports\Delivery\Data\Address;
-use Commerz\Pricing\Common\Internal\Rows;
 use Commerz\Pricing\Taxes\Data\TaxZoneId;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
 use Commerz\Pricing\Taxes\Data\TaxZoneView;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;

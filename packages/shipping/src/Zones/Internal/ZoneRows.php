@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\Zones\Internal;
 
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
-use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Shipping\Zones\Data\ZoneMember;
 use Commerz\Shipping\Zones\Data\ZoneView;

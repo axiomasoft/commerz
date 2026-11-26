@@ -11,10 +11,9 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
-use Commerz\Shipping\Common\Internal\Clock;
-use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
 use Commerz\Shipping\Zones\Data\ArchiveZone;
@@ -30,6 +29,7 @@ use Commerz\Shipping\Zones\Enums\ZoneStatus;
 use Commerz\Shipping\Zones\Events\ZoneChanged;
 use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
 use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -56,7 +56,7 @@ final readonly class DatabaseZones implements Zones
 
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -206,7 +206,7 @@ final readonly class DatabaseZones implements Zones
     {
         $this->db()->table($this->tables->table('shipping_zones'))
             ->where('id', $id->value)
-            ->update($changes + ['updated_at' => Clock::now()]);
+            ->update($changes + ['updated_at' => PgTimestamp::now()]);
     }
 
     private function lock(ZoneId $id): object

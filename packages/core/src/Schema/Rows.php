@@ -2,15 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Commerz\Sales\Common\Internal;
+namespace Commerz\Schema;
 
+use Commerz\Measures\LocalizedText;
 use DateTimeImmutable;
 use JsonException;
-use Packman\Attributes\Internal;
+use Packman\Attributes\Spi;
+use Packman\Attributes\SpiKind;
 use RuntimeException;
 
-/** Typed readers of a raw query-builder row; a missing or mistyped column is a programming error. */
-#[Internal]
+/**
+ * Typed readers of a raw query-builder row; a missing or mistyped column is a programming error.
+ */
+#[Spi(kind: SpiKind::Call, since: '0.1')]
 final class Rows
 {
     public static function string(object $row, string $column): string
@@ -89,6 +93,17 @@ final class Rows
         }
 
         return $strings;
+    }
+
+    public static function localized(object $row, string $column): LocalizedText
+    {
+        $texts = [];
+
+        foreach (self::json($row, $column) as $locale => $text) {
+            $texts[$locale] = is_string($text) ? $text : throw new RuntimeException("Column '{$column}' holds a non-string text.");
+        }
+
+        return new LocalizedText($texts);
     }
 
     public static function date(object $row, string $column): DateTimeImmutable

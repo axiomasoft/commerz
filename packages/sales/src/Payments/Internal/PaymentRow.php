@@ -6,11 +6,11 @@ namespace Commerz\Sales\Payments\Internal;
 
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Payments\Data\PaymentView;
 use Commerz\Sales\Payments\Enums\PaymentStatus;
+use Commerz\Schema\Rows;
 use DateTimeImmutable;
 use Packman\Attributes\Internal;
 use RuntimeException;

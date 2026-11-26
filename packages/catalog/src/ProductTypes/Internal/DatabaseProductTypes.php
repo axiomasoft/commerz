@@ -8,9 +8,7 @@ use Commerz\Catalog\Attributes\Data\AttributeId;
 use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Options\Exceptions\OptionNotFound;
 use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
 use Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
@@ -32,7 +30,9 @@ use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -59,7 +59,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
             $attributes = $this->attributes($db, [...$command->productAttributes, ...$command->variantAttributes]);
             $options = $this->options($db, $command->variantAxes);
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -128,7 +128,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
                 }
             }
 
-            $changes = ['updated_at' => Clock::now()];
+            $changes = ['updated_at' => PgTimestamp::now()];
 
             if ($command->name instanceof LocalizedText) {
                 $changes['name'] = Documents::encode($command->name->texts);
@@ -148,7 +148,7 @@ final readonly class DatabaseProductTypes implements ProductTypes
             if (Rows::string($row, 'status') !== ProductTypeStatus::Archived->value) {
                 $this->db()->table($this->tables->table('product_types'))
                     ->where('id', $command->type->value)
-                    ->update(['status' => ProductTypeStatus::Archived->value, 'updated_at' => Clock::now()]);
+                    ->update(['status' => ProductTypeStatus::Archived->value, 'updated_at' => PgTimestamp::now()]);
             }
 
             return $this->find($command->type);

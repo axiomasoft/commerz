@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Commerz\Errors\InvalidCommand;
 use Commerz\Inventory\Common\Data\InventoryCodes;
 use Commerz\Inventory\Common\Internal\Quantities;
-use Commerz\Inventory\Common\Internal\Rows;
+use Commerz\Schema\Rows;
 
 it('accepts well-formed codes, skus, references and reasons', function (): void {
     expect(InventoryCodes::code('code', 'main.wh-1'))->toBe('main.wh-1')

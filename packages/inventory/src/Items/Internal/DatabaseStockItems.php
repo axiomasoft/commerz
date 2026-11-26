@@ -9,9 +9,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
 use Commerz\Inventory\Common\Exceptions\DuplicateCode;
-use Commerz\Inventory\Common\Internal\Clock;
 use Commerz\Inventory\Common\Internal\LevelQueries;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Items\Contracts\StockItems;
 use Commerz\Inventory\Items\Data\ArchiveStockItem;
 use Commerz\Inventory\Items\Data\CreateStockItem;
@@ -34,7 +32,9 @@ use Commerz\Inventory\Items\Exceptions\UntrackedStockItem;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -62,7 +62,7 @@ final readonly class DatabaseStockItems implements StockItems
         return $this->transactions->run(function () use ($command): StockItemView {
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -104,7 +104,7 @@ final readonly class DatabaseStockItems implements StockItems
             if ($changes !== []) {
                 $this->db()->table($this->tables->table('stock_items'))
                     ->where('id', $command->item->value)
-                    ->update($changes + ['updated_at' => Clock::now()]);
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]);
             }
 
             return $this->find($command->item);
@@ -195,7 +195,7 @@ final readonly class DatabaseStockItems implements StockItems
                 throw new TooManyComponents($ref);
             }
 
-            $now = Clock::now();
+            $now = PgTimestamp::now();
             $db->table($table)->upsert([[
                 'id' => Uuid7::generate(),
                 'sellable_ref' => $ref,
@@ -264,7 +264,7 @@ final readonly class DatabaseStockItems implements StockItems
     {
         $this->db()->table($this->tables->table('stock_items'))
             ->where('id', $id->value)
-            ->update(['status' => $status->value, 'updated_at' => Clock::now()]);
+            ->update(['status' => $status->value, 'updated_at' => PgTimestamp::now()]);
     }
 
     /** The caller holds the item row; new transfers cannot pass their item lock until this change commits. */

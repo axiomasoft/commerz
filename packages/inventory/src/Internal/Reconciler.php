@@ -6,11 +6,11 @@ namespace Commerz\Inventory\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Inventory\Common\Internal\LevelRow;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Internal\Data\Discrepancy;
 use Commerz\Inventory\Internal\Data\ReconciliationReport;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;

@@ -9,9 +9,7 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\Uuid7;
-use Commerz\Inventory\Common\Internal\Clock;
 use Commerz\Inventory\Common\Internal\LevelRow;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Common\Internal\StockLedger;
 use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Items\Enums\StockItemStatus;
@@ -45,7 +43,9 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Operations\Fingerprint;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -97,7 +97,7 @@ final readonly class DatabaseTransfers implements Transfers
             $demand = self::demand($id);
             $this->reservations->shipTransfer($demand, $demand);
 
-            $now = Clock::now();
+            $now = PgTimestamp::now();
             $this->db()->update(
                 "update {$this->transferTable()} set state = ?, dispatched_at = ?, updated_at = ? where id = ?",
                 [TransferState::InTransit->value, $now, $now, $id],
@@ -132,7 +132,7 @@ final readonly class DatabaseTransfers implements Transfers
             $this->reservations->releaseTransfer(self::demand($id));
             $this->db()->update(
                 "update {$this->transferTable()} set state = ?, updated_at = ? where id = ?",
-                [TransferState::Cancelled->value, Clock::now(), $id],
+                [TransferState::Cancelled->value, PgTimestamp::now(), $id],
             );
 
             return $this->announce($id);
@@ -222,7 +222,7 @@ final readonly class DatabaseTransfers implements Transfers
         }
 
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $db = $this->db();
 
         $db->table($this->transferTable())->insert([
@@ -304,7 +304,7 @@ final readonly class DatabaseTransfers implements Transfers
             $settled = $settled && $received + $lost === Rows::int($line, 'quantity');
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $this->db()->update(
             "update {$this->transferTable()} set state = ?, completed_at = ?, updated_at = ? where id = ?",
             [$settled ? TransferState::Completed->value : TransferState::InTransit->value, $settled ? $now : null, $now, $id],

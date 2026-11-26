@@ -4,33 +4,34 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Schema;
 
+use Commerz\Schema\CommerzSchemaSets;
+use Illuminate\Contracts\Config\Repository;
 use Override;
 use Packman\Attributes\Spi;
 use Packman\Attributes\SpiKind;
 use Packman\Schema\Contracts\Migration\SchemaSetProvider;
 use Packman\Schema\Data\Migration\SchemaSet;
-use Packman\Schema\Enums\SchemaLifecycle;
-use Packman\Schema\Enums\SchemaScope;
 
 /**
- * Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-catalog`.
+ * Declares the PostgreSQL schema set owned by `axiomasoft/commerz-catalog`.
  */
 #[Spi(kind: SpiKind::Call, since: '0.1')]
 final readonly class CatalogSchemaSets implements SchemaSetProvider
 {
+    public function __construct(
+        private ?Repository $config = null,
+    ) {}
+
     /** @return list<SchemaSet> */
     #[Override]
     public function sets(): array
     {
         return [
-            new SchemaSet(
+            CommerzSchemaSets::forPackage(
+                config: $this->config,
                 package: 'axiomasoft/commerz-catalog',
                 name: 'commerz-catalog',
-                scope: SchemaScope::Central,
                 path: dirname(__DIR__, 2).'/database/migrations',
-                version: 1,
-                drivers: ['pgsql'],
-                lifecycle: SchemaLifecycle::Platform,
             ),
         ];
     }

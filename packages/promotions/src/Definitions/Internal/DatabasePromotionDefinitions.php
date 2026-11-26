@@ -14,8 +14,6 @@ use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
-use Commerz\Promotions\Common\Internal\Clock;
-use Commerz\Promotions\Common\Internal\Rows;
 use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
 use Commerz\Promotions\Definitions\Data\AssignPromotionChannels;
@@ -43,9 +41,11 @@ use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 use Commerz\Promotions\Rules\Internal\RuleCodec;
 use Commerz\Promotions\Rules\Internal\StoredRule;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
@@ -96,7 +96,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
 
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -214,7 +214,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
 
             if ($changes !== [] || $replaced !== []) {
                 $db = $this->db();
-                $changes['updated_at'] = Clock::now();
+                $changes['updated_at'] = PgTimestamp::now();
 
                 if ($definition) {
                     $changes['revision'] = $db->raw('revision + 1');
@@ -442,7 +442,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
     /** @param  list<ChannelId>  $channels */
     private function insertChannels(string $promotion, array $channels): int
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         return $this->db()->table($this->tables->table('promotion_channels'))->insertOrIgnore(array_map(
             static fn (ChannelId $channel): array => [
@@ -485,7 +485,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
     {
         $this->db()->table($this->tables->table('promotions'))
             ->where('id', $id->value)
-            ->update($changes + ['updated_at' => Clock::now()]);
+            ->update($changes + ['updated_at' => PgTimestamp::now()]);
     }
 
     private function lock(PromotionId $id): object

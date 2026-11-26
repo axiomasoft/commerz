@@ -20,12 +20,10 @@ use Commerz\Pagination\Page;
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
 use Commerz\Ports\Promotions\Data\RestorePromotionUsage;
 use Commerz\Ports\Promotions\Enums\RestoreReason;
-use Commerz\Sales\Common\Internal\Clock;
 use Commerz\Sales\Common\Internal\OrderJournal;
 use Commerz\Sales\Common\Internal\OrderLocks;
 use Commerz\Sales\Common\Internal\OrderRow;
 use Commerz\Sales\Common\Internal\OrderStatus;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
 use Commerz\Sales\Refunds\Data\IssueRefund;
@@ -37,7 +35,9 @@ use Commerz\Sales\Refunds\Events\RefundStatusChanged;
 use Commerz\Sales\Refunds\Exceptions\RefundExceedsBalance;
 use Commerz\Sales\Refunds\Exceptions\RefundNotFound;
 use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -129,7 +129,7 @@ final readonly class RefundJournal
         }
 
         $id = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $db->table($this->tables->table('refunds'))->insert([
             'id' => $id,
@@ -192,7 +192,7 @@ final readonly class RefundJournal
     /** Takes the next attempt of a refund whose order the caller locked: a new lease from now. */
     public function lease(RefundRow $refund): RefundRow
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('refunds'))->where('id', $refund->id->value)->update([
             'attempts' => $refund->attempts + 1,
@@ -274,7 +274,7 @@ final readonly class RefundJournal
             return $current;
         }
 
-        $db->table($this->tables->table('refunds'))->where('id', $current->id->value)->update($values + ['updated_at' => Clock::now()]);
+        $db->table($this->tables->table('refunds'))->where('id', $current->id->value)->update($values + ['updated_at' => PgTimestamp::now()]);
 
         if ($next !== null) {
             $this->settled($order, $current, $next, $actor);
@@ -361,7 +361,7 @@ final readonly class RefundJournal
         if ($next === RefundStatus::Succeeded) {
             $db->table($this->tables->table('payments'))->where('id', $current->payment->value)->update([
                 'refunded_minor' => $this->succeeded('payment_id', $current->payment->value),
-                'updated_at' => Clock::now(),
+                'updated_at' => PgTimestamp::now(),
             ]);
         }
 

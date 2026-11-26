@@ -10,8 +10,6 @@ use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Ports\Delivery\Data\BookedShipment;
 use Commerz\Sales\Common\Data\LineQuantity;
-use Commerz\Sales\Common\Internal\Clock;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Fulfillments\Data\FulfillmentId;
 use Commerz\Sales\Fulfillments\Data\FulfillmentView;
 use Commerz\Sales\Fulfillments\Data\ListFulfillments;
@@ -19,7 +17,9 @@ use Commerz\Sales\Fulfillments\Enums\FulfillmentStatus;
 use Commerz\Sales\Fulfillments\Exceptions\FulfillmentNotFound;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineId;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -42,7 +42,7 @@ final readonly class FulfillmentRows
     /** @param  list<LineQuantity>  $lines */
     public function insert(FulfillmentId $id, OrderId $order, ?string $locationCode, array $lines): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('fulfillments'))->insert([
             'id' => $id->value,
@@ -104,13 +104,13 @@ final readonly class FulfillmentRows
         $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->update([
             'method_code' => $methodCode,
             'label_ref' => $booking->labelRef,
-            'updated_at' => Clock::now(),
+            'updated_at' => PgTimestamp::now(),
         ]);
     }
 
     public function markShipped(FulfillmentId $id, ?string $carrier, ?string $tracking, ?string $labelRef, ?string $methodCode): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->update([
             'status' => FulfillmentStatus::Shipped->value,
@@ -125,7 +125,7 @@ final readonly class FulfillmentRows
 
     public function markDelivered(FulfillmentId $id): void
     {
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $this->db()->table($this->tables->table('fulfillments'))->where('id', $id->value)->update([
             'status' => FulfillmentStatus::Delivered->value,

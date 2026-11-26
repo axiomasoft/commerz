@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Configuration\StockMode;
 use Packman\Config\Exceptions\InvalidConfiguration;
+use Packman\Schema\Enums\SchemaScope;
 
 it('reads the shipped config file', function (): void {
     $options = CommerzOptions::fromArray(require __DIR__.'/../../config/commerz.php');
@@ -15,7 +16,8 @@ it('reads the shipped config file', function (): void {
         ->and($options->customers)->toBeNull()
         ->and($options->plugins)->toBe([])
         ->and($options->disabledPlugins)->toBe([])
-        ->and($options->receiptTtlDays)->toBe(30);
+        ->and($options->receiptTtlDays)->toBe(30)
+        ->and($options->schemaScope)->toBe(SchemaScope::Central);
 });
 
 it('defaults every key when the array is empty', function (): void {
@@ -31,6 +33,7 @@ it('accepts valid overrides', function (): void {
         'plugins' => [ArrayIterator::class],
         'disabled_plugins' => ['acme.unused'],
         'operations' => ['receipt_ttl_days' => 7],
+        'schema_scope' => 'dedicated',
     ]);
 
     expect($options->connection)->toBe('shop')
@@ -39,7 +42,8 @@ it('accepts valid overrides', function (): void {
         ->and($options->customers)->toBe(ArrayObject::class)
         ->and($options->plugins)->toBe([ArrayIterator::class])
         ->and($options->disabledPlugins)->toBe(['acme.unused'])
-        ->and($options->receiptTtlDays)->toBe(7);
+        ->and($options->receiptTtlDays)->toBe(7)
+        ->and($options->schemaScope)->toBe(SchemaScope::Dedicated);
 });
 
 it('rejects unknown keys under closed schema validation', function (): void {
@@ -78,4 +82,7 @@ it('names the failing key path', function (array $input, string $path): void {
     'disabled_plugins null' => [['disabled_plugins' => null], 'app.commerz.disabled_plugins'],
     'operations null' => [['operations' => null], 'app.commerz.operations'],
     'ttl null' => [['operations' => ['receipt_ttl_days' => null]], 'app.commerz.operations.receipt_ttl_days'],
+    'schema_scope value' => [['schema_scope' => 'shared'], 'app.commerz.schema_scope'],
+    'schema_scope null' => [['schema_scope' => null], 'app.commerz.schema_scope'],
+    'dedicated without connection' => [['schema_scope' => 'dedicated'], 'app.commerz.connection'],
 ]);

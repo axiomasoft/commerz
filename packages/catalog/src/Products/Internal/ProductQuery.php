@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Commerz\Catalog\Products\Internal;
 
 use Commerz\Catalog\Categories\Data\CategoryId;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Listings\Enums\ListingStatus;
 use Commerz\Catalog\Products\Data\ListProducts;
 use Commerz\Catalog\Products\Enums\ProductStatus;
@@ -15,8 +14,8 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Pagination\Cursor;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
-use DateTimeZone;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Packman\Attributes\Internal;
@@ -108,7 +107,7 @@ final readonly class ProductQuery
     private function listedIn(Builder $products, ChannelId $channel, ?DateTimeImmutable $at): void
     {
         $listings = $this->tables->table('listings');
-        $moment = $at?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP') ?? Clock::now();
+        $moment = $at instanceof DateTimeImmutable ? PgTimestamp::format($at) : PgTimestamp::now();
 
         $products->whereExists(static fn (Builder $l) => $l->selectRaw('1')
             ->from($listings.' as l')

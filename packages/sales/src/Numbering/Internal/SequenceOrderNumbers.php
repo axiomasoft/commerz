@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Commerz\Sales\Numbering\Internal;
 
 use Commerz\Configuration\CommerzOptions;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Data\OrderNumbering;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;

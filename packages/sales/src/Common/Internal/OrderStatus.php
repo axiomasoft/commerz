@@ -20,7 +20,9 @@ use Commerz\Sales\Orders\Events\OrderCompleted;
 use Commerz\Sales\Orders\Events\OrderPaymentStateChanged;
 use Commerz\Sales\Orders\Events\PaymentRequiresRefund;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
@@ -90,7 +92,7 @@ final readonly class OrderStatus
 
         [$state, $payment, $fulfillment] = self::derive($from, $quantity, $cancelled, $fulfilled, $returned, $amountDue, $authorized, $captured, $refunded);
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $values = [
             'amount_due_minor' => $amountDue,
             'authorized_minor' => $authorized,

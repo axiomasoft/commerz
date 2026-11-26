@@ -38,12 +38,12 @@ use Commerz\Sales\Common\Internal\CartLines;
 use Commerz\Sales\Common\Internal\CartQuoter;
 use Commerz\Sales\Common\Internal\CartRow;
 use Commerz\Sales\Common\Internal\CartRows;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Common\Internal\SalesCodec;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
-use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -293,7 +293,7 @@ final readonly class DatabaseCarts implements Carts
 
     private static function now(): DateTimeImmutable
     {
-        return new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        return PgTimestamp::current();
     }
 
     private function db(): ConnectionInterface

@@ -8,7 +8,9 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\ActorRef;
 use Commerz\Sales\Orders\Data\OrderEventView;
 use Commerz\Sales\Orders\Data\OrderId;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use JsonException;
@@ -36,7 +38,7 @@ final readonly class OrderJournal
             'type' => $type,
             'actor_ref' => $actor === null ? null : (string) $actor,
             'data' => json_encode((object) $data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'created_at' => Clock::now(),
+            'created_at' => PgTimestamp::now(),
         ]);
     }
 

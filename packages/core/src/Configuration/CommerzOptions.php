@@ -11,6 +11,7 @@ use Packman\Config\Data\TablePrefix;
 use Packman\Config\Exceptions\InvalidConfiguration;
 use Packman\Config\Laravel\ConfigurationValidator;
 use Packman\Plugins\Data\Plugin\PluginManifest;
+use Packman\Schema\Enums\SchemaScope;
 
 /**
  * Immutable compiled configuration snapshot for `axiomasoft/commerz`.
@@ -27,6 +28,7 @@ final readonly class CommerzOptions implements OptionsFactory
         'plugins',
         'disabled_plugins',
         'operations',
+        'schema_scope',
     ];
 
     /** @var list<string> */
@@ -47,6 +49,7 @@ final readonly class CommerzOptions implements OptionsFactory
         public array $plugins = [],
         public array $disabledPlugins = [],
         public int $receiptTtlDays = 30,
+        public SchemaScope $schemaScope = SchemaScope::Central,
     ) {}
 
     /** @param array<array-key, mixed> $config */
@@ -121,10 +124,20 @@ final readonly class CommerzOptions implements OptionsFactory
             }
         }
 
+        $rawScope = array_key_exists('schema_scope', $config) ? $config['schema_scope'] : SchemaScope::Central->value;
+        $schemaScope = $rawScope instanceof SchemaScope ? $rawScope : (is_string($rawScope) ? SchemaScope::tryFrom($rawScope) : null);
+
+        if ($schemaScope === null) {
+            $validator->add($path.'.schema_scope', 'expected one of: '.implode(', ', array_column(SchemaScope::cases(), 'value')));
+            $schemaScope = SchemaScope::Central;
+        } elseif ($schemaScope === SchemaScope::Dedicated && $connection === null) {
+            $validator->add($path.'.connection', 'dedicated schema_scope requires a non-null database connection');
+        }
+
         $validator->failIfAny();
 
         /** @var ?class-string $customers */
-        return new self($connection, $tablePrefix, $stockMode, $customers, $plugins, $disabledPlugins, $ttl);
+        return new self($connection, $tablePrefix, $stockMode, $customers, $plugins, $disabledPlugins, $ttl, $schemaScope);
     }
 
     /** @return list<class-string> */

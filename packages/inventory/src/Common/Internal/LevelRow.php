@@ -8,6 +8,7 @@ use Commerz\Inventory\Items\Data\StockItemId;
 use Commerz\Inventory\Items\Enums\StockPolicy;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Stock\Data\StockLevelView;
+use Commerz\Schema\Rows;
 use DateTimeImmutable;
 use Packman\Attributes\Internal;
 

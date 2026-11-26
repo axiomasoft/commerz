@@ -6,13 +6,13 @@ namespace Commerz\Sales\Refunds\Internal;
 
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
-use Commerz\Sales\Common\Internal\Rows;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Refunds\Data\RefundId;
 use Commerz\Sales\Refunds\Data\RefundView;
 use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Returns\Data\ReturnId;
+use Commerz\Schema\Rows;
 use DateTimeImmutable;
 use Packman\Attributes\Internal;
 

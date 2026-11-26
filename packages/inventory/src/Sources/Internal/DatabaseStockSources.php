@@ -6,8 +6,6 @@ namespace Commerz\Inventory\Sources\Internal;
 
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
-use Commerz\Inventory\Common\Internal\Clock;
-use Commerz\Inventory\Common\Internal\Rows;
 use Commerz\Inventory\Locations\Data\LocationId;
 use Commerz\Inventory\Locations\Enums\LocationStatus;
 use Commerz\Inventory\Locations\Exceptions\LocationArchived;
@@ -17,9 +15,11 @@ use Commerz\Inventory\Sources\Data\AssignSource;
 use Commerz\Inventory\Sources\Data\StockSourceView;
 use Commerz\Inventory\Sources\Data\UnassignSource;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -51,7 +51,7 @@ final readonly class DatabaseStockSources implements StockSources
                 throw new LocationArchived(Rows::string($location, 'code'));
             }
 
-            $now = Clock::now();
+            $now = PgTimestamp::now();
             $db->table($this->tables->table('stock_sources'))->upsert([[
                 'id' => Uuid7::generate(),
                 'channel_id' => $command->channel->value,

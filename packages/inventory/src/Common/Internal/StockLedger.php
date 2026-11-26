@@ -20,7 +20,9 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Outbox\Contracts\Outbox;
 use Commerz\Outbox\Data\IntegrationEvent;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use LogicException;
@@ -82,7 +84,7 @@ final class StockLedger
     public function ensureLevels(array $pairs): void
     {
         $this->assertTransaction();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $rows = [];
 
         foreach (self::sorted($pairs) as [$item, $location]) {
@@ -288,7 +290,7 @@ final class StockLedger
         $row = $this->db()->selectOne(
             "update {$table} set {$set}, version = version + 1, updated_at = ? where id = ? and {$guard}"
             .' returning on_hand, reserved, safety_stock, version, updated_at',
-            [...$setBindings, Clock::now(), $level->id, ...$guardBindings],
+            [...$setBindings, PgTimestamp::now(), $level->id, ...$guardBindings],
             useReadPdo: false,
         );
 

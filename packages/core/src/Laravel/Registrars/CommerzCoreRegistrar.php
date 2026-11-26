@@ -22,6 +22,8 @@ use Commerz\Plugins\CorePlugin;
 use Commerz\Schema\CommerzSchemaSets;
 use Commerz\Schema\Internal\LegacyFingerprint;
 use Commerz\Schema\TableNames;
+use Commerz\Time\Contracts\Clock;
+use Commerz\Time\Internal\SystemClock;
 use Illuminate\Console\Events\ArtisanStarting;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -64,6 +66,7 @@ final class CommerzCoreRegistrar implements PackageRegistrar
 
         self::bindTableNames($app);
 
+        $app->singletonIf(Clock::class, SystemClock::class);
         $app->singleton(Transactions::class, DatabaseTransactions::class);
         $app->singleton(CommittedEvents::class, ConnectionCommittedEvents::class);
         $app->singleton(OperationReceipts::class, DatabaseOperationReceipts::class);

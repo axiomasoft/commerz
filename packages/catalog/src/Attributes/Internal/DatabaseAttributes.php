@@ -19,16 +19,16 @@ use Commerz\Catalog\Attributes\Exceptions\AttributeNotFound;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeConfig;
 use Commerz\Catalog\Attributes\Exceptions\InvalidStatusTransition;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -67,7 +67,7 @@ final readonly class DatabaseAttributes implements Attributes
         return $this->transactions->run(function () use ($command, $type, $config): AttributeView {
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -133,7 +133,7 @@ final readonly class DatabaseAttributes implements Attributes
             if ($changes !== [] || $command->choiceLabels !== []) {
                 $db->table($this->tables->table('attributes'))
                     ->where('id', $command->attribute->value)
-                    ->update($changes + ['updated_at' => Clock::now()]);
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]);
             }
 
             // Only filterable and retirement change the projection; deprecation keeps the facts of existing values.
@@ -167,7 +167,7 @@ final readonly class DatabaseAttributes implements Attributes
             }
 
             $last = $db->table($table)->where('attribute_id', $command->attribute->value)->max('position');
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             $this->insertChoices($db, $command->attribute->value, $command->choices, is_numeric($last) ? (int) $last + 1 : 0, $now);
 
@@ -256,7 +256,7 @@ final readonly class DatabaseAttributes implements Attributes
     {
         $table = $this->tables->table('attribute_choices');
         $known = $db->table($table)->where('attribute_id', $attribute->value)->pluck('code')->all();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         foreach ($labels as $code => $label) {
             if (! in_array((string) $code, $known, true)) {

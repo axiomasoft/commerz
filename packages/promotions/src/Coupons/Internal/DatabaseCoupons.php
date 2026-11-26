@@ -16,8 +16,6 @@ use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Data\PromotionCodes;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
-use Commerz\Promotions\Common\Internal\Clock;
-use Commerz\Promotions\Common\Internal\Rows;
 use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Coupons\Data\CouponBatchId;
@@ -39,7 +37,9 @@ use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Exceptions\PromotionArchived;
 use Commerz\Promotions\Definitions\Exceptions\PromotionNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -80,7 +80,7 @@ final readonly class DatabaseCoupons implements Coupons
 
             $db = $this->db();
             $id = Uuid7::generate();
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             try {
                 // A nested transaction is a savepoint: a unique violation must not poison the caller's transaction.
@@ -173,7 +173,7 @@ final readonly class DatabaseCoupons implements Coupons
                 $this->db()->table($this->tables->table('coupons'))->where('id', $command->coupon->value)->update([
                     'usage_limit' => $command->usageLimit,
                     'used' => $command->usageLimit === null ? 0 : ($this->consumed([$command->coupon->value])[$command->coupon->value] ?? 0),
-                    'updated_at' => Clock::now(),
+                    'updated_at' => PgTimestamp::now(),
                 ]);
             }
 
@@ -233,7 +233,7 @@ final readonly class DatabaseCoupons implements Coupons
 
         $db = $this->db();
         $batch = Uuid7::generate();
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         $db->table($this->tables->table('coupon_batches'))->insert([
             'id' => $batch,
@@ -281,7 +281,7 @@ final readonly class DatabaseCoupons implements Coupons
         $db = $this->db();
         $name = $this->tables->table('coupons');
         $table = $db->table($name)->getGrammar()->wrapTable($name);
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $inserted = 0;
 
         foreach (array_chunk($codes, self::CHUNK) as $chunk) {
@@ -318,7 +318,7 @@ final readonly class DatabaseCoupons implements Coupons
             if (Rows::string($row, 'status') !== $target->value) {
                 $this->db()->table($this->tables->table('coupons'))->where('id', $id->value)->update([
                     'status' => $target->value,
-                    'updated_at' => Clock::now(),
+                    'updated_at' => PgTimestamp::now(),
                 ]);
             }
 

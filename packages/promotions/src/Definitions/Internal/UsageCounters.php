@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Definitions\Internal;
 
 use Commerz\Configuration\CommerzOptions;
-use Commerz\Promotions\Common\Internal\Rows;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Variants\Internal;
 
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Variants\Exceptions\InvalidAxes;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionInterface;
 use Packman\Attributes\Internal;

@@ -29,21 +29,59 @@ use ReflectionObject;
 #[Spi(kind: SpiKind::Call, since: '0.1')]
 final readonly class CommerzSchemaSets implements SchemaSetProvider
 {
+    public function __construct(
+        private ?Repository $config = null,
+    ) {}
+
     /** @return list<SchemaSet> */
     #[Override]
     public function sets(): array
     {
         return [
-            new SchemaSet(
+            self::forPackage(
+                config: $this->config,
                 package: 'axiomasoft/commerz',
                 name: 'commerz',
-                scope: SchemaScope::Central,
                 path: dirname(__DIR__, 2).'/database/migrations',
                 version: 2,
-                drivers: ['pgsql'],
-                lifecycle: SchemaLifecycle::Platform,
             ),
         ];
+    }
+
+    public static function forPackage(
+        CommerzOptions|Repository|null $config,
+        string $package,
+        string $name,
+        string $path,
+        int $version = 1,
+    ): SchemaSet {
+        $options = match (true) {
+            $config instanceof CommerzOptions => $config,
+            $config instanceof Repository => self::optionsFromRepository($config),
+            default => null,
+        };
+
+        $scope = $options instanceof CommerzOptions ? $options->schemaScope : SchemaScope::Central;
+        $connection = $options instanceof CommerzOptions && $scope === SchemaScope::Dedicated ? $options->connection : null;
+
+        return new SchemaSet(
+            package: $package,
+            name: $name,
+            scope: $scope,
+            path: $path,
+            version: $version,
+            drivers: ['pgsql'],
+            lifecycle: SchemaLifecycle::Platform,
+            connection: $connection,
+        );
+    }
+
+    private static function optionsFromRepository(Repository $config): CommerzOptions
+    {
+        $raw = $config->get('commerz', []);
+        $section = is_array($raw) ? array_intersect_key($raw, array_flip(['connection', 'schema_scope'])) : [];
+
+        return CommerzOptions::fromArray($section, 'commerz');
     }
 
     /**

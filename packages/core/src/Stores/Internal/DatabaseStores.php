@@ -25,8 +25,7 @@ use Commerz\Stores\Events\ChannelUpdated;
 use Commerz\Stores\Events\StoreCreated;
 use Commerz\Stores\Exceptions\DuplicateCode;
 use Commerz\Stores\Exceptions\StoreNotFound;
-use DateTimeImmutable;
-use DateTimeZone;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -180,6 +179,6 @@ final readonly class DatabaseStores implements Stores
 
     private static function now(): string
     {
-        return new DateTimeImmutable('now', new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP');
+        return PgTimestamp::now();
     }
 }

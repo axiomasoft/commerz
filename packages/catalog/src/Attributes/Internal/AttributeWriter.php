@@ -14,13 +14,13 @@ use Commerz\Catalog\Attributes\Exceptions\AttributeNotAllowed;
 use Commerz\Catalog\Attributes\Exceptions\AttributeNotWritable;
 use Commerz\Catalog\Attributes\Exceptions\InvalidAttributeValue;
 use Commerz\Catalog\Attributes\Exceptions\MissingRequiredAttributes;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\ProductTypes\Data\ProductTypeId;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Errors\InvalidCommand;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -151,7 +151,7 @@ final readonly class AttributeWriter implements AttributeIndexer
 
         $db->table($this->tables->table($owner->table()))
             ->where('id', $owner->id())
-            ->update(['attributes' => Documents::encode($prepared->document), 'updated_at' => Clock::now()]);
+            ->update(['attributes' => Documents::encode($prepared->document), 'updated_at' => PgTimestamp::now()]);
     }
 
     /** Rebuilds all facts of one attribute; the caller holds its definition row `for no key update`. */

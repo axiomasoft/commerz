@@ -13,6 +13,7 @@ use Commerz\Sales\Orders\Data\OrderLineId;
 use Commerz\Sales\Orders\Enums\OrderState;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Orders\Exceptions\OrderNotFound;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;

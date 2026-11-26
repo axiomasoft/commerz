@@ -9,9 +9,8 @@ use Commerz\Identity\Uuid7;
 use Commerz\Measures\LocalizedText;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
-use Commerz\Shipping\Common\Internal\Clock;
-use Commerz\Shipping\Common\Internal\Rows;
 use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Methods\Data\MethodId;
 use Commerz\Shipping\Methods\Data\MethodView;
@@ -26,6 +25,7 @@ use Commerz\Shipping\Rates\Internal\RateCodec;
 use Commerz\Shipping\Rates\Internal\StoredRate;
 use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Packman\Attributes\Internal;
@@ -83,7 +83,7 @@ final readonly class MethodRows
             return 0;
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
 
         return $this->db()->table($this->tables->table('shipping_method_channels'))->insertOrIgnore(array_map(
             static fn (ChannelId $channel): array => [
@@ -105,7 +105,7 @@ final readonly class MethodRows
             return;
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $rows = [];
 
         foreach ($rates as $index => $rate) {

@@ -16,6 +16,7 @@ use Commerz\Sales\Carts\Exceptions\SellableNotPurchasable;
 use Commerz\Sales\Carts\Exceptions\TooManyCartLines;
 use Commerz\Sales\Configuration\SalesOptions;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
@@ -79,7 +80,7 @@ final readonly class CartLines
         $table = $this->db()->table($this->tables->table('cart_lines'));
 
         if ($existing !== null) {
-            $table->where('id', $existing->id)->update(['quantity' => $total, 'updated_at' => Clock::now()]);
+            $table->where('id', $existing->id)->update(['quantity' => $total, 'updated_at' => PgTimestamp::now()]);
 
             return;
         }
@@ -88,7 +89,7 @@ final readonly class CartLines
             throw new TooManyCartLines($this->sales->maxCartLines);
         }
 
-        $now = Clock::now();
+        $now = PgTimestamp::now();
         $table->insert([
             'id' => Uuid7::generate(),
             'cart_id' => $cart->id,
@@ -126,7 +127,7 @@ final readonly class CartLines
 
         $this->db()->table($this->tables->table('cart_lines'))
             ->where('id', $lineId)
-            ->update(['quantity' => $quantity, 'updated_at' => Clock::now()]);
+            ->update(['quantity' => $quantity, 'updated_at' => PgTimestamp::now()]);
 
         return true;
     }

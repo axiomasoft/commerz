@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Listings\Internal;
 
-use Commerz\Catalog\Common\Internal\Clock;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Listings\Contracts\Listings;
 use Commerz\Catalog\Listings\Data\ListingView;
 use Commerz\Catalog\Listings\Data\PublishProduct;
@@ -21,9 +19,11 @@ use Commerz\Catalog\Products\Exceptions\ProductNotFound;
 use Commerz\Configuration\CommerzOptions;
 use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Data\ChannelId;
+use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\ConnectionInterface;
@@ -67,7 +67,7 @@ final readonly class DatabaseListings implements Listings
                 return $this->view($current);
             }
 
-            $now = Clock::now();
+            $now = PgTimestamp::now();
 
             $this->db()->table($this->tables->table('listings'))->upsert(
                 [[
@@ -104,7 +104,7 @@ final readonly class DatabaseListings implements Listings
             $this->db()->table($this->tables->table('listings'))
                 ->where('product_id', $command->product->value)
                 ->where('channel_id', $command->channel->value)
-                ->update(['status' => ListingStatus::Unpublished->value, 'updated_at' => Clock::now()]);
+                ->update(['status' => ListingStatus::Unpublished->value, 'updated_at' => PgTimestamp::now()]);
 
             $view = $this->find($command->product, $command->channel);
             $this->events->dispatch(new ProductUnpublished($view));

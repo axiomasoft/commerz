@@ -8,9 +8,7 @@ use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Attributes\Internal\AttributeOwner;
 use Commerz\Catalog\Attributes\Internal\AttributeWriter;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
-use Commerz\Catalog\Common\Internal\Clock;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Products\Contracts\Products;
 use Commerz\Catalog\Products\Data\ArchiveProduct;
 use Commerz\Catalog\Products\Data\CreateProduct;
@@ -35,7 +33,9 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use Commerz\Time\PgTimestamp;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -70,7 +70,7 @@ final readonly class DatabaseProducts implements Products
             }
 
             $id = new ProductId(Uuid7::generate());
-            $now = Clock::now();
+            $now = PgTimestamp::now();
             // Every attribute check runs before the first write: a refused value leaves no product behind.
             $attributes = $this->writer->prepare(AttributeOwner::product($id), $command->type, [], $command->attributes, [], creating: true);
 
@@ -137,7 +137,7 @@ final readonly class DatabaseProducts implements Products
             try {
                 $db->transaction(fn () => $db->table($this->tables->table('products'))
                     ->where('id', $command->product->value)
-                    ->update($changes + ['updated_at' => Clock::now()]));
+                    ->update($changes + ['updated_at' => PgTimestamp::now()]));
             } catch (UniqueConstraintViolationException) {
                 throw new DuplicateCode('Product handle', (string) $command->handle);
             }
@@ -175,7 +175,7 @@ final readonly class DatabaseProducts implements Products
 
             $this->db()->table($this->tables->table('products'))
                 ->where('id', $command->product->value)
-                ->update(['status' => ProductStatus::Archived->value, 'updated_at' => Clock::now()]);
+                ->update(['status' => ProductStatus::Archived->value, 'updated_at' => PgTimestamp::now()]);
 
             return $this->updated($command->product);
         });

@@ -6,7 +6,6 @@ namespace Commerz\Catalog\Variants\Internal;
 
 use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Common\Internal\Documents;
-use Commerz\Catalog\Common\Internal\Rows;
 use Commerz\Catalog\Listings\Enums\ListingStatus;
 use Commerz\Catalog\Products\Enums\ProductStatus;
 use Commerz\Catalog\ProductTypes\Contracts\ProductKind;
@@ -16,6 +15,7 @@ use Commerz\Context\CommerceContext;
 use Commerz\Ports\Sellables\Contracts\SellableProvider;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
 use Commerz\Ports\Sellables\Enums\SellableKind;
+use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
 use DateTimeImmutable;
 use DateTimeZone;
