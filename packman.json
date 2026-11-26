@@ -299,6 +299,7 @@
             "type": "dev",
             "dev_only": true,
             "owns": [
+                "Contracts",
                 "Fakes"
             ]
         }
