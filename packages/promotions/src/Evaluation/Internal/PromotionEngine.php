@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Evaluation\Internal;
 
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignBudget;
 use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Definitions\Data\PromotionVerdict;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Definitions\Enums\VerdictKind;
+use Commerz\Promotions\Rules\Contracts\GiftPromotionEffect;
 use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Contracts\PromotionEffect;
 use Commerz\Promotions\Rules\Data\ConditionInput;
 use Commerz\Promotions\Rules\Data\ConditionOutcome;
 use Commerz\Promotions\Rules\Data\EffectInput;
+use Commerz\Promotions\Rules\Data\GiftEffectResult;
 use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
@@ -31,9 +34,8 @@ use Packman\Attributes\Internal;
  * applied on top of what the earlier ones left, whole or not at all (PRM-05): its effects work on a scratch state that
  * is dropped on any refusal. An exclusive promotion applies only as the first of its stage and stops the rest, as does
  * one with `stopFurther` once applied. Every candidate gets a verdict in the session; only a promotion switched on by
- * a code leaves a `Rejection` in the quote. Limits are read from the session snapshot as a hint; they hold when the
- * order is placed. Exceptions of rules other than the refusals described here are not swallowed: the pipeline fails
- * the quote.
+ * a code leaves a `Rejection` in the quote. Limits and campaign budgets are read from the session snapshot as a hint;
+ * they hold atomically when the order is placed.
  */
 #[Internal]
 final readonly class PromotionEngine
@@ -79,11 +81,12 @@ final readonly class PromotionEngine
                 continue;
             }
 
-            [$next, $total] = $this->effects($stage, $candidate, $state, $lines);
+            [$next, $total, $hasGifts] = $this->effects($stage, $candidate, $state, $lines);
 
             $refused = match (true) {
-                ! $total->isPositive() => ['no_discount', 'The promotion gives no discount on this quote.'],
+                ! $total->isPositive() && ! $hasGifts => ['no_discount', 'The promotion gives no discount on this quote.'],
                 $candidate->budget instanceof Money && $candidate->spent instanceof Money && $total->compare($candidate->budget->minus($candidate->spent)) > 0 => ['budget_exhausted', 'The budget of the promotion is spent.'],
+                $candidate->campaignBudget instanceof CampaignBudget && ! $candidate->campaignBudget->canAfford($total->amountMinor, 1) => ['campaign_budget_exhausted', 'The budget of the campaign is spent.'],
                 default => null,
             };
 
@@ -105,12 +108,16 @@ final readonly class PromotionEngine
         return $state;
     }
 
-    /** @return array{VerdictKind, string, string}|null the first limit or delivery check the candidate fails */
+    /** @return array{VerdictKind, string, string}|null the first limit, campaign, or delivery check the candidate fails */
     private function refusal(PromotionStage $stage, CandidatePromotion $candidate, QuoteState $state): ?array
     {
         $customer = $state->context()->customer;
+        $campaignBudget = $candidate->campaignBudget;
 
         return match (true) {
+            $candidate->campaignId !== null && ! $candidate->campaignActive => [VerdictKind::Rejected, 'campaign_not_active', 'The campaign of the promotion is not active.'],
+            $campaignBudget instanceof CampaignBudget && $campaignBudget->usageCap !== null && $campaignBudget->used >= $campaignBudget->usageCap => [VerdictKind::Rejected, 'campaign_usage_cap_reached', 'The campaign usage cap has been reached.'],
+            $campaignBudget instanceof CampaignBudget && $campaignBudget->spendCapMinor !== null && $campaignBudget->spentMinor >= $campaignBudget->spendCapMinor => [VerdictKind::Rejected, 'campaign_budget_exhausted', 'The budget of the campaign is spent.'],
             $stage === PromotionStage::Delivery && $state->delivery === null => [VerdictKind::Rejected, 'no_delivery', 'The quote has no delivery to discount.'],
             $candidate->usageLimit !== null && $candidate->used >= $candidate->usageLimit => [VerdictKind::Rejected, 'usage_limit_reached', 'The promotion has been used up.'],
             $candidate->perCustomerLimit !== null && $customer === null => [VerdictKind::Rejected, 'customer_required', 'The promotion is only for a known customer.'],
@@ -121,6 +128,7 @@ final readonly class PromotionEngine
 
     /**
      * Line filters first, in declared order, each narrowing the eligible lines; then qualifiers, in declared order.
+     * Auto-added gift lines are excluded from eligible lines so gifts do not compound into further discounts.
      *
      * @return list<string>|ConditionOutcome the eligible lines, or the failure
      *
@@ -128,7 +136,10 @@ final readonly class PromotionEngine
      */
     private function eligibleLines(CandidatePromotion $candidate, QuoteState $state): array|ConditionOutcome
     {
-        $lines = array_map(static fn (QuoteLine $line): string => $line->lineId, $state->lines);
+        $lines = array_values(array_map(
+            static fn (QuoteLine $line): string => $line->lineId,
+            array_filter($state->lines, static fn (QuoteLine $line): bool => ! $line->isGift),
+        ));
         $filters = [];
         $qualifiers = [];
 
@@ -172,7 +183,7 @@ final readonly class PromotionEngine
      * The effects in declared order on a scratch state, each seeing what the earlier ones took off.
      *
      * @param  list<string>  $lines
-     * @return array{QuoteState, Money} the scratch state and the total taken off
+     * @return array{QuoteState, Money, bool} the scratch state, the total taken off, and whether any gift was added
      *
      * @throws InvalidRuleResult
      */
@@ -180,11 +191,13 @@ final readonly class PromotionEngine
     {
         $next = $state;
         $total = Money::zero($state->currency());
+        $hasGifts = false;
         $promotion = $candidate->summary;
 
         foreach ($candidate->effects as $rule) {
             [$effect, $params] = self::effect($rule);
-            $answer = $effect->apply(new EffectInput($next, $promotion, $params, $lines, $this->config->rounding));
+            $input = new EffectInput($next, $promotion, $params, $lines, $this->config->rounding);
+            $answer = $effect->apply($input);
 
             foreach ($this->guard->discounts($rule->key, $answer) as $returned) {
                 $discount = $this->guard->clamp($rule->key, $stage, $returned, $next, $lines);
@@ -204,9 +217,61 @@ final readonly class PromotionEngine
                 ));
                 $total = $total->plus($discount->amount);
             }
+
+            if ($effect instanceof GiftPromotionEffect) {
+                $gifts = $effect->applyGifts($input, $candidate->couponCode());
+                [$next, $appliedGift] = $this->applyGifts($rule->key, $promotion->id->value, $gifts, $next);
+                $hasGifts = $hasGifts || $appliedGift;
+            }
         }
 
-        return [$next, $total];
+        return [$next, $total, $hasGifts];
+    }
+
+    /**
+     * Validates gift lines and selectable offers returned by a {@see GiftPromotionEffect} (PRM-05).
+     *
+     * @return array{QuoteState, bool}
+     *
+     * @throws InvalidRuleResult
+     */
+    private function applyGifts(string $ruleKey, string $promotionId, GiftEffectResult $gifts, QuoteState $state): array
+    {
+        if ($gifts->isEmpty()) {
+            return [$state, false];
+        }
+
+        $next = $state;
+
+        foreach ($gifts->giftLines as $line) {
+            if (! $line->isGift) {
+                throw new InvalidRuleResult($ruleKey, 'a gift effect line must have isGift = true');
+            }
+
+            if (! $line->unitPrice->isZero()) {
+                throw new InvalidRuleResult($ruleKey, 'a gift effect line must have zero unit price');
+            }
+
+            if (! $line->unitPrice->currency->equals($state->currency())) {
+                throw new InvalidRuleResult($ruleKey, "a gift line is in {$line->unitPrice->currency->code}, the quote is in {$state->currency()->code}");
+            }
+
+            if ($line->giftPromotionId !== $promotionId) {
+                throw new InvalidRuleResult($ruleKey, 'a gift line must carry the owning promotion id');
+            }
+
+            $next = $next->withGiftLine($line);
+        }
+
+        foreach ($gifts->giftOffers as $offer) {
+            if ($offer->promotionId !== $promotionId) {
+                throw new InvalidRuleResult($ruleKey, 'a selectable gift offer must carry the owning promotion id');
+            }
+
+            $next = $next->withGiftOffer($offer);
+        }
+
+        return [$next, true];
     }
 
     private function refuse(PromotionSession $session, PromotionStage $stage, CandidatePromotion $candidate, QuoteState $state, VerdictKind $kind, string $reason, string $message): QuoteState

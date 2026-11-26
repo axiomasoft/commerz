@@ -59,7 +59,7 @@ final readonly class CouponActivator implements PromotionActivator
         $rows = $this->connections->connection($this->config->connection)
             ->table($this->tables->table('coupons'))
             ->whereIn('code', array_values(array_unique(array_column($presented, 1))))
-            ->get(['promotion_id', 'code', 'status', 'usage_limit', 'used']);
+            ->get(['promotion_id', 'code', 'status', 'usage_limit', 'used', 'held']);
 
         foreach ($rows as $row) {
             $coupons[Rows::string($row, 'code')] = $row;
@@ -86,11 +86,13 @@ final readonly class CouponActivator implements PromotionActivator
             $promotion = new PromotionId(Rows::string($coupon, 'promotion_id'));
             $limit = Rows::nullableInt($coupon, 'usage_limit');
 
+            $held = property_exists($coupon, 'held') ? Rows::int($coupon, 'held') : 0;
+
             $reason = match (true) {
                 isset($seen[$canonical]) => ['duplicate_code', "Code '{$canonical}' is presented more than once."],
                 Rows::string($coupon, 'status') === CouponStatus::Disabled->value => ['coupon_disabled', "Coupon '{$canonical}' is disabled."],
                 ! isset($candidates[$promotion->value]) => ['promotion_not_active', "The promotion of coupon '{$canonical}' does not apply to this quote."],
-                $limit !== null && Rows::int($coupon, 'used') >= $limit => ['coupon_exhausted', "Coupon '{$canonical}' has been used up."],
+                $limit !== null && (Rows::int($coupon, 'used') + $held) >= $limit => ['coupon_exhausted', "Coupon '{$canonical}' has been used up."],
                 isset($activated[$promotion->value]) => ['duplicate_promotion', "The promotion of coupon '{$canonical}' is already switched on by another code."],
                 default => null,
             };

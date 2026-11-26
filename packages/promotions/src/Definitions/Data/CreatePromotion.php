@@ -7,6 +7,7 @@ namespace Commerz\Promotions\Definitions\Data;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignId;
 use Commerz\Promotions\Common\Data\PromotionCodes;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
 use Commerz\Promotions\Definitions\Enums\Stacking;
@@ -47,6 +48,7 @@ final readonly class CreatePromotion
         public ?DateTimeImmutable $startsAt = null,
         public ?DateTimeImmutable $endsAt = null,
         public PromotionStatus $status = PromotionStatus::Active,
+        public ?CampaignId $campaignId = null,
     ) {
         PromotionCodes::code('code', $code);
         self::assertName($name);

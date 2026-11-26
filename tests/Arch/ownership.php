@@ -12,7 +12,7 @@ return [
     'catalog' => ['kind' => 'feature', 'nouns' => ['product', 'variant', 'option', 'attribute', 'category', 'listing', 'brand', 'asset_attachment', 'url_route'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'inventory' => ['kind' => 'feature', 'nouns' => ['stock'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'pricing' => ['kind' => 'feature', 'nouns' => ['price', 'tax'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
-    'promotions' => ['kind' => 'feature', 'nouns' => ['promotion', 'coupon'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
+    'promotions' => ['kind' => 'feature', 'nouns' => ['promotion', 'coupon', 'campaign'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'shipping' => ['kind' => 'feature', 'nouns' => ['shipping'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'sales' => ['kind' => 'feature', 'nouns' => ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],
     'stored-value' => ['kind' => 'feature', 'nouns' => ['stored_value'], 'extra' => ['axiomasoft/packman', 'axiomasoft/packman-*']],

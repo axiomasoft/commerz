@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Evaluation\Internal;
 
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignBudget;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Rules\Data\Activation;
 use Commerz\Promotions\Rules\Data\PromotionSummary;
@@ -13,9 +14,9 @@ use Packman\Attributes\Internal;
 
 /**
  * A promotion live for one quote, as loaded once for its session: the summary rules and activators see, how it stacks,
- * a snapshot of its limits and counters (a hint only: the limits hold when the order is placed), its rules brought up
- * to their plugins' versions, and how it was switched on. Not switched on (`$activation` null and no unsupported
- * activator) means it is not tried at all.
+ * a snapshot of its limits and counters (a hint only: the limits hold when the order is placed), its optional campaign
+ * state/budget snapshot, its rules brought up to their plugins' versions, and how it was switched on. Not switched on
+ * (`$activation` null and no unsupported activator) means it is not tried at all.
  */
 #[Internal]
 final readonly class CandidatePromotion
@@ -40,6 +41,9 @@ final readonly class CandidatePromotion
         public array $effects,
         public ?Activation $activation = null,
         public ?string $unsupportedActivator = null,
+        public ?string $campaignId = null,
+        public bool $campaignActive = true,
+        public ?CampaignBudget $campaignBudget = null,
     ) {}
 
     public function activated(Activation $activation): self
@@ -57,6 +61,10 @@ final readonly class CandidatePromotion
             $this->conditions,
             $this->effects,
             $activation,
+            null,
+            $this->campaignId,
+            $this->campaignActive,
+            $this->campaignBudget,
         );
     }
 
@@ -76,6 +84,9 @@ final readonly class CandidatePromotion
             $this->effects,
             null,
             $reason,
+            $this->campaignId,
+            $this->campaignActive,
+            $this->campaignBudget,
         );
     }
 

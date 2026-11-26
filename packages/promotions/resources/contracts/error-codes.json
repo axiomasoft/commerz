@@ -5,11 +5,77 @@
         {
             "package": "axiomasoft/commerz-promotions",
             "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CampaignArchived",
+            "code": "promotions.campaign_archived",
+            "type": "urn:packman:problem:promotions.campaign_archived",
+            "status": 409,
+            "title": "Campaign Archived",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CampaignBudgetExceeded",
+            "code": "promotions.campaign_budget_exceeded",
+            "type": "urn:packman:problem:promotions.campaign_budget_exceeded",
+            "status": 429,
+            "title": "Campaign Budget Exceeded",
+            "retryable": false,
+            "category": "rate_limit"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CampaignNotFound",
+            "code": "promotions.campaign_not_found",
+            "type": "urn:packman:problem:promotions.campaign_not_found",
+            "status": 404,
+            "title": "Campaign Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
             "case": "CodeSpaceExhausted",
             "code": "promotions.code_space_exhausted",
             "type": "urn:packman:problem:promotions.code_space_exhausted",
             "status": 409,
             "title": "Coupon Code Space Exhausted",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CouponHoldDisabled",
+            "code": "promotions.coupon_hold_disabled",
+            "type": "urn:packman:problem:promotions.coupon_hold_disabled",
+            "status": 409,
+            "title": "Coupon Hold Mode Disabled",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CouponHoldNotFound",
+            "code": "promotions.coupon_hold_not_found",
+            "type": "urn:packman:problem:promotions.coupon_hold_not_found",
+            "status": 404,
+            "title": "Coupon Hold Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz-promotions",
+            "enum": "Commerz\\Promotions\\Errors\\Enums\\PromotionsErrorCode",
+            "case": "CouponHoldUnavailable",
+            "code": "promotions.coupon_hold_unavailable",
+            "type": "urn:packman:problem:promotions.coupon_hold_unavailable",
+            "status": 409,
+            "title": "Coupon Hold Unavailable",
             "retryable": false,
             "category": "conflict"
         },

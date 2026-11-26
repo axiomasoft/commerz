@@ -18,13 +18,15 @@ final readonly class QuoteResult
     public Money $total;
 
     /**
-     * @param  list<QuotedLine>  $lines  in input order
+     * @param  list<QuotedLine>  $lines  in input order (followed by auto-added gift lines)
      * @param  list<Adjustment>  $orderAdjustments  order-level adjustments as declared (their shares are on the lines)
      * @param  list<Adjustment>  $deliveryAdjustments
      * @param  list<TaxLine>  $taxLines  all taxes, line and delivery
      * @param  list<Rejection>  $rejections
      * @param  list<string>  $codes  the presented codes
      * @param  string  $fingerprint  sha256 of the input and the keys and versions of the stages that ran
+     * @param  list<SelectableGiftOffer>  $giftOffers  selectable gift offers unlocked by promotions
+     * @param  list<NearMissHint>  $nearMissHints  non-blocking near-miss promotion hints
      */
     public function __construct(
         public CommerceContext $context,
@@ -37,6 +39,8 @@ final readonly class QuoteResult
         public array $rejections,
         public array $codes,
         public string $fingerprint,
+        public array $giftOffers = [],
+        public array $nearMissHints = [],
     ) {
         $this->total = $totals->total;
     }

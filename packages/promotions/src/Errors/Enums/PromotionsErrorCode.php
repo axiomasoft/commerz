@@ -14,7 +14,13 @@ use Packman\Errors\Contracts\ErrorCode;
 #[Api(since: '0.1')]
 enum PromotionsErrorCode: string implements ErrorCode
 {
+    case CampaignArchived = 'promotions.campaign_archived';
+    case CampaignBudgetExceeded = 'promotions.campaign_budget_exceeded';
+    case CampaignNotFound = 'promotions.campaign_not_found';
     case CodeSpaceExhausted = 'promotions.code_space_exhausted';
+    case CouponHoldDisabled = 'promotions.coupon_hold_disabled';
+    case CouponHoldNotFound = 'promotions.coupon_hold_not_found';
+    case CouponHoldUnavailable = 'promotions.coupon_hold_unavailable';
     case CouponNotFound = 'promotions.coupon_not_found';
     case CurrencyMismatch = 'promotions.currency_mismatch';
     case DuplicateCode = 'promotions.duplicate_code';

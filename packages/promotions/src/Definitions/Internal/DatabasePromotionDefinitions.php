@@ -13,6 +13,10 @@ use Commerz\Operations\Contracts\CommittedEvents;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Pagination\Cursor;
 use Commerz\Pagination\Page;
+use Commerz\Promotions\Campaigns\Data\CampaignId;
+use Commerz\Promotions\Campaigns\Enums\CampaignStatus;
+use Commerz\Promotions\Campaigns\Exceptions\CampaignArchived;
+use Commerz\Promotions\Campaigns\Exceptions\CampaignNotFound;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
@@ -48,6 +52,7 @@ use Commerz\Stores\Data\ChannelId;
 use Commerz\Time\PgTimestamp;
 use DateTimeImmutable;
 use DateTimeZone;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -94,6 +99,10 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
                 $this->channels->assertActive($channel, $currency);
             }
 
+            if ($command->campaignId instanceof CampaignId) {
+                $this->assertCampaignUsable($command->campaignId, $currency);
+            }
+
             $db = $this->db();
             $id = Uuid7::generate();
             $now = PgTimestamp::now();
@@ -119,6 +128,7 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
                     'used' => 0,
                     'spent_minor' => 0,
                     'revision' => 1,
+                    'campaign_id' => $command->campaignId?->value,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]));
@@ -194,6 +204,19 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
                     $changes['budget_minor'] = $command->budget->amountMinor;
                     $definition = $counters = true;
                 }
+            }
+
+            $currentCampaign = property_exists($row, 'campaign_id') ? Rows::nullableString($row, 'campaign_id') : null;
+
+            if ($command->clearCampaign && $currentCampaign !== null) {
+                $changes['campaign_id'] = null;
+                $definition = true;
+            }
+
+            if ($command->campaignId instanceof CampaignId && $command->campaignId->value !== $currentCampaign) {
+                $this->assertCampaignUsable($command->campaignId, $currency);
+                $changes['campaign_id'] = $command->campaignId->value;
+                $definition = true;
             }
 
             $replaced = [];
@@ -542,6 +565,28 @@ final readonly class DatabasePromotionDefinitions implements PromotionDefinition
     private static function timestamp(?DateTimeImmutable $at): ?string
     {
         return $at?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.uP');
+    }
+
+    private function assertCampaignUsable(CampaignId $campaignId, ?Currency $promotionCurrency): void
+    {
+        $db = $this->db();
+        $query = $db->table($this->tables->table('campaigns'))->where('id', $campaignId->value);
+
+        if ($db instanceof Connection && $db->getDriverName() === 'pgsql') {
+            $query->lock('for key share');
+        }
+
+        $campaign = $query->first(['code', 'status', 'currency']) ?? throw new CampaignNotFound($campaignId->value);
+
+        if (Rows::string($campaign, 'status') === CampaignStatus::Archived->value) {
+            throw new CampaignArchived(Rows::string($campaign, 'code'));
+        }
+
+        $campaignCurrency = Rows::nullableString($campaign, 'currency');
+
+        if ($campaignCurrency !== null && $promotionCurrency instanceof Currency && $campaignCurrency !== $promotionCurrency->code) {
+            throw new InvalidCommand('campaignId', "campaign currency {$campaignCurrency} differs from promotion currency {$promotionCurrency->code}", 'promotions.currency_mismatch');
+        }
     }
 
     private function db(): ConnectionInterface

@@ -8,6 +8,9 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Context\CommerceContext;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignBudget;
+use Commerz\Promotions\Campaigns\Enums\CampaignStatus;
+use Commerz\Promotions\Campaigns\Internal\CampaignBudgetLedger;
 use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Definitions\Data\PromotionId;
 use Commerz\Promotions\Definitions\Enums\PromotionStatus;
@@ -27,6 +30,7 @@ use Commerz\Promotions\Rules\Internal\StoredRule;
 use Commerz\Quotes\Data\Rejection;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
+use DateTimeImmutable;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
@@ -179,7 +183,7 @@ final readonly class ActivePromotions
             ->orderByDesc('p.priority')
             ->orderBy('p.code')
             ->get(['p.id', 'p.code', 'p.name', 'p.stage', 'p.activator', 'p.stacking', 'p.stop_further', 'p.priority', 'p.currency',
-                'p.budget_minor', 'p.spent_minor', 'p.usage_limit', 'p.per_customer_limit', 'p.used'])
+                'p.budget_minor', 'p.spent_minor', 'p.usage_limit', 'p.per_customer_limit', 'p.used', 'p.campaign_id'])
             ->all());
 
         if ($rows === []) {
@@ -188,6 +192,7 @@ final readonly class ActivePromotions
 
         $rules = $this->rules($rows);
         $customerUsed = $this->customerUsage($context, $rows);
+        $campaigns = $this->campaigns($context, $rows);
         $candidates = [];
 
         foreach ($rows as $row) {
@@ -195,6 +200,8 @@ final readonly class ActivePromotions
             $currencyCode = Rows::nullableString($row, 'currency');
             $currency = $currencyCode === null ? null : Currency::of($currencyCode);
             $budget = Rows::nullableInt($row, 'budget_minor');
+            $campaignId = property_exists($row, 'campaign_id') ? Rows::nullableString($row, 'campaign_id') : null;
+            $campaign = $campaignId !== null ? ($campaigns[$campaignId] ?? null) : null;
 
             $candidates[$id] = new CandidatePromotion(
                 new PromotionSummary(
@@ -207,7 +214,7 @@ final readonly class ActivePromotions
                     $currency,
                 ),
                 Stacking::from(Rows::string($row, 'stacking')),
-                Rows::bool($row, 'stop_further'),
+                self::bool($row, 'stop_further'),
                 Rows::nullableInt($row, 'usage_limit'),
                 Rows::nullableInt($row, 'per_customer_limit'),
                 Rows::int($row, 'used'),
@@ -216,10 +223,56 @@ final readonly class ActivePromotions
                 $budget === null || ! $currency instanceof Currency ? null : Money::ofMinor(Rows::int($row, 'spent_minor'), $currency),
                 $rules[$id][RuleCodec::CONDITION] ?? [],
                 $rules[$id][RuleCodec::EFFECT] ?? [],
+                campaignId: $campaignId,
+                campaignActive: $campaign === null ? $campaignId === null : $campaign['active'],
+                campaignBudget: $campaign['budget'] ?? null,
             );
         }
 
         return $candidates;
+    }
+
+    /**
+     * @param  list<object>  $rows
+     * @return array<string, array{active: bool, budget: CampaignBudget}>
+     */
+    private function campaigns(CommerceContext $context, array $rows): array
+    {
+        $ids = [];
+
+        foreach ($rows as $row) {
+            $campaignId = property_exists($row, 'campaign_id') ? Rows::nullableString($row, 'campaign_id') : null;
+
+            if ($campaignId !== null) {
+                $ids[$campaignId] = $campaignId;
+            }
+        }
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $loaded = [];
+
+        foreach ($this->db()->table($this->tables->table('campaigns'))
+            ->whereIn('id', array_values($ids))
+            ->get(['id', 'status', 'starts_at', 'ends_at', 'currency', 'spend_cap_minor', 'usage_cap', 'spent_minor', 'used'])
+            ->all() as $row) {
+            $startsAt = Rows::nullableString($row, 'starts_at');
+            $endsAt = Rows::nullableString($row, 'ends_at');
+            $currency = Rows::nullableString($row, 'currency');
+            $active = Rows::string($row, 'status') === CampaignStatus::Active->value
+                && ($startsAt === null || new DateTimeImmutable($startsAt) <= $context->at)
+                && ($endsAt === null || new DateTimeImmutable($endsAt) > $context->at)
+                && ($currency === null || $currency === $context->currency->code);
+
+            $loaded[Rows::string($row, 'id')] = [
+                'active' => $active,
+                'budget' => CampaignBudgetLedger::budgetFromRow($row),
+            ];
+        }
+
+        return $loaded;
     }
 
     /**
@@ -350,6 +403,17 @@ final readonly class ActivePromotions
                 throw new InvalidRuleResult($key, "code '{$rejection->code}' was not presented");
             }
         }
+    }
+
+    private static function bool(object $row, string $column): bool
+    {
+        $value = get_object_vars($row)[$column] ?? null;
+
+        if ($value === 0 || $value === 1) {
+            return $value === 1;
+        }
+
+        return Rows::bool($row, $column);
     }
 
     private function db(): ConnectionInterface

@@ -133,6 +133,7 @@
             "layer": "L2",
             "type": "addon",
             "owns": [
+                "Campaigns",
                 "Common",
                 "Configuration",
                 "Coupons",

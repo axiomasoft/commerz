@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Commerz\Promotions\Laravel\Registrars;
 
 use Commerz\Ports\Promotions\Contracts\PromotionUsage;
+use Commerz\Promotions\Campaigns\Contracts\Campaigns;
+use Commerz\Promotions\Campaigns\Internal\CampaignBudgetLedger;
+use Commerz\Promotions\Campaigns\Internal\DatabaseCampaigns;
 use Commerz\Promotions\Configuration\PromotionsOptions;
 use Commerz\Promotions\Coupons\Contracts\Coupons;
 use Commerz\Promotions\Coupons\Internal\DatabaseCoupons;
@@ -13,10 +16,14 @@ use Commerz\Promotions\Definitions\Internal\DatabasePromotionDefinitions;
 use Commerz\Promotions\Definitions\Internal\PromotionRows;
 use Commerz\Promotions\Definitions\Internal\UsageCounters;
 use Commerz\Promotions\Diagnostics\PromotionsDoctorCheck;
+use Commerz\Promotions\Evaluation\Internal\NearMissEvaluator;
+use Commerz\Promotions\Evaluation\Internal\NearMissHintEvaluator;
 use Commerz\Promotions\Evaluation\Internal\PromotionSessions;
 use Commerz\Promotions\Internal\Console\ReconcilePromotionsCommand;
 use Commerz\Promotions\Plugins\PromotionsPlugin;
 use Commerz\Promotions\Promotions;
+use Commerz\Promotions\Usage\Contracts\CouponHolds;
+use Commerz\Promotions\Usage\Internal\DatabaseCouponHolds;
 use Commerz\Promotions\Usage\Internal\DatabasePromotionUsage;
 use Commerz\Schema\CommerzSchemaSets;
 use Illuminate\Console\Events\ArtisanStarting;
@@ -50,10 +57,14 @@ final class PromotionsRegistrar implements PackageRegistrar
 
         $app->singleton(PromotionRows::class);
         $app->singleton(UsageCounters::class);
+        $app->singleton(CampaignBudgetLedger::class);
         $app->singleton(PromotionDefinitions::class, DatabasePromotionDefinitions::class);
         $app->singleton(Coupons::class, DatabaseCoupons::class);
+        $app->singleton(Campaigns::class, DatabaseCampaigns::class);
+        $app->singleton(CouponHolds::class, DatabaseCouponHolds::class);
         $app->singleton(Promotions::class);
         $app->singleton(PromotionSessions::class); // holds the quote sessions of the process
+        $app->singleton(NearMissEvaluator::class, NearMissHintEvaluator::class);
         $app->singleton(PromotionUsage::class, DatabasePromotionUsage::class); // replaces the core's singletonIf null default
     }
 

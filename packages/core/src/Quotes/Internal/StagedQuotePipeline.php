@@ -97,6 +97,8 @@ final class StagedQuotePipeline implements QuotePipeline
             $state->rejections,
             $input->codes,
             $fingerprint,
+            $state->giftOffers,
+            $state->nearMissHints,
         );
     }
 

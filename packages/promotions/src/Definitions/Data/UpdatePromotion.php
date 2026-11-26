@@ -6,6 +6,7 @@ namespace Commerz\Promotions\Definitions\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
+use Commerz\Promotions\Campaigns\Data\CampaignId;
 use Commerz\Promotions\Definitions\Enums\Stacking;
 use Commerz\Promotions\Rules\Data\RuleSpec;
 use Packman\Attributes\Api;
@@ -34,6 +35,8 @@ final readonly class UpdatePromotion
         public ?Money $budget = null,
         public bool $clearBudget = false,
         public ?PromotionWindow $window = null,
+        public ?CampaignId $campaignId = null,
+        public bool $clearCampaign = false,
     ) {
         if ($name !== null) {
             CreatePromotion::assertName($name);
@@ -47,6 +50,10 @@ final readonly class UpdatePromotion
 
         if ($clearBudget && $budget instanceof Money) {
             throw new InvalidCommand('budget', 'give a new budget or clear it, not both', 'promotions.invalid_update');
+        }
+
+        if ($clearCampaign && $campaignId instanceof CampaignId) {
+            throw new InvalidCommand('campaignId', 'give a new campaign or clear it, not both', 'promotions.invalid_update');
         }
     }
 }

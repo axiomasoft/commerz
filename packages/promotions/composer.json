@@ -43,6 +43,7 @@
             "stability": "stable",
             "error-prefix": "promotions",
             "owns": [
+                "Campaigns",
                 "Common",
                 "Configuration",
                 "Coupons",

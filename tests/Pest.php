@@ -65,6 +65,7 @@ uses()->group('pg')->in(
     '../packages/pricing/tests/Feature/SchemaTest.php',
     '../packages/pricing/tests/Feature/Taxes/TaxConcurrencyTest.php',
     '../packages/pricing/tests/Feature/Taxes/TaxesTest.php',
+    '../packages/promotions/tests/Feature/Campaigns/CampaignConcurrencyTest.php',
     '../packages/promotions/tests/Feature/Console/ReconcilePromotionsCommandTest.php',
     '../packages/promotions/tests/Feature/Coupons/CouponActivatorTest.php',
     '../packages/promotions/tests/Feature/Coupons/CouponConcurrencyTest.php',

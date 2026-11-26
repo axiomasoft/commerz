@@ -38,6 +38,20 @@ final class PromotionSession
         ));
     }
 
+    /** @return list<CandidatePromotion> all tried candidates across stages, in stage order */
+    public function allCandidates(): array
+    {
+        $all = [];
+
+        foreach (PromotionStage::cases() as $stage) {
+            foreach ($this->candidates($stage) as $candidate) {
+                $all[] = $candidate;
+            }
+        }
+
+        return $all;
+    }
+
     public function record(PromotionVerdict $verdict): void
     {
         $this->verdicts[] = $verdict;
@@ -47,5 +61,10 @@ final class PromotionSession
     public function verdicts(): array
     {
         return $this->verdicts;
+    }
+
+    public function verdictFor(string $promotionId): ?PromotionVerdict
+    {
+        return array_find($this->verdicts, static fn (PromotionVerdict $verdict): bool => $verdict->promotion->value === $promotionId);
     }
 }
