@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "497067079dae723e37f583b8d178f9a6",
+    "content-hash": "17538602b982ac6cc2a5b8e673890a08",
     "packages": [
         {
             "name": "axiomasoft/commerz",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "91464ddc1baea21a709be6792638693cee98eab5"
+                "reference": "bdacf28e95475c1d1d01d8358eab804b4670f406"
             },
             "require": {
                 "axiomasoft/packman": "^0.1.1",
@@ -41,6 +41,7 @@
                     "owns": [
                         "Configuration",
                         "Context",
+                        "CustomFields",
                         "Diagnostics",
                         "Errors",
                         "Facades",
@@ -48,6 +49,7 @@
                         "Internal",
                         "Laravel",
                         "Measures",
+                        "Metadata",
                         "Money",
                         "Operations",
                         "Outbox",
@@ -57,7 +59,9 @@
                         "Ports",
                         "Quotes",
                         "Schema",
-                        "Stores"
+                        "Stores",
+                        "Time",
+                        "Webhooks"
                     ]
                 },
                 "branch-alias": {
@@ -95,7 +99,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "bbcc072d439288652ea92fd1081edccd0bfe82f7"
+                "reference": "7cc5766fddecac0e80397914a1a94198ae47d0b4"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -176,7 +180,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/full",
-                "reference": "ba4a5988864db62b430aaaa65b1d65defffb9510"
+                "reference": "20168bb2a5eb0273f94dd419e74f680d83d49041"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -186,6 +190,7 @@
                 "axiomasoft/commerz-promotions": "^0.1",
                 "axiomasoft/commerz-sales": "^0.1",
                 "axiomasoft/commerz-shipping": "^0.1",
+                "axiomasoft/commerz-stored-value": "^0.1",
                 "php": ">=8.4 <8.6"
             },
             "type": "metapackage",
@@ -220,7 +225,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "f53b1b160307e4b97e410c1a9ad185b9fbafae2f"
+                "reference": "e3e2723ef1d62862778fe92782b4ffa04b0e5f58"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -303,7 +308,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "7fe3c124cf84b55aeed1af6553fcdc3627d2aba3"
+                "reference": "214111b1c36f6226683e654fd733a493cbb2f6af"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -380,7 +385,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "bc0268765b655eb8c8702bd7307dce7535f51f00"
+                "reference": "79879218fde8d7b6039eae3f479d5f967e07c83b"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -459,7 +464,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "64f0f84f83f3b12c3a565d363def4dab849840ba"
+                "reference": "62dd3518a8a62ceeede826478132be3d045ab529"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -542,7 +547,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "bb395a7dccba90c5b08c7cba3e48587916418bae"
+                "reference": "a2a5e4412a1a51fec12c1eb556f77b92c6982f8b"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -616,12 +621,89 @@
             }
         },
         {
+            "name": "axiomasoft/commerz-stored-value",
+            "version": "0.1.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/stored-value",
+                "reference": "aeb8861be0a6c6de5c6a1a6bc9e24974a86d8b36"
+            },
+            "require": {
+                "axiomasoft/commerz": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
+                "axiomasoft/packman-panels": "^0.1.1",
+                "axiomasoft/packman-plugins": "^0.1.1",
+                "axiomasoft/packman-schema": "^0.1.1",
+                "illuminate/console": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": ">=8.4 <8.6"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Commerz\\StoredValue\\StoredValueServiceProvider"
+                    ]
+                },
+                "packman": {
+                    "schema-version": 1,
+                    "package-type": "addon",
+                    "stability": "stable",
+                    "error-prefix": "stored_value",
+                    "owns": [
+                        "Configuration",
+                        "Diagnostics",
+                        "Errors",
+                        "Facades",
+                        "GiftCards",
+                        "Internal",
+                        "Laravel",
+                        "Ledger",
+                        "Panels",
+                        "Plugins",
+                        "Schema",
+                        "Tender",
+                        "Wallets"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Commerz\\StoredValue\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Commerz\\StoredValue\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
+            "description": "Commerz stored value: gift cards, customer wallets (store credit), immutable double-entry ledger, and post-tax tender settlement.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "axiomasoft/packman",
             "version": "0.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/core",
-                "reference": "0837c5730f43ee92b57e330342de0d509185a8ec"
+                "reference": "ebc4cf5c0be09cfde7805c8b317b7e7cded98973"
             },
             "require": {
                 "php": "^8.4",
@@ -682,6 +764,7 @@
                 }
             ],
             "description": "Packman unified ecosystem kernel — attributes, foundation registrars, context contracts, JsonDocument, configuration options/compiler/cache, RFC 9457 error registry, doctor diagnostics, domain events, features, and settings contracts.",
+            "homepage": "https://github.com/axiomasoft/packman",
             "keywords": [
                 "attributes",
                 "config",
@@ -692,6 +775,11 @@
                 "packman",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -703,7 +791,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/panels",
-                "reference": "69f01ec545d42abe932841d729a31caa08ccf240"
+                "reference": "2b1bee9d9d16099948a83ea99cda89be75c68add"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -745,7 +833,19 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
             "description": "Universal Packman headless panel descriptors, two-phase PanelRegistry/PanelRecipe builder, slot/form data projection, admission evaluation, and SQL saved views.",
+            "homepage": "https://github.com/axiomasoft/packman",
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -757,15 +857,18 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/plugins",
-                "reference": "8dd496897780023784eb547553742a0d021d961c"
+                "reference": "505802ed77f10365718ffe0258d79d5539d7688c"
             },
             "require": {
-                "axiomasoft/packman": "^0.1",
+                "axiomasoft/packman": "^0.1.1",
                 "illuminate/console": "^12.0|^13.0",
                 "illuminate/container": "^12.0|^13.0",
                 "illuminate/contracts": "^12.0|^13.0",
                 "illuminate/support": "^12.0|^13.0",
                 "php": "^8.4"
+            },
+            "conflict": {
+                "axiomasoft/packman-schema": "<0.1.1"
             },
             "suggest": {
                 "axiomasoft/packman-schema": "Optional schema ownership integration for plugins declaring owned schema nouns."
@@ -797,7 +900,19 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
             "description": "Universal Packman intra-package plugin graph compiler, capabilities, typed slots, and immutable contribution registry.",
+            "homepage": "https://github.com/axiomasoft/packman",
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -809,7 +924,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/schema",
-                "reference": "b10bcc8c762808f31f5a31f7010ab8b0eb027007"
+                "reference": "b9fd3a1be5172e24b5e7dc7e3e3a495029eb4417"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -847,7 +962,19 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
             "description": "Universal Packman schema governance, schema sets, table ownership, prefix fingerprinting, PostgreSQL constraint naming, and step compiler.",
+            "homepage": "https://github.com/axiomasoft/packman",
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -6778,7 +6905,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "e49bd532e6d3fb5a692b4139850af9cc1f4aa223"
+                "reference": "622e7dcc140e37886bc1a204bbfce0f05d245446"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -6836,7 +6963,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/devtools",
-                "reference": "d554ea13f554428f22565b188030a00914fa55fb"
+                "reference": "c43a9c945362c08424d45357d0e35defdc6d569a"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -6881,7 +7008,19 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
             "description": "Shared monorepo quality gates, API/error/config scanners, scaffolding stubs, Rector rules, AI pack sync, and subtree split tools for Packman.",
+            "homepage": "https://github.com/axiomasoft/packman",
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -6893,7 +7032,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packman/packages/testkit",
-                "reference": "b0778192d30867beca868bfba301135e361fc33e"
+                "reference": "1d1330d23c87c93009c59b51c0837d8da13d9504"
             },
             "require": {
                 "axiomasoft/packman": "^0.1",
@@ -6938,7 +7077,19 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Dmitry Vostrikov",
+                    "email": "dv.vostrikov@gmail.com"
+                }
+            ],
             "description": "Shared testing harnesses, PostgreSQL database isolation, concurrency barriers, contract assertions, and fake recorders for Packman packages.",
+            "homepage": "https://github.com/axiomasoft/packman",
+            "support": {
+                "issues": "https://github.com/axiomasoft/packman/issues",
+                "source": "https://github.com/axiomasoft/packman",
+                "security": "https://github.com/axiomasoft/packman/blob/main/SECURITY.md"
+            },
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -11842,6 +11993,7 @@
         "axiomasoft/commerz-promotions": 20,
         "axiomasoft/commerz-sales": 20,
         "axiomasoft/commerz-shipping": 20,
+        "axiomasoft/commerz-stored-value": 20,
         "axiomasoft/commerz-testkit": 20
     },
     "prefer-stable": true,

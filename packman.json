@@ -201,6 +201,29 @@
             ]
         },
         {
+            "name": "axiomasoft/commerz-stored-value",
+            "path": "packages/stored-value",
+            "namespace": "Commerz\\StoredValue\\",
+            "profile": "laravel-package",
+            "layer": "L2",
+            "type": "addon",
+            "owns": [
+                "Configuration",
+                "Diagnostics",
+                "Errors",
+                "Facades",
+                "GiftCards",
+                "Internal",
+                "Laravel",
+                "Ledger",
+                "Panels",
+                "Plugins",
+                "Schema",
+                "Tender",
+                "Wallets"
+            ]
+        },
+        {
             "name": "axiomasoft/commerz-full",
             "path": "packages/full",
             "namespace": "",

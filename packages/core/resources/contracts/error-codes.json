@@ -104,6 +104,17 @@
         {
             "package": "axiomasoft/commerz",
             "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "InsufficientStoredValue",
+            "code": "commerz.insufficient_stored_value",
+            "type": "urn:packman:problem:commerz.insufficient_stored_value",
+            "status": 409,
+            "title": "Insufficient Stored Value",
+            "retryable": false,
+            "category": "conflict"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
             "case": "InvalidAmount",
             "code": "commerz.invalid_amount",
             "type": "urn:packman:problem:commerz.invalid_amount",
@@ -331,6 +342,28 @@
             "title": "Store Not Found",
             "retryable": false,
             "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "StoredValueNotFound",
+            "code": "commerz.stored_value_not_found",
+            "type": "urn:packman:problem:commerz.stored_value_not_found",
+            "status": 404,
+            "title": "Stored Value Not Found",
+            "retryable": false,
+            "category": "not_found"
+        },
+        {
+            "package": "axiomasoft/commerz",
+            "enum": "Commerz\\Errors\\Enums\\CommerzErrorCode",
+            "case": "StoredValueUnavailable",
+            "code": "commerz.stored_value_unavailable",
+            "type": "urn:packman:problem:commerz.stored_value_unavailable",
+            "status": 409,
+            "title": "Stored Value Unavailable",
+            "retryable": false,
+            "category": "conflict"
         },
         {
             "package": "axiomasoft/commerz",

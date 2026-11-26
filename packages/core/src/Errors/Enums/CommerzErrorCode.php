@@ -22,6 +22,7 @@ enum CommerzErrorCode: string implements ErrorCode
     case DuplicateWebhookSubscription = 'commerz.duplicate_webhook_subscription';
     case IdempotencyConflict = 'commerz.idempotency_conflict';
     case InsufficientStock = 'commerz.insufficient_stock';
+    case InsufficientStoredValue = 'commerz.insufficient_stored_value';
     case InvalidAmount = 'commerz.invalid_amount';
     case InvalidCommand = 'commerz.invalid_command';
     case InvalidConfiguration = 'commerz.invalid_configuration';
@@ -43,6 +44,8 @@ enum CommerzErrorCode: string implements ErrorCode
     case ReservationNotFound = 'commerz.reservation_not_found';
     case SellableUnavailable = 'commerz.sellable_unavailable';
     case StoreNotFound = 'commerz.store_not_found';
+    case StoredValueNotFound = 'commerz.stored_value_not_found';
+    case StoredValueUnavailable = 'commerz.stored_value_unavailable';
     case UnsupportedContribution = 'commerz.unsupported_contribution';
     case UsageLimitReached = 'commerz.usage_limit_reached';
     case WebhookDeliveryNotFound = 'commerz.webhook_delivery_not_found';

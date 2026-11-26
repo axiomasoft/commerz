@@ -13,5 +13,6 @@ parameters:
         - packages/promotions/src
         - packages/shipping/src
         - packages/sales/src
+        - packages/stored-value/src
         - packages/testkit/src
         - packages/testkit/tests
