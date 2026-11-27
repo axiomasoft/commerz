@@ -10,10 +10,10 @@ Public PHP surface of `packages/sales` as recorded in `packages/sales/resources/
 |---|---|
 | commands | `commerz:sales:expire-orders` |
 | config | `commerz-sales` |
-| kinds | `order_number_generator`, `payment_gateway` |
+| kinds | `order_number_generator`, `payment_customization`, `payment_gateway` |
 | plugin | `commerz.sales` |
 | providers | `Commerz\Sales\SalesServiceProvider` |
-| tables | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund` |
+| tables | `cart`, `checkout`, `order`, `payment`, `fulfillment`, `return`, `refund`, `exchange`, `claim` |
 
 ## (root)
 
@@ -33,8 +33,13 @@ final readonly class Sales {
     __construct(\Illuminate\Contracts\Container\Container $container);
     carts(): \Commerz\Sales\Carts\Contracts\Carts;
     checkout(): \Commerz\Sales\Checkout\Contracts\Checkout;
+    exchanges(): \Commerz\Sales\Exchanges\Contracts\Exchanges;
+    fulfillmentOrders(): \Commerz\Sales\Fulfillments\Contracts\FulfillmentOrders;
     fulfillments(): \Commerz\Sales\Fulfillments\Contracts\Fulfillments;
+    orderChanges(): \Commerz\Sales\OrderChanges\Contracts\OrderChanges;
     orders(): \Commerz\Sales\Orders\Contracts\Orders;
+    paymentCollections(): \Commerz\Sales\Payments\Contracts\PaymentCollections;
+    paymentMethods(): \Commerz\Sales\Payments\Contracts\PaymentMethodResolver;
     payments(): \Commerz\Sales\Payments\Contracts\Payments;
     refunds(): \Commerz\Sales\Refunds\Contracts\Refunds;
     returns(): \Commerz\Sales\Returns\Contracts\Returns;
@@ -47,7 +52,7 @@ final readonly class Sales {
 
 ```php
 final class SalesServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
-    const NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund'];
+    const NOUNS = ['cart', 'checkout', 'order', 'payment', 'fulfillment', 'return', 'refund', 'exchange', 'claim'];
 }
 ```
 
@@ -57,19 +62,25 @@ final class SalesServiceProvider extends \Commerz\Laravel\CommerzPluginServicePr
 |---|---|---|---|
 | [`Carts`](#type-commerz-sales-carts-contracts-carts) | interface | api | 0.1 |
 | [`AddCartLine`](#type-commerz-sales-carts-data-addcartline) | class | api | 0.1 |
+| [`CartDeliveryGroup`](#type-commerz-sales-carts-data-cartdeliverygroup) | class | api | 0.1 |
 | [`CartId`](#type-commerz-sales-carts-data-cartid) | class | api | 0.1 |
 | [`CartLineView`](#type-commerz-sales-carts-data-cartlineview) | class | api | 0.1 |
 | [`CartView`](#type-commerz-sales-carts-data-cartview) | class | api | 0.1 |
 | [`ClearDelivery`](#type-commerz-sales-carts-data-cleardelivery) | class | api | 0.1 |
+| [`ClearGroupDelivery`](#type-commerz-sales-carts-data-cleargroupdelivery) | class | api | 0.1 |
 | [`CreateCart`](#type-commerz-sales-carts-data-createcart) | class | api | 0.1 |
 | [`EnterCode`](#type-commerz-sales-carts-data-entercode) | class | api | 0.1 |
 | [`ListCarts`](#type-commerz-sales-carts-data-listcarts) | class | api | 0.1 |
+| [`PricedDeliveryGroup`](#type-commerz-sales-carts-data-priceddeliverygroup) | class | api | 0.1 |
 | [`RemoveCartLine`](#type-commerz-sales-carts-data-removecartline) | class | api | 0.1 |
 | [`RemoveCode`](#type-commerz-sales-carts-data-removecode) | class | api | 0.1 |
 | [`SelectDelivery`](#type-commerz-sales-carts-data-selectdelivery) | class | api | 0.1 |
+| [`SelectGroupDelivery`](#type-commerz-sales-carts-data-selectgroupdelivery) | class | api | 0.1 |
 | [`SetCartAddress`](#type-commerz-sales-carts-data-setcartaddress) | class | api | 0.1 |
 | [`SetCartCustomer`](#type-commerz-sales-carts-data-setcartcustomer) | class | api | 0.1 |
 | [`SetCartLineQuantity`](#type-commerz-sales-carts-data-setcartlinequantity) | class | api | 0.1 |
+| [`SetCartPickupPoint`](#type-commerz-sales-carts-data-setcartpickuppoint) | class | api | 0.1 |
+| [`SplitDeliveryQuote`](#type-commerz-sales-carts-data-splitdeliveryquote) | class | api | 0.1 |
 | [`AddressRole`](#type-commerz-sales-carts-enums-addressrole) | enum | api | 0.1 |
 | [`CartKind`](#type-commerz-sales-carts-enums-cartkind) | enum | api | 0.1 |
 | [`CartState`](#type-commerz-sales-carts-enums-cartstate) | enum | api | 0.1 |
@@ -90,22 +101,30 @@ Carts, and the drafts of a CRM, which are carts of kind `draft`. A cart sells in
 interface Carts {
     addLine(\Commerz\Sales\Carts\Data\AddCartLine $command): \Commerz\Sales\Carts\Data\CartView;
     clearDelivery(\Commerz\Sales\Carts\Data\ClearDelivery $command): \Commerz\Sales\Carts\Data\CartView;
+    clearGroupDelivery(\Commerz\Sales\Carts\Data\ClearGroupDelivery $command): \Commerz\Sales\Carts\Data\CartView;
     create(\Commerz\Sales\Carts\Data\CreateCart $command): \Commerz\Sales\Carts\Data\CartView;
     // The delivery methods that serve the cart's shipping address for the goods that ship; none when no line ships.
     deliveryOptions(\Commerz\Sales\Carts\Data\CartId $id): array;
     // A code already entered changes nothing. @throws CartNotFound|CartNotOpen
     enterCode(\Commerz\Sales\Carts\Data\EnterCode $command): \Commerz\Sales\Carts\Data\CartView;
     find(\Commerz\Sales\Carts\Data\CartId $id): \Commerz\Sales\Carts\Data\CartView;
+    // Available delivery options for a specific group of cart lines (for split delivery / multi-origin / BOPIS).
+    groupDeliveryOptions(\Commerz\Sales\Carts\Data\CartId $id, array $lineIds, ?\Commerz\Ports\Delivery\Data\Address $destination = null, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null): array;
     list(\Commerz\Sales\Carts\Data\ListCarts $query): \Commerz\Pagination\Page;
     // Prices the cart now: the one calculation the placement of the order checks its total against. An empty cart quotes to zero.
     quote(\Commerz\Sales\Carts\Data\CartId $id): \Commerz\Quotes\Data\QuoteResult;
+    // Prices each split-delivery line group and combines their delivery charges with the cart's goods quote.
+    quoteSplitDelivery(\Commerz\Sales\Carts\Data\CartId $id): \Commerz\Sales\Carts\Data\SplitDeliveryQuote;
     // A code that was not entered changes nothing. @throws CartNotFound|CartNotOpen
     removeCode(\Commerz\Sales\Carts\Data\RemoveCode $command): \Commerz\Sales\Carts\Data\CartView;
     removeLine(\Commerz\Sales\Carts\Data\RemoveCartLine $command): \Commerz\Sales\Carts\Data\CartView;
     selectDelivery(\Commerz\Sales\Carts\Data\SelectDelivery $command): \Commerz\Sales\Carts\Data\CartView;
+    // Assigns a delivery method (and optional address or PUDO/BOPIS destination) to a disjoint group of cart lines.
+    selectGroupDelivery(\Commerz\Sales\Carts\Data\SelectGroupDelivery $command): \Commerz\Sales\Carts\Data\CartView;
     setAddress(\Commerz\Sales\Carts\Data\SetCartAddress $command): \Commerz\Sales\Carts\Data\CartView;
     setCustomer(\Commerz\Sales\Carts\Data\SetCartCustomer $command): \Commerz\Sales\Carts\Data\CartView;
     setLineQuantity(\Commerz\Sales\Carts\Data\SetCartLineQuantity $command): \Commerz\Sales\Carts\Data\CartView;
+    setPickupPoint(\Commerz\Sales\Carts\Data\SetCartPickupPoint $command): \Commerz\Sales\Carts\Data\CartView;
 }
 ```
 
@@ -121,6 +140,25 @@ final readonly class AddCartLine {
     public readonly int $quantity;
     public readonly \Commerz\Identity\SellableRef $sellable;
     __construct(\Commerz\Sales\Carts\Data\CartId $cart, \Commerz\Identity\SellableRef $sellable, int $quantity);
+}
+```
+
+### CartDeliveryGroup {#type-commerz-sales-carts-data-cartdeliverygroup}
+
+`Commerz\Sales\Carts\Data\CartDeliveryGroup`
+
+Delivery method and destination selected for a disjoint subset (group) of cart lines in split delivery.
+
+```php
+final readonly class CartDeliveryGroup {
+    public readonly string $groupKey;
+    public readonly array $lineIds;
+    public readonly string $methodCode;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
+    public readonly ?\Commerz\Ports\Delivery\Data\Address $shippingAddress;
+    __construct(string $groupKey, array $lineIds, string $methodCode, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress = null, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null);
+    withLineIds(array $lineIds): self;
 }
 ```
 
@@ -141,7 +179,8 @@ final readonly class CartLineView {
     public readonly string $id;
     public readonly int $quantity;
     public readonly \Commerz\Identity\SellableRef $sellable;
-    __construct(string $id, \Commerz\Identity\SellableRef $sellable, int $quantity);
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
+    __construct(string $id, \Commerz\Identity\SellableRef $sellable, int $quantity, ?\Commerz\Identity\SellerRef $sellerRef = null);
 }
 ```
 
@@ -159,16 +198,18 @@ final readonly class CartView {
     public readonly \Commerz\Money\Currency $currency;
     public readonly ?\Commerz\Identity\CustomerRef $customer;
     public readonly array $customerGroups;
+    public readonly array $deliveryGroups;
     public readonly ?string $deliveryMethod;
     public readonly \Commerz\Sales\Carts\Data\CartId $id;
     public readonly \Commerz\Sales\Carts\Enums\CartKind $kind;
     public readonly array $lines;
     public readonly string $locale;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
     public readonly ?\Commerz\Ports\Delivery\Data\Address $shippingAddress;
     public readonly \Commerz\Sales\Carts\Enums\CartState $state;
     public readonly \DateTimeImmutable $updatedAt;
     public readonly int $version;
-    __construct(\Commerz\Sales\Carts\Data\CartId $id, \Commerz\Sales\Carts\Enums\CartKind $kind, \Commerz\Sales\Carts\Enums\CartState $state, \Commerz\Stores\Data\ChannelId $channel, \Commerz\Money\Currency $currency, string $locale, ?\Commerz\Identity\CustomerRef $customer, array $customerGroups, array $lines, array $codes, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress, ?\Commerz\Ports\Delivery\Data\Address $billingAddress, ?string $deliveryMethod, int $version, ?\Commerz\Identity\ActorRef $createdBy, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    __construct(\Commerz\Sales\Carts\Data\CartId $id, \Commerz\Sales\Carts\Enums\CartKind $kind, \Commerz\Sales\Carts\Enums\CartState $state, \Commerz\Stores\Data\ChannelId $channel, \Commerz\Money\Currency $currency, string $locale, ?\Commerz\Identity\CustomerRef $customer, array $customerGroups, array $lines, array $codes, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress, ?\Commerz\Ports\Delivery\Data\Address $billingAddress, ?string $deliveryMethod, int $version, ?\Commerz\Identity\ActorRef $createdBy, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null, array $deliveryGroups = []);
 }
 ```
 
@@ -180,6 +221,18 @@ final readonly class CartView {
 final readonly class ClearDelivery {
     public readonly \Commerz\Sales\Carts\Data\CartId $cart;
     __construct(\Commerz\Sales\Carts\Data\CartId $cart);
+}
+```
+
+### ClearGroupDelivery {#type-commerz-sales-carts-data-cleargroupdelivery}
+
+`Commerz\Sales\Carts\Data\ClearGroupDelivery`
+
+```php
+final readonly class ClearGroupDelivery {
+    public readonly \Commerz\Sales\Carts\Data\CartId $cart;
+    public readonly string $groupKey;
+    __construct(\Commerz\Sales\Carts\Data\CartId $cart, string $groupKey);
 }
 ```
 
@@ -229,6 +282,20 @@ final readonly class ListCarts {
 }
 ```
 
+### PricedDeliveryGroup {#type-commerz-sales-carts-data-priceddeliverygroup}
+
+`Commerz\Sales\Carts\Data\PricedDeliveryGroup`
+
+```php
+final readonly class PricedDeliveryGroup {
+    public readonly \Commerz\Ports\Delivery\Data\Address $destination;
+    public readonly \Commerz\Sales\Carts\Data\CartDeliveryGroup $group;
+    public readonly \Commerz\Ports\Delivery\Data\DeliveryOption $option;
+    public readonly \Commerz\Ports\Delivery\Data\Parcel $parcel;
+    __construct(\Commerz\Sales\Carts\Data\CartDeliveryGroup $group, \Commerz\Ports\Delivery\Data\DeliveryOption $option, \Commerz\Ports\Delivery\Data\Parcel $parcel, \Commerz\Ports\Delivery\Data\Address $destination);
+}
+```
+
 ### RemoveCartLine {#type-commerz-sales-carts-data-removecartline}
 
 `Commerz\Sales\Carts\Data\RemoveCartLine`
@@ -263,7 +330,29 @@ Chooses a delivery method by its code; the quote prices it and rejects a method 
 final readonly class SelectDelivery {
     public readonly \Commerz\Sales\Carts\Data\CartId $cart;
     public readonly string $methodCode;
-    __construct(\Commerz\Sales\Carts\Data\CartId $cart, string $methodCode);
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
+    __construct(\Commerz\Sales\Carts\Data\CartId $cart, string $methodCode, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null);
+}
+```
+
+### SelectGroupDelivery {#type-commerz-sales-carts-data-selectgroupdelivery}
+
+`Commerz\Sales\Carts\Data\SelectGroupDelivery`
+
+Selects a delivery method (and optional group address or PUDO/BOPIS destination) for a cart line group.
+
+```php
+final readonly class SelectGroupDelivery {
+    public readonly \Commerz\Sales\Carts\Data\CartId $cart;
+    public readonly \Commerz\Sales\Carts\Data\CartDeliveryGroup $group;
+    public readonly string $groupKey;
+    public readonly array $lineIds;
+    public readonly string $methodCode;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
+    public readonly ?\Commerz\Ports\Delivery\Data\Address $shippingAddress;
+    __construct(\Commerz\Sales\Carts\Data\CartId $cart, string $groupKey, array $lineIds, string $methodCode, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress = null, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null);
 }
 ```
 
@@ -309,6 +398,36 @@ final readonly class SetCartLineQuantity {
     public readonly string $lineId;
     public readonly int $quantity;
     __construct(\Commerz\Sales\Carts\Data\CartId $cart, string $lineId, int $quantity);
+}
+```
+
+### SetCartPickupPoint {#type-commerz-sales-carts-data-setcartpickuppoint}
+
+`Commerz\Sales\Carts\Data\SetCartPickupPoint`
+
+Sets or clears a cart's PUDO / BOPIS pickup destination without mutating the billing address.
+
+```php
+final readonly class SetCartPickupPoint {
+    public readonly \Commerz\Sales\Carts\Data\CartId $cart;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
+    __construct(\Commerz\Sales\Carts\Data\CartId $cart, ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint);
+}
+```
+
+### SplitDeliveryQuote {#type-commerz-sales-carts-data-splitdeliveryquote}
+
+`Commerz\Sales\Carts\Data\SplitDeliveryQuote`
+
+Priced split-delivery breakdown across cart line groups alongside the cart's goods quote.
+
+```php
+final readonly class SplitDeliveryQuote {
+    public readonly \Commerz\Money\Money $deliveryTotal;
+    public readonly \Commerz\Quotes\Data\QuoteResult $goodsQuote;
+    public readonly \Commerz\Money\Money $grandTotal;
+    public readonly array $groups;
+    __construct(\Commerz\Quotes\Data\QuoteResult $goodsQuote, array $groups, \Commerz\Money\Money $deliveryTotal, \Commerz\Money\Money $grandTotal);
 }
 ```
 
@@ -437,6 +556,7 @@ final class TooManyCartLines extends \Commerz\Errors\InvalidCommand implements \
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`Checkout`](#type-commerz-sales-checkout-contracts-checkout) | interface | api | 0.1 |
+| [`OrderSplitterPort`](#type-commerz-sales-checkout-contracts-ordersplitterport) | interface | spi (implement) | 0.1 |
 | [`PlaceOrder`](#type-commerz-sales-checkout-data-placeorder) | class | api | 0.1 |
 | [`CartAlreadyPlaced`](#type-commerz-sales-checkout-exceptions-cartalreadyplaced) | class | api | 0.1 |
 | [`CartChanged`](#type-commerz-sales-checkout-exceptions-cartchanged) | class | api | 0.1 |
@@ -455,6 +575,19 @@ Turns a cart into an order.
 interface Checkout {
     // Places the cart in one transaction (ORD-01, ORD-02): the snapshot of its quote becomes the order with a number, the physical lines are reserved without a deadline, the applied promotions are counted and the cart is converted. Any failure leaves nothing behind. A cart becomes at most one order: a repeat with the same idempotency key returns that order, a repeat without one fails with `CartAlreadyPlaced`. Payment is a separate command.
     place(\Commerz\Sales\Checkout\Data\PlaceOrder $command): \Commerz\Sales\Orders\Data\OrderView;
+}
+```
+
+### OrderSplitterPort {#type-commerz-sales-checkout-contracts-ordersplitterport}
+
+`Commerz\Sales\Checkout\Contracts\OrderSplitterPort`
+
+Extension seam for splitting a master checkout quote into seller sub-order line-id groups. The default implementation keeps all lines in a single order.
+
+```php
+interface OrderSplitterPort {
+    // Partitions the quoted lines into one or more non-empty lists of line ids.
+    split(\Commerz\Quotes\Data\QuoteResult $quote): array;
 }
 ```
 
@@ -715,45 +848,64 @@ Stable wire-level error codes emitted by `axiomasoft/commerz-sales`.
 
 ```php
 enum SalesErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case CaptureExceedsAuthorization = 'sales.capture_exceeds_authorization';
     case CartAlreadyPlaced = 'sales.cart_already_placed';
     case CartChanged = 'sales.cart_changed';
     case CartEmpty = 'sales.cart_empty';
     case CartLineNotFound = 'sales.cart_line_not_found';
     case CartNotFound = 'sales.cart_not_found';
     case CartNotOpen = 'sales.cart_not_open';
+    case ClaimNotFound = 'sales.claim_not_found';
+    case ClaimNotOpen = 'sales.claim_not_open';
     case CurrencyMismatch = 'sales.currency_mismatch';
     case DeliveryRequired = 'sales.delivery_required';
     case DuplicateOrderNumber = 'sales.duplicate_order_number';
+    case ExchangeNotFound = 'sales.exchange_not_found';
+    case ExchangeNotOpen = 'sales.exchange_not_open';
     case FulfillmentAlreadyShipped = 'sales.fulfillment_already_shipped';
     case FulfillmentNotBookable = 'sales.fulfillment_not_bookable';
     case FulfillmentNotFound = 'sales.fulfillment_not_found';
     case FulfillmentNotShipped = 'sales.fulfillment_not_shipped';
+    case FulfillmentOrderNotFound = 'sales.fulfillment_order_not_found';
+    case GatewayCapabilityUnsupported = 'sales.gateway_capability_unsupported';
+    case InvalidClaim = 'sales.invalid_claim';
     case InvalidCode = 'sales.invalid_code';
     case InvalidDeliveryMethod = 'sales.invalid_delivery_method';
+    case InvalidExchange = 'sales.invalid_exchange';
     case InvalidFulfillment = 'sales.invalid_fulfillment';
+    case InvalidFulfillmentOrderState = 'sales.invalid_fulfillment_order_state';
     case InvalidGatewayPayment = 'sales.invalid_gateway_payment';
     case InvalidGatewayRefund = 'sales.invalid_gateway_refund';
     case InvalidGatewayResult = 'sales.invalid_gateway_result';
     case InvalidGroup = 'sales.invalid_group';
     case InvalidLimit = 'sales.invalid_limit';
     case InvalidLines = 'sales.invalid_lines';
+    case InvalidOrderChange = 'sales.invalid_order_change';
     case InvalidOrderNumber = 'sales.invalid_order_number';
     case InvalidPayment = 'sales.invalid_payment';
     case InvalidPaymentEvent = 'sales.invalid_payment_event';
+    case InvalidPaymentSessionState = 'sales.invalid_payment_session_state';
     case InvalidQuantity = 'sales.invalid_quantity';
     case InvalidRefund = 'sales.invalid_refund';
     case InvalidReturn = 'sales.invalid_return';
     case LineNotFound = 'sales.line_not_found';
     case OperationInsideTransaction = 'sales.operation_inside_transaction';
+    case OrderChangeLineLocked = 'sales.order_change_line_locked';
+    case OrderChangeNotFound = 'sales.order_change_not_found';
+    case OrderChangeNotOpen = 'sales.order_change_not_open';
+    case OrderChangeVersionConflict = 'sales.order_change_version_conflict';
     case OrderNotCancellable = 'sales.order_not_cancellable';
+    case OrderNotEditable = 'sales.order_not_editable';
     case OrderNotFound = 'sales.order_not_found';
     case OrderNotFulfillable = 'sales.order_not_fulfillable';
     case OrderNotPayable = 'sales.order_not_payable';
+    case PaymentCollectionNotFound = 'sales.payment_collection_not_found';
     case PaymentDeclined = 'sales.payment_declined';
     case PaymentExceedsBalance = 'sales.payment_exceeds_balance';
     case PaymentInProgress = 'sales.payment_in_progress';
     case PaymentNotFound = 'sales.payment_not_found';
     case PaymentOutcomeUnknown = 'sales.payment_outcome_unknown';
+    case PaymentSessionNotFound = 'sales.payment_session_not_found';
     case QuantityExceedsOutstanding = 'sales.quantity_exceeds_outstanding';
     case QuoteChanged = 'sales.quote_changed';
     case RefundExceedsBalance = 'sales.refund_exceeds_balance';
@@ -784,6 +936,510 @@ final readonly class SalesProblemDefinitions implements \Packman\Errors\Contract
 }
 ```
 
+## Exchanges
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Exchanges`](#type-commerz-sales-exchanges-contracts-exchanges) | interface | api | 0.1 |
+| [`CancelOrderClaim`](#type-commerz-sales-exchanges-data-cancelorderclaim) | class | api | 0.1 |
+| [`CancelOrderExchange`](#type-commerz-sales-exchanges-data-cancelorderexchange) | class | api | 0.1 |
+| [`ClaimId`](#type-commerz-sales-exchanges-data-claimid) | class | api | 0.1 |
+| [`ClaimItem`](#type-commerz-sales-exchanges-data-claimitem) | class | api | 0.1 |
+| [`ClaimLineView`](#type-commerz-sales-exchanges-data-claimlineview) | class | api | 0.1 |
+| [`CompleteOrderExchange`](#type-commerz-sales-exchanges-data-completeorderexchange) | class | api | 0.1 |
+| [`CreateOrderClaim`](#type-commerz-sales-exchanges-data-createorderclaim) | class | api | 0.1 |
+| [`CreateOrderExchange`](#type-commerz-sales-exchanges-data-createorderexchange) | class | api | 0.1 |
+| [`ExchangeId`](#type-commerz-sales-exchanges-data-exchangeid) | class | api | 0.1 |
+| [`ExchangeInboundLineView`](#type-commerz-sales-exchanges-data-exchangeinboundlineview) | class | api | 0.1 |
+| [`ExchangeOutboundItem`](#type-commerz-sales-exchanges-data-exchangeoutbounditem) | class | api | 0.1 |
+| [`ExchangeOutboundLineView`](#type-commerz-sales-exchanges-data-exchangeoutboundlineview) | class | api | 0.1 |
+| [`FulfillOrderClaim`](#type-commerz-sales-exchanges-data-fulfillorderclaim) | class | api | 0.1 |
+| [`ListOrderClaims`](#type-commerz-sales-exchanges-data-listorderclaims) | class | api | 0.1 |
+| [`ListOrderExchanges`](#type-commerz-sales-exchanges-data-listorderexchanges) | class | api | 0.1 |
+| [`OrderClaim`](#type-commerz-sales-exchanges-data-orderclaim) | class | api | 0.1 |
+| [`OrderExchange`](#type-commerz-sales-exchanges-data-orderexchange) | class | api | 0.1 |
+| [`ClaimKind`](#type-commerz-sales-exchanges-enums-claimkind) | enum | api | 0.1 |
+| [`ClaimStatus`](#type-commerz-sales-exchanges-enums-claimstatus) | enum | api | 0.1 |
+| [`ExchangeSettlement`](#type-commerz-sales-exchanges-enums-exchangesettlement) | enum | api | 0.1 |
+| [`ExchangeStatus`](#type-commerz-sales-exchanges-enums-exchangestatus) | enum | api | 0.1 |
+| [`OrderClaimCreated`](#type-commerz-sales-exchanges-events-orderclaimcreated) | class | api | 0.1 |
+| [`OrderClaimFulfilled`](#type-commerz-sales-exchanges-events-orderclaimfulfilled) | class | api | 0.1 |
+| [`OrderExchangeCompleted`](#type-commerz-sales-exchanges-events-orderexchangecompleted) | class | api | 0.1 |
+| [`OrderExchangeCreated`](#type-commerz-sales-exchanges-events-orderexchangecreated) | class | api | 0.1 |
+| [`ClaimNotFound`](#type-commerz-sales-exchanges-exceptions-claimnotfound) | class | api | 0.1 |
+| [`ClaimNotOpen`](#type-commerz-sales-exchanges-exceptions-claimnotopen) | class | api | 0.1 |
+| [`ExchangeNotFound`](#type-commerz-sales-exchanges-exceptions-exchangenotfound) | class | api | 0.1 |
+| [`ExchangeNotOpen`](#type-commerz-sales-exchanges-exceptions-exchangenotopen) | class | api | 0.1 |
+
+### Exchanges {#type-commerz-sales-exchanges-contracts-exchanges}
+
+`Commerz\Sales\Exchanges\Contracts\Exchanges`
+
+Post-purchase RMA exchanges (`OrderExchange`: inbound return + outbound replacement fulfillment with net delta) and claims (`OrderClaim`: free replacement or reshipment with zero invoice).
+
+```php
+interface Exchanges {
+    cancelClaim(\Commerz\Sales\Exchanges\Data\CancelOrderClaim $command): \Commerz\Sales\Exchanges\Data\OrderClaim;
+    cancelExchange(\Commerz\Sales\Exchanges\Data\CancelOrderExchange $command): \Commerz\Sales\Exchanges\Data\OrderExchange;
+    completeExchange(\Commerz\Sales\Exchanges\Data\CompleteOrderExchange $command): \Commerz\Sales\Exchanges\Data\OrderExchange;
+    createClaim(\Commerz\Sales\Exchanges\Data\CreateOrderClaim $command): \Commerz\Sales\Exchanges\Data\OrderClaim;
+    createExchange(\Commerz\Sales\Exchanges\Data\CreateOrderExchange $command): \Commerz\Sales\Exchanges\Data\OrderExchange;
+    findClaim(\Commerz\Sales\Exchanges\Data\ClaimId $id): \Commerz\Sales\Exchanges\Data\OrderClaim;
+    findExchange(\Commerz\Sales\Exchanges\Data\ExchangeId $id): \Commerz\Sales\Exchanges\Data\OrderExchange;
+    fulfillClaim(\Commerz\Sales\Exchanges\Data\FulfillOrderClaim $command): \Commerz\Sales\Exchanges\Data\OrderClaim;
+    listClaims(\Commerz\Sales\Exchanges\Data\ListOrderClaims $query): \Commerz\Pagination\Page;
+    listExchanges(\Commerz\Sales\Exchanges\Data\ListOrderExchanges $query): \Commerz\Pagination\Page;
+}
+```
+
+### CancelOrderClaim {#type-commerz-sales-exchanges-data-cancelorderclaim}
+
+`Commerz\Sales\Exchanges\Data\CancelOrderClaim`
+
+```php
+final readonly class CancelOrderClaim {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Exchanges\Data\ClaimId $claim;
+    __construct(\Commerz\Sales\Exchanges\Data\ClaimId $claim, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CancelOrderExchange {#type-commerz-sales-exchanges-data-cancelorderexchange}
+
+`Commerz\Sales\Exchanges\Data\CancelOrderExchange`
+
+```php
+final readonly class CancelOrderExchange {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Exchanges\Data\ExchangeId $exchange;
+    __construct(\Commerz\Sales\Exchanges\Data\ExchangeId $exchange, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### ClaimId {#type-commerz-sales-exchanges-data-claimid}
+
+`Commerz\Sales\Exchanges\Data\ClaimId`
+
+```php
+final readonly class ClaimId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### ClaimItem {#type-commerz-sales-exchanges-data-claimitem}
+
+`Commerz\Sales\Exchanges\Data\ClaimItem`
+
+Identifies an item to ship free of charge in an {@see OrderClaim}, either referencing a fulfilled order line (reshipment) or an explicit replacement {@see SellableRef}.
+
+```php
+final readonly class ClaimItem {
+    public readonly int $quantity;
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId|\Commerz\Identity\SellableRef $target;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId|\Commerz\Identity\SellableRef $target, int $quantity = 1);
+    static orderLine(\Commerz\Sales\Orders\Data\OrderLineId $lineId, int $quantity = 1): self;
+    static sellable(\Commerz\Identity\SellableRef $sellable, int $quantity = 1): self;
+}
+```
+
+### ClaimLineView {#type-commerz-sales-exchanges-data-claimlineview}
+
+`Commerz\Sales\Exchanges\Data\ClaimLineView`
+
+```php
+final readonly class ClaimLineView {
+    public readonly string $id;
+    public readonly \Commerz\Ports\Sellables\Enums\SellableKind $kind;
+    public readonly string $name;
+    public readonly int $quantity;
+    public readonly bool $requiresShipping;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly string $sku;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderLineId $sourceOrderLineId;
+    public readonly \Commerz\Money\Money $subtotal;
+    public readonly \Commerz\Money\Money $taxTotal;
+    public readonly \Commerz\Money\Money $total;
+    public readonly \Commerz\Money\Money $unitPrice;
+    public readonly ?int $weightGrams;
+    __construct(string $id, ?\Commerz\Sales\Orders\Data\OrderLineId $sourceOrderLineId, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, ?int $weightGrams, int $quantity, \Commerz\Money\Money $unitPrice, \Commerz\Money\Money $subtotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $total);
+}
+```
+
+### CompleteOrderExchange {#type-commerz-sales-exchanges-data-completeorderexchange}
+
+`Commerz\Sales\Exchanges\Data\CompleteOrderExchange`
+
+Completes an open exchange: receives the inbound return with its RMA disposition (`Restock` or `DamagedWriteOff`) and creates the outbound replacement fulfillment, consuming the exchange's stock reservation.
+
+```php
+final readonly class CompleteOrderExchange {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Returns\Enums\ReturnDisposition $disposition;
+    public readonly \Commerz\Sales\Exchanges\Data\ExchangeId $exchange;
+    public readonly ?string $fulfillmentLocationCode;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    public readonly array $returnDispositions;
+    public readonly ?string $returnLocationCode;
+    __construct(\Commerz\Sales\Exchanges\Data\ExchangeId $exchange, \Commerz\Sales\Returns\Enums\ReturnDisposition $disposition = Commerz\Sales\Returns\Enums\ReturnDisposition::Restock, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null, ?string $returnLocationCode = null, ?string $fulfillmentLocationCode = null, array $returnDispositions = [], ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CreateOrderClaim {#type-commerz-sales-exchanges-data-createorderclaim}
+
+`Commerz\Sales\Exchanges\Data\CreateOrderClaim`
+
+Creates a free replacement or reshipment {@see OrderClaim} with a zero invoice (`invoiceTotal = 0`, `amountDue = 0`). When `$fulfillImmediately` is true, creates the outbound fulfillment and consumes stock in the same transaction.
+
+```php
+final readonly class CreateOrderClaim {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly bool $fulfillImmediately;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $items;
+    public readonly \Commerz\Sales\Exchanges\Enums\ClaimKind $kind;
+    public readonly ?string $locationCode;
+    public readonly ?string $note;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $order, array $items, \Commerz\Sales\Exchanges\Enums\ClaimKind $kind = Commerz\Sales\Exchanges\Enums\ClaimKind::Replacement, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null, ?string $note = null, bool $fulfillImmediately = true, ?string $locationCode = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CreateOrderExchange {#type-commerz-sales-exchanges-data-createorderexchange}
+
+`Commerz\Sales\Exchanges\Data\CreateOrderExchange`
+
+Opens a two-way exchange on a fulfilled order: requests an inbound {@see ReturnView}, reserves stock for outbound replacement items, and computes the exact net financial delta (`outboundTotal - returnTotal`).
+
+```php
+final readonly class CreateOrderExchange {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $inboundLines;
+    public readonly ?string $note;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly array $outboundItems;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $order, array $inboundLines, array $outboundItems, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null, ?string $note = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### ExchangeId {#type-commerz-sales-exchanges-data-exchangeid}
+
+`Commerz\Sales\Exchanges\Data\ExchangeId`
+
+```php
+final readonly class ExchangeId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### ExchangeInboundLineView {#type-commerz-sales-exchanges-data-exchangeinboundlineview}
+
+`Commerz\Sales\Exchanges\Data\ExchangeInboundLineView`
+
+```php
+final readonly class ExchangeInboundLineView {
+    public readonly \Commerz\Money\Money $creditTotal;
+    public readonly string $name;
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $orderLineId;
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly string $sku;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $orderLineId, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, int $quantity, \Commerz\Money\Money $creditTotal);
+}
+```
+
+### ExchangeOutboundItem {#type-commerz-sales-exchanges-data-exchangeoutbounditem}
+
+`Commerz\Sales\Exchanges\Data\ExchangeOutboundItem`
+
+One outbound replacement item requested in an {@see OrderExchange}. When `$fixedUnitPrice` is null, the item is priced through the quote pipeline in the order's context.
+
+```php
+final readonly class ExchangeOutboundItem {
+    public readonly ?\Commerz\Money\Money $fixedUnitPrice;
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?bool $taxIncluded;
+    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity = 1, ?\Commerz\Money\Money $fixedUnitPrice = null, ?bool $taxIncluded = null);
+}
+```
+
+### ExchangeOutboundLineView {#type-commerz-sales-exchanges-data-exchangeoutboundlineview}
+
+`Commerz\Sales\Exchanges\Data\ExchangeOutboundLineView`
+
+```php
+final readonly class ExchangeOutboundLineView {
+    public readonly string $id;
+    public readonly \Commerz\Ports\Sellables\Enums\SellableKind $kind;
+    public readonly string $name;
+    public readonly int $quantity;
+    public readonly bool $requiresShipping;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly string $sku;
+    public readonly \Commerz\Money\Money $subtotal;
+    public readonly \Commerz\Money\Money $taxTotal;
+    public readonly \Commerz\Money\Money $total;
+    public readonly \Commerz\Money\Money $unitPrice;
+    public readonly ?int $weightGrams;
+    __construct(string $id, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, ?int $weightGrams, int $quantity, \Commerz\Money\Money $unitPrice, \Commerz\Money\Money $subtotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $total);
+}
+```
+
+### FulfillOrderClaim {#type-commerz-sales-exchanges-data-fulfillorderclaim}
+
+`Commerz\Sales\Exchanges\Data\FulfillOrderClaim`
+
+```php
+final readonly class FulfillOrderClaim {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Exchanges\Data\ClaimId $claim;
+    public readonly ?string $locationCode;
+    __construct(\Commerz\Sales\Exchanges\Data\ClaimId $claim, ?string $locationCode = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### ListOrderClaims {#type-commerz-sales-exchanges-data-listorderclaims}
+
+`Commerz\Sales\Exchanges\Data\ListOrderClaims`
+
+```php
+final readonly class ListOrderClaims {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $limit;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly ?\Commerz\Sales\Exchanges\Enums\ClaimStatus $status;
+    __construct(?\Commerz\Sales\Orders\Data\OrderId $order = null, ?\Commerz\Sales\Exchanges\Enums\ClaimStatus $status = null, ?\Commerz\Pagination\Cursor $after = null, int $limit = 50);
+}
+```
+
+### ListOrderExchanges {#type-commerz-sales-exchanges-data-listorderexchanges}
+
+`Commerz\Sales\Exchanges\Data\ListOrderExchanges`
+
+```php
+final readonly class ListOrderExchanges {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $limit;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly ?\Commerz\Sales\Exchanges\Enums\ExchangeStatus $status;
+    __construct(?\Commerz\Sales\Orders\Data\OrderId $order = null, ?\Commerz\Sales\Exchanges\Enums\ExchangeStatus $status = null, ?\Commerz\Pagination\Cursor $after = null, int $limit = 50);
+}
+```
+
+### OrderClaim {#type-commerz-sales-exchanges-data-orderclaim}
+
+`Commerz\Sales\Exchanges\Data\OrderClaim`
+
+Free replacement or reshipment claim for a fulfilled order with a zero invoice (`invoiceTotal = 0`, `amountDue = 0`).
+
+```php
+final readonly class OrderClaim {
+    public readonly \Commerz\Money\Money $amountDue;
+    public readonly ?\DateTimeImmutable $cancelledAt;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\DateTimeImmutable $fulfilledAt;
+    public readonly ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Sales\Exchanges\Data\ClaimId $id;
+    public readonly \Commerz\Money\Money $invoiceTotal;
+    public readonly \Commerz\Sales\Exchanges\Enums\ClaimKind $kind;
+    public readonly array $lines;
+    public readonly ?string $note;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    public readonly \Commerz\Sales\Exchanges\Enums\ClaimStatus $status;
+    public readonly \Commerz\Money\Money $subtotal;
+    public readonly \Commerz\Money\Money $taxTotal;
+    __construct(\Commerz\Sales\Exchanges\Data\ClaimId $id, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Exchanges\Enums\ClaimKind $kind, \Commerz\Sales\Exchanges\Enums\ClaimStatus $status, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason, ?string $note, array $lines, \Commerz\Money\Money $subtotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $invoiceTotal, \Commerz\Money\Money $amountDue, ?\DateTimeImmutable $fulfilledAt, ?\DateTimeImmutable $cancelledAt, \DateTimeImmutable $createdAt);
+}
+```
+
+### OrderExchange {#type-commerz-sales-exchanges-data-orderexchange}
+
+`Commerz\Sales\Exchanges\Data\OrderExchange`
+
+Combines an inbound {@see ReturnId} and an outbound {@see FulfillmentId} with exact net financial delta (`netDelta = outboundTotal - returnTotal`).
+
+```php
+final readonly class OrderExchange {
+    public readonly \Commerz\Money\Money $amountDue;
+    public readonly ?\DateTimeImmutable $cancelledAt;
+    public readonly ?\DateTimeImmutable $completedAt;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Sales\Exchanges\Data\ExchangeId $id;
+    public readonly array $inboundLines;
+    public readonly \Commerz\Money\Money $netDelta;
+    public readonly ?string $note;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly array $outboundLines;
+    public readonly \Commerz\Money\Money $outboundSubtotal;
+    public readonly \Commerz\Money\Money $outboundTaxTotal;
+    public readonly \Commerz\Money\Money $outboundTotal;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    public readonly \Commerz\Money\Money $refundDue;
+    public readonly \Commerz\Sales\Returns\Data\ReturnId $return;
+    public readonly \Commerz\Money\Money $returnTotal;
+    public readonly \Commerz\Sales\Exchanges\Enums\ExchangeSettlement $settlement;
+    public readonly \Commerz\Sales\Exchanges\Enums\ExchangeStatus $status;
+    __construct(\Commerz\Sales\Exchanges\Data\ExchangeId $id, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Returns\Data\ReturnId $return, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, \Commerz\Sales\Exchanges\Enums\ExchangeStatus $status, \Commerz\Sales\Exchanges\Enums\ExchangeSettlement $settlement, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason, ?string $note, array $inboundLines, array $outboundLines, \Commerz\Money\Money $returnTotal, \Commerz\Money\Money $outboundSubtotal, \Commerz\Money\Money $outboundTaxTotal, \Commerz\Money\Money $outboundTotal, \Commerz\Money\Money $netDelta, \Commerz\Money\Money $amountDue, \Commerz\Money\Money $refundDue, ?\DateTimeImmutable $completedAt, ?\DateTimeImmutable $cancelledAt, \DateTimeImmutable $createdAt);
+}
+```
+
+### ClaimKind {#type-commerz-sales-exchanges-enums-claimkind}
+
+`Commerz\Sales\Exchanges\Enums\ClaimKind`
+
+```php
+enum ClaimKind {
+    case Replacement = 'replacement';
+    case Reshipment = 'reshipment';
+}
+```
+
+### ClaimStatus {#type-commerz-sales-exchanges-enums-claimstatus}
+
+`Commerz\Sales\Exchanges\Enums\ClaimStatus`
+
+```php
+enum ClaimStatus {
+    case Created = 'created';
+    case Fulfilled = 'fulfilled';
+    case Cancelled = 'cancelled';
+}
+```
+
+### ExchangeSettlement {#type-commerz-sales-exchanges-enums-exchangesettlement}
+
+`Commerz\Sales\Exchanges\Enums\ExchangeSettlement`
+
+```php
+enum ExchangeSettlement {
+    case Even = 'even';
+    case PaymentDue = 'payment_due';
+    case RefundDue = 'refund_due';
+}
+```
+
+### ExchangeStatus {#type-commerz-sales-exchanges-enums-exchangestatus}
+
+`Commerz\Sales\Exchanges\Enums\ExchangeStatus`
+
+```php
+enum ExchangeStatus {
+    case Requested = 'requested';
+    case Completed = 'completed';
+    case Cancelled = 'cancelled';
+}
+```
+
+### OrderClaimCreated {#type-commerz-sales-exchanges-events-orderclaimcreated}
+
+`Commerz\Sales\Exchanges\Events\OrderClaimCreated`
+
+```php
+final readonly class OrderClaimCreated {
+    public readonly \Commerz\Sales\Exchanges\Data\ClaimId $claim;
+    public readonly \Commerz\Sales\Exchanges\Enums\ClaimKind $kind;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\Exchanges\Data\ClaimId $claim, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Exchanges\Enums\ClaimKind $kind);
+}
+```
+
+### OrderClaimFulfilled {#type-commerz-sales-exchanges-events-orderclaimfulfilled}
+
+`Commerz\Sales\Exchanges\Events\OrderClaimFulfilled`
+
+```php
+final readonly class OrderClaimFulfilled {
+    public readonly \Commerz\Sales\Exchanges\Data\ClaimId $claim;
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\Exchanges\Data\ClaimId $claim, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment);
+}
+```
+
+### OrderExchangeCompleted {#type-commerz-sales-exchanges-events-orderexchangecompleted}
+
+`Commerz\Sales\Exchanges\Events\OrderExchangeCompleted`
+
+```php
+final readonly class OrderExchangeCompleted {
+    public readonly \Commerz\Sales\Exchanges\Data\ExchangeId $exchange;
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Money\Money $netDelta;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly \Commerz\Sales\Returns\Data\ReturnId $return;
+    __construct(\Commerz\Sales\Exchanges\Data\ExchangeId $exchange, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Returns\Data\ReturnId $return, \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, \Commerz\Money\Money $netDelta);
+}
+```
+
+### OrderExchangeCreated {#type-commerz-sales-exchanges-events-orderexchangecreated}
+
+`Commerz\Sales\Exchanges\Events\OrderExchangeCreated`
+
+```php
+final readonly class OrderExchangeCreated {
+    public readonly \Commerz\Sales\Exchanges\Data\ExchangeId $exchange;
+    public readonly \Commerz\Money\Money $netDelta;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly \Commerz\Sales\Returns\Data\ReturnId $return;
+    __construct(\Commerz\Sales\Exchanges\Data\ExchangeId $exchange, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Returns\Data\ReturnId $return, \Commerz\Money\Money $netDelta);
+}
+```
+
+### ClaimNotFound {#type-commerz-sales-exchanges-exceptions-claimnotfound}
+
+`Commerz\Sales\Exchanges\Exceptions\ClaimNotFound`
+
+```php
+final class ClaimNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### ClaimNotOpen {#type-commerz-sales-exchanges-exceptions-claimnotopen}
+
+`Commerz\Sales\Exchanges\Exceptions\ClaimNotOpen`
+
+```php
+final class ClaimNotOpen extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $claim;
+    public readonly string $status;
+    __construct(string $claim, string $status);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### ExchangeNotFound {#type-commerz-sales-exchanges-exceptions-exchangenotfound}
+
+`Commerz\Sales\Exchanges\Exceptions\ExchangeNotFound`
+
+```php
+final class ExchangeNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### ExchangeNotOpen {#type-commerz-sales-exchanges-exceptions-exchangenotopen}
+
+`Commerz\Sales\Exchanges\Exceptions\ExchangeNotOpen`
+
+```php
+final class ExchangeNotOpen extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $exchange;
+    public readonly string $status;
+    __construct(string $exchange, string $status);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Facades
 
 | Type | Kind | Layer | Since |
@@ -802,22 +1458,54 @@ final class Sales extends \Illuminate\Support\Facades\Facade {}
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`FulfillmentOrders`](#type-commerz-sales-fulfillments-contracts-fulfillmentorders) | interface | api | 0.1 |
 | [`Fulfillments`](#type-commerz-sales-fulfillments-contracts-fulfillments) | interface | api | 0.1 |
 | [`BookFulfillment`](#type-commerz-sales-fulfillments-data-bookfulfillment) | class | api | 0.1 |
 | [`CreateFulfillment`](#type-commerz-sales-fulfillments-data-createfulfillment) | class | api | 0.1 |
+| [`CreateFulfillmentOrder`](#type-commerz-sales-fulfillments-data-createfulfillmentorder) | class | api | 0.1 |
 | [`FulfillmentId`](#type-commerz-sales-fulfillments-data-fulfillmentid) | class | api | 0.1 |
+| [`FulfillmentOrder`](#type-commerz-sales-fulfillments-data-fulfillmentorder) | class | api | 0.1 |
+| [`FulfillmentOrderId`](#type-commerz-sales-fulfillments-data-fulfillmentorderid) | class | api | 0.1 |
 | [`FulfillmentView`](#type-commerz-sales-fulfillments-data-fulfillmentview) | class | api | 0.1 |
+| [`ListFulfillmentOrders`](#type-commerz-sales-fulfillments-data-listfulfillmentorders) | class | api | 0.1 |
 | [`ListFulfillments`](#type-commerz-sales-fulfillments-data-listfulfillments) | class | api | 0.1 |
 | [`MarkFulfillmentDelivered`](#type-commerz-sales-fulfillments-data-markfulfillmentdelivered) | class | api | 0.1 |
+| [`ReassignFulfillmentOrder`](#type-commerz-sales-fulfillments-data-reassignfulfillmentorder) | class | api | 0.1 |
 | [`ShipFulfillment`](#type-commerz-sales-fulfillments-data-shipfulfillment) | class | api | 0.1 |
+| [`TransitionFulfillmentOrder`](#type-commerz-sales-fulfillments-data-transitionfulfillmentorder) | class | api | 0.1 |
+| [`FulfillmentOrderStatus`](#type-commerz-sales-fulfillments-enums-fulfillmentorderstatus) | enum | api | 0.1 |
 | [`FulfillmentStatus`](#type-commerz-sales-fulfillments-enums-fulfillmentstatus) | enum | api | 0.1 |
 | [`FulfillmentCreated`](#type-commerz-sales-fulfillments-events-fulfillmentcreated) | class | api | 0.1 |
+| [`FulfillmentOrderCreated`](#type-commerz-sales-fulfillments-events-fulfillmentordercreated) | class | api | 0.1 |
+| [`FulfillmentOrderReassigned`](#type-commerz-sales-fulfillments-events-fulfillmentorderreassigned) | class | api | 0.1 |
 | [`FulfillmentShipped`](#type-commerz-sales-fulfillments-events-fulfillmentshipped) | class | api | 0.1 |
 | [`FulfillmentAlreadyShipped`](#type-commerz-sales-fulfillments-exceptions-fulfillmentalreadyshipped) | class | api | 0.1 |
 | [`FulfillmentNotBookable`](#type-commerz-sales-fulfillments-exceptions-fulfillmentnotbookable) | class | api | 0.1 |
 | [`FulfillmentNotFound`](#type-commerz-sales-fulfillments-exceptions-fulfillmentnotfound) | class | api | 0.1 |
 | [`FulfillmentNotShipped`](#type-commerz-sales-fulfillments-exceptions-fulfillmentnotshipped) | class | api | 0.1 |
+| [`FulfillmentOrderNotFound`](#type-commerz-sales-fulfillments-exceptions-fulfillmentordernotfound) | class | api | 0.1 |
+| [`InvalidFulfillmentOrderState`](#type-commerz-sales-fulfillments-exceptions-invalidfulfillmentorderstate) | class | api | 0.1 |
 | [`OrderNotFulfillable`](#type-commerz-sales-fulfillments-exceptions-ordernotfulfillable) | class | api | 0.1 |
+
+### FulfillmentOrders {#type-commerz-sales-fulfillments-contracts-fulfillmentorders}
+
+`Commerz\Sales\Fulfillments\Contracts\FulfillmentOrders`
+
+Warehouse assignment work orders ({@see FulfillmentOrder}) between placed orders and physical fulfillments.
+
+```php
+interface FulfillmentOrders {
+    // Creates a warehouse assignment for lines of a placed order. A repeat with the same idempotency key returns the same assignment.
+    create(\Commerz\Sales\Fulfillments\Data\CreateFulfillmentOrder $command): \Commerz\Sales\Fulfillments\Data\FulfillmentOrder;
+    find(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $id): \Commerz\Sales\Fulfillments\Data\FulfillmentOrder;
+    forOrder(\Commerz\Sales\Orders\Data\OrderId $order): array;
+    list(\Commerz\Sales\Fulfillments\Data\ListFulfillmentOrders $query): \Commerz\Pagination\Page;
+    // Reassigns an open or held fulfillment order to another warehouse location.
+    reassign(\Commerz\Sales\Fulfillments\Data\ReassignFulfillmentOrder $command): \Commerz\Sales\Fulfillments\Data\FulfillmentOrder;
+    // Transitions a fulfillment order to a new lifecycle status, optionally linking a physical fulfillment.
+    transition(\Commerz\Sales\Fulfillments\Data\TransitionFulfillmentOrder $command): \Commerz\Sales\Fulfillments\Data\FulfillmentOrder;
+}
+```
 
 ### Fulfillments {#type-commerz-sales-fulfillments-contracts-fulfillments}
 
@@ -874,12 +1562,74 @@ final readonly class CreateFulfillment {
 }
 ```
 
+### CreateFulfillmentOrder {#type-commerz-sales-fulfillments-data-createfulfillmentorder}
+
+`Commerz\Sales\Fulfillments\Data\CreateFulfillmentOrder`
+
+Assigns lines of a placed order to a warehouse as a {@see FulfillmentOrder}.
+
+```php
+final readonly class CreateFulfillmentOrder {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $lines;
+    public readonly string $locationCode;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $order, string $locationCode, array $lines, \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints = new \Commerz\Ports\Delivery\Data\FulfillmentConstraints, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
 ### FulfillmentId {#type-commerz-sales-fulfillments-data-fulfillmentid}
 
 `Commerz\Sales\Fulfillments\Data\FulfillmentId`
 
 ```php
 final readonly class FulfillmentId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### FulfillmentOrder {#type-commerz-sales-fulfillments-data-fulfillmentorder}
+
+`Commerz\Sales\Fulfillments\Data\FulfillmentOrder`
+
+Intermediate warehouse assignment aggregate between a placed {@see OrderView} and physical {@see FulfillmentView} shipments. Owns its assigned location, line quantities, fulfillment constraints, and lifecycle transitions.
+
+```php
+final readonly class FulfillmentOrder {
+    public readonly \DateTimeImmutable $assignedAt;
+    public readonly ?\DateTimeImmutable $cancelledAt;
+    public readonly \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\DateTimeImmutable $fulfilledAt;
+    public readonly ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $id;
+    public readonly array $lines;
+    public readonly string $locationCode;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly \Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $id, \Commerz\Sales\Orders\Data\OrderId $order, string $locationCode, \Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status, array $lines, \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, \DateTimeImmutable $assignedAt, ?\DateTimeImmutable $fulfilledAt, ?\DateTimeImmutable $cancelledAt, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    // Creates a new open warehouse assignment aggregate for an order.
+    static assign(\Commerz\Sales\Orders\Data\OrderId $order, string $locationCode, array $lines, \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints, \DateTimeImmutable $assignedAt, ?\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $id = null): self;
+    cancel(\DateTimeImmutable $at): self;
+    hold(\DateTimeImmutable $at): self;
+    markFulfilled(\DateTimeImmutable $at, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment = null): self;
+    // Reassigns this fulfillment order to another warehouse before work starts.
+    reassign(string $locationCode, \DateTimeImmutable $at): self;
+    releaseHold(\DateTimeImmutable $at): self;
+    start(\DateTimeImmutable $at): self;
+    totalQuantity(): int;
+    // Transitions this fulfillment order to `$next`, enforcing the aggregate state machine.
+    transitionTo(\Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $next, \DateTimeImmutable $at, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment = null): self;
+}
+```
+
+### FulfillmentOrderId {#type-commerz-sales-fulfillments-data-fulfillmentorderid}
+
+`Commerz\Sales\Fulfillments\Data\FulfillmentOrderId`
+
+```php
+final readonly class FulfillmentOrderId extends \Commerz\Identity\EntityId implements \Stringable {}
 ```
 
 ### FulfillmentView {#type-commerz-sales-fulfillments-data-fulfillmentview}
@@ -903,6 +1653,23 @@ final readonly class FulfillmentView {
     public readonly \Commerz\Sales\Fulfillments\Enums\FulfillmentStatus $status;
     public readonly ?string $tracking;
     __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentId $id, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Fulfillments\Enums\FulfillmentStatus $status, array $lines, ?string $locationCode, ?string $carrier, ?string $methodCode, ?string $tracking, ?string $labelRef, ?\DateTimeImmutable $shippedAt, ?\DateTimeImmutable $deliveredAt, \DateTimeImmutable $createdAt);
+}
+```
+
+### ListFulfillmentOrders {#type-commerz-sales-fulfillments-data-listfulfillmentorders}
+
+`Commerz\Sales\Fulfillments\Data\ListFulfillmentOrders`
+
+Fulfillment orders, newest first.
+
+```php
+final readonly class ListFulfillmentOrders {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $limit;
+    public readonly ?string $locationCode;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly ?\Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status;
+    __construct(?\Commerz\Sales\Orders\Data\OrderId $order = null, ?string $locationCode = null, ?\Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status = null, ?\Commerz\Pagination\Cursor $after = null, int $limit = 50);
 }
 ```
 
@@ -934,6 +1701,21 @@ final readonly class MarkFulfillmentDelivered {
 }
 ```
 
+### ReassignFulfillmentOrder {#type-commerz-sales-fulfillments-data-reassignfulfillmentorder}
+
+`Commerz\Sales\Fulfillments\Data\ReassignFulfillmentOrder`
+
+Moves an open or held {@see FulfillmentOrder} to another warehouse location.
+
+```php
+final readonly class ReassignFulfillmentOrder {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder;
+    public readonly string $locationCode;
+    __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder, string $locationCode, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
 ### ShipFulfillment {#type-commerz-sales-fulfillments-data-shipfulfillment}
 
 `Commerz\Sales\Fulfillments\Data\ShipFulfillment`
@@ -947,6 +1729,41 @@ final readonly class ShipFulfillment {
     public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
     public readonly ?string $tracking;
     __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, ?string $carrier = null, ?string $tracking = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### TransitionFulfillmentOrder {#type-commerz-sales-fulfillments-data-transitionfulfillmentorder}
+
+`Commerz\Sales\Fulfillments\Data\TransitionFulfillmentOrder`
+
+Transitions a {@see FulfillmentOrder} to a new lifecycle state, optionally linking a physical {@see FulfillmentId}.
+
+```php
+final readonly class TransitionFulfillmentOrder {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder;
+    public readonly \Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status;
+    __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder, \Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus $status, ?\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### FulfillmentOrderStatus {#type-commerz-sales-fulfillments-enums-fulfillmentorderstatus}
+
+`Commerz\Sales\Fulfillments\Enums\FulfillmentOrderStatus`
+
+Lifecycle stage of a warehouse assignment ({@see FulfillmentOrder}) between order placement and physical shipment ({@see FulfillmentStatus}).
+
+```php
+enum FulfillmentOrderStatus {
+    case Open = 'open';
+    case InProgress = 'in_progress';
+    case OnHold = 'on_hold';
+    case Fulfilled = 'fulfilled';
+    case Cancelled = 'cancelled';
+    allowsReassignment(): bool;
+    canTransitionTo(self $next): bool;
+    isTerminal(): bool;
 }
 ```
 
@@ -975,6 +1792,37 @@ final readonly class FulfillmentCreated {
     public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment;
     public readonly \Commerz\Sales\Orders\Data\OrderId $order;
     __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentId $fulfillment, \Commerz\Sales\Orders\Data\OrderId $order);
+}
+```
+
+### FulfillmentOrderCreated {#type-commerz-sales-fulfillments-events-fulfillmentordercreated}
+
+`Commerz\Sales\Fulfillments\Events\FulfillmentOrderCreated`
+
+Dispatched after a warehouse {@see FulfillmentOrder} assignment commits.
+
+```php
+final readonly class FulfillmentOrderCreated {
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder;
+    public readonly string $locationCode;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder, \Commerz\Sales\Orders\Data\OrderId $order, string $locationCode);
+}
+```
+
+### FulfillmentOrderReassigned {#type-commerz-sales-fulfillments-events-fulfillmentorderreassigned}
+
+`Commerz\Sales\Fulfillments\Events\FulfillmentOrderReassigned`
+
+Dispatched after a {@see FulfillmentOrder} is reassigned to another warehouse.
+
+```php
+final readonly class FulfillmentOrderReassigned {
+    public readonly \Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder;
+    public readonly string $locationCode;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly string $previousLocationCode;
+    __construct(\Commerz\Sales\Fulfillments\Data\FulfillmentOrderId $fulfillmentOrder, \Commerz\Sales\Orders\Data\OrderId $order, string $previousLocationCode, string $locationCode);
 }
 ```
 
@@ -1059,6 +1907,36 @@ final class FulfillmentNotShipped extends \Commerz\Errors\CommerzException imple
 }
 ```
 
+### FulfillmentOrderNotFound {#type-commerz-sales-fulfillments-exceptions-fulfillmentordernotfound}
+
+`Commerz\Sales\Fulfillments\Exceptions\FulfillmentOrderNotFound`
+
+```php
+final class FulfillmentOrderNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### InvalidFulfillmentOrderState {#type-commerz-sales-fulfillments-exceptions-invalidfulfillmentorderstate}
+
+`Commerz\Sales\Fulfillments\Exceptions\InvalidFulfillmentOrderState`
+
+Thrown when a {@see FulfillmentOrder} cannot perform the requested transition.
+
+```php
+final class InvalidFulfillmentOrderState extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $action;
+    public readonly string $fulfillmentOrder;
+    public readonly string $state;
+    __construct(string $fulfillmentOrder, string $state, string $action);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ### OrderNotFulfillable {#type-commerz-sales-fulfillments-exceptions-ordernotfulfillable}
 
 `Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable`
@@ -1081,15 +1959,56 @@ final class OrderNotFulfillable extends \Commerz\Errors\CommerzException impleme
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`AcquiringPaymentGateway`](#type-commerz-sales-gateways-contracts-acquiringpaymentgateway) | interface | spi (implement) | 0.1 |
+| [`CapablePaymentGateway`](#type-commerz-sales-gateways-contracts-capablepaymentgateway) | interface | spi (implement) | 0.1 |
 | [`PaymentGateway`](#type-commerz-sales-gateways-contracts-paymentgateway) | interface | spi (implement) | 0.1 |
+| [`GatewayAuthorizeRequest`](#type-commerz-sales-gateways-data-gatewayauthorizerequest) | class | api | 0.1 |
+| [`GatewayCaptureRequest`](#type-commerz-sales-gateways-data-gatewaycapturerequest) | class | api | 0.1 |
+| [`GatewayCaptureResult`](#type-commerz-sales-gateways-data-gatewaycaptureresult) | class | api | 0.1 |
+| [`GatewayIncrementalAuthRequest`](#type-commerz-sales-gateways-data-gatewayincrementalauthrequest) | class | api | 0.1 |
+| [`GatewayLineItem`](#type-commerz-sales-gateways-data-gatewaylineitem) | class | api | 0.1 |
 | [`GatewayPaymentRequest`](#type-commerz-sales-gateways-data-gatewaypaymentrequest) | class | api | 0.1 |
 | [`GatewayPaymentResult`](#type-commerz-sales-gateways-data-gatewaypaymentresult) | class | api | 0.1 |
 | [`GatewayRefundRequest`](#type-commerz-sales-gateways-data-gatewayrefundrequest) | class | api | 0.1 |
 | [`GatewayRefundResult`](#type-commerz-sales-gateways-data-gatewayrefundresult) | class | api | 0.1 |
+| [`GatewayVoidRequest`](#type-commerz-sales-gateways-data-gatewayvoidrequest) | class | api | 0.1 |
+| [`PaymentCapabilities`](#type-commerz-sales-gateways-data-paymentcapabilities) | class | api | 0.1 |
 | [`GatewayPaymentStatus`](#type-commerz-sales-gateways-enums-gatewaypaymentstatus) | enum | api | 0.1 |
 | [`GatewayRefundStatus`](#type-commerz-sales-gateways-enums-gatewayrefundstatus) | enum | api | 0.1 |
+| [`GatewayCapabilityUnsupported`](#type-commerz-sales-gateways-exceptions-gatewaycapabilityunsupported) | class | api | 0.1 |
 | [`InvalidGatewayResult`](#type-commerz-sales-gateways-exceptions-invalidgatewayresult) | class | api | 0.1 |
 | [`PaymentDeclined`](#type-commerz-sales-gateways-exceptions-paymentdeclined) | class | api | 0.1 |
+
+### AcquiringPaymentGateway {#type-commerz-sales-gateways-contracts-acquiringpaymentgateway}
+
+`Commerz\Sales\Gateways\Contracts\AcquiringPaymentGateway`
+
+Additive flexible-acquiring extension of {@see PaymentGateway} supporting separate authorize / capture / void, multicapture (`isFinalCapture`), incremental authorization, overcapture, and Level 3 line items according to {@see CapablePaymentGateway::capabilities()}.
+
+```php
+interface AcquiringPaymentGateway extends \Commerz\Sales\Gateways\Contracts\CapablePaymentGateway, \Commerz\Sales\Gateways\Contracts\PaymentGateway {
+    // Authorizes funds without capturing them; idempotent by `$request->reference`.
+    authorize(\Commerz\Sales\Gateways\Data\GatewayAuthorizeRequest $request): \Commerz\Sales\Gateways\Data\GatewayPaymentResult;
+    // Captures all or part of an authorization; idempotent by `$request->reference`.
+    capture(\Commerz\Sales\Gateways\Data\GatewayCaptureRequest $request): \Commerz\Sales\Gateways\Data\GatewayCaptureResult;
+    // Increases the authorized amount of an open authorization; idempotent by `$request->reference`.
+    incrementalAuthorize(\Commerz\Sales\Gateways\Data\GatewayIncrementalAuthRequest $request): \Commerz\Sales\Gateways\Data\GatewayPaymentResult;
+    // Voids an uncaptured authorization; idempotent by `$request->reference`.
+    void(\Commerz\Sales\Gateways\Data\GatewayVoidRequest $request): \Commerz\Sales\Gateways\Data\GatewayPaymentResult;
+}
+```
+
+### CapablePaymentGateway {#type-commerz-sales-gateways-contracts-capablepaymentgateway}
+
+`Commerz\Sales\Gateways\Contracts\CapablePaymentGateway`
+
+Additive extension of {@see PaymentGateway} advertising its acquiring capabilities.
+
+```php
+interface CapablePaymentGateway extends \Commerz\Sales\Gateways\Contracts\PaymentGateway {
+    capabilities(): \Commerz\Sales\Gateways\Data\PaymentCapabilities;
+}
+```
 
 ### PaymentGateway {#type-commerz-sales-gateways-contracts-paymentgateway}
 
@@ -1109,6 +2028,100 @@ interface PaymentGateway {
     key(): string;
     // Idempotent by `$request->reference`.
     refund(\Commerz\Sales\Gateways\Data\GatewayRefundRequest $request): \Commerz\Sales\Gateways\Data\GatewayRefundResult;
+}
+```
+
+### GatewayAuthorizeRequest {#type-commerz-sales-gateways-data-gatewayauthorizerequest}
+
+`Commerz\Sales\Gateways\Data\GatewayAuthorizeRequest`
+
+Explicit authorization request (separate from capture) sent to an acquiring gateway.
+
+```php
+final readonly class GatewayAuthorizeRequest {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly ?string $customerEmail;
+    public readonly array $lineItems;
+    public readonly array $meta;
+    public readonly ?string $orderNumber;
+    public readonly string $reference;
+    public readonly string $targetRef;
+    __construct(string $reference, string $targetRef, \Commerz\Money\Money $amount, ?string $orderNumber = null, ?\Commerz\Identity\CustomerRef $customer = null, ?string $customerEmail = null, array $lineItems = [], array $meta = []);
+}
+```
+
+### GatewayCaptureRequest {#type-commerz-sales-gateways-data-gatewaycapturerequest}
+
+`Commerz\Sales\Gateways\Data\GatewayCaptureRequest`
+
+Capture request against an existing authorization.
+
+```php
+final readonly class GatewayCaptureRequest {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly bool $isFinalCapture;
+    public readonly array $lineItems;
+    public readonly array $meta;
+    public readonly ?string $paymentExternalId;
+    public readonly string $paymentReference;
+    public readonly string $reference;
+    __construct(string $reference, string $paymentReference, ?string $paymentExternalId, \Commerz\Money\Money $amount, bool $isFinalCapture = true, array $lineItems = [], array $meta = []);
+}
+```
+
+### GatewayCaptureResult {#type-commerz-sales-gateways-data-gatewaycaptureresult}
+
+`Commerz\Sales\Gateways\Data\GatewayCaptureResult`
+
+Provider response to a {@see GatewayCaptureRequest}.
+
+```php
+final readonly class GatewayCaptureResult {
+    public readonly \Commerz\Money\Money $captured;
+    public readonly ?string $externalId;
+    public readonly bool $isFinalCapture;
+    public readonly array $meta;
+    public readonly \Commerz\Sales\Gateways\Enums\GatewayPaymentStatus $status;
+    __construct(\Commerz\Sales\Gateways\Enums\GatewayPaymentStatus $status, \Commerz\Money\Money $captured, bool $isFinalCapture = true, ?string $externalId = null, array $meta = []);
+}
+```
+
+### GatewayIncrementalAuthRequest {#type-commerz-sales-gateways-data-gatewayincrementalauthrequest}
+
+`Commerz\Sales\Gateways\Data\GatewayIncrementalAuthRequest`
+
+Request to increase the authorized amount on an existing open authorization.
+
+```php
+final readonly class GatewayIncrementalAuthRequest {
+    public readonly \Commerz\Money\Money $additionalAmount;
+    public readonly array $meta;
+    public readonly \Commerz\Money\Money $newAuthorizedTotal;
+    public readonly ?string $paymentExternalId;
+    public readonly string $paymentReference;
+    public readonly string $reference;
+    __construct(string $reference, string $paymentReference, ?string $paymentExternalId, \Commerz\Money\Money $additionalAmount, \Commerz\Money\Money $newAuthorizedTotal, array $meta = []);
+}
+```
+
+### GatewayLineItem {#type-commerz-sales-gateways-data-gatewaylineitem}
+
+`Commerz\Sales\Gateways\Data\GatewayLineItem`
+
+Commercial card Level 3 line item passed to gateways advertising {@see PaymentCapabilities::$lineItemsL3}.
+
+```php
+final readonly class GatewayLineItem {
+    public readonly ?string $commodityCode;
+    public readonly string $name;
+    public readonly int $quantity;
+    public readonly string $sku;
+    public readonly ?\Commerz\Money\Money $taxAmount;
+    public readonly \Commerz\Money\Money $total;
+    public readonly ?string $unitOfMeasure;
+    public readonly \Commerz\Money\Money $unitPrice;
+    __construct(string $sku, string $name, int $quantity, \Commerz\Money\Money $unitPrice, \Commerz\Money\Money $total, ?\Commerz\Money\Money $taxAmount = null, ?string $commodityCode = null, ?string $unitOfMeasure = null);
 }
 ```
 
@@ -1179,6 +2192,42 @@ final readonly class GatewayRefundResult {
 }
 ```
 
+### GatewayVoidRequest {#type-commerz-sales-gateways-data-gatewayvoidrequest}
+
+`Commerz\Sales\Gateways\Data\GatewayVoidRequest`
+
+Request to void (release) an uncaptured authorization at an acquiring gateway.
+
+```php
+final readonly class GatewayVoidRequest {
+    public readonly array $meta;
+    public readonly ?string $paymentExternalId;
+    public readonly string $paymentReference;
+    public readonly ?string $reason;
+    public readonly string $reference;
+    __construct(string $reference, string $paymentReference, ?string $paymentExternalId, ?string $reason = null, array $meta = []);
+}
+```
+
+### PaymentCapabilities {#type-commerz-sales-gateways-data-paymentcapabilities}
+
+`Commerz\Sales\Gateways\Data\PaymentCapabilities`
+
+Declares optional flexible-acquiring capabilities supported by a {@see PaymentGateway}.
+
+```php
+final readonly class PaymentCapabilities {
+    public readonly bool $authorizeCaptureVoid;
+    public readonly bool $incrementalAuth;
+    public readonly bool $lineItemsL3;
+    public readonly bool $multicapture;
+    public readonly bool $overcapture;
+    __construct(bool $authorizeCaptureVoid = false, bool $multicapture = false, bool $incrementalAuth = false, bool $overcapture = false, bool $lineItemsL3 = false);
+    static basic(): self;
+    static of(\Commerz\Sales\Gateways\Contracts\PaymentGateway $gateway): self;
+}
+```
+
 ### GatewayPaymentStatus {#type-commerz-sales-gateways-enums-gatewaypaymentstatus}
 
 `Commerz\Sales\Gateways\Enums\GatewayPaymentStatus`
@@ -1205,6 +2254,24 @@ enum GatewayRefundStatus {
     case Pending = 'pending';
     case Succeeded = 'succeeded';
     case Failed = 'failed';
+}
+```
+
+### GatewayCapabilityUnsupported {#type-commerz-sales-gateways-exceptions-gatewaycapabilityunsupported}
+
+`Commerz\Sales\Gateways\Exceptions\GatewayCapabilityUnsupported`
+
+Raised when a payment operation requires a capability the selected gateway does not advertise.
+
+```php
+final class GatewayCapabilityUnsupported extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $capability;
+    public readonly string $gateway;
+    __construct(string $gateway, string $capability);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1321,6 +2388,669 @@ final class InvalidOrderNumber extends \Commerz\Errors\CommerzException implemen
 }
 ```
 
+## OrderChanges
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`OrderChangeCompensator`](#type-commerz-sales-orderchanges-contracts-orderchangecompensator) | interface | spi (implement) | 0.1 |
+| [`OrderChanges`](#type-commerz-sales-orderchanges-contracts-orderchanges) | interface | api | 0.1 |
+| [`AddLineAction`](#type-commerz-sales-orderchanges-data-addlineaction) | class | api | 0.1 |
+| [`AddOrderChangeAction`](#type-commerz-sales-orderchanges-data-addorderchangeaction) | class | api | 0.1 |
+| [`CancelOrderChange`](#type-commerz-sales-orderchanges-data-cancelorderchange) | class | api | 0.1 |
+| [`ChangeLineQuantityAction`](#type-commerz-sales-orderchanges-data-changelinequantityaction) | class | api | 0.1 |
+| [`ChangeShippingMethodAction`](#type-commerz-sales-orderchanges-data-changeshippingmethodaction) | class | api | 0.1 |
+| [`CompensationOutcome`](#type-commerz-sales-orderchanges-data-compensationoutcome) | class | api | 0.1 |
+| [`CompensationPreference`](#type-commerz-sales-orderchanges-data-compensationpreference) | class | api | 0.1 |
+| [`CreateOrderChange`](#type-commerz-sales-orderchanges-data-createorderchange) | class | api | 0.1 |
+| [`OrderChangeAction`](#type-commerz-sales-orderchanges-data-orderchangeaction) | interface | api | 0.1 |
+| [`OrderChangeActionId`](#type-commerz-sales-orderchanges-data-orderchangeactionid) | class | api | 0.1 |
+| [`OrderChangeActionView`](#type-commerz-sales-orderchanges-data-orderchangeactionview) | class | api | 0.1 |
+| [`OrderChangeConfirmation`](#type-commerz-sales-orderchanges-data-orderchangeconfirmation) | class | api | 0.1 |
+| [`OrderChangeId`](#type-commerz-sales-orderchanges-data-orderchangeid) | class | api | 0.1 |
+| [`OrderChangePreview`](#type-commerz-sales-orderchanges-data-orderchangepreview) | class | api | 0.1 |
+| [`OrderChangeView`](#type-commerz-sales-orderchanges-data-orderchangeview) | class | api | 0.1 |
+| [`OrderExcerpt`](#type-commerz-sales-orderchanges-data-orderexcerpt) | class | api | 0.1 |
+| [`OrderExcerptLine`](#type-commerz-sales-orderchanges-data-orderexcerptline) | class | api | 0.1 |
+| [`OverrideUnitPriceAction`](#type-commerz-sales-orderchanges-data-overrideunitpriceaction) | class | api | 0.1 |
+| [`RemoveLineAction`](#type-commerz-sales-orderchanges-data-removelineaction) | class | api | 0.1 |
+| [`ReplaceAdjustmentsAction`](#type-commerz-sales-orderchanges-data-replaceadjustmentsaction) | class | api | 0.1 |
+| [`CompensationDirection`](#type-commerz-sales-orderchanges-enums-compensationdirection) | enum | api | 0.1 |
+| [`CompensationStrategy`](#type-commerz-sales-orderchanges-enums-compensationstrategy) | enum | api | 0.1 |
+| [`NegativeDeltaStrategy`](#type-commerz-sales-orderchanges-enums-negativedeltastrategy) | enum | api | 0.1 |
+| [`OrderChangeActionType`](#type-commerz-sales-orderchanges-enums-orderchangeactiontype) | enum | api | 0.1 |
+| [`OrderChangeStatus`](#type-commerz-sales-orderchanges-enums-orderchangestatus) | enum | api | 0.1 |
+| [`PositiveDeltaStrategy`](#type-commerz-sales-orderchanges-enums-positivedeltastrategy) | enum | api | 0.1 |
+| [`OrderChangeCancelled`](#type-commerz-sales-orderchanges-events-orderchangecancelled) | class | api | 0.1 |
+| [`OrderChangeConfirmed`](#type-commerz-sales-orderchanges-events-orderchangeconfirmed) | class | api | 0.1 |
+| [`OrderChangeCreated`](#type-commerz-sales-orderchanges-events-orderchangecreated) | class | api | 0.1 |
+| [`OrderChangeLineLocked`](#type-commerz-sales-orderchanges-exceptions-orderchangelinelocked) | class | api | 0.1 |
+| [`OrderChangeNotFound`](#type-commerz-sales-orderchanges-exceptions-orderchangenotfound) | class | api | 0.1 |
+| [`OrderChangeNotOpen`](#type-commerz-sales-orderchanges-exceptions-orderchangenotopen) | class | api | 0.1 |
+| [`OrderChangeVersionConflict`](#type-commerz-sales-orderchanges-exceptions-orderchangeversionconflict) | class | api | 0.1 |
+| [`OrderNotEditable`](#type-commerz-sales-orderchanges-exceptions-ordernoteditable) | class | api | 0.1 |
+
+### OrderChangeCompensator {#type-commerz-sales-orderchanges-contracts-orderchangecompensator}
+
+`Commerz\Sales\OrderChanges\Contracts\OrderChangeCompensator`
+
+Compensating financial workflow executed after an OrderChange confirms with a non-zero net delta.
+
+```php
+interface OrderChangeCompensator {
+    // Handles `amountDelta < 0` when the order is overpaid (`overpaid > 0`): partial refund via `Refunds`, store-credit wallet refund via `StoredValueTender`, or deferred. Runs OUTSIDE any database transaction (D33) when issuing gateway refunds.
+    compensateDecrease(\Commerz\Sales\OrderChanges\Data\OrderChangeId $changeId, \Commerz\Sales\Orders\Data\OrderView $order, \Commerz\Money\Money $overpaid, \Commerz\Sales\OrderChanges\Data\CompensationPreference $preference, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null): \Commerz\Sales\OrderChanges\Data\CompensationOutcome;
+    // Handles `amountDelta > 0` (customer owes more): incremental authorization, delta charge, or deferred. Runs OUTSIDE any database transaction (D33) so gateway calls never hold DB locks.
+    compensateIncrease(\Commerz\Sales\OrderChanges\Data\OrderChangeId $changeId, \Commerz\Sales\Orders\Data\OrderView $order, \Commerz\Money\Money $delta, \Commerz\Sales\OrderChanges\Data\CompensationPreference $preference, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null): \Commerz\Sales\OrderChanges\Data\CompensationOutcome;
+}
+```
+
+### OrderChanges {#type-commerz-sales-orderchanges-contracts-orderchanges}
+
+`Commerz\Sales\OrderChanges\Contracts\OrderChanges`
+
+Two-phase post-placement order editing (`OrderChange`) with dry-run preview, optimistic concurrency control (`INV-OMS-001`), stock reservation delta reconciliation, and financial compensating workflow.
+
+```php
+interface OrderChanges {
+    // Appends an action (`AddLine`, `ChangeLineQuantity`, `RemoveLine`, `OverrideUnitPrice`, `ChangeShippingMethod`, `ReplaceAdjustments`) to an open draft order change without mutating the order.
+    addAction(\Commerz\Sales\OrderChanges\Data\AddOrderChangeAction $command): \Commerz\Sales\OrderChanges\Data\OrderChangeView;
+    // Cancels a draft order change without modifying the order.
+    cancel(\Commerz\Sales\OrderChanges\Data\CancelOrderChange $command): \Commerz\Sales\OrderChanges\Data\OrderChangeView;
+    // Atomically applies all queued actions to the order guarded by OCC (`$expectedOrderVersion`, `INV-OMS-001`), reconciles stock reservations, bumps `orders.version`, and runs the financial compensating workflow: - `amountDelta > 0`: incremental authorization or new delta charge (or deferred) - `amountDelta < 0`: partial refund or customer wallet credit via `StoredValueTender` (or deferred)
+    confirm(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, int $expectedOrderVersion, ?\Commerz\Sales\OrderChanges\Data\CompensationPreference $compensation = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null): \Commerz\Sales\OrderChanges\Data\OrderChangeConfirmation;
+    // Opens a new draft order change anchored to the order's current version.
+    create(\Commerz\Sales\OrderChanges\Data\CreateOrderChange $command): \Commerz\Sales\OrderChanges\Data\OrderChangeView;
+    find(\Commerz\Sales\OrderChanges\Data\OrderChangeId $id): \Commerz\Sales\OrderChanges\Data\OrderChangeView;
+    listForOrder(\Commerz\Sales\Orders\Data\OrderId $order): array;
+    // Pure dry-run calculation without mutating the order or database: returns `excerptBefore`, `excerptAfter`, tax delta, and signed `amountDelta`.
+    preview(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change): \Commerz\Sales\OrderChanges\Data\OrderChangePreview;
+}
+```
+
+### AddLineAction {#type-commerz-sales-orderchanges-data-addlineaction}
+
+`Commerz\Sales\OrderChanges\Data\AddLineAction`
+
+Adds a new sellable line to the order, optionally overriding its unit price.
+
+```php
+final readonly class AddLineAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
+    public readonly ?\Commerz\Money\Money $unitPriceOverride;
+    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity, ?\Commerz\Money\Money $unitPriceOverride = null, ?\Commerz\Identity\SellerRef $sellerRef = null);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### AddOrderChangeAction {#type-commerz-sales-orderchanges-data-addorderchangeaction}
+
+`Commerz\Sales\OrderChanges\Data\AddOrderChangeAction`
+
+Appends a mutation action to a draft OrderChange.
+
+```php
+final readonly class AddOrderChangeAction {
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeAction $action;
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $change;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, \Commerz\Sales\OrderChanges\Data\OrderChangeAction $action, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CancelOrderChange {#type-commerz-sales-orderchanges-data-cancelorderchange}
+
+`Commerz\Sales\OrderChanges\Data\CancelOrderChange`
+
+Cancels a draft OrderChange without mutating the order.
+
+```php
+final readonly class CancelOrderChange {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $change;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### ChangeLineQuantityAction {#type-commerz-sales-orderchanges-data-changelinequantityaction}
+
+`Commerz\Sales\OrderChanges\Data\ChangeLineQuantityAction`
+
+Changes the ordered quantity of an existing line (cannot go below fulfilled + cancelled units).
+
+```php
+final readonly class ChangeLineQuantityAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $line;
+    public readonly int $quantity;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $line, int $quantity);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### ChangeShippingMethodAction {#type-commerz-sales-orderchanges-data-changeshippingmethodaction}
+
+`Commerz\Sales\OrderChanges\Data\ChangeShippingMethodAction`
+
+Changes or clears the order's shipping method (priced by the delivery stage unless `$chargeOverride` is supplied).
+
+```php
+final readonly class ChangeShippingMethodAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly ?\Commerz\Quotes\Data\DeliveryCharge $chargeOverride;
+    public readonly ?string $methodCode;
+    __construct(?string $methodCode, ?\Commerz\Quotes\Data\DeliveryCharge $chargeOverride = null);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### CompensationOutcome {#type-commerz-sales-orderchanges-data-compensationoutcome}
+
+`Commerz\Sales\OrderChanges\Data\CompensationOutcome`
+
+Result of the financial compensating workflow executed for a confirmed OrderChange.
+
+```php
+final readonly class CompensationOutcome {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly array $details;
+    public readonly ?\Commerz\Sales\Payments\Data\PaymentId $paymentId;
+    public readonly ?\Commerz\Sales\Refunds\Data\RefundId $refundId;
+    public readonly ?string $storedValueAccountId;
+    public readonly ?string $storedValueJournalId;
+    public readonly \Commerz\Sales\OrderChanges\Enums\CompensationStrategy $strategy;
+    __construct(\Commerz\Sales\OrderChanges\Enums\CompensationStrategy $strategy, \Commerz\Money\Money $amount, ?\Commerz\Sales\Payments\Data\PaymentId $paymentId = null, ?\Commerz\Sales\Refunds\Data\RefundId $refundId = null, ?string $storedValueAccountId = null, ?string $storedValueJournalId = null, array $details = []);
+}
+```
+
+### CompensationPreference {#type-commerz-sales-orderchanges-data-compensationpreference}
+
+`Commerz\Sales\OrderChanges\Data\CompensationPreference`
+
+Caller preference for financial compensation when confirming an OrderChange with a non-zero `amountDelta`.
+
+```php
+final readonly class CompensationPreference {
+    public readonly \Commerz\Sales\OrderChanges\Enums\NegativeDeltaStrategy $onDecrease;
+    public readonly \Commerz\Sales\OrderChanges\Enums\PositiveDeltaStrategy $onIncrease;
+    public readonly ?string $paymentGateway;
+    public readonly ?\Commerz\Sales\Payments\Data\PaymentId $paymentId;
+    public readonly array $paymentMeta;
+    public readonly ?string $reason;
+    public readonly ?string $storedValueAccountId;
+    __construct(\Commerz\Sales\OrderChanges\Enums\PositiveDeltaStrategy $onIncrease = Commerz\Sales\OrderChanges\Enums\PositiveDeltaStrategy::DeltaCharge, \Commerz\Sales\OrderChanges\Enums\NegativeDeltaStrategy $onDecrease = Commerz\Sales\OrderChanges\Enums\NegativeDeltaStrategy::PartialRefund, ?string $paymentGateway = null, ?\Commerz\Sales\Payments\Data\PaymentId $paymentId = null, ?string $storedValueAccountId = null, array $paymentMeta = [], ?string $reason = null);
+}
+```
+
+### CreateOrderChange {#type-commerz-sales-orderchanges-data-createorderchange}
+
+`Commerz\Sales\OrderChanges\Data\CreateOrderChange`
+
+Opens a new draft OrderChange for an editable order.
+
+```php
+final readonly class CreateOrderChange {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?string $description;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $order, ?string $description = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### OrderChangeAction {#type-commerz-sales-orderchanges-data-orderchangeaction}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeAction`
+
+A declarative mutation step recorded inside a draft OrderChange.
+
+```php
+interface OrderChangeAction {
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### OrderChangeActionId {#type-commerz-sales-orderchanges-data-orderchangeactionid}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeActionId`
+
+```php
+final readonly class OrderChangeActionId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### OrderChangeActionView {#type-commerz-sales-orderchanges-data-orderchangeactionview}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeActionView`
+
+Read model of a stored action inside an OrderChange.
+
+```php
+final readonly class OrderChangeActionView {
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeActionId $id;
+    public readonly array $payload;
+    public readonly int $position;
+    public readonly \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType $type;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeActionId $id, int $position, \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType $type, array $payload, \DateTimeImmutable $createdAt);
+}
+```
+
+### OrderChangeConfirmation {#type-commerz-sales-orderchanges-data-orderchangeconfirmation}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeConfirmation`
+
+Result of confirming an OrderChange: confirmed change, updated order, final preview, and compensation outcome.
+
+```php
+final readonly class OrderChangeConfirmation {
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeView $change;
+    public readonly \Commerz\Sales\OrderChanges\Data\CompensationOutcome $compensation;
+    public readonly \Commerz\Sales\Orders\Data\OrderView $order;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangePreview $preview;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeView $change, \Commerz\Sales\Orders\Data\OrderView $order, \Commerz\Sales\OrderChanges\Data\OrderChangePreview $preview, \Commerz\Sales\OrderChanges\Data\CompensationOutcome $compensation);
+}
+```
+
+### OrderChangeId {#type-commerz-sales-orderchanges-data-orderchangeid}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeId`
+
+```php
+final readonly class OrderChangeId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### OrderChangePreview {#type-commerz-sales-orderchanges-data-orderchangepreview}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangePreview`
+
+Dry-run preview of an OrderChange: before/after excerpts, tax delta, and signed amountDelta without DB mutation.
+
+```php
+final readonly class OrderChangePreview {
+    public readonly array $actions;
+    public readonly \Commerz\Money\Money $amountDelta;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $changeId;
+    public readonly \Commerz\Sales\OrderChanges\Enums\CompensationDirection $compensationDirection;
+    public readonly \Commerz\Money\Money $deliveryDelta;
+    public readonly \Commerz\Money\Money $discountDelta;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderExcerpt $excerptAfter;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderExcerpt $excerptBefore;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $orderId;
+    public readonly int $orderVersion;
+    public readonly string $quoteFingerprint;
+    public readonly \Commerz\Money\Money $subtotalDelta;
+    public readonly \Commerz\Money\Money $taxDelta;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $changeId, \Commerz\Sales\Orders\Data\OrderId $orderId, int $orderVersion, \Commerz\Sales\OrderChanges\Data\OrderExcerpt $excerptBefore, \Commerz\Sales\OrderChanges\Data\OrderExcerpt $excerptAfter, \Commerz\Money\Money $subtotalDelta, \Commerz\Money\Money $discountDelta, \Commerz\Money\Money $deliveryDelta, \Commerz\Money\Money $taxDelta, \Commerz\Money\Money $amountDelta, \Commerz\Sales\OrderChanges\Enums\CompensationDirection $compensationDirection, string $quoteFingerprint, array $actions);
+}
+```
+
+### OrderChangeView {#type-commerz-sales-orderchanges-data-orderchangeview}
+
+`Commerz\Sales\OrderChanges\Data\OrderChangeView`
+
+Read model of an OrderChange and its queued actions.
+
+```php
+final readonly class OrderChangeView {
+    public readonly array $actions;
+    public readonly \Commerz\Money\Money $amountDelta;
+    public readonly int $baseOrderVersion;
+    public readonly ?\DateTimeImmutable $cancelledAt;
+    public readonly ?\Commerz\Sales\OrderChanges\Data\CompensationOutcome $compensation;
+    public readonly ?\DateTimeImmutable $confirmedAt;
+    public readonly ?\Commerz\Identity\ActorRef $confirmedBy;
+    public readonly ?int $confirmedOrderVersion;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Identity\ActorRef $createdBy;
+    public readonly \Commerz\Money\Currency $currency;
+    public readonly ?string $description;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $id;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $orderId;
+    public readonly \Commerz\Sales\OrderChanges\Enums\OrderChangeStatus $status;
+    public readonly \Commerz\Money\Money $taxDelta;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $id, \Commerz\Sales\Orders\Data\OrderId $orderId, \Commerz\Sales\OrderChanges\Enums\OrderChangeStatus $status, int $baseOrderVersion, ?int $confirmedOrderVersion, \Commerz\Money\Currency $currency, \Commerz\Money\Money $amountDelta, \Commerz\Money\Money $taxDelta, ?string $description, array $actions, ?\Commerz\Sales\OrderChanges\Data\CompensationOutcome $compensation, ?\Commerz\Identity\ActorRef $createdBy, ?\Commerz\Identity\ActorRef $confirmedBy, \DateTimeImmutable $createdAt, ?\DateTimeImmutable $confirmedAt, ?\DateTimeImmutable $cancelledAt);
+}
+```
+
+### OrderExcerpt {#type-commerz-sales-orderchanges-data-orderexcerpt}
+
+`Commerz\Sales\OrderChanges\Data\OrderExcerpt`
+
+Financial and line snapshot of an order before or after applying an OrderChange.
+
+```php
+final readonly class OrderExcerpt {
+    public readonly \Commerz\Money\Money $amountDue;
+    public readonly \Commerz\Money\Currency $currency;
+    public readonly ?\Commerz\Quotes\Data\DeliveryCharge $delivery;
+    public readonly array $deliveryAdjustments;
+    public readonly array $deliveryTaxLines;
+    public readonly array $lines;
+    public readonly array $orderAdjustments;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $orderId;
+    public readonly int $orderVersion;
+    public readonly \Commerz\Quotes\Data\QuoteTotals $totals;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $orderId, int $orderVersion, \Commerz\Money\Currency $currency, array $lines, array $orderAdjustments, ?\Commerz\Quotes\Data\DeliveryCharge $delivery, array $deliveryAdjustments, array $deliveryTaxLines, \Commerz\Quotes\Data\QuoteTotals $totals, \Commerz\Money\Money $amountDue);
+    static fromOrder(\Commerz\Sales\Orders\Data\OrderView $order): self;
+    line(\Commerz\Sales\Orders\Data\OrderLineId $id): ?\Commerz\Sales\OrderChanges\Data\OrderExcerptLine;
+}
+```
+
+### OrderExcerptLine {#type-commerz-sales-orderchanges-data-orderexcerptline}
+
+`Commerz\Sales\OrderChanges\Data\OrderExcerptLine`
+
+Snapshot of one order line inside an `OrderExcerpt` (before or after an OrderChange).
+
+```php
+final readonly class OrderExcerptLine {
+    public readonly array $adjustments;
+    public readonly int $cancelledQuantity;
+    public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly int $fulfilledQuantity;
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $id;
+    public readonly bool $isNew;
+    public readonly \Commerz\Ports\Sellables\Enums\SellableKind $kind;
+    public readonly string $name;
+    public readonly array $options;
+    public readonly string $priceSource;
+    public readonly int $quantity;
+    public readonly bool $requiresShipping;
+    public readonly int $returnedQuantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
+    public readonly string $sku;
+    public readonly \Commerz\Money\Money $subtotal;
+    public readonly ?string $taxClass;
+    public readonly bool $taxIncluded;
+    public readonly array $taxLines;
+    public readonly \Commerz\Money\Money $total;
+    public readonly \Commerz\Money\Money $unitPrice;
+    public readonly ?int $weightGrams;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $id, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, array $options, ?string $taxClass, ?int $weightGrams, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, \Commerz\Money\Money $subtotal, array $adjustments, array $taxLines, \Commerz\Money\Money $total, int $cancelledQuantity, int $fulfilledQuantity, int $returnedQuantity, ?\Commerz\Identity\SellerRef $sellerRef = null, bool $isNew = false);
+    static fromOrderLine(\Commerz\Sales\Orders\Data\OrderLineView $line): self;
+}
+```
+
+### OverrideUnitPriceAction {#type-commerz-sales-orderchanges-data-overrideunitpriceaction}
+
+`Commerz\Sales\OrderChanges\Data\OverrideUnitPriceAction`
+
+Overrides the snapshotted unit price of an existing line.
+
+```php
+final readonly class OverrideUnitPriceAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $line;
+    public readonly ?string $reason;
+    public readonly \Commerz\Money\Money $unitPrice;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $line, \Commerz\Money\Money $unitPrice, ?string $reason = null);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### RemoveLineAction {#type-commerz-sales-orderchanges-data-removelineaction}
+
+`Commerz\Sales\OrderChanges\Data\RemoveLineAction`
+
+Removes an unfulfilled line from the order.
+
+```php
+final readonly class RemoveLineAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $line;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $line);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### ReplaceAdjustmentsAction {#type-commerz-sales-orderchanges-data-replaceadjustmentsaction}
+
+`Commerz\Sales\OrderChanges\Data\ReplaceAdjustmentsAction`
+
+Replaces line, order, and delivery adjustments on the order with an explicit list.
+
+```php
+final readonly class ReplaceAdjustmentsAction implements \Commerz\Sales\OrderChanges\Data\OrderChangeAction {
+    public readonly array $adjustments;
+    __construct(array $adjustments);
+    toPayload(): array;
+    type(): \Commerz\Sales\OrderChanges\Enums\OrderChangeActionType;
+}
+```
+
+### CompensationDirection {#type-commerz-sales-orderchanges-enums-compensationdirection}
+
+`Commerz\Sales\OrderChanges\Enums\CompensationDirection`
+
+Direction of financial reconciliation implied by an order change preview.
+
+```php
+enum CompensationDirection {
+    case None = 'none';
+    case ChargeAdditional = 'charge_additional';
+    case RefundOrCredit = 'refund_or_credit';
+}
+```
+
+### CompensationStrategy {#type-commerz-sales-orderchanges-enums-compensationstrategy}
+
+`Commerz\Sales\OrderChanges\Enums\CompensationStrategy`
+
+Effective financial compensation strategy applied when confirming an order change.
+
+```php
+enum CompensationStrategy {
+    case None = 'none';
+    case IncrementAuthorization = 'increment_authorization';
+    case DeltaCharge = 'delta_charge';
+    case PartialRefund = 'partial_refund';
+    case WalletCredit = 'wallet_credit';
+    case Deferred = 'deferred';
+}
+```
+
+### NegativeDeltaStrategy {#type-commerz-sales-orderchanges-enums-negativedeltastrategy}
+
+`Commerz\Sales\OrderChanges\Enums\NegativeDeltaStrategy`
+
+How a negative amountDelta (overpaid order) is handled on confirm().
+
+```php
+enum NegativeDeltaStrategy {
+    case PartialRefund = 'partial_refund';
+    case WalletCredit = 'wallet_credit';
+    case Deferred = 'deferred';
+}
+```
+
+### OrderChangeActionType {#type-commerz-sales-orderchanges-enums-orderchangeactiontype}
+
+`Commerz\Sales\OrderChanges\Enums\OrderChangeActionType`
+
+Supported mutation actions inside an OrderChange.
+
+```php
+enum OrderChangeActionType {
+    case AddLine = 'add_line';
+    case ChangeLineQuantity = 'change_line_quantity';
+    case RemoveLine = 'remove_line';
+    case OverrideUnitPrice = 'override_unit_price';
+    case ChangeShippingMethod = 'change_shipping_method';
+    case ReplaceAdjustments = 'replace_adjustments';
+}
+```
+
+### OrderChangeStatus {#type-commerz-sales-orderchanges-enums-orderchangestatus}
+
+`Commerz\Sales\OrderChanges\Enums\OrderChangeStatus`
+
+Lifecycle state of a two-phase order change.
+
+```php
+enum OrderChangeStatus {
+    case Draft = 'draft';
+    case Confirmed = 'confirmed';
+    case Cancelled = 'cancelled';
+}
+```
+
+### PositiveDeltaStrategy {#type-commerz-sales-orderchanges-enums-positivedeltastrategy}
+
+`Commerz\Sales\OrderChanges\Enums\PositiveDeltaStrategy`
+
+How a positive amountDelta (customer owes more) is handled on confirm().
+
+```php
+enum PositiveDeltaStrategy {
+    case IncrementAuthorization = 'increment_authorization';
+    case DeltaCharge = 'delta_charge';
+    case Deferred = 'deferred';
+}
+```
+
+### OrderChangeCancelled {#type-commerz-sales-orderchanges-events-orderchangecancelled}
+
+`Commerz\Sales\OrderChanges\Events\OrderChangeCancelled`
+
+Dispatched after commit when a draft order change is cancelled.
+
+```php
+final readonly class OrderChangeCancelled {
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $change;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, \Commerz\Sales\Orders\Data\OrderId $order);
+}
+```
+
+### OrderChangeConfirmed {#type-commerz-sales-orderchanges-events-orderchangeconfirmed}
+
+`Commerz\Sales\OrderChanges\Events\OrderChangeConfirmed`
+
+Dispatched after commit when an order change is confirmed and the order version is bumped.
+
+```php
+final readonly class OrderChangeConfirmed {
+    public readonly \Commerz\Money\Money $amountDelta;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $change;
+    public readonly \Commerz\Sales\OrderChanges\Enums\CompensationStrategy $compensationStrategy;
+    public readonly int $fromVersion;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly \Commerz\Money\Money $taxDelta;
+    public readonly int $toVersion;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, \Commerz\Sales\Orders\Data\OrderId $order, int $fromVersion, int $toVersion, \Commerz\Money\Money $amountDelta, \Commerz\Money\Money $taxDelta, \Commerz\Sales\OrderChanges\Enums\CompensationStrategy $compensationStrategy);
+}
+```
+
+### OrderChangeCreated {#type-commerz-sales-orderchanges-events-orderchangecreated}
+
+`Commerz\Sales\OrderChanges\Events\OrderChangeCreated`
+
+Dispatched after commit when a draft order change is created.
+
+```php
+final readonly class OrderChangeCreated {
+    public readonly int $baseOrderVersion;
+    public readonly \Commerz\Sales\OrderChanges\Data\OrderChangeId $change;
+    public readonly \Commerz\Sales\Orders\Data\OrderId $order;
+    __construct(\Commerz\Sales\OrderChanges\Data\OrderChangeId $change, \Commerz\Sales\Orders\Data\OrderId $order, int $baseOrderVersion);
+}
+```
+
+### OrderChangeLineLocked {#type-commerz-sales-orderchanges-exceptions-orderchangelinelocked}
+
+`Commerz\Sales\OrderChanges\Exceptions\OrderChangeLineLocked`
+
+An order line cannot be reduced below its fulfilled/cancelled ledger count or removed once fulfilled.
+
+```php
+final class OrderChangeLineLocked extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $lineId;
+    public readonly int $lockedQuantity;
+    public readonly int $requestedQuantity;
+    __construct(string $lineId, int $requestedQuantity, int $lockedQuantity);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### OrderChangeNotFound {#type-commerz-sales-orderchanges-exceptions-orderchangenotfound}
+
+`Commerz\Sales\OrderChanges\Exceptions\OrderChangeNotFound`
+
+```php
+final class OrderChangeNotFound extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $id;
+    __construct(string $id);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### OrderChangeNotOpen {#type-commerz-sales-orderchanges-exceptions-orderchangenotopen}
+
+`Commerz\Sales\OrderChanges\Exceptions\OrderChangeNotOpen`
+
+The order change is no longer in `draft` status and cannot be mutated or confirmed.
+
+```php
+final class OrderChangeNotOpen extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $change;
+    public readonly string $status;
+    __construct(string $change, string $status);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### OrderChangeVersionConflict {#type-commerz-sales-orderchanges-exceptions-orderchangeversionconflict}
+
+`Commerz\Sales\OrderChanges\Exceptions\OrderChangeVersionConflict`
+
+Optimistic concurrency conflict (409, INV-OMS-001): the order version changed before confirm().
+
+```php
+final class OrderChangeVersionConflict extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    const DOMAIN_CODE = 'ORDERS_ORDER_CHANGE_VERSION_CONFLICT';
+    const INVARIANT = 'INV-OMS-001';
+    public readonly int $actualVersion;
+    public readonly string $change;
+    public readonly int $expectedVersion;
+    public readonly string $order;
+    __construct(string $change, string $order, int $expectedVersion, int $actualVersion);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### OrderNotEditable {#type-commerz-sales-orderchanges-exceptions-ordernoteditable}
+
+`Commerz\Sales\OrderChanges\Exceptions\OrderNotEditable`
+
+The order is not in a mutable state (e.g. already `completed` or `cancelled`).
+
+```php
+final class OrderNotEditable extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $order;
+    public readonly string $state;
+    __construct(string $order, string $state);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Orders
 
 | Type | Kind | Layer | Since |
@@ -1364,6 +3094,8 @@ interface Orders {
     cancelLines(\Commerz\Sales\Orders\Data\CancelOrderLines $command): \Commerz\Sales\Orders\Data\OrderView;
     // Opens a draft (D31): a cart of kind `draft` with the lines, codes, addresses and delivery method of the command, edited further with `Carts` and placed with `Checkout::place`. A draft has no payment deadline.
     draft(\Commerz\Sales\Orders\Data\DraftOrder $command): \Commerz\Sales\Carts\Data\CartView;
+    // Anonymizes personal data (name, email, phone, street lines, city, postal code, recipient) in orders and carts belonging to `$customer`, while preserving country, region, monetary amounts, taxes, and line items for accounting invariants, and notifies peer packages to erase matching shipping booking metadata.
+    erasePersonalData(\Commerz\Identity\CustomerRef $customer): int;
     // Cancels, with the reason `expired`, the unpaid orders whose payment deadline has passed (D32). An order with a payment under way, a captured payment or a fulfilled unit stays; drafts have no deadline. Safe to run in parallel.
     expireDue(\Commerz\Sales\Orders\Data\ExpireOrders $command): \Commerz\Sales\Orders\Data\ExpireReport;
     find(\Commerz\Sales\Orders\Data\OrderId $id): \Commerz\Sales\Orders\Data\OrderView;
@@ -1413,7 +3145,8 @@ final readonly class CancelOrderLines {
 final readonly class DraftLine {
     public readonly int $quantity;
     public readonly \Commerz\Identity\SellableRef $sellable;
-    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity);
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
+    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity, ?\Commerz\Identity\SellerRef $sellerRef = null);
 }
 ```
 
@@ -1540,6 +3273,7 @@ final readonly class OrderLineView {
     public readonly bool $requiresShipping;
     public readonly int $returnedQuantity;
     public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
     public readonly string $sku;
     public readonly \Commerz\Money\Money $subtotal;
     public readonly ?string $taxClass;
@@ -1548,7 +3282,7 @@ final readonly class OrderLineView {
     public readonly \Commerz\Money\Money $total;
     public readonly \Commerz\Money\Money $unitPrice;
     public readonly ?int $weightGrams;
-    __construct(\Commerz\Sales\Orders\Data\OrderLineId $id, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, array $options, ?string $taxClass, ?int $weightGrams, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, \Commerz\Money\Money $subtotal, array $adjustments, array $taxLines, \Commerz\Money\Money $total, int $cancelledQuantity, int $fulfilledQuantity, int $returnedQuantity);
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $id, \Commerz\Identity\SellableRef $sellable, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, array $options, ?string $taxClass, ?int $weightGrams, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, \Commerz\Money\Money $subtotal, array $adjustments, array $taxLines, \Commerz\Money\Money $total, int $cancelledQuantity, int $fulfilledQuantity, int $returnedQuantity, ?\Commerz\Identity\SellerRef $sellerRef = null);
     // Units neither cancelled nor fulfilled yet.
     outstanding(): int;
 }
@@ -1597,7 +3331,8 @@ final readonly class OrderView {
     public readonly \Commerz\Stores\Data\StoreId $store;
     public readonly \Commerz\Money\Money $total;
     public readonly \Commerz\Quotes\Data\QuoteTotals $totals;
-    __construct(\Commerz\Sales\Orders\Data\OrderId $id, string $number, \Commerz\Stores\Data\StoreId $store, \Commerz\Stores\Data\ChannelId $channel, \Commerz\Sales\Carts\Data\CartId $cart, \Commerz\Sales\Carts\Enums\CartKind $origin, \Commerz\Sales\Orders\Enums\OrderState $state, \Commerz\Sales\Orders\Enums\PaymentState $paymentState, \Commerz\Sales\Orders\Enums\FulfillmentState $fulfillmentState, ?\Commerz\Sales\Orders\Enums\CancelReason $cancelReason, \Commerz\Money\Currency $currency, string $locale, ?\Commerz\Identity\CustomerRef $customer, array $customerGroups, ?string $customerEmail, ?string $customerName, array $lines, array $orderAdjustments, ?\Commerz\Quotes\Data\DeliveryCharge $delivery, array $deliveryAdjustments, array $deliveryTaxLines, \Commerz\Quotes\Data\QuoteTotals $totals, \Commerz\Money\Money $amountDue, \Commerz\Money\Money $authorized, \Commerz\Money\Money $captured, \Commerz\Money\Money $refunded, array $codes, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress, ?\Commerz\Ports\Delivery\Data\Address $billingAddress, string $quoteFingerprint, ?\DateTimeImmutable $paymentDueAt, \DateTimeImmutable $placedAt, ?\DateTimeImmutable $completedAt, ?\DateTimeImmutable $cancelledAt);
+    public readonly int $version;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $id, string $number, \Commerz\Stores\Data\StoreId $store, \Commerz\Stores\Data\ChannelId $channel, \Commerz\Sales\Carts\Data\CartId $cart, \Commerz\Sales\Carts\Enums\CartKind $origin, \Commerz\Sales\Orders\Enums\OrderState $state, \Commerz\Sales\Orders\Enums\PaymentState $paymentState, \Commerz\Sales\Orders\Enums\FulfillmentState $fulfillmentState, ?\Commerz\Sales\Orders\Enums\CancelReason $cancelReason, \Commerz\Money\Currency $currency, string $locale, ?\Commerz\Identity\CustomerRef $customer, array $customerGroups, ?string $customerEmail, ?string $customerName, array $lines, array $orderAdjustments, ?\Commerz\Quotes\Data\DeliveryCharge $delivery, array $deliveryAdjustments, array $deliveryTaxLines, \Commerz\Quotes\Data\QuoteTotals $totals, \Commerz\Money\Money $amountDue, \Commerz\Money\Money $authorized, \Commerz\Money\Money $captured, \Commerz\Money\Money $refunded, array $codes, ?\Commerz\Ports\Delivery\Data\Address $shippingAddress, ?\Commerz\Ports\Delivery\Data\Address $billingAddress, string $quoteFingerprint, ?\DateTimeImmutable $paymentDueAt, \DateTimeImmutable $placedAt, ?\DateTimeImmutable $completedAt, ?\DateTimeImmutable $cancelledAt, int $version = 1);
     line(\Commerz\Sales\Orders\Data\OrderLineId $id): ?\Commerz\Sales\Orders\Data\OrderLineView;
 }
 ```
@@ -1832,24 +3567,113 @@ final readonly class ReturnsPanel implements \Packman\Panels\Contracts\Registry\
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`PaymentCollections`](#type-commerz-sales-payments-contracts-paymentcollections) | interface | api | 0.1 |
+| [`PaymentCustomization`](#type-commerz-sales-payments-contracts-paymentcustomization) | interface | spi (implement) | 0.1 |
+| [`PaymentMethodResolver`](#type-commerz-sales-payments-contracts-paymentmethodresolver) | interface | api | 0.1 |
 | [`Payments`](#type-commerz-sales-payments-contracts-payments) | interface | api | 0.1 |
+| [`AddStoredValueSession`](#type-commerz-sales-payments-data-addstoredvaluesession) | class | api | 0.1 |
+| [`AuthorizeGatewaySession`](#type-commerz-sales-payments-data-authorizegatewaysession) | class | api | 0.1 |
+| [`CancelPaymentCollection`](#type-commerz-sales-payments-data-cancelpaymentcollection) | class | api | 0.1 |
+| [`CapturePaymentSession`](#type-commerz-sales-payments-data-capturepaymentsession) | class | api | 0.1 |
+| [`CreatePaymentCollection`](#type-commerz-sales-payments-data-createpaymentcollection) | class | api | 0.1 |
+| [`IncrementalAuthorizeSession`](#type-commerz-sales-payments-data-incrementalauthorizesession) | class | api | 0.1 |
 | [`InitiatePayment`](#type-commerz-sales-payments-data-initiatepayment) | class | api | 0.1 |
 | [`ListPayments`](#type-commerz-sales-payments-data-listpayments) | class | api | 0.1 |
+| [`PaymentCaptureId`](#type-commerz-sales-payments-data-paymentcaptureid) | class | api | 0.1 |
+| [`PaymentCaptureView`](#type-commerz-sales-payments-data-paymentcaptureview) | class | api | 0.1 |
+| [`PaymentCollectionId`](#type-commerz-sales-payments-data-paymentcollectionid) | class | api | 0.1 |
+| [`PaymentCollectionView`](#type-commerz-sales-payments-data-paymentcollectionview) | class | api | 0.1 |
+| [`PaymentCustomizationContext`](#type-commerz-sales-payments-data-paymentcustomizationcontext) | class | api | 0.1 |
 | [`PaymentEventResult`](#type-commerz-sales-payments-data-paymenteventresult) | class | api | 0.1 |
 | [`PaymentId`](#type-commerz-sales-payments-data-paymentid) | class | api | 0.1 |
+| [`PaymentMethodDescriptor`](#type-commerz-sales-payments-data-paymentmethoddescriptor) | class | api | 0.1 |
+| [`PaymentMethodOperation`](#type-commerz-sales-payments-data-paymentmethodoperation) | class | api | 0.1 |
+| [`PaymentSessionId`](#type-commerz-sales-payments-data-paymentsessionid) | class | api | 0.1 |
+| [`PaymentSessionView`](#type-commerz-sales-payments-data-paymentsessionview) | class | api | 0.1 |
 | [`PaymentView`](#type-commerz-sales-payments-data-paymentview) | class | api | 0.1 |
 | [`ReconcilePayment`](#type-commerz-sales-payments-data-reconcilepayment) | class | api | 0.1 |
 | [`RecordPaymentEvent`](#type-commerz-sales-payments-data-recordpaymentevent) | class | api | 0.1 |
+| [`VoidPaymentSession`](#type-commerz-sales-payments-data-voidpaymentsession) | class | api | 0.1 |
+| [`PaymentCaptureStatus`](#type-commerz-sales-payments-enums-paymentcapturestatus) | enum | api | 0.1 |
+| [`PaymentCollectionKind`](#type-commerz-sales-payments-enums-paymentcollectionkind) | enum | api | 0.1 |
+| [`PaymentCollectionStatus`](#type-commerz-sales-payments-enums-paymentcollectionstatus) | enum | api | 0.1 |
+| [`PaymentCustomizationAction`](#type-commerz-sales-payments-enums-paymentcustomizationaction) | enum | api | 0.1 |
 | [`PaymentEventOutcome`](#type-commerz-sales-payments-enums-paymenteventoutcome) | enum | api | 0.1 |
 | [`PaymentEventType`](#type-commerz-sales-payments-enums-paymenteventtype) | enum | api | 0.1 |
+| [`PaymentSessionKind`](#type-commerz-sales-payments-enums-paymentsessionkind) | enum | api | 0.1 |
+| [`PaymentSessionStatus`](#type-commerz-sales-payments-enums-paymentsessionstatus) | enum | api | 0.1 |
 | [`PaymentStatus`](#type-commerz-sales-payments-enums-paymentstatus) | enum | api | 0.1 |
+| [`PaymentCollectionStatusChanged`](#type-commerz-sales-payments-events-paymentcollectionstatuschanged) | class | api | 0.1 |
 | [`PaymentStatusChanged`](#type-commerz-sales-payments-events-paymentstatuschanged) | class | api | 0.1 |
+| [`CaptureExceedsAuthorization`](#type-commerz-sales-payments-exceptions-captureexceedsauthorization) | class | api | 0.1 |
 | [`InvalidPaymentEvent`](#type-commerz-sales-payments-exceptions-invalidpaymentevent) | class | api | 0.1 |
+| [`InvalidPaymentSessionState`](#type-commerz-sales-payments-exceptions-invalidpaymentsessionstate) | class | api | 0.1 |
 | [`OrderNotPayable`](#type-commerz-sales-payments-exceptions-ordernotpayable) | class | api | 0.1 |
+| [`PaymentCollectionNotFound`](#type-commerz-sales-payments-exceptions-paymentcollectionnotfound) | class | api | 0.1 |
 | [`PaymentExceedsBalance`](#type-commerz-sales-payments-exceptions-paymentexceedsbalance) | class | api | 0.1 |
 | [`PaymentInProgress`](#type-commerz-sales-payments-exceptions-paymentinprogress) | class | api | 0.1 |
 | [`PaymentNotFound`](#type-commerz-sales-payments-exceptions-paymentnotfound) | class | api | 0.1 |
 | [`PaymentOutcomeUnknown`](#type-commerz-sales-payments-exceptions-paymentoutcomeunknown) | class | api | 0.1 |
+| [`PaymentSessionNotFound`](#type-commerz-sales-payments-exceptions-paymentsessionnotfound) | class | api | 0.1 |
+
+### PaymentCollections {#type-commerz-sales-payments-contracts-paymentcollections}
+
+`Commerz\Sales\Payments\Contracts\PaymentCollections`
+
+Split-tender and flexible-acquiring payment collections (D11, D33, PAY-02).
+
+```php
+interface PaymentCollections {
+    // Places a stored-value hold (and optional immediate capture) as a session inside the collection.
+    addStoredValueSession(\Commerz\Sales\Payments\Data\AddStoredValueSession $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    // Authorizes (or auto-captures) a gateway session outside any database transaction (D33).
+    authorizeGatewaySession(\Commerz\Sales\Payments\Data\AuthorizeGatewaySession $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    // Cancels a collection with zero captured funds by voiding/releasing all open sessions.
+    cancel(\Commerz\Sales\Payments\Data\CancelPaymentCollection $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    // Captures all or part of an authorized session (gateway or stored value).
+    captureSession(\Commerz\Sales\Payments\Data\CapturePaymentSession $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    // Opens a new payment collection for an order or top-up.
+    create(\Commerz\Sales\Payments\Data\CreatePaymentCollection $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    find(\Commerz\Sales\Payments\Data\PaymentCollectionId $id): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    forOrder(\Commerz\Sales\Orders\Data\OrderId $order): array;
+    forTarget(string $targetRef): array;
+    // Increases the authorized amount of an open gateway session outside any database transaction (D33).
+    incrementalAuthorize(\Commerz\Sales\Payments\Data\IncrementalAuthorizeSession $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+    // Voids an uncaptured gateway authorization (outside any transaction) or releases a stored-value hold.
+    voidSession(\Commerz\Sales\Payments\Data\VoidPaymentSession $command): \Commerz\Sales\Payments\Data\PaymentCollectionView;
+}
+```
+
+### PaymentCustomization {#type-commerz-sales-payments-contracts-paymentcustomization}
+
+`Commerz\Sales\Payments\Contracts\PaymentCustomization`
+
+Pure checkout payment customization SPI (`payment_customization`): hides, renames, or reorders available payment methods by cart, market, channel, amount, or customer.
+
+```php
+interface PaymentCustomization {
+    const KIND = 'payment_customization';
+    // Returns declarative hide, rename, and move operations for the candidate methods in `$context`.
+    customize(\Commerz\Sales\Payments\Data\PaymentCustomizationContext $context): array;
+    // Stable contribution key, e.g. `b2b_invoice_only` or `eu_sort`.
+    key(): string;
+    // Higher priority runs first; ties break by `key()` ascending.
+    priority(): int;
+}
+```
+
+### PaymentMethodResolver {#type-commerz-sales-payments-contracts-paymentmethodresolver}
+
+`Commerz\Sales\Payments\Contracts\PaymentMethodResolver`
+
+Resolves checkout payment methods by applying all registered {@see PaymentCustomization} contributions.
+
+```php
+interface PaymentMethodResolver {
+    // Applies registered `payment_customization` contributions (plus any extra `$customizers`) in deterministic `priority DESC, key ASC` order and returns the resulting visible, renamed, and sorted methods.
+    resolve(\Commerz\Sales\Payments\Data\PaymentCustomizationContext $context, array $customizers = []): array;
+}
+```
 
 ### Payments {#type-commerz-sales-payments-contracts-payments}
 
@@ -1867,6 +3691,121 @@ interface Payments {
     reconcile(\Commerz\Sales\Payments\Data\ReconcilePayment $command): \Commerz\Sales\Payments\Data\PaymentView;
     // Records an event of the provider once per `(gateway, externalEventId)` and moves the payment forward; an event that would move it back is kept as `ignored`. Money captured on a cancelled order is kept, and the order records `sales.payment_requires_refund`.
     recordEvent(\Commerz\Sales\Payments\Data\RecordPaymentEvent $command): \Commerz\Sales\Payments\Data\PaymentEventResult;
+}
+```
+
+### AddStoredValueSession {#type-commerz-sales-payments-data-addstoredvaluesession}
+
+`Commerz\Sales\Payments\Data\AddStoredValueSession`
+
+Adds a stored-value tender session (gift card or store-credit wallet) to a payment collection via {@see StoredValueTender}.
+
+```php
+final readonly class AddStoredValueSession {
+    public readonly string $accountId;
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly bool $captureImmediately;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly ?\DateTimeImmutable $expiresAt;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $meta;
+    public readonly \Commerz\Ports\StoredValue\Enums\StoredValueKind $storedValueKind;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCollectionId $collection, \Commerz\Ports\StoredValue\Enums\StoredValueKind $storedValueKind, string $accountId, \Commerz\Money\Money $amount, bool $captureImmediately = false, ?\DateTimeImmutable $expiresAt = null, array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### AuthorizeGatewaySession {#type-commerz-sales-payments-data-authorizegatewaysession}
+
+`Commerz\Sales\Payments\Data\AuthorizeGatewaySession`
+
+Authorizes (or auto-captures) a gateway payment session inside a payment collection.
+
+```php
+final readonly class AuthorizeGatewaySession {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Money\Money $amount;
+    public readonly bool $autoCapture;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly string $gateway;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $lineItems;
+    public readonly array $meta;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCollectionId $collection, string $gateway, ?\Commerz\Money\Money $amount = null, bool $autoCapture = false, array $lineItems = [], array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CancelPaymentCollection {#type-commerz-sales-payments-data-cancelpaymentcollection}
+
+`Commerz\Sales\Payments\Data\CancelPaymentCollection`
+
+Cancels a payment collection that has no captured funds, voiding/releasing all open sessions.
+
+```php
+final readonly class CancelPaymentCollection {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly ?string $reason;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCollectionId $collection, ?string $reason = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CapturePaymentSession {#type-commerz-sales-payments-data-capturepaymentsession}
+
+`Commerz\Sales\Payments\Data\CapturePaymentSession`
+
+Captures funds against an open payment session.
+
+```php
+final readonly class CapturePaymentSession {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Money\Money $amount;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly bool $isFinalCapture;
+    public readonly array $lineItems;
+    public readonly array $meta;
+    public readonly \Commerz\Sales\Payments\Data\PaymentSessionId $session;
+    __construct(\Commerz\Sales\Payments\Data\PaymentSessionId $session, ?\Commerz\Money\Money $amount = null, bool $isFinalCapture = true, array $lineItems = [], array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### CreatePaymentCollection {#type-commerz-sales-payments-data-createpaymentcollection}
+
+`Commerz\Sales\Payments\Data\CreatePaymentCollection`
+
+Opens a payment collection for an order or top-up target.
+
+```php
+final readonly class CreatePaymentCollection {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly ?string $customerEmail;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCollectionKind $kind;
+    public readonly array $meta;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly string $targetRef;
+    __construct(string $targetRef, \Commerz\Money\Money $amount, \Commerz\Sales\Payments\Enums\PaymentCollectionKind $kind = Commerz\Sales\Payments\Enums\PaymentCollectionKind::Order, ?\Commerz\Sales\Orders\Data\OrderId $order = null, ?\Commerz\Identity\CustomerRef $customer = null, ?string $customerEmail = null, array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+    static forOrder(\Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Money\Money $amount, ?\Commerz\Identity\CustomerRef $customer = null, ?string $customerEmail = null, array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null): self;
+    static forTopUp(string $targetRef, \Commerz\Money\Money $amount, ?\Commerz\Identity\CustomerRef $customer = null, ?string $customerEmail = null, array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null): self;
+}
+```
+
+### IncrementalAuthorizeSession {#type-commerz-sales-payments-data-incrementalauthorizesession}
+
+`Commerz\Sales\Payments\Data\IncrementalAuthorizeSession`
+
+Increases the authorized amount on an open gateway payment session (requires gateway `incrementalAuth`).
+
+```php
+final readonly class IncrementalAuthorizeSession {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Money\Money $additionalAmount;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly array $meta;
+    public readonly \Commerz\Sales\Payments\Data\PaymentSessionId $session;
+    __construct(\Commerz\Sales\Payments\Data\PaymentSessionId $session, \Commerz\Money\Money $additionalAmount, array $meta = [], ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
 }
 ```
 
@@ -1904,6 +3843,101 @@ final readonly class ListPayments {
 }
 ```
 
+### PaymentCaptureId {#type-commerz-sales-payments-data-paymentcaptureid}
+
+`Commerz\Sales\Payments\Data\PaymentCaptureId`
+
+```php
+final readonly class PaymentCaptureId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### PaymentCaptureView {#type-commerz-sales-payments-data-paymentcaptureview}
+
+`Commerz\Sales\Payments\Data\PaymentCaptureView`
+
+One capture attempt recorded against a {@see PaymentSessionView} (supports multicapture).
+
+```php
+final readonly class PaymentCaptureView {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?string $errorCode;
+    public readonly ?string $errorMessage;
+    public readonly ?string $externalId;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCaptureId $id;
+    public readonly bool $isFinalCapture;
+    public readonly array $meta;
+    public readonly string $reference;
+    public readonly \Commerz\Sales\Payments\Data\PaymentSessionId $session;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCaptureStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCaptureId $id, \Commerz\Sales\Payments\Data\PaymentSessionId $session, \Commerz\Sales\Payments\Data\PaymentCollectionId $collection, string $reference, ?string $externalId, \Commerz\Sales\Payments\Enums\PaymentCaptureStatus $status, \Commerz\Money\Money $amount, bool $isFinalCapture, array $meta, ?string $errorCode, ?string $errorMessage, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### PaymentCollectionId {#type-commerz-sales-payments-data-paymentcollectionid}
+
+`Commerz\Sales\Payments\Data\PaymentCollectionId`
+
+```php
+final readonly class PaymentCollectionId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### PaymentCollectionView {#type-commerz-sales-payments-data-paymentcollectionview}
+
+`Commerz\Sales\Payments\Data\PaymentCollectionView`
+
+Split-tender payment collection grouping one or more {@see PaymentSessionView} sessions (e.g. stored value + card gateway) toward an order or top-up target.
+
+```php
+final readonly class PaymentCollectionView {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly \Commerz\Money\Money $authorized;
+    public readonly \Commerz\Money\Money $captured;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly ?string $customerEmail;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $id;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCollectionKind $kind;
+    public readonly array $meta;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly array $sessions;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $status;
+    public readonly string $targetRef;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCollectionId $id, \Commerz\Sales\Payments\Enums\PaymentCollectionKind $kind, string $targetRef, ?\Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $status, \Commerz\Money\Money $amount, \Commerz\Money\Money $authorized, \Commerz\Money\Money $captured, ?\Commerz\Identity\CustomerRef $customer, ?string $customerEmail, array $meta, array $sessions, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    // Remaining target amount not yet covered by captured funds or active open authorizations.
+    remainingToAuthorize(): \Commerz\Money\Money;
+    // Remaining target amount not yet captured.
+    remainingToCapture(): \Commerz\Money\Money;
+    session(\Commerz\Sales\Payments\Data\PaymentSessionId $id): ?\Commerz\Sales\Payments\Data\PaymentSessionView;
+}
+```
+
+### PaymentCustomizationContext {#type-commerz-sales-payments-data-paymentcustomizationcontext}
+
+`Commerz\Sales\Payments\Data\PaymentCustomizationContext`
+
+Evaluation context for {@see PaymentCustomization}: cart, market, customer, amount, and candidate payment methods.
+
+```php
+final readonly class PaymentCustomizationContext {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?string $billingCountry;
+    public readonly ?\Commerz\Sales\Carts\Data\CartId $cart;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly array $customerGroups;
+    public readonly string $locale;
+    public readonly ?string $market;
+    public readonly array $meta;
+    public readonly array $methods;
+    public readonly ?string $shippingCountry;
+    __construct(\Commerz\Money\Money $amount, \Commerz\Stores\Data\ChannelId $channel, string $locale, array $methods, ?\Commerz\Sales\Carts\Data\CartId $cart = null, ?string $market = null, ?string $shippingCountry = null, ?string $billingCountry = null, ?\Commerz\Identity\CustomerRef $customer = null, array $customerGroups = [], array $meta = []);
+}
+```
+
 ### PaymentEventResult {#type-commerz-sales-payments-data-paymenteventresult}
 
 `Commerz\Sales\Payments\Data\PaymentEventResult`
@@ -1926,6 +3960,87 @@ final readonly class PaymentEventResult {
 
 ```php
 final readonly class PaymentId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### PaymentMethodDescriptor {#type-commerz-sales-payments-data-paymentmethoddescriptor}
+
+`Commerz\Sales\Payments\Data\PaymentMethodDescriptor`
+
+A candidate payment method presented at checkout before and after {@see PaymentCustomization}.
+
+```php
+final readonly class PaymentMethodDescriptor {
+    public readonly ?\Commerz\Sales\Gateways\Data\PaymentCapabilities $capabilities;
+    public readonly string $key;
+    public readonly string $label;
+    public readonly array $meta;
+    public readonly int $position;
+    __construct(string $key, string $label, int $position = 0, ?\Commerz\Sales\Gateways\Data\PaymentCapabilities $capabilities = null, array $meta = []);
+    withLabel(string $label): self;
+    withPosition(int $position): self;
+}
+```
+
+### PaymentMethodOperation {#type-commerz-sales-payments-data-paymentmethodoperation}
+
+`Commerz\Sales\Payments\Data\PaymentMethodOperation`
+
+Declarative operation returned by a {@see PaymentCustomization} rule.
+
+```php
+final readonly class PaymentMethodOperation {
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCustomizationAction $action;
+    public readonly string $methodKey;
+    public readonly ?string $name;
+    public readonly ?int $position;
+    __construct(\Commerz\Sales\Payments\Enums\PaymentCustomizationAction $action, string $methodKey, ?string $name = null, ?int $position = null);
+    static hide(string $methodKey): self;
+    static move(string $methodKey, int $position): self;
+    static rename(string $methodKey, string $name): self;
+}
+```
+
+### PaymentSessionId {#type-commerz-sales-payments-data-paymentsessionid}
+
+`Commerz\Sales\Payments\Data\PaymentSessionId`
+
+```php
+final readonly class PaymentSessionId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### PaymentSessionView {#type-commerz-sales-payments-data-paymentsessionview}
+
+`Commerz\Sales\Payments\Data\PaymentSessionView`
+
+One tender session (gateway or stored value) inside a {@see PaymentCollectionView}.
+
+```php
+final readonly class PaymentSessionView {
+    public readonly ?string $actionUrl;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly int $attempts;
+    public readonly \Commerz\Money\Money $authorized;
+    public readonly bool $captureClosed;
+    public readonly \Commerz\Money\Money $captured;
+    public readonly array $captures;
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?string $errorCode;
+    public readonly ?string $errorMessage;
+    public readonly ?string $externalId;
+    public readonly ?string $gateway;
+    public readonly \Commerz\Sales\Payments\Data\PaymentSessionId $id;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentSessionKind $kind;
+    public readonly array $meta;
+    public readonly string $reference;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentSessionStatus $status;
+    public readonly ?string $storedValueAccountId;
+    public readonly ?string $storedValueHoldId;
+    public readonly ?\Commerz\Ports\StoredValue\Enums\StoredValueKind $storedValueKind;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Sales\Payments\Data\PaymentSessionId $id, \Commerz\Sales\Payments\Data\PaymentCollectionId $collection, \Commerz\Sales\Payments\Enums\PaymentSessionKind $kind, ?string $gateway, ?\Commerz\Ports\StoredValue\Enums\StoredValueKind $storedValueKind, ?string $storedValueAccountId, ?string $storedValueHoldId, string $reference, ?string $externalId, \Commerz\Sales\Payments\Enums\PaymentSessionStatus $status, \Commerz\Money\Money $amount, \Commerz\Money\Money $authorized, \Commerz\Money\Money $captured, bool $captureClosed, ?string $actionUrl, array $meta, int $attempts, ?string $errorCode, ?string $errorMessage, array $captures, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    remainingCapturable(): \Commerz\Money\Money;
+}
 ```
 
 ### PaymentView {#type-commerz-sales-payments-data-paymentview}
@@ -1990,6 +4105,82 @@ final readonly class RecordPaymentEvent {
 }
 ```
 
+### VoidPaymentSession {#type-commerz-sales-payments-data-voidpaymentsession}
+
+`Commerz\Sales\Payments\Data\VoidPaymentSession`
+
+Voids an uncaptured gateway authorization or releases a stored-value hold on a payment session.
+
+```php
+final readonly class VoidPaymentSession {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Identity\IdempotencyKey $idempotencyKey;
+    public readonly ?string $reason;
+    public readonly \Commerz\Sales\Payments\Data\PaymentSessionId $session;
+    __construct(\Commerz\Sales\Payments\Data\PaymentSessionId $session, ?string $reason = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
+### PaymentCaptureStatus {#type-commerz-sales-payments-enums-paymentcapturestatus}
+
+`Commerz\Sales\Payments\Enums\PaymentCaptureStatus`
+
+Lifecycle state of one capture attempt against a payment session (supports multicapture).
+
+```php
+enum PaymentCaptureStatus {
+    case Initiating = 'initiating';
+    case Pending = 'pending';
+    case Succeeded = 'succeeded';
+    case Failed = 'failed';
+    case Unknown = 'unknown';
+}
+```
+
+### PaymentCollectionKind {#type-commerz-sales-payments-enums-paymentcollectionkind}
+
+`Commerz\Sales\Payments\Enums\PaymentCollectionKind`
+
+Target purpose of a {@see PaymentCollectionView}.
+
+```php
+enum PaymentCollectionKind {
+    case Order = 'order';
+    case TopUp = 'top_up';
+}
+```
+
+### PaymentCollectionStatus {#type-commerz-sales-payments-enums-paymentcollectionstatus}
+
+`Commerz\Sales\Payments\Enums\PaymentCollectionStatus`
+
+Derived split-tender aggregate state of a payment collection across all its payment sessions.
+
+```php
+enum PaymentCollectionStatus {
+    case NotPaid = 'not_paid';
+    case PartiallyAuthorized = 'partially_authorized';
+    case Authorized = 'authorized';
+    case PartiallyCaptured = 'partially_captured';
+    case Captured = 'captured';
+    case Cancelled = 'cancelled';
+}
+```
+
+### PaymentCustomizationAction {#type-commerz-sales-payments-enums-paymentcustomizationaction}
+
+`Commerz\Sales\Payments\Enums\PaymentCustomizationAction`
+
+Mutation a {@see PaymentCustomization} can apply to a checkout payment method.
+
+```php
+enum PaymentCustomizationAction {
+    case Hide = 'hide';
+    case Rename = 'rename';
+    case Move = 'move';
+}
+```
+
 ### PaymentEventOutcome {#type-commerz-sales-payments-enums-paymenteventoutcome}
 
 `Commerz\Sales\Payments\Enums\PaymentEventOutcome`
@@ -2019,6 +4210,42 @@ enum PaymentEventType {
 }
 ```
 
+### PaymentSessionKind {#type-commerz-sales-payments-enums-paymentsessionkind}
+
+`Commerz\Sales\Payments\Enums\PaymentSessionKind`
+
+Tender backend of a {@see PaymentSessionView}.
+
+```php
+enum PaymentSessionKind {
+    case Gateway = 'gateway';
+    case StoredValue = 'stored_value';
+}
+```
+
+### PaymentSessionStatus {#type-commerz-sales-payments-enums-paymentsessionstatus}
+
+`Commerz\Sales\Payments\Enums\PaymentSessionStatus`
+
+Lifecycle state of one payment session inside a payment collection.
+
+```php
+enum PaymentSessionStatus {
+    case Pending = 'pending';
+    case Authorizing = 'authorizing';
+    case RequiresAction = 'requires_action';
+    case Authorized = 'authorized';
+    case PartiallyCaptured = 'partially_captured';
+    case Captured = 'captured';
+    case Voided = 'voided';
+    case Failed = 'failed';
+    case Unknown = 'unknown';
+    // Whether this session still holds active authorization or funds against the collection target.
+    isActive(): bool;
+    isFinal(): bool;
+}
+```
+
 ### PaymentStatus {#type-commerz-sales-payments-enums-paymentstatus}
 
 `Commerz\Sales\Payments\Enums\PaymentStatus`
@@ -2040,6 +4267,23 @@ enum PaymentStatus {
 }
 ```
 
+### PaymentCollectionStatusChanged {#type-commerz-sales-payments-events-paymentcollectionstatuschanged}
+
+`Commerz\Sales\Payments\Events\PaymentCollectionStatusChanged`
+
+Dispatched after commit whenever a {@see PaymentCollectionView}'s derived status changes.
+
+```php
+final readonly class PaymentCollectionStatusChanged {
+    public readonly \Commerz\Sales\Payments\Data\PaymentCollectionId $collection;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $from;
+    public readonly ?\Commerz\Sales\Orders\Data\OrderId $order;
+    public readonly string $targetRef;
+    public readonly \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $to;
+    __construct(\Commerz\Sales\Payments\Data\PaymentCollectionId $collection, string $targetRef, ?\Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $from, \Commerz\Sales\Payments\Enums\PaymentCollectionStatus $to);
+}
+```
+
 ### PaymentStatusChanged {#type-commerz-sales-payments-events-paymentstatuschanged}
 
 `Commerz\Sales\Payments\Events\PaymentStatusChanged`
@@ -2055,6 +4299,25 @@ final readonly class PaymentStatusChanged {
 }
 ```
 
+### CaptureExceedsAuthorization {#type-commerz-sales-payments-exceptions-captureexceedsauthorization}
+
+`Commerz\Sales\Payments\Exceptions\CaptureExceedsAuthorization`
+
+Raised when a capture exceeds the remaining authorized amount and the gateway does not advertise overcapture.
+
+```php
+final class CaptureExceedsAuthorization extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly \Commerz\Money\Money $remaining;
+    public readonly \Commerz\Money\Money $requested;
+    public readonly string $session;
+    __construct(string $session, \Commerz\Money\Money $requested, \Commerz\Money\Money $remaining);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ### InvalidPaymentEvent {#type-commerz-sales-payments-exceptions-invalidpaymentevent}
 
 `Commerz\Sales\Payments\Exceptions\InvalidPaymentEvent`
@@ -2064,6 +4327,25 @@ A provider event is malformed or does not fit its payment (another currency, mor
 ```php
 final class InvalidPaymentEvent extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
     __construct(string $field, string $reason);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### InvalidPaymentSessionState {#type-commerz-sales-payments-exceptions-invalidpaymentsessionstate}
+
+`Commerz\Sales\Payments\Exceptions\InvalidPaymentSessionState`
+
+Raised when a capture, void, incremental authorization, or cancel is invalid for the current session/collection state.
+
+```php
+final class InvalidPaymentSessionState extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $entityId;
+    public readonly string $reason;
+    public readonly string $status;
+    __construct(string $entityId, string $status, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
@@ -2082,6 +4364,17 @@ final class OrderNotPayable extends \Commerz\Errors\CommerzException implements 
     category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### PaymentCollectionNotFound {#type-commerz-sales-payments-exceptions-paymentcollectionnotfound}
+
+`Commerz\Sales\Payments\Exceptions\PaymentCollectionNotFound`
+
+```php
+final class PaymentCollectionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
@@ -2147,6 +4440,17 @@ final class PaymentOutcomeUnknown extends \Commerz\Errors\CommerzException imple
     category(): \Packman\Errors\Enums\ErrorCategory;
     code(): string;
     context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### PaymentSessionNotFound {#type-commerz-sales-payments-exceptions-paymentsessionnotfound}
+
+`Commerz\Sales\Payments\Exceptions\PaymentSessionNotFound`
+
+```php
+final class PaymentSessionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
@@ -2449,8 +4753,11 @@ final class RefundOutcomeUnknown extends \Commerz\Errors\CommerzException implem
 | [`ReceiveReturn`](#type-commerz-sales-returns-data-receivereturn) | class | api | 0.1 |
 | [`RequestReturn`](#type-commerz-sales-returns-data-requestreturn) | class | api | 0.1 |
 | [`ReturnId`](#type-commerz-sales-returns-data-returnid) | class | api | 0.1 |
+| [`ReturnLineDisposition`](#type-commerz-sales-returns-data-returnlinedisposition) | class | api | 0.1 |
 | [`ReturnLineView`](#type-commerz-sales-returns-data-returnlineview) | class | api | 0.1 |
 | [`ReturnView`](#type-commerz-sales-returns-data-returnview) | class | api | 0.1 |
+| [`ReturnDisposition`](#type-commerz-sales-returns-enums-returndisposition) | enum | api | 0.1 |
+| [`ReturnReason`](#type-commerz-sales-returns-enums-returnreason) | enum | api | 0.1 |
 | [`ReturnStatus`](#type-commerz-sales-returns-enums-returnstatus) | enum | api | 0.1 |
 | [`ReturnReceived`](#type-commerz-sales-returns-events-returnreceived) | class | api | 0.1 |
 | [`RestockExceedsReceived`](#type-commerz-sales-returns-exceptions-restockexceedsreceived) | class | api | 0.1 |
@@ -2511,15 +4818,18 @@ final readonly class ListReturns {
 
 `Commerz\Sales\Returns\Data\ReceiveReturn`
 
-Accepts the goods of a return. Accepting is not restocking (REF-01): only the units listed in `$restock` go back on hand, into `$locationCode` (the stock decides when null); the rest stays out, as defective or incomplete.
+Accepts the goods of a return. Accepting is not restocking (REF-01): only units assigned `ReturnDisposition::Restock` (or listed in `$restock`) go back on hand into `$locationCode`; units assigned `ReturnDisposition::DamagedWriteOff` write a `write_off` stock movement and NEVER increase sellable `on_hand` (`INV-INV-002`).
 
 ```php
 final readonly class ReceiveReturn {
     public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition;
+    public readonly array $dispositions;
     public readonly ?string $locationCode;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
     public readonly array $restock;
     public readonly \Commerz\Sales\Returns\Data\ReturnId $return;
-    __construct(\Commerz\Sales\Returns\Data\ReturnId $return, array $restock = [], ?string $locationCode = null, ?\Commerz\Identity\ActorRef $actor = null);
+    __construct(\Commerz\Sales\Returns\Data\ReturnId $return, array $restock = [], ?string $locationCode = null, ?\Commerz\Identity\ActorRef $actor = null, ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition = null, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null, array $dispositions = []);
 }
 ```
 
@@ -2536,7 +4846,8 @@ final readonly class RequestReturn {
     public readonly array $lines;
     public readonly \Commerz\Sales\Orders\Data\OrderId $order;
     public readonly ?string $reason;
-    __construct(\Commerz\Sales\Orders\Data\OrderId $order, array $lines, ?string $reason = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null);
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $returnReason;
+    __construct(\Commerz\Sales\Orders\Data\OrderId $order, array $lines, \Commerz\Sales\Returns\Enums\ReturnReason|string|null $reason = null, ?\Commerz\Identity\IdempotencyKey $idempotencyKey = null, ?\Commerz\Identity\ActorRef $actor = null, ?\Commerz\Sales\Returns\Enums\ReturnReason $returnReason = null);
 }
 ```
 
@@ -2548,18 +4859,37 @@ final readonly class RequestReturn {
 final readonly class ReturnId extends \Commerz\Identity\EntityId implements \Stringable {}
 ```
 
+### ReturnLineDisposition {#type-commerz-sales-returns-data-returnlinedisposition}
+
+`Commerz\Sales\Returns\Data\ReturnLineDisposition`
+
+Explicit disposition (`Restock` or `DamagedWriteOff`) for returned units of an order line.
+
+```php
+final readonly class ReturnLineDisposition {
+    public readonly \Commerz\Sales\Returns\Enums\ReturnDisposition $disposition;
+    public readonly \Commerz\Sales\Orders\Data\OrderLineId $lineId;
+    public readonly int $quantity;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $lineId, int $quantity, \Commerz\Sales\Returns\Enums\ReturnDisposition $disposition, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null);
+}
+```
+
 ### ReturnLineView {#type-commerz-sales-returns-data-returnlineview}
 
 `Commerz\Sales\Returns\Data\ReturnLineView`
 
-Units of one order line in a return and how many of them went back on hand.
+Units of one order line in a return, how many went back on hand, and how many were written off as damaged.
 
 ```php
 final readonly class ReturnLineView {
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition;
     public readonly \Commerz\Sales\Orders\Data\OrderLineId $lineId;
     public readonly int $quantity;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $reason;
     public readonly int $restocked;
-    __construct(\Commerz\Sales\Orders\Data\OrderLineId $lineId, int $quantity, int $restocked);
+    public readonly int $writtenOff;
+    __construct(\Commerz\Sales\Orders\Data\OrderLineId $lineId, int $quantity, int $restocked, int $writtenOff = 0, ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition = null, ?\Commerz\Sales\Returns\Enums\ReturnReason $reason = null);
 }
 ```
 
@@ -2572,14 +4902,47 @@ One return of an order.
 ```php
 final readonly class ReturnView {
     public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition;
     public readonly \Commerz\Sales\Returns\Data\ReturnId $id;
     public readonly array $lines;
     public readonly ?string $locationCode;
     public readonly \Commerz\Sales\Orders\Data\OrderId $order;
     public readonly ?string $reason;
     public readonly ?\DateTimeImmutable $receivedAt;
+    public readonly ?\Commerz\Sales\Returns\Enums\ReturnReason $returnReason;
     public readonly \Commerz\Sales\Returns\Enums\ReturnStatus $status;
-    __construct(\Commerz\Sales\Returns\Data\ReturnId $id, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Returns\Enums\ReturnStatus $status, array $lines, ?string $reason, ?string $locationCode, ?\DateTimeImmutable $receivedAt, \DateTimeImmutable $createdAt);
+    __construct(\Commerz\Sales\Returns\Data\ReturnId $id, \Commerz\Sales\Orders\Data\OrderId $order, \Commerz\Sales\Returns\Enums\ReturnStatus $status, array $lines, ?string $reason, ?string $locationCode, ?\DateTimeImmutable $receivedAt, \DateTimeImmutable $createdAt, ?\Commerz\Sales\Returns\Enums\ReturnDisposition $disposition = null, ?\Commerz\Sales\Returns\Enums\ReturnReason $returnReason = null);
+}
+```
+
+### ReturnDisposition {#type-commerz-sales-returns-enums-returndisposition}
+
+`Commerz\Sales\Returns\Enums\ReturnDisposition`
+
+Warehouse inspection outcome for returned physical goods (`INV-INV-002`). `Restock` returns sellable units to `on_hand`; `DamagedWriteOff` journals a `write_off` stock movement and NEVER increases sellable `on_hand`.
+
+```php
+enum ReturnDisposition {
+    case Restock = 'restock';
+    case DamagedWriteOff = 'damaged_write_off';
+}
+```
+
+### ReturnReason {#type-commerz-sales-returns-enums-returnreason}
+
+`Commerz\Sales\Returns\Enums\ReturnReason`
+
+Standardized RMA return / claim reason classification.
+
+```php
+enum ReturnReason {
+    case Defective = 'defective';
+    case DamagedInTransit = 'damaged_in_transit';
+    case WrongItem = 'wrong_item';
+    case NotAsDescribed = 'not_as_described';
+    case ChangedMind = 'changed_mind';
+    case SizeOrFit = 'size_or_fit';
+    case Other = 'other';
 }
 ```
 
@@ -2688,10 +5051,11 @@ final class ReturnNotOpen extends \Commerz\Errors\CommerzException implements \S
 
 `Commerz\Sales\Schema\SalesSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-sales`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-sales`.
 
 ```php
 final readonly class SalesSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
 }
 ```

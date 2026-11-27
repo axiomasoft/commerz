@@ -197,5 +197,5 @@ it('normalizes all custom field types, routes values by visibility, and enforces
     // CustomFieldFilter validation.
     expect(fn () => CustomFieldFilter::equals('crm', 'credit_score', null))->toThrow(InvalidCommand::class)
         ->and(fn () => CustomFieldFilter::in('crm', 'credit_score', []))->toThrow(InvalidCommand::class)
-        ->and(fn () => CustomFieldFilter::between('crm', 'credit_score', null, null))->toThrow(InvalidCommand::class);
+        ->and(fn () => CustomFieldFilter::between('crm', 'credit_score'))->toThrow(InvalidCommand::class);
 });

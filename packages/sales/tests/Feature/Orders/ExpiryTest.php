@@ -49,7 +49,10 @@ function expDue(OrderView $order, string $at): void
     DB::table(app(TableNames::class)->table('orders'))->where('id', $order->id->value)->update(['payment_due_at' => new DateTimeImmutable($at)->format('Y-m-d H:i:s.uP')]);
 }
 
-/** @return list<string> */
+/**
+ * @param  list<OrderId|OrderView>  $orders
+ * @return list<string>
+ */
 function expIds(array $orders): array
 {
     return array_map(static fn (OrderId|OrderView $order): string => $order instanceof OrderView ? $order->id->value : $order->value, $orders);
@@ -137,15 +140,15 @@ it('runs one pass from the console and prints its outcome', function (): void {
     slsPlace(slsCartWith($this->web, ['fake:a' => 1]));
     expDue($order, '-1 minute');
 
-    $this->artisan('commerz:sales:expire-orders', ['--limit' => '10'])
+    slsPending($this->artisan('commerz:sales:expire-orders', ['--limit' => '10']))
         ->expectsOutputToContain('expired 1, skipped 0')
         ->assertSuccessful();
 
     expect(slsOrders()->find($order->id)->state)->toBe(OrderState::Cancelled);
 
-    $this->artisan('commerz:sales:expire-orders')->expectsOutputToContain('expired 0, skipped 0')->assertSuccessful();
-    $this->artisan('commerz:sales:expire-orders', ['--limit' => 'all'])->assertFailed();
-    $this->artisan('commerz:sales:expire-orders', ['--limit' => '1001'])->assertFailed();
+    slsPending($this->artisan('commerz:sales:expire-orders'))->expectsOutputToContain('expired 0, skipped 0')->assertSuccessful();
+    slsPending($this->artisan('commerz:sales:expire-orders', ['--limit' => 'all']))->assertFailed();
+    slsPending($this->artisan('commerz:sales:expire-orders', ['--limit' => '1001']))->assertFailed();
 });
 
 it('keeps an order whose payment was started, until the attempt fails', function (): void {

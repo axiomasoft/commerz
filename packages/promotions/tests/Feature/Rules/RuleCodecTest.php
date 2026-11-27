@@ -28,7 +28,11 @@ function rcScope(PromotionStage $stage = PromotionStage::Cart, ?string $currency
     return new RuleScope($stage, $currency === null ? null : Currency::of($currency));
 }
 
-/** The error code and field of the InvalidCommand a call fails with. */
+/**
+ * The error code and field of the InvalidCommand a call fails with.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function rcFailure(Closure $call): string
 {
     try {
@@ -44,7 +48,6 @@ it('encodes rules with the key, the plugin version and canonical parameters', fu
     $stored = rcCodec()->encode([new RuleSpec('test.min_items', ['min' => 3])], RuleCodec::CONDITION, rcScope());
 
     expect($stored)->toHaveCount(1)
-        ->and($stored[0])->toBeInstanceOf(StoredRule::class)
         ->and($stored[0]->key)->toBe('test.min_items')
         ->and($stored[0]->version)->toBe(2)
         ->and($stored[0]->params->toArray())->toBe(['min' => 3]);
@@ -112,22 +115,31 @@ it('upgrades the parameters of an older version', function (): void {
         ->and($loaded->params?->toArray())->toBe(['min' => 4]);
 });
 
-it('does not throw on stored data: a missing key, a newer version or a failed upgrade is unsupported', function (string $key, int $version, array $params, string $role, string $reason): void {
-    $loaded = rcCodec()->decode(new StoredRule($key, $version, RuleParams::fromInput($params)), $role, rcScope());
+it('does not throw on stored data: a missing key, a newer version or a failed upgrade is unsupported',
+    /**
+     * @param  array<string, mixed>  $params
+     * @param  'condition'|'effect'  $role
+     */
+    function (string $key, int $version, array $params, string $role, string $reason): void {
+        if ($role !== RuleCodec::CONDITION && $role !== RuleCodec::EFFECT) {
+            throw new RuntimeException("Unexpected rule role {$role}.");
+        }
 
-    expect($loaded->isSupported())->toBeFalse()
-        ->and($loaded->rule)->toBeNull()
-        ->and($loaded->params)->toBeNull()
-        ->and($loaded->reason)->toContain($reason);
-})->with([
-    'no plugin contributes the key' => ['acme.gone', 1, [], RuleCodec::EFFECT, "no effect contributes 'acme.gone'"],
-    'the key belongs to the other role' => ['test.flat_off', 1, [], RuleCodec::CONDITION, "no condition contributes 'test.flat_off'"],
-    'stored by a newer plugin' => ['test.min_items', 3, ['min' => 1], RuleCodec::CONDITION, 'stored at version 3, the plugin knows 2'],
-    'the upgrade fails on the old shape' => ['test.min_items', 1, ['min' => 1], RuleCodec::CONDITION, 'cannot be upgraded'],
-    'the plugin cannot read version 1' => ['test.newer', 1, [], RuleCodec::EFFECT, 'the old format is gone'],
-    'invalid parameters at the current version' => ['test.min_items', 2, ['min' => 0], RuleCodec::CONDITION, 'stored parameters are invalid'],
-    'unknown parameter at the current version' => ['test.min_items', 2, ['min' => 1, 'extra' => 1], RuleCodec::CONDITION, 'unknown parameter'],
-]);
+        $loaded = rcCodec()->decode(new StoredRule($key, $version, RuleParams::fromInput($params)), $role, rcScope());
+
+        expect($loaded->isSupported())->toBeFalse()
+            ->and($loaded->rule)->toBeNull()
+            ->and($loaded->params)->toBeNull()
+            ->and($loaded->reason)->toContain($reason);
+    })->with([
+        'no plugin contributes the key' => ['acme.gone', 1, [], RuleCodec::EFFECT, "no effect contributes 'acme.gone'"],
+        'the key belongs to the other role' => ['test.flat_off', 1, [], RuleCodec::CONDITION, "no condition contributes 'test.flat_off'"],
+        'stored by a newer plugin' => ['test.min_items', 3, ['min' => 1], RuleCodec::CONDITION, 'stored at version 3, the plugin knows 2'],
+        'the upgrade fails on the old shape' => ['test.min_items', 1, ['min' => 1], RuleCodec::CONDITION, 'cannot be upgraded'],
+        'the plugin cannot read version 1' => ['test.newer', 1, [], RuleCodec::EFFECT, 'the old format is gone'],
+        'invalid parameters at the current version' => ['test.min_items', 2, ['min' => 0], RuleCodec::CONDITION, 'stored parameters are invalid'],
+        'unknown parameter at the current version' => ['test.min_items', 2, ['min' => 1, 'extra' => 1], RuleCodec::CONDITION, 'unknown parameter'],
+    ]);
 
 it('refuses stored rules whose stage or amount currency is no longer supported', function (RuleScope $scope, string $reason): void {
     $loaded = rcCodec()->decode(new StoredRule('test.flat_off', 1, RuleParams::fromInput(['amount' => Money::of('1.00', 'RUB')])), RuleCodec::EFFECT, $scope);

@@ -226,7 +226,7 @@ final readonly class DatabaseStoredValueTender implements StoredValueTender
         }
 
         if ($tender->customer !== null) {
-            return 'wallet:'.(string) $tender->customer;
+            return 'wallet:'.$tender->customer;
         }
 
         return "tender:#{$index}";

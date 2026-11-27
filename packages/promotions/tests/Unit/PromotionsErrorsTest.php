@@ -22,7 +22,6 @@ use Commerz\Promotions\Usage\Exceptions\CouponHoldUnavailable;
 use Commerz\Promotions\Usage\Exceptions\PromotionUnavailable;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 
 it('covers every PromotionsErrorCode case with a matching ProblemDefinition', function (): void {
     $definitions = (new PromotionsProblemDefinitions)->definitions();
@@ -38,8 +37,7 @@ it('covers every PromotionsErrorCode case with a matching ProblemDefinition', fu
 it('exposes Packman error descriptors on promotions exceptions', function (CommerzException $e, PromotionsErrorCode $code, ErrorCategory $category): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($descriptor->errorCode)->toBe($code)
+    expect($descriptor->errorCode)->toBe($code)
         ->and($descriptor->category)->toBe($category);
 })->with([
     'campaign archived' => [new CampaignArchived('winter'), PromotionsErrorCode::CampaignArchived, ErrorCategory::Conflict],

@@ -30,7 +30,11 @@ return new class extends CommerzMigration
             $this->index($table, 'parent_id');
             $this->index($table, 'root_id');
             $this->index($table, 'materialized_path');
-            $this->foreign($table, 'parent_id')->references('id')->on($table->getTable())->restrictOnDelete();
+        });
+
+        // A self-reference needs the primary key. Blueprint adds a table's own foreign keys before that key.
+        $this->schema()->table($units, function (Blueprint $table) use ($units): void {
+            $this->foreign($table, 'parent_id')->references('id')->on($units)->restrictOnDelete();
         });
 
         if ($isPg) {

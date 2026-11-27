@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Commerz\Money\Money;
+use Commerz\Promotions\Rules\Contracts\PromotionCondition;
 use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Enums\ConditionRole;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
@@ -15,7 +16,11 @@ use Commerz\Promotions\Rules\Internal\Conditions\LineSellableIn;
 use Commerz\Promotions\Tests\Support\RuleStates;
 use Commerz\Quotes\Data\Adjustment;
 
-/** The field of the InvalidRuleConfig a call fails with, or null. */
+/**
+ * The field of the InvalidRuleConfig a call fails with, or null.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function condField(Closure $call): ?string
 {
     try {
@@ -27,7 +32,11 @@ function condField(Closure $call): ?string
     return null;
 }
 
-function condNormalize(object $condition, array $params, string $currency = 'RUB'): array
+/**
+ * @param  array<string, mixed>  $params
+ * @return array<string, mixed>
+ */
+function condNormalize(PromotionCondition $condition, array $params, string $currency = 'RUB'): array
 {
     return $condition->normalize(RuleParams::fromInput($params), RuleStates::scope(PromotionStage::Cart, $currency))->toArray();
 }
@@ -40,13 +49,17 @@ dataset('conditions', [
     'cart.quantity_at_least' => [new CartQuantityAtLeast, ConditionRole::Qualifier, [PromotionStage::Cart, PromotionStage::Delivery]],
 ]);
 
-it('declares its key, version 1, role and stages', function (object $condition, ConditionRole $role, array $stages): void {
-    expect($condition->version())->toBe(1)
-        ->and($condition->role())->toBe($role)
-        ->and($condition->stages())->toBe($stages);
-})->with('conditions');
+it('declares its key, version 1, role and stages',
+    /**
+     * @param  non-empty-list<PromotionStage>  $stages
+     */
+    function (PromotionCondition $condition, ConditionRole $role, array $stages): void {
+        expect($condition->version())->toBe(1)
+            ->and($condition->role())->toBe($role)
+            ->and($condition->stages())->toBe($stages);
+    })->with('conditions');
 
-it('cannot upgrade from another version', function (object $condition, ConditionRole $role): void {
+it('cannot upgrade from another version', function (PromotionCondition $condition, ConditionRole $role): void {
     expect(condField(fn () => $condition->upgrade(RuleParams::fromInput([]), 2)))->toBe('version');
 })->with('conditions');
 

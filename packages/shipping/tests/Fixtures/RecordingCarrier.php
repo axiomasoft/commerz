@@ -89,7 +89,11 @@ final readonly class RecordingCarrier implements Carrier
 
     private static function record(string $kind, CarrierBooking $booking): void
     {
-        $handle = fopen(self::log(), 'a') ?: throw new RuntimeException('Cannot open the carrier log.');
+        $handle = fopen(self::log(), 'a');
+
+        if ($handle === false) {
+            throw new RuntimeException('Cannot open the carrier log.');
+        }
 
         try {
             flock($handle, LOCK_EX);

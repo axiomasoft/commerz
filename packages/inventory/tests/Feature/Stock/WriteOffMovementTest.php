@@ -45,6 +45,9 @@ final class InvWoSqliteConnection extends SQLiteConnection
         return (string) preg_replace('/\s+for\s+(?:update|share)(?:\s+nowait|\s+skip\s+locked)?\b/i', '', $normalized);
     }
 
+    /**
+     * @param  array<int|string, mixed>  $bindings
+     */
     public function statement($query, $bindings = []): bool
     {
         if (stripos(ltrim($query), 'set local lock_timeout') === 0) {
@@ -54,13 +57,22 @@ final class InvWoSqliteConnection extends SQLiteConnection
         return parent::statement(self::normalizePgSql($query), $bindings);
     }
 
+    /**
+     * @param  array<int|string, mixed>  $bindings
+     */
     public function affectingStatement($query, $bindings = []): int
     {
         return parent::affectingStatement(self::normalizePgSql($query), $bindings);
     }
 
+    /**
+     * @param  array<int|string, mixed>  $bindings
+     * @param  array<int|string, mixed>  $fetchUsing
+     * @return array<int, mixed>
+     */
     public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
     {
+        /** @var array<int, mixed> $rows */
         $rows = parent::select(self::normalizePgSql($query), $bindings, $useReadPdo, $fetchUsing);
 
         foreach ($rows as $row) {
@@ -80,7 +92,12 @@ final class InvWoSqliteConnection extends SQLiteConnection
 }
 
 beforeEach(function (): void {
-    Connection::resolverFor('sqlite', static function ($connection, $database, $prefix, array $config) {
+    Connection::resolverFor('sqlite', static function (mixed $connection, mixed $database, mixed $prefix, array $config): SQLiteConnection {
+        if ((! $connection instanceof PDO && ! $connection instanceof Closure) || ! is_string($database) || ! is_string($prefix)) {
+            throw new RuntimeException('Unexpected sqlite connection resolver arguments.');
+        }
+
+        /** @var (Closure(): PDO)|PDO $connection */
         if (($config['commerz_compat'] ?? false) === true) {
             return new InvWoSqliteConnection($connection, $database, $prefix, $config);
         }

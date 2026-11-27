@@ -13,7 +13,7 @@ Public PHP surface of `packages/promotions` as recorded in `packages/promotions/
 | kinds | `promotion_activator`, `promotion_condition`, `promotion_effect` |
 | plugin | `commerz.promotions` |
 | providers | `Commerz\Promotions\PromotionsServiceProvider` |
-| tables | `promotion`, `coupon` |
+| tables | `promotion`, `coupon`, `campaign` |
 
 ## (root)
 
@@ -30,7 +30,9 @@ Root of the promotions API: accessors of the module contracts.
 
 ```php
 final readonly class Promotions {
-    __construct(\Commerz\Promotions\Definitions\Contracts\PromotionDefinitions $promotions, \Commerz\Promotions\Coupons\Contracts\Coupons $coupons);
+    __construct(\Commerz\Promotions\Definitions\Contracts\PromotionDefinitions $promotions, \Commerz\Promotions\Coupons\Contracts\Coupons $coupons, \Commerz\Promotions\Campaigns\Contracts\Campaigns $campaigns, \Commerz\Promotions\Usage\Contracts\CouponHolds $couponHolds);
+    campaigns(): \Commerz\Promotions\Campaigns\Contracts\Campaigns;
+    couponHolds(): \Commerz\Promotions\Usage\Contracts\CouponHolds;
     coupons(): \Commerz\Promotions\Coupons\Contracts\Coupons;
     promotions(): \Commerz\Promotions\Definitions\Contracts\PromotionDefinitions;
 }
@@ -42,7 +44,285 @@ final readonly class Promotions {
 
 ```php
 final class PromotionsServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
-    const NOUNS = ['promotion', 'coupon'];
+    const NOUNS = ['promotion', 'coupon', 'campaign'];
+}
+```
+
+## Campaigns
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Campaigns`](#type-commerz-promotions-campaigns-contracts-campaigns) | interface | api | 0.1 |
+| [`ArchiveCampaign`](#type-commerz-promotions-campaigns-data-archivecampaign) | class | api | 0.1 |
+| [`Campaign`](#type-commerz-promotions-campaigns-data-campaign) | class | api | 0.1 |
+| [`CampaignBudget`](#type-commerz-promotions-campaigns-data-campaignbudget) | class | api | 0.1 |
+| [`CampaignId`](#type-commerz-promotions-campaigns-data-campaignid) | class | api | 0.1 |
+| [`ConsumeCampaignBudget`](#type-commerz-promotions-campaigns-data-consumecampaignbudget) | class | api | 0.1 |
+| [`CreateCampaign`](#type-commerz-promotions-campaigns-data-createcampaign) | class | api | 0.1 |
+| [`ListCampaigns`](#type-commerz-promotions-campaigns-data-listcampaigns) | class | api | 0.1 |
+| [`PauseCampaign`](#type-commerz-promotions-campaigns-data-pausecampaign) | class | api | 0.1 |
+| [`RestoreCampaignBudget`](#type-commerz-promotions-campaigns-data-restorecampaignbudget) | class | api | 0.1 |
+| [`ResumeCampaign`](#type-commerz-promotions-campaigns-data-resumecampaign) | class | api | 0.1 |
+| [`UpdateCampaign`](#type-commerz-promotions-campaigns-data-updatecampaign) | class | api | 0.1 |
+| [`CampaignStatus`](#type-commerz-promotions-campaigns-enums-campaignstatus) | enum | api | 0.1 |
+| [`CampaignChanged`](#type-commerz-promotions-campaigns-events-campaignchanged) | class | api | 0.1 |
+| [`CampaignArchived`](#type-commerz-promotions-campaigns-exceptions-campaignarchived) | class | api | 0.1 |
+| [`CampaignBudgetExceeded`](#type-commerz-promotions-campaigns-exceptions-campaignbudgetexceeded) | class | api | 0.1 |
+| [`CampaignNotFound`](#type-commerz-promotions-campaigns-exceptions-campaignnotfound) | class | api | 0.1 |
+
+### Campaigns {#type-commerz-promotions-campaigns-contracts-campaigns}
+
+`Commerz\Promotions\Campaigns\Contracts\Campaigns`
+
+Promotion campaigns and shared campaign budgets (`spend_cap_minor`, `usage_cap`, INV-PRM-001).
+
+```php
+interface Campaigns {
+    archive(\Commerz\Promotions\Campaigns\Data\ArchiveCampaign $command): \Commerz\Promotions\Campaigns\Data\Campaign;
+    budget(\Commerz\Promotions\Campaigns\Data\CampaignId $id): \Commerz\Promotions\Campaigns\Data\CampaignBudget;
+    // Atomically consumes campaign spend/usage caps under `FOR KEY SHARE` + conditional `UPDATE` (INV-PRM-001).
+    consumeBudget(\Commerz\Promotions\Campaigns\Data\ConsumeCampaignBudget $command): \Commerz\Promotions\Campaigns\Data\CampaignBudget;
+    create(\Commerz\Promotions\Campaigns\Data\CreateCampaign $command): \Commerz\Promotions\Campaigns\Data\Campaign;
+    find(\Commerz\Promotions\Campaigns\Data\CampaignId $id): \Commerz\Promotions\Campaigns\Data\Campaign;
+    findByCode(string $code): \Commerz\Promotions\Campaigns\Data\Campaign;
+    list(\Commerz\Promotions\Campaigns\Data\ListCampaigns $query): \Commerz\Pagination\Page;
+    pause(\Commerz\Promotions\Campaigns\Data\PauseCampaign $command): \Commerz\Promotions\Campaigns\Data\Campaign;
+    // Restores previously consumed campaign spend/usage caps (clamped at zero).
+    restoreBudget(\Commerz\Promotions\Campaigns\Data\RestoreCampaignBudget $command): \Commerz\Promotions\Campaigns\Data\CampaignBudget;
+    resume(\Commerz\Promotions\Campaigns\Data\ResumeCampaign $command): \Commerz\Promotions\Campaigns\Data\Campaign;
+    update(\Commerz\Promotions\Campaigns\Data\UpdateCampaign $command): \Commerz\Promotions\Campaigns\Data\Campaign;
+}
+```
+
+### ArchiveCampaign {#type-commerz-promotions-campaigns-data-archivecampaign}
+
+`Commerz\Promotions\Campaigns\Data\ArchiveCampaign`
+
+```php
+final readonly class ArchiveCampaign {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign);
+}
+```
+
+### Campaign {#type-commerz-promotions-campaigns-data-campaign}
+
+`Commerz\Promotions\Campaigns\Data\Campaign`
+
+A promotion campaign grouping promotions under a shared schedule and {@see CampaignBudget}.
+
+```php
+final readonly class Campaign {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignBudget $budget;
+    public readonly string $code;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Money\Currency $currency;
+    public readonly ?\DateTimeImmutable $endsAt;
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $id;
+    public readonly string $name;
+    public readonly ?\DateTimeImmutable $startsAt;
+    public readonly \Commerz\Promotions\Campaigns\Enums\CampaignStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $id, string $code, string $name, \Commerz\Promotions\Campaigns\Enums\CampaignStatus $status, ?\Commerz\Money\Currency $currency, \Commerz\Promotions\Campaigns\Data\CampaignBudget $budget, ?\DateTimeImmutable $startsAt, ?\DateTimeImmutable $endsAt, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    isActiveAt(\DateTimeImmutable $instant): bool;
+}
+```
+
+### CampaignBudget {#type-commerz-promotions-campaigns-data-campaignbudget}
+
+`Commerz\Promotions\Campaigns\Data\CampaignBudget`
+
+Budget and usage caps of a {@see Campaign} (`spend_cap_minor`, `usage_cap`) and their current consumed totals. Enforced atomically under PostgreSQL row locking (`FOR KEY SHARE` + conditional `UPDATE`, INV-PRM-001).
+
+```php
+final readonly class CampaignBudget {
+    public readonly ?\Commerz\Money\Currency $currency;
+    public readonly ?int $spendCapMinor;
+    public readonly int $spentMinor;
+    public readonly ?int $usageCap;
+    public readonly int $used;
+    __construct(?int $spendCapMinor = null, int $spentMinor = 0, ?int $usageCap = null, int $used = 0, ?\Commerz\Money\Currency $currency = null);
+    canAfford(int $discountMinor, int $uses = 1): bool;
+    hasCaps(): bool;
+    isExhausted(): bool;
+    remainingSpend(): ?\Commerz\Money\Money;
+    remainingSpendMinor(): ?int;
+    remainingUsage(): ?int;
+    spendCap(): ?\Commerz\Money\Money;
+    spent(): ?\Commerz\Money\Money;
+}
+```
+
+### CampaignId {#type-commerz-promotions-campaigns-data-campaignid}
+
+`Commerz\Promotions\Campaigns\Data\CampaignId`
+
+```php
+final readonly class CampaignId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### ConsumeCampaignBudget {#type-commerz-promotions-campaigns-data-consumecampaignbudget}
+
+`Commerz\Promotions\Campaigns\Data\ConsumeCampaignBudget`
+
+```php
+final readonly class ConsumeCampaignBudget {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    public readonly \Commerz\Money\Money $discount;
+    public readonly int $uses;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign, \Commerz\Money\Money $discount, int $uses = 1);
+}
+```
+
+### CreateCampaign {#type-commerz-promotions-campaigns-data-createcampaign}
+
+`Commerz\Promotions\Campaigns\Data\CreateCampaign`
+
+```php
+final readonly class CreateCampaign {
+    public readonly string $code;
+    public readonly ?\Commerz\Money\Currency $currency;
+    public readonly ?\DateTimeImmutable $endsAt;
+    public readonly string $name;
+    public readonly ?\Commerz\Money\Money $spendCap;
+    public readonly ?\DateTimeImmutable $startsAt;
+    public readonly \Commerz\Promotions\Campaigns\Enums\CampaignStatus $status;
+    public readonly ?int $usageCap;
+    __construct(string $code, string $name, ?\Commerz\Money\Currency $currency = null, ?\Commerz\Money\Money $spendCap = null, ?int $usageCap = null, ?\DateTimeImmutable $startsAt = null, ?\DateTimeImmutable $endsAt = null, \Commerz\Promotions\Campaigns\Enums\CampaignStatus $status = Commerz\Promotions\Campaigns\Enums\CampaignStatus::Active);
+}
+```
+
+### ListCampaigns {#type-commerz-promotions-campaigns-data-listcampaigns}
+
+`Commerz\Promotions\Campaigns\Data\ListCampaigns`
+
+```php
+final readonly class ListCampaigns {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $first;
+    public readonly ?\Commerz\Promotions\Campaigns\Enums\CampaignStatus $status;
+    __construct(?\Commerz\Promotions\Campaigns\Enums\CampaignStatus $status = null, int $first = 50, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### PauseCampaign {#type-commerz-promotions-campaigns-data-pausecampaign}
+
+`Commerz\Promotions\Campaigns\Data\PauseCampaign`
+
+```php
+final readonly class PauseCampaign {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign);
+}
+```
+
+### RestoreCampaignBudget {#type-commerz-promotions-campaigns-data-restorecampaignbudget}
+
+`Commerz\Promotions\Campaigns\Data\RestoreCampaignBudget`
+
+```php
+final readonly class RestoreCampaignBudget {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    public readonly \Commerz\Money\Money $discount;
+    public readonly int $uses;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign, \Commerz\Money\Money $discount, int $uses = 1);
+}
+```
+
+### ResumeCampaign {#type-commerz-promotions-campaigns-data-resumecampaign}
+
+`Commerz\Promotions\Campaigns\Data\ResumeCampaign`
+
+```php
+final readonly class ResumeCampaign {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign);
+}
+```
+
+### UpdateCampaign {#type-commerz-promotions-campaigns-data-updatecampaign}
+
+`Commerz\Promotions\Campaigns\Data\UpdateCampaign`
+
+```php
+final readonly class UpdateCampaign {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    public readonly bool $clearSpendCap;
+    public readonly bool $clearUsageCap;
+    public readonly ?string $name;
+    public readonly ?\Commerz\Money\Money $spendCap;
+    public readonly ?int $usageCap;
+    public readonly ?\Commerz\Promotions\Definitions\Data\PromotionWindow $window;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign, ?string $name = null, ?\Commerz\Money\Money $spendCap = null, bool $clearSpendCap = false, ?int $usageCap = null, bool $clearUsageCap = false, ?\Commerz\Promotions\Definitions\Data\PromotionWindow $window = null);
+}
+```
+
+### CampaignStatus {#type-commerz-promotions-campaigns-enums-campaignstatus}
+
+`Commerz\Promotions\Campaigns\Enums\CampaignStatus`
+
+```php
+enum CampaignStatus {
+    case Active = 'active';
+    case Paused = 'paused';
+    case Archived = 'archived';
+}
+```
+
+### CampaignChanged {#type-commerz-promotions-campaigns-events-campaignchanged}
+
+`Commerz\Promotions\Campaigns\Events\CampaignChanged`
+
+```php
+final readonly class CampaignChanged {
+    public readonly \Commerz\Promotions\Campaigns\Data\CampaignId $campaign;
+    __construct(\Commerz\Promotions\Campaigns\Data\CampaignId $campaign);
+}
+```
+
+### CampaignArchived {#type-commerz-promotions-campaigns-exceptions-campaignarchived}
+
+`Commerz\Promotions\Campaigns\Exceptions\CampaignArchived`
+
+```php
+final class CampaignArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $campaign;
+    __construct(string $campaign);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### CampaignBudgetExceeded {#type-commerz-promotions-campaigns-exceptions-campaignbudgetexceeded}
+
+`Commerz\Promotions\Campaigns\Exceptions\CampaignBudgetExceeded`
+
+Raised when consuming a campaign's spend or usage cap would breach `spend_cap_minor` or `usage_cap` (INV-PRM-001).
+
+```php
+final class CampaignBudgetExceeded extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    const SPEND_CAP = 'campaign_budget';
+    const USAGE_CAP = 'campaign_usage';
+    public readonly string $campaign;
+    public readonly string $limit;
+    __construct(string $campaign, string $limit);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### CampaignNotFound {#type-commerz-promotions-campaigns-exceptions-campaignnotfound}
+
+`Commerz\Promotions\Campaigns\Exceptions\CampaignNotFound`
+
+```php
+final class CampaignNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -103,11 +383,15 @@ Immutable compiled configuration snapshot for `axiomasoft/commerz-promotions`.
 ```php
 final readonly class PromotionsOptions implements \Packman\Config\Contracts\OptionsFactory {
     public readonly string $couponAlphabet;
+    public readonly bool $holdOnCheckout;
+    public readonly int $holdTtlSeconds;
     public readonly int $maxCodes;
     public readonly int $maxGenerate;
+    public readonly int $nearMissMinProgressBp;
+    public readonly int $nearMissTimeoutMs;
     public readonly array $restoreOn;
     public readonly \Commerz\Money\RoundingMode $rounding;
-    __construct(\Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp, int $maxCodes = 5, array $restoreOn = [\Commerz\Ports\Promotions\Enums\RestoreReason::Cancelled, \Commerz\Ports\Promotions\Enums\RestoreReason::Expired], string $couponAlphabet = self::DEFAULT_ALPHABET, int $maxGenerate = 50000);
+    __construct(\Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp, int $maxCodes = 5, array $restoreOn = [\Commerz\Ports\Promotions\Enums\RestoreReason::Cancelled, \Commerz\Ports\Promotions\Enums\RestoreReason::Expired], string $couponAlphabet = self::DEFAULT_ALPHABET, int $maxGenerate = 50000, bool $holdOnCheckout = false, int $holdTtlSeconds = 900, int $nearMissMinProgressBp = 0, int $nearMissTimeoutMs = 200);
     static fromArray(array $config, string $path = 'commerz-promotions'): self;
     restores(\Commerz\Ports\Promotions\Enums\RestoreReason $reason): bool;
 }
@@ -458,6 +742,7 @@ A promotion. The code, the stage, the activator and the currency never change af
 final readonly class CreatePromotion {
     public readonly string $activator;
     public readonly ?\Commerz\Money\Money $budget;
+    public readonly ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId;
     public readonly array $channels;
     public readonly string $code;
     public readonly array $conditions;
@@ -472,7 +757,7 @@ final readonly class CreatePromotion {
     public readonly ?\DateTimeImmutable $startsAt;
     public readonly \Commerz\Promotions\Definitions\Enums\PromotionStatus $status;
     public readonly bool $stopFurther;
-    __construct(string $code, string $name, \Commerz\Promotions\Rules\Enums\PromotionStage $stage, string $activator, array $channels, array $effects, array $conditions = [], \Commerz\Promotions\Definitions\Enums\Stacking $stacking = Commerz\Promotions\Definitions\Enums\Stacking::Stackable, bool $stopFurther = false, int $priority = 0, ?\Commerz\Money\Currency $currency = null, \Commerz\Promotions\Definitions\Data\UsageLimits $limits = new \Commerz\Promotions\Definitions\Data\UsageLimits, ?\Commerz\Money\Money $budget = null, ?\DateTimeImmutable $startsAt = null, ?\DateTimeImmutable $endsAt = null, \Commerz\Promotions\Definitions\Enums\PromotionStatus $status = Commerz\Promotions\Definitions\Enums\PromotionStatus::Active);
+    __construct(string $code, string $name, \Commerz\Promotions\Rules\Enums\PromotionStage $stage, string $activator, array $channels, array $effects, array $conditions = [], \Commerz\Promotions\Definitions\Enums\Stacking $stacking = Commerz\Promotions\Definitions\Enums\Stacking::Stackable, bool $stopFurther = false, int $priority = 0, ?\Commerz\Money\Currency $currency = null, \Commerz\Promotions\Definitions\Data\UsageLimits $limits = new \Commerz\Promotions\Definitions\Data\UsageLimits, ?\Commerz\Money\Money $budget = null, ?\DateTimeImmutable $startsAt = null, ?\DateTimeImmutable $endsAt = null, \Commerz\Promotions\Definitions\Enums\PromotionStatus $status = Commerz\Promotions\Definitions\Enums\PromotionStatus::Active, ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId = null);
     static assertBudget(?\Commerz\Money\Money $budget): void;
     static assertName(string $name): void;
     static assertPriority(int $priority): void;
@@ -562,7 +847,7 @@ final readonly class PromotionUsageSummary {
 
 `Commerz\Promotions\Definitions\Data\PromotionVerdict`
 
-The outcome for one switched-on promotion in one quote. An applied promotion carries the discount it gave (a positive amount) and no reason; a rejected or skipped one carries the stable snake_case reason and no discount.
+The outcome for one switched-on promotion in one quote. An applied promotion carries the discount it gave (a non-negative amount; zero for pure gift promotions) and no reason; a rejected or skipped one carries the stable snake_case reason and no discount.
 
 ```php
 final readonly class PromotionVerdict {
@@ -586,6 +871,7 @@ final readonly class PromotionVerdict {
 final readonly class PromotionView {
     public readonly string $activator;
     public readonly ?\Commerz\Money\Money $budget;
+    public readonly ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId;
     public readonly array $channels;
     public readonly string $code;
     public readonly array $conditions;
@@ -605,7 +891,7 @@ final readonly class PromotionView {
     public readonly bool $stopFurther;
     public readonly \DateTimeImmutable $updatedAt;
     public readonly \Commerz\Promotions\Definitions\Data\PromotionUsageSummary $usage;
-    __construct(\Commerz\Promotions\Definitions\Data\PromotionId $id, string $code, string $name, \Commerz\Promotions\Rules\Enums\PromotionStage $stage, string $activator, \Commerz\Promotions\Definitions\Enums\Stacking $stacking, bool $stopFurther, int $priority, ?\Commerz\Money\Currency $currency, \Commerz\Promotions\Definitions\Enums\PromotionStatus $status, ?\DateTimeImmutable $startsAt, ?\DateTimeImmutable $endsAt, array $channels, array $conditions, array $effects, \Commerz\Promotions\Definitions\Data\UsageLimits $limits, ?\Commerz\Money\Money $budget, int $revision, \Commerz\Promotions\Definitions\Data\PromotionUsageSummary $usage, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    __construct(\Commerz\Promotions\Definitions\Data\PromotionId $id, string $code, string $name, \Commerz\Promotions\Rules\Enums\PromotionStage $stage, string $activator, \Commerz\Promotions\Definitions\Enums\Stacking $stacking, bool $stopFurther, int $priority, ?\Commerz\Money\Currency $currency, \Commerz\Promotions\Definitions\Enums\PromotionStatus $status, ?\DateTimeImmutable $startsAt, ?\DateTimeImmutable $endsAt, array $channels, array $conditions, array $effects, \Commerz\Promotions\Definitions\Data\UsageLimits $limits, ?\Commerz\Money\Money $budget, int $revision, \Commerz\Promotions\Definitions\Data\PromotionUsageSummary $usage, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId = null);
 }
 ```
 
@@ -655,7 +941,9 @@ Changes a promotion; a null field stays as it is. Rules are replaced as a whole 
 ```php
 final readonly class UpdatePromotion {
     public readonly ?\Commerz\Money\Money $budget;
+    public readonly ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId;
     public readonly bool $clearBudget;
+    public readonly bool $clearCampaign;
     public readonly ?array $conditions;
     public readonly ?array $effects;
     public readonly ?\Commerz\Promotions\Definitions\Data\UsageLimits $limits;
@@ -665,7 +953,7 @@ final readonly class UpdatePromotion {
     public readonly ?\Commerz\Promotions\Definitions\Enums\Stacking $stacking;
     public readonly ?bool $stopFurther;
     public readonly ?\Commerz\Promotions\Definitions\Data\PromotionWindow $window;
-    __construct(\Commerz\Promotions\Definitions\Data\PromotionId $promotion, ?string $name = null, ?int $priority = null, ?\Commerz\Promotions\Definitions\Enums\Stacking $stacking = null, ?bool $stopFurther = null, ?array $conditions = null, ?array $effects = null, ?\Commerz\Promotions\Definitions\Data\UsageLimits $limits = null, ?\Commerz\Money\Money $budget = null, bool $clearBudget = false, ?\Commerz\Promotions\Definitions\Data\PromotionWindow $window = null);
+    __construct(\Commerz\Promotions\Definitions\Data\PromotionId $promotion, ?string $name = null, ?int $priority = null, ?\Commerz\Promotions\Definitions\Enums\Stacking $stacking = null, ?bool $stopFurther = null, ?array $conditions = null, ?array $effects = null, ?\Commerz\Promotions\Definitions\Data\UsageLimits $limits = null, ?\Commerz\Money\Money $budget = null, bool $clearBudget = false, ?\Commerz\Promotions\Definitions\Data\PromotionWindow $window = null, ?\Commerz\Promotions\Campaigns\Data\CampaignId $campaignId = null, bool $clearCampaign = false);
 }
 ```
 
@@ -801,7 +1089,13 @@ Stable wire-level error codes emitted by `axiomasoft/commerz-promotions`.
 
 ```php
 enum PromotionsErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case CampaignArchived = 'promotions.campaign_archived';
+    case CampaignBudgetExceeded = 'promotions.campaign_budget_exceeded';
+    case CampaignNotFound = 'promotions.campaign_not_found';
     case CodeSpaceExhausted = 'promotions.code_space_exhausted';
+    case CouponHoldDisabled = 'promotions.coupon_hold_disabled';
+    case CouponHoldNotFound = 'promotions.coupon_hold_not_found';
+    case CouponHoldUnavailable = 'promotions.coupon_hold_unavailable';
     case CouponNotFound = 'promotions.coupon_not_found';
     case CurrencyMismatch = 'promotions.currency_mismatch';
     case DuplicateCode = 'promotions.duplicate_code';
@@ -958,6 +1252,8 @@ final class PromotionsPlugin implements \Packman\Extensions\Contracts\Compositio
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`GiftPromotionEffect`](#type-commerz-promotions-rules-contracts-giftpromotioneffect) | interface | spi (implement) | 0.1 |
+| [`NearMissCondition`](#type-commerz-promotions-rules-contracts-nearmisscondition) | interface | spi (implement) | 0.1 |
 | [`PromotionActivator`](#type-commerz-promotions-rules-contracts-promotionactivator) | interface | spi (implement) | 0.1 |
 | [`PromotionCondition`](#type-commerz-promotions-rules-contracts-promotioncondition) | interface | spi (implement) | 0.1 |
 | [`PromotionEffect`](#type-commerz-promotions-rules-contracts-promotioneffect) | interface | spi (implement) | 0.1 |
@@ -969,6 +1265,7 @@ final class PromotionsPlugin implements \Packman\Extensions\Contracts\Compositio
 | [`ConditionOutcome`](#type-commerz-promotions-rules-data-conditionoutcome) | class | api | 0.1 |
 | [`Discount`](#type-commerz-promotions-rules-data-discount) | class | api | 0.1 |
 | [`EffectInput`](#type-commerz-promotions-rules-data-effectinput) | class | api | 0.1 |
+| [`GiftEffectResult`](#type-commerz-promotions-rules-data-gifteffectresult) | class | api | 0.1 |
 | [`PromotionSummary`](#type-commerz-promotions-rules-data-promotionsummary) | class | api | 0.1 |
 | [`RuleParams`](#type-commerz-promotions-rules-data-ruleparams) | class | api | 0.1 |
 | [`RuleScope`](#type-commerz-promotions-rules-data-rulescope) | class | api | 0.1 |
@@ -977,6 +1274,32 @@ final class PromotionsPlugin implements \Packman\Extensions\Contracts\Compositio
 | [`PromotionStage`](#type-commerz-promotions-rules-enums-promotionstage) | enum | api | 0.1 |
 | [`InvalidRuleConfig`](#type-commerz-promotions-rules-exceptions-invalidruleconfig) | class | api | 0.1 |
 | [`InvalidRuleResult`](#type-commerz-promotions-rules-exceptions-invalidruleresult) | class | api | 0.1 |
+
+### GiftPromotionEffect {#type-commerz-promotions-rules-contracts-giftpromotioneffect}
+
+`Commerz\Promotions\Rules\Contracts\GiftPromotionEffect`
+
+Optional extension of {@see PromotionEffect} for effects that add free gift lines or emit selectable gift offers onto the quote state.
+
+```php
+interface GiftPromotionEffect extends \Commerz\Promotions\Rules\Contracts\PromotionEffect {
+    // Pure calculation returning zero-priced gift lines and/or selectable gift offers. The engine validates every returned line and offer (PRM-05) before applying them atomically.
+    applyGifts(\Commerz\Promotions\Rules\Data\EffectInput $input, ?string $couponCode = null): \Commerz\Promotions\Rules\Data\GiftEffectResult;
+}
+```
+
+### NearMissCondition {#type-commerz-promotions-rules-contracts-nearmisscondition}
+
+`Commerz\Promotions\Rules\Contracts\NearMissCondition`
+
+Optional extension of {@see PromotionCondition} for threshold qualifiers that can report how close a quote is to satisfying the condition (e.g. missing spend or missing quantity).
+
+```php
+interface NearMissCondition extends \Commerz\Promotions\Rules\Contracts\PromotionCondition {
+    // Returns a {@see NearMissHint} when the condition is not yet satisfied and a positive gap can be quantified, or null when already satisfied or not applicable.
+    nearMiss(\Commerz\Promotions\Rules\Data\ConditionInput $input): ?\Commerz\Quotes\Data\NearMissHint;
+}
+```
 
 ### PromotionActivator {#type-commerz-promotions-rules-contracts-promotionactivator}
 
@@ -1164,6 +1487,21 @@ final readonly class EffectInput {
 }
 ```
 
+### GiftEffectResult {#type-commerz-promotions-rules-data-gifteffectresult}
+
+`Commerz\Promotions\Rules\Data\GiftEffectResult`
+
+Non-monetary gift outcomes produced by a {@see GiftPromotionEffect}: auto-added zero-priced gift lines and/or selectable gift offers.
+
+```php
+final readonly class GiftEffectResult {
+    public readonly array $giftLines;
+    public readonly array $giftOffers;
+    __construct(array $giftLines = [], array $giftOffers = []);
+    isEmpty(): bool;
+}
+```
+
 ### PromotionSummary {#type-commerz-promotions-rules-data-promotionsummary}
 
 `Commerz\Promotions\Rules\Data\PromotionSummary`
@@ -1310,10 +1648,11 @@ final class InvalidRuleResult extends \Commerz\Errors\CommerzException implement
 
 `Commerz\Promotions\Schema\PromotionsSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-promotions`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-promotions`.
 
 ```php
 final readonly class PromotionsSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
 }
 ```
@@ -1322,7 +1661,174 @@ final readonly class PromotionsSchemaSets implements \Packman\Schema\Contracts\M
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`CouponHolds`](#type-commerz-promotions-usage-contracts-couponholds) | interface | api | 0.1 |
+| [`CouponHoldId`](#type-commerz-promotions-usage-data-couponholdid) | class | api | 0.1 |
+| [`CouponHoldView`](#type-commerz-promotions-usage-data-couponholdview) | class | api | 0.1 |
+| [`HoldCoupon`](#type-commerz-promotions-usage-data-holdcoupon) | class | api | 0.1 |
+| [`RedeemCouponHold`](#type-commerz-promotions-usage-data-redeemcouponhold) | class | api | 0.1 |
+| [`ReleaseCouponHold`](#type-commerz-promotions-usage-data-releasecouponhold) | class | api | 0.1 |
+| [`CouponHoldState`](#type-commerz-promotions-usage-enums-couponholdstate) | enum | api | 0.1 |
+| [`CouponHoldDisabled`](#type-commerz-promotions-usage-exceptions-couponholddisabled) | class | api | 0.1 |
+| [`CouponHoldNotFound`](#type-commerz-promotions-usage-exceptions-couponholdnotfound) | class | api | 0.1 |
+| [`CouponHoldUnavailable`](#type-commerz-promotions-usage-exceptions-couponholdunavailable) | class | api | 0.1 |
 | [`PromotionUnavailable`](#type-commerz-promotions-usage-exceptions-promotionunavailable) | class | api | 0.1 |
+
+### CouponHolds {#type-commerz-promotions-usage-contracts-couponholds}
+
+`Commerz\Promotions\Usage\Contracts\CouponHolds`
+
+Optional 2-phase coupon hold mode (`hold_on_checkout` with TTL: `held -> redeemed / released`) in addition to D13.
+
+```php
+interface CouponHolds {
+    // Releases all held coupons whose TTL has expired as of `$asOf` (defaults to Clock::now()).
+    expireDue(?\DateTimeImmutable $asOf = null): int;
+    find(\Commerz\Promotions\Usage\Data\CouponHoldId $id): \Commerz\Promotions\Usage\Data\CouponHoldView;
+    // Reserves a coupon slot for a checkout session with a TTL. Idempotent per `(coupon, holdRef)` while held.
+    hold(\Commerz\Promotions\Usage\Data\HoldCoupon $command): \Commerz\Promotions\Usage\Data\CouponHoldView;
+    // Converts an active hold (`held -> redeemed`) on order placement. Idempotent for the same `orderRef`.
+    redeem(\Commerz\Promotions\Usage\Data\RedeemCouponHold $command): \Commerz\Promotions\Usage\Data\CouponHoldView;
+    // Releases an active hold (`held -> released`), returning the slot to the coupon. Idempotent if already released.
+    release(\Commerz\Promotions\Usage\Data\ReleaseCouponHold $command): \Commerz\Promotions\Usage\Data\CouponHoldView;
+}
+```
+
+### CouponHoldId {#type-commerz-promotions-usage-data-couponholdid}
+
+`Commerz\Promotions\Usage\Data\CouponHoldId`
+
+```php
+final readonly class CouponHoldId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### CouponHoldView {#type-commerz-promotions-usage-data-couponholdview}
+
+`Commerz\Promotions\Usage\Data\CouponHoldView`
+
+```php
+final readonly class CouponHoldView {
+    public readonly string $couponCode;
+    public readonly \Commerz\Promotions\Coupons\Data\CouponId $couponId;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly \DateTimeImmutable $expiresAt;
+    public readonly \DateTimeImmutable $heldAt;
+    public readonly string $holdRef;
+    public readonly \Commerz\Promotions\Usage\Data\CouponHoldId $id;
+    public readonly ?string $orderRef;
+    public readonly \Commerz\Promotions\Definitions\Data\PromotionId $promotionId;
+    public readonly ?\DateTimeImmutable $redeemedAt;
+    public readonly ?\DateTimeImmutable $releasedAt;
+    public readonly \Commerz\Promotions\Usage\Enums\CouponHoldState $state;
+    __construct(\Commerz\Promotions\Usage\Data\CouponHoldId $id, \Commerz\Promotions\Coupons\Data\CouponId $couponId, \Commerz\Promotions\Definitions\Data\PromotionId $promotionId, string $couponCode, string $holdRef, ?\Commerz\Identity\CustomerRef $customer, ?string $orderRef, \Commerz\Promotions\Usage\Enums\CouponHoldState $state, \DateTimeImmutable $heldAt, \DateTimeImmutable $expiresAt, ?\DateTimeImmutable $redeemedAt, ?\DateTimeImmutable $releasedAt);
+}
+```
+
+### HoldCoupon {#type-commerz-promotions-usage-data-holdcoupon}
+
+`Commerz\Promotions\Usage\Data\HoldCoupon`
+
+Places a TTL-bounded 2-phase hold on a coupon during checkout (requires `commerz-promotions.hold_on_checkout = true`).
+
+```php
+final readonly class HoldCoupon {
+    public readonly string $couponCode;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly string $holdRef;
+    public readonly ?int $ttlSeconds;
+    __construct(string $couponCode, string $holdRef, ?\Commerz\Identity\CustomerRef $customer = null, ?int $ttlSeconds = null);
+}
+```
+
+### RedeemCouponHold {#type-commerz-promotions-usage-data-redeemcouponhold}
+
+`Commerz\Promotions\Usage\Data\RedeemCouponHold`
+
+Converts an active checkout coupon hold (`held -> redeemed`) for the placed order.
+
+```php
+final readonly class RedeemCouponHold {
+    public readonly \Commerz\Promotions\Usage\Data\CouponHoldId $hold;
+    public readonly string $orderRef;
+    __construct(\Commerz\Promotions\Usage\Data\CouponHoldId $hold, string $orderRef);
+}
+```
+
+### ReleaseCouponHold {#type-commerz-promotions-usage-data-releasecouponhold}
+
+`Commerz\Promotions\Usage\Data\ReleaseCouponHold`
+
+Releases an active checkout coupon hold (`held -> released`), returning the slot to the coupon pool.
+
+```php
+final readonly class ReleaseCouponHold {
+    public readonly \Commerz\Promotions\Usage\Data\CouponHoldId $hold;
+    __construct(\Commerz\Promotions\Usage\Data\CouponHoldId $hold);
+}
+```
+
+### CouponHoldState {#type-commerz-promotions-usage-enums-couponholdstate}
+
+`Commerz\Promotions\Usage\Enums\CouponHoldState`
+
+Lifecycle state of a 2-phase checkout coupon hold (`held -> redeemed | released`).
+
+```php
+enum CouponHoldState {
+    case Held = 'held';
+    case Redeemed = 'redeemed';
+    case Released = 'released';
+}
+```
+
+### CouponHoldDisabled {#type-commerz-promotions-usage-exceptions-couponholddisabled}
+
+`Commerz\Promotions\Usage\Exceptions\CouponHoldDisabled`
+
+Thrown when 2-phase coupon hold operations are attempted while `commerz-promotions.hold_on_checkout` is false.
+
+```php
+final class CouponHoldDisabled extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    __construct();
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### CouponHoldNotFound {#type-commerz-promotions-usage-exceptions-couponholdnotfound}
+
+`Commerz\Promotions\Usage\Exceptions\CouponHoldNotFound`
+
+```php
+final class CouponHoldNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### CouponHoldUnavailable {#type-commerz-promotions-usage-exceptions-couponholdunavailable}
+
+`Commerz\Promotions\Usage\Exceptions\CouponHoldUnavailable`
+
+A checkout coupon hold cannot be transitioned to the requested state (`hold_expired`, `hold_released`, `already_redeemed`, `coupon_disabled`, `promotion_not_active`).
+
+```php
+final class CouponHoldUnavailable extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    const ALREADY_REDEEMED = 'already_redeemed';
+    const COUPON_DISABLED = 'coupon_disabled';
+    const HOLD_EXPIRED = 'hold_expired';
+    const HOLD_RELEASED = 'hold_released';
+    const PROMOTION_NOT_ACTIVE = 'promotion_not_active';
+    public readonly string $holdId;
+    public readonly string $reason;
+    __construct(string $holdId, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
 
 ### PromotionUnavailable {#type-commerz-promotions-usage-exceptions-promotionunavailable}
 
@@ -1332,6 +1838,7 @@ A promotion the quote applied can no longer be used when the order is placed: `$
 
 ```php
 final class PromotionUnavailable extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    const CAMPAIGN_NOT_ACTIVE = 'campaign_not_active';
     const COUPON_DISABLED = 'coupon_disabled';
     const COUPON_NOT_FOUND = 'coupon_not_found';
     const PROMOTION_NOT_ACTIVE = 'promotion_not_active';

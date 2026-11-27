@@ -46,11 +46,11 @@ it('propagates Tenant and Dedicated schema_scope to all Commerz schema sets with
     ];
 
     foreach ($classes as $class) {
-        $tenantSet = (new $class($tenantConfig))->sets()[0];
+        $tenantSet = new $class($tenantConfig)->sets()[0];
         expect($tenantSet->scope)->toBe(SchemaScope::Tenant)
             ->and($tenantSet->connection)->toBeNull();
 
-        $dedicatedSet = (new $class($dedicatedConfig))->sets()[0];
+        $dedicatedSet = new $class($dedicatedConfig)->sets()[0];
         expect($dedicatedSet->scope)->toBe(SchemaScope::Dedicated)
             ->and($dedicatedSet->connection)->toBe('commerce_db');
     }

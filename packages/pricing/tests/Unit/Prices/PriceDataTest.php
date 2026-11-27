@@ -14,15 +14,44 @@ use Commerz\Pricing\Prices\Data\ReschedulePrice;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Pricing\Prices\Data\SetPrices;
 use Commerz\Pricing\Prices\Internal\PriceWrites;
+use PHPUnit\Framework\Assert;
 
+/** @param array<string, mixed> $overrides */
 function priceCommand(array $overrides = []): SetPrice
 {
-    return new SetPrice(...[
+    $args = [
         'priceList' => PriceListId::fromString('018f0000-0000-7000-8000-000000000001'),
         'sellable' => SellableRef::of('variant', '1'),
         'amount' => Money::of('10.00', 'RUB'),
+        'compareAt' => null,
+        'minQuantity' => 1,
+        'customerGroup' => null,
+        'validFrom' => null,
+        'validUntil' => null,
         ...$overrides,
-    ]);
+    ];
+    $priceList = $args['priceList'];
+    $sellable = $args['sellable'];
+    $amount = $args['amount'];
+    $compareAt = $args['compareAt'];
+    $minQuantity = $args['minQuantity'];
+    $customerGroup = $args['customerGroup'];
+    $validFrom = $args['validFrom'];
+    $validUntil = $args['validUntil'];
+
+    if (! $priceList instanceof PriceListId
+        || ! $sellable instanceof SellableRef
+        || ! $amount instanceof Money
+        || ($compareAt !== null && ! $compareAt instanceof Money)
+        || ! is_int($minQuantity)
+        || ($customerGroup !== null && ! is_string($customerGroup))
+        || ($validFrom !== null && ! $validFrom instanceof DateTimeImmutable)
+        || ($validUntil !== null && ! $validUntil instanceof DateTimeImmutable)
+    ) {
+        throw new InvalidArgumentException('Price command overrides have the wrong type.');
+    }
+
+    return new SetPrice($priceList, $sellable, $amount, $compareAt, $minQuantity, $customerGroup, $validFrom, $validUntil);
 }
 
 it('accepts a plain price', function (): void {
@@ -32,9 +61,10 @@ it('accepts a plain price', function (): void {
 });
 
 it('checks the shape of a price', function (array $overrides, string $code): void {
+    /** @var array<string, mixed> $overrides */
     try {
         priceCommand($overrides);
-        $this->fail('The command was accepted.');
+        Assert::fail('The command was accepted.');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe($code);
     }

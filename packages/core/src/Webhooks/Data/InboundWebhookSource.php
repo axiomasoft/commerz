@@ -7,6 +7,7 @@ namespace Commerz\Webhooks\Data;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Webhooks\Enums\InboundSignatureMode;
 use Packman\Attributes\Api;
+use SensitiveParameter;
 
 /** Configuration for an external webhook sender verified by `InboundWebhookGateway`. */
 #[Api(since: '0.1')]
@@ -20,7 +21,7 @@ final readonly class InboundWebhookSource
      */
     public function __construct(
         public string $source,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string|array $secrets,
         public InboundSignatureMode $signatureMode = InboundSignatureMode::Timestamped,
         public int $toleranceSeconds = WebhookSignature::DEFAULT_TOLERANCE_SECONDS,

@@ -21,6 +21,7 @@ use Commerz\Promotions\Facades\Promotions;
 use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Tests\Fixtures\EvaluationPlugin;
+use Commerz\Promotions\Tests\TestCase;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\DeliverySelection;
@@ -46,11 +47,45 @@ trait EvEnvironment
     }
 }
 
+/** Analysed stand-in for the Pest `uses(EvEnvironment::class)` binding. */
+abstract class EvEnvironmentHarness extends TestCase
+{
+    use EvEnvironment;
+}
+
 function evContext(?string $customer = null): CommerceContext
 {
     $context = CommerceContext::for(pdfChannel(), Currency::of('RUB'), 'ru', new DateTimeImmutable('2026-10-09T12:00:00Z'));
 
     return $customer === null ? $context : $context->withCustomer(CustomerRef::fromString($customer));
+}
+
+/**
+ * @return array<array-key, string|array<array-key, mixed>>
+ */
+function evLines(mixed $lines): array
+{
+    if (! is_array($lines)) {
+        throw new RuntimeException('Expected quote lines, got '.get_debug_type($lines).'.');
+    }
+
+    $typed = [];
+
+    foreach ($lines as $key => $line) {
+        if (is_string($line)) {
+            $typed[$key] = $line;
+
+            continue;
+        }
+
+        if (! is_array($line)) {
+            throw new RuntimeException('Expected a quote line spec, got '.get_debug_type($line).'.');
+        }
+
+        $typed[$key] = $line;
+    }
+
+    return $typed;
 }
 
 /**
@@ -73,6 +108,15 @@ function evInput(array $lines, array $codes = [], ?CommerceContext $context = nu
         [$quantity, $unit] = str_contains($amount, 'x') ? explode('x', $amount, 2) : ['1', $amount];
         $categories = $spec['categories'] ?? [];
         assert(is_array($categories));
+        $categoryCodes = [];
+
+        foreach ($categories as $category) {
+            if (! is_string($category)) {
+                throw new RuntimeException('Expected a category code, got '.get_debug_type($category).'.');
+            }
+
+            $categoryCodes[] = $category;
+        }
 
         $inputs[] = new QuoteLineInput($id, new SellableSnapshot(
             SellableRef::of('fake', 'item-'.strtolower($id)),
@@ -81,7 +125,7 @@ function evInput(array $lines, array $codes = [], ?CommerceContext $context = nu
             SellableKind::Physical,
             true,
             basePrice: Money::of($unit, 'RUB'),
-            categories: array_values(array_map(strval(...), $categories)),
+            categories: $categoryCodes,
         ), (int) $quantity);
     }
 
@@ -150,10 +194,10 @@ function evBuyXGetY(array $params = []): RuleSpec
  */
 function evDiscounts(QuoteResult $result): array
 {
-    $codes = DB::table('cmz_promotions')->pluck('code', 'id')->all();
+    $codes = stanStringMap(DB::table('cmz_promotions')->pluck('code', 'id'));
     $describe = static function (Adjustment $a) use ($codes): string {
         $target = $a->target === AdjustmentTarget::Line ? "line:{$a->lineId}" : $a->target->value;
-        $promotion = $a->promotionId === null ? $a->source : $codes[$a->promotionId] ?? '?';
+        $promotion = $a->promotionId === null ? $a->source : ($codes[$a->promotionId] ?? '?');
 
         return trim("{$target} {$a->amount->toDecimal()} {$promotion} {$a->couponCode}");
     };

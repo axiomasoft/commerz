@@ -119,7 +119,7 @@ it('FakePickupPoints filters by country, city, locker flag, and parcel limits', 
         isLocker: false,
     );
 
-    $fakes = (new FakePickupPoints('fake'))->add($smallLocker, $counter);
+    $fakes = new FakePickupPoints('fake')->add($smallLocker, $counter);
 
     $heavy = $fakes->search(new PickupPointQuery(
         context: $context,

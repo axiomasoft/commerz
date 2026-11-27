@@ -5,6 +5,8 @@ declare(strict_types=1);
 // Boots a fresh Laravel 13 application that installed Commerz from composer archives only (no monorepo).
 // CONSUMER_PROFILE=full (all packages) | crm (core + sales, commerz.stock=unlimited).
 
+use Commerz\B2b\B2b;
+use Commerz\B2b\B2bServiceProvider;
 use Commerz\Catalog\Catalog;
 use Commerz\Catalog\CatalogServiceProvider;
 use Commerz\Commerz;
@@ -19,22 +21,39 @@ use Commerz\Sales\Sales;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Shipping\Shipping;
 use Commerz\Shipping\ShippingServiceProvider;
+use Commerz\StoredValue\StoredValue;
+use Commerz\StoredValue\StoredValueServiceProvider;
+use Commerz\Subscriptions\Subscriptions;
+use Commerz\Subscriptions\SubscriptionsServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Data\Plugin\PluginDescription;
 
 $base = __DIR__;
 
 require $base.'/vendor/autoload.php';
 
 $app = require $base.'/bootstrap/app.php';
+if (! $app instanceof Application) {
+    fwrite(STDERR, "smoke: FAIL bootstrap did not return the application\n");
+
+    exit(1);
+}
 $app->make(Kernel::class)->bootstrap();
 
-$profile = getenv('CONSUMER_PROFILE') ?: 'full';
+$profile = getenv('CONSUMER_PROFILE');
+if (! is_string($profile) || $profile === '') {
+    $profile = 'full';
+}
 
 $profiles = [
     'full' => [
         'providers' => [
             'axiomasoft/commerz' => CommerzServiceProvider::class,
+            'axiomasoft/commerz-b2b' => B2bServiceProvider::class,
+            'axiomasoft/commerz-stored-value' => StoredValueServiceProvider::class,
+            'axiomasoft/commerz-subscriptions' => SubscriptionsServiceProvider::class,
             'axiomasoft/commerz-catalog' => CatalogServiceProvider::class,
             'axiomasoft/commerz-inventory' => InventoryServiceProvider::class,
             'axiomasoft/commerz-pricing' => PricingServiceProvider::class,
@@ -42,8 +61,8 @@ $profiles = [
             'axiomasoft/commerz-shipping' => ShippingServiceProvider::class,
             'axiomasoft/commerz-sales' => SalesServiceProvider::class,
         ],
-        'roots' => [Catalog::class, Inventory::class, Pricing::class, Promotions::class, Shipping::class, Sales::class],
-        'plugins' => ['commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping'],
+        'roots' => [B2b::class, Catalog::class, Inventory::class, Pricing::class, Promotions::class, Sales::class, Shipping::class, StoredValue::class, Subscriptions::class],
+        'plugins' => ['commerz.b2b', 'commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping', 'commerz.stored-value', 'commerz.subscriptions'],
     ],
     'crm' => [
         'providers' => [
@@ -54,6 +73,11 @@ $profiles = [
         'plugins' => ['commerz.core', 'commerz.sales'],
     ],
 ];
+
+function smokeResolves(mixed $resolved, string $class): bool
+{
+    return is_object($resolved) && is_a($resolved, $class);
+}
 
 $fail = static function (string $message): never {
     fwrite(STDERR, "smoke: FAIL {$message}\n");
@@ -87,10 +111,19 @@ foreach ($expected['providers'] as $package => $provider) {
 }
 
 // Every package must ship and run its migrations in the isolated consumer.
-$ran = array_flip(DB::table('migrations')->pluck('migration')->all());
+$ran = [];
+foreach (DB::table('migrations')->pluck('migration')->all() as $name) {
+    if (! is_string($name)) {
+        $fail('migration name is not a string');
+    }
+    $ran[$name] = true;
+}
 
 foreach (array_keys($expected['providers']) as $package) {
-    $migrations = glob($base.'/vendor/'.$package.'/database/migrations/*.php') ?: [];
+    $migrations = glob($base.'/vendor/'.$package.'/database/migrations/*.php');
+    if ($migrations === false) {
+        $migrations = [];
+    }
 
     if ($migrations === []) {
         $fail("{$package} ships no migrations");
@@ -103,7 +136,10 @@ foreach (array_keys($expected['providers']) as $package) {
     }
 }
 
-$plugins = array_map(static fn ($plugin) => $plugin->id, $app->make(Commerz::class)->plugins()->describe());
+$plugins = array_map(
+    static fn (PluginDescription $plugin): string => $plugin->id,
+    $app->make(Commerz::class)->plugins()->describe(),
+);
 sort($plugins);
 
 if ($plugins !== $expected['plugins']) {
@@ -111,7 +147,7 @@ if ($plugins !== $expected['plugins']) {
 }
 
 foreach ($expected['roots'] as $root) {
-    if (! $app->make($root) instanceof $root) {
+    if (! smokeResolves($app->make($root), $root)) {
         $fail("{$root} does not resolve");
     }
 }

@@ -158,7 +158,7 @@ final readonly class PaymentCollectionJournal
             ->get()
             ->all();
 
-        return array_values(array_map(static fn (object $row): PaymentSessionRow => PaymentSessionRow::fromRow($row), $rows));
+        return array_values(array_map(PaymentSessionRow::fromRow(...), $rows));
     }
 
     /** @return list<PaymentCaptureRow> */
@@ -171,7 +171,7 @@ final readonly class PaymentCollectionJournal
             ->get()
             ->all();
 
-        return array_values(array_map(static fn (object $row): PaymentCaptureRow => PaymentCaptureRow::fromRow($row), $rows));
+        return array_values(array_map(PaymentCaptureRow::fromRow(...), $rows));
     }
 
     public function succeededCaptureCount(PaymentSessionId $session): int

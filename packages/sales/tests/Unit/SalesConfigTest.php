@@ -18,7 +18,13 @@ it('defaults to the shipped values', function (): void {
 });
 
 it('reads the shipped config file', function (): void {
-    expect(SalesOptions::fromArray(require __DIR__.'/../../config/commerz-sales.php'))->toEqual(SalesOptions::fromArray([]));
+    $shipped = require __DIR__.'/../../config/commerz-sales.php';
+
+    if (! is_array($shipped)) {
+        throw new RuntimeException('Expected the shipped sales config to be an array.');
+    }
+
+    expect(SalesOptions::fromArray($shipped))->toEqual(SalesOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {

@@ -6,11 +6,14 @@ Generated from the `php-api.json` manifests of each package (`composer api:manif
 
 | Package | Composer | Types |
 |---|---|---|
-| [catalog](./catalog.md) | `axiomasoft/commerz-catalog` | 120 |
-| [core](./core.md) | `axiomasoft/commerz` | 143 |
-| [inventory](./inventory.md) | `axiomasoft/commerz-inventory` | 102 |
-| [pricing](./pricing.md) | `axiomasoft/commerz-pricing` | 72 |
-| [promotions](./promotions.md) | `axiomasoft/commerz-promotions` | 73 |
-| [sales](./sales.md) | `axiomasoft/commerz-sales` | 148 |
-| [shipping](./shipping.md) | `axiomasoft/commerz-shipping` | 76 |
-| [testkit](./testkit.md) | `axiomasoft/commerz-testkit` | 11 |
+| [b2b](./b2b.md) | `axiomasoft/commerz-b2b` | 109 |
+| [catalog](./catalog.md) | `axiomasoft/commerz-catalog` | 200 |
+| [core](./core.md) | `axiomasoft/commerz` | 283 |
+| [inventory](./inventory.md) | `axiomasoft/commerz-inventory` | 111 |
+| [pricing](./pricing.md) | `axiomasoft/commerz-pricing` | 109 |
+| [promotions](./promotions.md) | `axiomasoft/commerz-promotions` | 103 |
+| [sales](./sales.md) | `axiomasoft/commerz-sales` | 276 |
+| [shipping](./shipping.md) | `axiomasoft/commerz-shipping` | 91 |
+| [stored-value](./stored-value.md) | `axiomasoft/commerz-stored-value` | 27 |
+| [subscriptions](./subscriptions.md) | `axiomasoft/commerz-subscriptions` | 33 |
+| [testkit](./testkit.md) | `axiomasoft/commerz-testkit` | 22 |

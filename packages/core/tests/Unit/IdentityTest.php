@@ -10,6 +10,7 @@ use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\SellableRef;
 use Commerz\Identity\Uuid7;
 use Commerz\Stores\Data\ChannelId;
+use PHPUnit\Framework\Assert;
 
 afterEach(fn () => Uuid7::reset());
 
@@ -66,13 +67,13 @@ it('builds and parses refs', function (): void {
         ->and($ref->equals(CustomerRef::fromString('user:42')))->toBeTrue()
         ->and($ref->equals(SellableRef::of('user', '42')))->toBeFalse()
         ->and(SellableRef::of('variant', 'x')::class)->toBe(SellableRef::class)
-        ->and(ActorRef::of('system', 'cron'))->toBeInstanceOf(ActorRef::class);
+        ->and(ActorRef::of('system', 'cron')->type)->toBe('system');
 });
 
 it('rejects malformed refs', function (string $type, string $id): void {
     try {
         CustomerRef::of($type, $id);
-        $this->fail('expected InvalidCommand');
+        Assert::fail('expected InvalidCommand');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('identity.invalid_ref');
     }

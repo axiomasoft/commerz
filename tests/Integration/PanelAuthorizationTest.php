@@ -11,7 +11,9 @@ use Commerz\Promotions\Plugins\PromotionsPlugin;
 use Commerz\Sales\Plugins\SalesPlugin;
 use Commerz\Shipping\Plugins\ShippingPlugin;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container as ContainerContract;
 use Packman\Context\Contracts\ContextScopeInterface;
+use Packman\Panels\Contracts\Registry\PanelProvider;
 use Packman\Panels\Data\Panel\PanelContext;
 use Packman\Panels\Data\Panel\PanelReference;
 
@@ -31,6 +33,15 @@ foreach ([
 }
 
 dataset('headless commerce panels', $panels);
+
+function commercePanel(string $provider, ?ContainerContract $container = null): PanelProvider
+{
+    if (! is_a($provider, PanelProvider::class, true)) {
+        throw new RuntimeException($provider.' is not a panel provider.');
+    }
+
+    return (new ReflectionClass($provider))->newInstance($container);
+}
 
 function commercePanelContext(string $kind = 'user'): PanelContext
 {
@@ -53,7 +64,7 @@ it('denies panel access without a container or usable permissions', function (st
             $container->instance(PanelPermissions::class, new stdClass);
         }
 
-        $panel = new $provider($container);
+        $panel = commercePanel($provider, $container);
         $reference = new PanelReference($panel->descriptor()->key, 'resource-1', null);
         foreach (['guest', 'user', 'system'] as $kind) {
             $access = $panel->access(commercePanelContext($kind), $reference);
@@ -82,7 +93,7 @@ it('requires resource and tenant permissions for view and each action', function
         }
     };
     $container->instance(PanelPermissions::class, $permissions);
-    $panel = new $provider($container);
+    $panel = commercePanel($provider, $container);
     $descriptor = $panel->descriptor();
     $reference = new PanelReference($descriptor->key, 'resource-1', null);
     $context = commercePanelContext();

@@ -15,9 +15,11 @@ use Commerz\Sales\Carts\Data\SelectDelivery;
 use Commerz\Sales\Carts\Data\SetCartAddress;
 use Commerz\Sales\Carts\Enums\AddressRole;
 use Commerz\Sales\Facades\Sales;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Testing\PendingCommand;
 
 uses(RefreshDatabase::class);
 
@@ -28,8 +30,12 @@ it('binds every cross-package port to the real implementation', function (): voi
 
 it('binds the same ports and plugins whatever the order of the providers', function (): void {
     $this->bootInReverseOrder();
+    $app = $this->app;
+    if (! $app instanceof Application) {
+        throw new RuntimeException('Application is not booted.');
+    }
 
-    expect(array_values(array_intersect(array_keys($this->app->getLoadedProviders()), EndToEndTestCase::allProviders())))->toBe(array_reverse(EndToEndTestCase::allProviders()))
+    expect(array_values(array_intersect(array_keys($app->getLoadedProviders()), EndToEndTestCase::allProviders())))->toBe(array_reverse(EndToEndTestCase::allProviders()))
         ->and(PortMatrix::resolved())->toBe(PortMatrix::IMPLEMENTATIONS)
         ->and(PortMatrix::sellableTypes())->toBe(['variant'])
         ->and(PortMatrix::stages())->toBe(PortMatrix::STAGES);
@@ -38,8 +44,13 @@ it('binds the same ports and plugins whatever the order of the providers', funct
 it('lists the seven plugins and passes the doctor', function (): void {
     expect(PortMatrix::plugins())->toBe(['commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping']);
 
-    $this->artisan('packman:plugins')->assertSuccessful();
-    $this->artisan('packman:doctor')->assertSuccessful();
+    foreach (['packman:plugins', 'packman:doctor'] as $command) {
+        $pending = $this->artisan($command);
+        if (! $pending instanceof PendingCommand) {
+            throw new RuntimeException("Expected a pending Artisan command for {$command}.");
+        }
+        $pending->assertSuccessful();
+    }
 });
 
 it('runs the quote stages of every package in the declared order', function (): void {

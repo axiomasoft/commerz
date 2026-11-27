@@ -6,10 +6,15 @@ use Commerz\Catalog\Configuration\CatalogOptions;
 use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('defaults and reads max_generated_variants', function (): void {
+    $shipped = require __DIR__.'/../../config/commerz-catalog.php';
+    if (! is_array($shipped)) {
+        throw new RuntimeException('commerz-catalog.php must return an array.');
+    }
+
     expect(CatalogOptions::fromArray([])->maxGeneratedVariants)->toBe(100)
         ->and(CatalogOptions::fromArray(['max_generated_variants' => 1])->maxGeneratedVariants)->toBe(1)
         ->and(CatalogOptions::fromArray(['max_generated_variants' => 10000])->maxGeneratedVariants)->toBe(10000)
-        ->and(CatalogOptions::fromArray(require __DIR__.'/../../config/commerz-catalog.php'))->toEqual(CatalogOptions::fromArray([]));
+        ->and(CatalogOptions::fromArray($shipped))->toEqual(CatalogOptions::fromArray([]));
 });
 
 it('rejects unknown keys under closed schema validation', function (): void {

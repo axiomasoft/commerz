@@ -30,11 +30,12 @@ Root of the inventory API: accessors of the module contracts.
 
 ```php
 final readonly class Inventory {
-    __construct(\Commerz\Inventory\Locations\Contracts\Locations $locations, \Commerz\Inventory\Items\Contracts\StockItems $items, \Commerz\Inventory\Sources\Contracts\StockSources $sources, \Commerz\Inventory\Stock\Contracts\StockLevels $stock, \Commerz\Inventory\Movements\Contracts\Movements $movements, \Commerz\Inventory\Reservations\Contracts\Reservations $reservations, \Commerz\Ports\Stock\Contracts\StockAvailability $availability, \Commerz\Inventory\Transfers\Contracts\Transfers $transfers);
+    __construct(\Commerz\Inventory\Locations\Contracts\Locations $locations, \Commerz\Inventory\Items\Contracts\StockItems $items, \Commerz\Inventory\Sources\Contracts\StockSources $sources, \Commerz\Inventory\Stock\Contracts\StockLevels $stock, \Commerz\Inventory\Movements\Contracts\Movements $movements, \Commerz\Inventory\Reservations\Contracts\Reservations $reservations, \Commerz\Ports\Stock\Contracts\StockAvailability $availability, \Commerz\Inventory\Transfers\Contracts\Transfers $transfers, \Commerz\Inventory\Allocation\Contracts\OrderRouter $orderRouter);
     availability(): \Commerz\Ports\Stock\Contracts\StockAvailability;
     items(): \Commerz\Inventory\Items\Contracts\StockItems;
     locations(): \Commerz\Inventory\Locations\Contracts\Locations;
     movements(): \Commerz\Inventory\Movements\Contracts\Movements;
+    orderRouter(): \Commerz\Inventory\Allocation\Contracts\OrderRouter;
     reservations(): \Commerz\Inventory\Reservations\Contracts\Reservations;
     sources(): \Commerz\Inventory\Sources\Contracts\StockSources;
     stock(): \Commerz\Inventory\Stock\Contracts\StockLevels;
@@ -57,13 +58,22 @@ final class InventoryServiceProvider extends \Commerz\Laravel\CommerzPluginServi
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`AllocationStrategy`](#type-commerz-inventory-allocation-contracts-allocationstrategy) | interface | spi (implement) | 0.1 |
+| [`OrderRouter`](#type-commerz-inventory-allocation-contracts-orderrouter) | interface | api | 0.1 |
 | [`AllocationNeed`](#type-commerz-inventory-allocation-data-allocationneed) | class | api | 0.1 |
 | [`AllocationPlan`](#type-commerz-inventory-allocation-data-allocationplan) | class | api | 0.1 |
 | [`AllocationRequest`](#type-commerz-inventory-allocation-data-allocationrequest) | class | api | 0.1 |
 | [`NeedComponent`](#type-commerz-inventory-allocation-data-needcomponent) | class | api | 0.1 |
+| [`OrderRoutingRequest`](#type-commerz-inventory-allocation-data-orderroutingrequest) | class | api | 0.1 |
+| [`OrderRoutingResult`](#type-commerz-inventory-allocation-data-orderroutingresult) | class | api | 0.1 |
 | [`PlannedAllocation`](#type-commerz-inventory-allocation-data-plannedallocation) | class | api | 0.1 |
 | [`SourceStock`](#type-commerz-inventory-allocation-data-sourcestock) | class | api | 0.1 |
 | [`InvalidAllocationPlan`](#type-commerz-inventory-allocation-exceptions-invalidallocationplan) | class | api | 0.1 |
+| [`OrderRouterPipeline`](#type-commerz-inventory-allocation-orderrouterpipeline) | class | api | 0.1 |
+| [`DailyLocationQuotaRule`](#type-commerz-inventory-allocation-rules-dailylocationquotarule) | class | api | 0.1 |
+| [`FulfillmentConstraintsRule`](#type-commerz-inventory-allocation-rules-fulfillmentconstraintsrule) | class | api | 0.1 |
+| [`GeoProximityRule`](#type-commerz-inventory-allocation-rules-geoproximityrule) | class | api | 0.1 |
+| [`MarketAffinityRule`](#type-commerz-inventory-allocation-rules-marketaffinityrule) | class | api | 0.1 |
+| [`MinimizeSplitShipmentsRule`](#type-commerz-inventory-allocation-rules-minimizesplitshipmentsrule) | class | api | 0.1 |
 
 ### AllocationStrategy {#type-commerz-inventory-allocation-contracts-allocationstrategy}
 
@@ -78,6 +88,18 @@ interface AllocationStrategy {
     // Sellable units of the need this strategy could place from the sources; null when stock does not limit it.
     capacity(\Commerz\Inventory\Allocation\Data\AllocationNeed $need, array $sources): ?int;
     key(): string;
+}
+```
+
+### OrderRouter {#type-commerz-inventory-allocation-contracts-orderrouter}
+
+`Commerz\Inventory\Allocation\Contracts\OrderRouter`
+
+Routes an order's stock needs across candidate locations via a pipeline of {@see OrderRoutingRule}s while enforcing {@see FulfillmentConstraints}.
+
+```php
+interface OrderRouter {
+    route(\Commerz\Inventory\Allocation\Data\OrderRoutingRequest $request): \Commerz\Inventory\Allocation\Data\OrderRoutingResult;
 }
 ```
 
@@ -137,6 +159,39 @@ final readonly class NeedComponent {
 }
 ```
 
+### OrderRoutingRequest {#type-commerz-inventory-allocation-data-orderroutingrequest}
+
+`Commerz\Inventory\Allocation\Data\OrderRoutingRequest`
+
+Input to {@see OrderRouter}: stock allocation demand plus routing context.
+
+```php
+final readonly class OrderRoutingRequest {
+    public readonly \Commerz\Inventory\Allocation\Data\AllocationRequest $allocation;
+    public readonly \Commerz\Ports\Delivery\Data\OrderRoutingContext $context;
+    __construct(\Commerz\Inventory\Allocation\Data\AllocationRequest $allocation, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context = new \Commerz\Ports\Delivery\Data\OrderRoutingContext);
+}
+```
+
+### OrderRoutingResult {#type-commerz-inventory-allocation-data-orderroutingresult}
+
+`Commerz\Inventory\Allocation\Data\OrderRoutingResult`
+
+Outcome of order routing: the validated allocation plan, per-location warehouse assignments, any unplaced sellables, and the ordered keys of routing rules applied.
+
+```php
+final readonly class OrderRoutingResult {
+    public readonly array $appliedRules;
+    public readonly array $assignments;
+    public readonly \Commerz\Inventory\Allocation\Data\AllocationPlan $plan;
+    public readonly array $unplaced;
+    __construct(\Commerz\Inventory\Allocation\Data\AllocationPlan $plan, array $assignments, array $unplaced = [], array $appliedRules = []);
+    isComplete(): bool;
+    isSplit(): bool;
+    locationCount(): int;
+}
+```
+
 ### PlannedAllocation {#type-commerz-inventory-allocation-data-plannedallocation}
 
 `Commerz\Inventory\Allocation\Data\PlannedAllocation`
@@ -182,6 +237,93 @@ final class InvalidAllocationPlan extends \Commerz\Errors\CommerzException imple
     code(): string;
     context(): array;
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### OrderRouterPipeline {#type-commerz-inventory-allocation-orderrouterpipeline}
+
+`Commerz\Inventory\Allocation\OrderRouterPipeline`
+
+Pure, composable order-routing pipeline. Always enforces {@see FulfillmentConstraints} before running configured {@see OrderRoutingRule} stages, validates the resulting {@see AllocationPlan}, and groups allocations into per-location {@see FulfillmentAssignment}s.
+
+```php
+final readonly class OrderRouterPipeline implements \Commerz\Inventory\Allocation\Contracts\OrderRouter {
+    __construct(array $rules = []);
+    // Default pipeline: constraints, daily quota, minimize splits, geo-proximity, and market affinity.
+    static default(): self;
+    route(\Commerz\Inventory\Allocation\Data\OrderRoutingRequest $request): \Commerz\Inventory\Allocation\Data\OrderRoutingResult;
+    rules(): array;
+    withRule(\Commerz\Ports\Delivery\Contracts\OrderRoutingRule $rule): self;
+}
+```
+
+### DailyLocationQuotaRule {#type-commerz-inventory-allocation-rules-dailylocationquotarule}
+
+`Commerz\Inventory\Allocation\Rules\DailyLocationQuotaRule`
+
+Excludes candidate locations that have exhausted their daily fulfillment assignment quota.
+
+```php
+final readonly class DailyLocationQuotaRule implements \Commerz\Ports\Delivery\Contracts\OrderRoutingRule {
+    const KEY = 'daily_location_quota';
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
+}
+```
+
+### FulfillmentConstraintsRule {#type-commerz-inventory-allocation-rules-fulfillmentconstraintsrule}
+
+`Commerz\Inventory\Allocation\Rules\FulfillmentConstraintsRule`
+
+Eliminates candidate locations that do not satisfy {@see FulfillmentConstraints} (cold chain, oversized freight, and required location tags).
+
+```php
+final readonly class FulfillmentConstraintsRule implements \Commerz\Ports\Delivery\Contracts\OrderRoutingRule {
+    const KEY = 'fulfillment_constraints';
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
+}
+```
+
+### GeoProximityRule {#type-commerz-inventory-allocation-rules-geoproximityrule}
+
+`Commerz\Inventory\Allocation\Rules\GeoProximityRule`
+
+Orders candidate locations closest-first to {@see OrderRoutingContext::$destinationCoordinates}. Locations without coordinates follow those with coordinates, preserving relative order on ties.
+
+```php
+final readonly class GeoProximityRule implements \Commerz\Ports\Delivery\Contracts\OrderRoutingRule {
+    const KEY = 'geo_proximity';
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
+}
+```
+
+### MarketAffinityRule {#type-commerz-inventory-allocation-rules-marketaffinityrule}
+
+`Commerz\Inventory\Allocation\Rules\MarketAffinityRule`
+
+Prefers locations that explicitly serve the requested market (or destination country), preserving relative order within in-market and out-of-market groups.
+
+```php
+final readonly class MarketAffinityRule implements \Commerz\Ports\Delivery\Contracts\OrderRoutingRule {
+    const KEY = 'market_affinity';
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
+}
+```
+
+### MinimizeSplitShipmentsRule {#type-commerz-inventory-allocation-rules-minimizesplitshipmentsrule}
+
+`Commerz\Inventory\Allocation\Rules\MinimizeSplitShipmentsRule`
+
+Minimizes split shipments: if any single location can fulfill the entire cart, drops partial candidates so the order is never unnecessarily split; otherwise prefers locations covering the most lines and units.
+
+```php
+final readonly class MinimizeSplitShipmentsRule implements \Commerz\Ports\Delivery\Contracts\OrderRoutingRule {
+    const KEY = 'minimize_split_shipments';
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
 }
 ```
 
@@ -424,11 +566,16 @@ Creates a stock item; its unit is the base unit of every quantity and never chan
 
 ```php
 final readonly class CreateStockItem {
+    public readonly ?string $customsDescription;
+    public readonly ?string $hsCode;
+    public readonly ?string $material;
     public readonly ?string $name;
+    public readonly ?string $originCountryCode;
     public readonly \Commerz\Inventory\Items\Enums\StockPolicy $policy;
     public readonly string $sku;
     public readonly string $unit;
-    __construct(string $sku, ?string $name = null, string $unit = 'pcs', \Commerz\Inventory\Items\Enums\StockPolicy $policy = Commerz\Inventory\Items\Enums\StockPolicy::Tracked);
+    __construct(string $sku, ?string $name = null, string $unit = 'pcs', \Commerz\Inventory\Items\Enums\StockPolicy $policy = Commerz\Inventory\Items\Enums\StockPolicy::Tracked, ?string $hsCode = null, ?string $originCountryCode = null, ?string $material = null, ?string $customsDescription = null);
+    static assertCustoms(?string $hsCode, ?string $originCountryCode, ?string $material, ?string $customsDescription): void;
     static assertName(?string $name): void;
 }
 ```
@@ -507,14 +654,18 @@ final readonly class StockItemId extends \Commerz\Identity\EntityId implements \
 ```php
 final readonly class StockItemView {
     public readonly \DateTimeImmutable $createdAt;
+    public readonly ?string $customsDescription;
+    public readonly ?string $hsCode;
     public readonly \Commerz\Inventory\Items\Data\StockItemId $id;
+    public readonly ?string $material;
     public readonly ?string $name;
+    public readonly ?string $originCountryCode;
     public readonly \Commerz\Inventory\Items\Enums\StockPolicy $policy;
     public readonly string $sku;
     public readonly \Commerz\Inventory\Items\Enums\StockItemStatus $status;
     public readonly string $unit;
     public readonly \DateTimeImmutable $updatedAt;
-    __construct(\Commerz\Inventory\Items\Data\StockItemId $id, string $sku, ?string $name, string $unit, \Commerz\Inventory\Items\Enums\StockPolicy $policy, \Commerz\Inventory\Items\Enums\StockItemStatus $status, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    __construct(\Commerz\Inventory\Items\Data\StockItemId $id, string $sku, ?string $name, string $unit, \Commerz\Inventory\Items\Enums\StockPolicy $policy, \Commerz\Inventory\Items\Enums\StockItemStatus $status, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?string $hsCode = null, ?string $originCountryCode = null, ?string $material = null, ?string $customsDescription = null);
 }
 ```
 
@@ -555,10 +706,14 @@ Renames an item or changes its policy; a field left null stays. The SKU and the 
 
 ```php
 final readonly class UpdateStockItem {
+    public readonly ?string $customsDescription;
+    public readonly ?string $hsCode;
     public readonly \Commerz\Inventory\Items\Data\StockItemId $item;
+    public readonly ?string $material;
     public readonly ?string $name;
+    public readonly ?string $originCountryCode;
     public readonly ?\Commerz\Inventory\Items\Enums\StockPolicy $policy;
-    __construct(\Commerz\Inventory\Items\Data\StockItemId $item, ?string $name = null, ?\Commerz\Inventory\Items\Enums\StockPolicy $policy = null);
+    __construct(\Commerz\Inventory\Items\Data\StockItemId $item, ?string $name = null, ?\Commerz\Inventory\Items\Enums\StockPolicy $policy = null, ?string $hsCode = null, ?string $originCountryCode = null, ?string $material = null, ?string $customsDescription = null);
 }
 ```
 
@@ -1228,10 +1383,11 @@ final class ReservationConflict extends \Commerz\Errors\CommerzException impleme
 
 `Commerz\Inventory\Schema\InventorySchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-inventory`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-inventory`.
 
 ```php
 final readonly class InventorySchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
 }
 ```
@@ -1464,6 +1620,7 @@ enum MovementKind {
     case TransferOut = 'transfer_out';
     case TransferIn = 'transfer_in';
     case Return = 'return';
+    case WriteOff = 'write_off';
 }
 ```
 

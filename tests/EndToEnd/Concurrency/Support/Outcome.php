@@ -37,7 +37,9 @@ final class Outcome
     {
         DB::statement("set deadlock_timeout = '".self::DEADLOCK_TIMEOUT."'");
 
-        if (DB::selectOne('show deadlock_timeout')?->deadlock_timeout !== self::DEADLOCK_TIMEOUT) {
+        /** @var object{deadlock_timeout: string}|null $configured */
+        $configured = DB::selectOne('show deadlock_timeout');
+        if ($configured?->deadlock_timeout !== self::DEADLOCK_TIMEOUT) {
             throw new RuntimeException('deadlock_timeout could not be set for the worker session.');
         }
 
@@ -64,10 +66,13 @@ final class Outcome
         return app(Transactions::class)->run(static function () use ($table, $id, $holdMs): string {
             DB::select("select id from {$table} where id = ? for update", [$id]);
             usleep($holdMs * 1000);
+            /** @var object{n: int|string}|null $waiting */
             $waiting = DB::selectOne('select count(distinct l.pid) as n from pg_locks l join pg_stat_activity a on a.pid = l.pid'
                 .' where not l.granted and a.datname = current_database()');
 
-            return 'gate:'.(int) ($waiting->n ?? 0);
+            $waitingSessions = $waiting === null ? 0 : $waiting->n;
+
+            return 'gate:'.(int) $waitingSessions;
         });
     }
 
@@ -106,7 +111,12 @@ final class Outcome
     {
         DB::select('select pg_stat_clear_snapshot()');
 
-        return (int) DB::selectOne('select deadlocks from pg_stat_database where datname = current_database()')?->deadlocks;
+        /** @var object{deadlocks: int|string}|null $row */
+        $row = DB::selectOne('select deadlocks from pg_stat_database where datname = current_database()');
+
+        $deadlocks = $row === null ? 0 : $row->deadlocks;
+
+        return (int) $deadlocks;
     }
 
     /**

@@ -40,7 +40,21 @@ Runs the same work in N forked processes that start together, each on its own da
 
 ```php
 final class Concurrency {
+    // Asserts a multi-process race settled with zero unexpected errors, zero new PostgreSQL deadlocks (when a baseline count from {@see self::pgDeadlocks()} is provided), and exact expected outcome counts.
+    static assertRaceSettled(array $outcomes, array $expectedCounts, ?int $deadlocksBefore = null, ?string $connection = null): void;
+    // Counts PostgreSQL deadlocks recorded since `$before`, waiting briefly for exited worker backends to flush stats.
+    static deadlocksSince(int $before, ?string $connection = null, int $maxWaitMs = 2000): int;
+    // Reads `pg_stat_database.deadlocks` for the active PostgreSQL test database after clearing the stats snapshot.
+    static pgDeadlocks(?string $connection = null): int;
+    // Runs N forked processes racing on the same operation, mapping expected domain exceptions to outcome labels and surfacing any unexpected exception or PostgreSQL error (e.g. 40P01 deadlock, 55P03 lock timeout) as `error:...`.
+    static race(int $workers, \Closure $work, array $expected = [], int $timeoutSeconds = 60, string $deadlockTimeout = '100ms'): array;
     static run(int $workers, \Closure $work, int $timeoutSeconds = 30): array;
+    // Returns the 5-character SQLSTATE from the first `PDOException` in `$e`'s chain, or null.
+    static sqlState(\Throwable $e): ?string;
+    // Counts outcome labels from a {@see self::race()} run, sorted alphabetically by label.
+    static tally(array $outcomes): array;
+    // Extracts unexpected worker errors (`error:...`) from {@see self::race()} outcomes.
+    static unexpectedErrors(array $outcomes): array;
 }
 ```
 
@@ -81,17 +95,170 @@ trait PluginContractTests {
 }
 ```
 
+## Contracts
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`AssertsCarrierCompliance`](#type-commerz-testkit-contracts-assertscarriercompliance) | trait | api | 0.1 |
+| [`AssertsPaymentProviderCompliance`](#type-commerz-testkit-contracts-assertspaymentprovidercompliance) | trait | api | 0.1 |
+| [`AssertsPickupPointCompliance`](#type-commerz-testkit-contracts-assertspickuppointcompliance) | trait | api | 0.1 |
+| [`AssertsSearchEngineCompliance`](#type-commerz-testkit-contracts-assertssearchenginecompliance) | trait | api | 0.1 |
+| [`AssertsSellableProviderCompliance`](#type-commerz-testkit-contracts-assertssellableprovidercompliance) | trait | api | 0.1 |
+| [`AssertsTaxCalculatorCompliance`](#type-commerz-testkit-contracts-assertstaxcalculatorcompliance) | trait | api | 0.1 |
+
+### AssertsCarrierCompliance {#type-commerz-testkit-contracts-assertscarriercompliance}
+
+`Commerz\Testkit\Contracts\AssertsCarrierCompliance`
+
+Certification contract suite every `Carrier` implementation must pass.
+
+```php
+trait AssertsCarrierCompliance {
+    bookShipmentIsIdempotentByReference(): void;
+    protected abstract carrier(): \Commerz\Shipping\Carriers\Contracts\Carrier;
+    protected carrierCurrency(): \Commerz\Money\Currency;
+    protected carrierFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    carrierKeyIsNonEmptyAndBounded(): void;
+    findUnknownShipmentReturnsNullOrBookedShipment(): void;
+    multiParcelBookingProducesNonEmptyTrackingNumbers(): void;
+    rejectedCarrierBookingCarriesTypedErrorCodeAndHonorsFailurePolicy(): void;
+    protected rejectedCarrierBookings(): array;
+    protected sampleCarrierBooking(string $reference = 'fulfillment:compliance-1'): \Commerz\Shipping\Carriers\Data\CarrierBooking;
+}
+```
+
+### AssertsPaymentProviderCompliance {#type-commerz-testkit-contracts-assertspaymentprovidercompliance}
+
+`Commerz\Testkit\Contracts\AssertsPaymentProviderCompliance`
+
+Certification contract suite every `PaymentGateway` implementation must pass.
+
+```php
+trait AssertsPaymentProviderCompliance {
+    declinedPaymentCarriesTypedErrorCodeAndHonorsFailurePolicy(): void;
+    protected declinedPaymentRequests(): array;
+    findUnknownPaymentReturnsNullOrValidResult(): void;
+    initiatePaymentIsIdempotentByReferenceAndRespectsCurrencyRounding(): void;
+    protected paymentCurrency(): \Commerz\Money\Currency;
+    protected paymentFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    protected abstract paymentGateway(): \Commerz\Sales\Gateways\Contracts\PaymentGateway;
+    paymentGatewayKeyIsNonEmptyAndBounded(): void;
+    refundIsIdempotentByReference(): void;
+}
+```
+
+### AssertsPickupPointCompliance {#type-commerz-testkit-contracts-assertspickuppointcompliance}
+
+`Commerz\Testkit\Contracts\AssertsPickupPointCompliance`
+
+Certification contract suite every `PickupPointProvider` implementation must pass.
+
+```php
+trait AssertsPickupPointCompliance {
+    findKnownPickupPointReturnsMatchingPoint(): void;
+    findUnknownPickupPointReturnsNull(): void;
+    invalidPickupQueryCarriesTypedErrorCodeAndHonorsFailurePolicy(): void;
+    protected knownPickupPointIds(): array;
+    protected pickupPointContext(): \Commerz\Context\CommerceContext;
+    protected pickupPointFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    protected abstract pickupPointProvider(): \Commerz\Ports\Delivery\Contracts\PickupPointProvider;
+    pickupPointProviderKeyIsNonEmptyAndBounded(): void;
+    protected pickupPointQuery(): \Commerz\Ports\Delivery\Data\PickupPointQuery;
+    searchIsIdempotentAndRespectsCountryModeAndLimit(): void;
+}
+```
+
+### AssertsSearchEngineCompliance {#type-commerz-testkit-contracts-assertssearchenginecompliance}
+
+`Commerz\Testkit\Contracts\AssertsSearchEngineCompliance`
+
+Certification contract suite every `CatalogSearchPort` adapter must pass.
+
+```php
+trait AssertsSearchEngineCompliance {
+    protected complianceProductId(): ?\Commerz\Catalog\Products\Data\ProductId;
+    indexingAndRemovingProductsIsIdempotent(): void;
+    invalidSearchInputsThrowTypedErrorCodesAndRespectFailurePolicy(): void;
+    protected invalidSearchQuery(): ?\Commerz\Catalog\Search\Data\CatalogSearchQuery;
+    protected abstract searchEngine(): \Commerz\Catalog\Search\Contracts\CatalogSearchPort;
+    protected searchFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    searchReturnsDeterministicAndBoundedResult(): void;
+}
+```
+
+### AssertsSellableProviderCompliance {#type-commerz-testkit-contracts-assertssellableprovidercompliance}
+
+`Commerz\Testkit\Contracts\AssertsSellableProviderCompliance`
+
+Certification contract suite every `SellableProvider` implementation must pass.
+
+```php
+trait AssertsSellableProviderCompliance {
+    invalidSellableRefCarriesTypedErrorCodeAndHonorsFailurePolicy(): void;
+    protected knownSellableRefs(): array;
+    resolveEmptyRefsReturnsEmptyArray(): void;
+    resolveKnownRefsIsIdempotentAndKeyedByRefString(): void;
+    resolveUnknownRefOmitsItWithoutThrowing(): void;
+    protected sellableContext(): \Commerz\Context\CommerceContext;
+    protected sellableFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    protected abstract sellableProvider(): \Commerz\Ports\Sellables\Contracts\SellableProvider;
+    sellableProviderKeyIsNonEmptyAndBounded(): void;
+}
+```
+
+### AssertsTaxCalculatorCompliance {#type-commerz-testkit-contracts-assertstaxcalculatorcompliance}
+
+`Commerz\Testkit\Contracts\AssertsTaxCalculatorCompliance`
+
+Certification contract suite every `TaxCalculator` implementation must pass.
+
+```php
+trait AssertsTaxCalculatorCompliance {
+    calculateHonorsTaxExemptionAndReverseCharge(): void;
+    calculateIsDeterministicAndPreservesCurrencyAndRoundingInvariants(): void;
+    protected abstract taxCalculator(): \Commerz\Pricing\Calculation\Contracts\TaxCalculator;
+    taxCalculatorKeyIsNonEmptyAndBounded(): void;
+    protected taxContext(): \Commerz\Context\CommerceContext;
+    protected taxFailurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    protected taxableRequest(?\Commerz\Context\CommerceContext $context = null): \Commerz\Pricing\Calculation\Data\TaxRequest;
+    protected unresolvableTaxRequests(): array;
+    unresolvableTaxThrowsTypedErrorCodeAndHonorsFailurePolicy(): void;
+}
+```
+
 ## Fakes
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`FakeAssetResolver`](#type-commerz-testkit-fakes-fakeassetresolver) | class | api | 0.1 |
 | [`FakeCustomers`](#type-commerz-testkit-fakes-fakecustomers) | class | api | 0.1 |
 | [`FakeDelivery`](#type-commerz-testkit-fakes-fakedelivery) | class | api | 0.1 |
+| [`FakePickupPoints`](#type-commerz-testkit-fakes-fakepickuppoints) | class | api | 0.1 |
 | [`FakePrices`](#type-commerz-testkit-fakes-fakeprices) | class | api | 0.1 |
 | [`FakePromotionUsage`](#type-commerz-testkit-fakes-fakepromotionusage) | class | api | 0.1 |
+| [`FakeSearchEngine`](#type-commerz-testkit-fakes-fakesearchengine) | class | api | 0.1 |
 | [`FakeSellableRouter`](#type-commerz-testkit-fakes-fakesellablerouter) | class | api | 0.1 |
 | [`FakeSellables`](#type-commerz-testkit-fakes-fakesellables) | class | api | 0.1 |
 | [`FakeStock`](#type-commerz-testkit-fakes-fakestock) | class | api | 0.1 |
+| [`FakeStoredValue`](#type-commerz-testkit-fakes-fakestoredvalue) | class | api | 0.1 |
+| [`FrozenClock`](#type-commerz-testkit-fakes-frozenclock) | class | api | 0.1 |
+
+### FakeAssetResolver {#type-commerz-testkit-fakes-fakeassetresolver}
+
+`Commerz\Testkit\Fakes\FakeAssetResolver`
+
+In-memory `AssetResolverPort` for storefront/admin media resolution and signed URL tests.
+
+```php
+final class FakeAssetResolver implements \Commerz\Ports\Assets\Contracts\AssetResolverPort {
+    add(\Commerz\Ports\Assets\Data\ResolvedAsset ...$assets): self;
+    forget(\Commerz\Ports\Assets\Data\AssetRef $asset): self;
+    markProtected(\Commerz\Ports\Assets\Data\AssetRef $asset, bool $protected = true): self;
+    resolve(\Commerz\Ports\Assets\Data\AssetRef $asset, ?string $variant = null): ?\Commerz\Ports\Assets\Data\ResolvedAsset;
+    resolveMany(array $assets, ?string $variant = null): array;
+    signedUrl(\Commerz\Ports\Assets\Data\AssetRef $asset, \DateTimeImmutable $expiresAt, ?string $variant = null): ?string;
+}
+```
 
 ### FakeCustomers {#type-commerz-testkit-fakes-fakecustomers}
 
@@ -117,6 +284,24 @@ final class FakeDelivery implements \Commerz\Ports\Delivery\Contracts\DeliveryOp
     book(\Commerz\Ports\Delivery\Data\BookShipment $command): \Commerz\Ports\Delivery\Data\BookedShipment;
     offer(\Commerz\Ports\Delivery\Data\DeliveryOption ...$options): self;
     options(\Commerz\Ports\Delivery\Data\DeliveryRequest $request): array;
+}
+```
+
+### FakePickupPoints {#type-commerz-testkit-fakes-fakepickuppoints}
+
+`Commerz\Testkit\Fakes\FakePickupPoints`
+
+In-memory `PickupPointProvider` supporting country, city, postal prefix, radius, mode, locker, and parcel limit filtering.
+
+```php
+final class FakePickupPoints implements \Commerz\Ports\Delivery\Contracts\PickupPointProvider {
+    public private(set) array $lookups = [];
+    public private(set) array $queries = [];
+    __construct(string $key = 'fake');
+    add(\Commerz\Ports\Delivery\Data\PickupPoint ...$points): self;
+    find(string $pointId, \Commerz\Context\CommerceContext $context): ?\Commerz\Ports\Delivery\Data\PickupPoint;
+    key(): string;
+    search(\Commerz\Ports\Delivery\Data\PickupPointQuery $query): array;
 }
 ```
 
@@ -150,6 +335,24 @@ final class FakePromotionUsage implements \Commerz\Ports\Promotions\Contracts\Pr
     limit(string $promotionId, int $total): self;
     restore(\Commerz\Ports\Promotions\Data\RestorePromotionUsage $command): void;
     uses(string $promotionId): int;
+}
+```
+
+### FakeSearchEngine {#type-commerz-testkit-fakes-fakesearchengine}
+
+`Commerz\Testkit\Fakes\FakeSearchEngine`
+
+In-memory `CatalogSearchPort` for catalog search tests and adapter certification.
+
+```php
+final class FakeSearchEngine implements \Commerz\Catalog\Search\Contracts\CatalogSearchPort {
+    public private(set) array $indexedIds = [];
+    public private(set) array $queries = [];
+    public private(set) array $removedIds = [];
+    add(\Commerz\Catalog\Products\Data\ProductView ...$products): self;
+    indexProducts(array $productIds): void;
+    removeProducts(array $productIds): void;
+    search(\Commerz\Catalog\Search\Data\CatalogSearchQuery $query): \Commerz\Catalog\Search\Data\CatalogSearchResult;
 }
 ```
 
@@ -199,6 +402,7 @@ final class FakeStock implements \Commerz\Ports\Stock\Contracts\StockAvailabilit
     public private(set) array $released = [];
     public private(set) array $reserved = [];
     public private(set) array $restocked = [];
+    public private(set) array $writtenOff = [];
     // Units free to reserve; null when unlimited.
     available(\Commerz\Identity\SellableRef $sellable): ?int;
     check(\Commerz\Ports\Stock\Data\CheckAvailability $query): \Commerz\Ports\Stock\Data\AvailabilityAnswer;
@@ -209,5 +413,42 @@ final class FakeStock implements \Commerz\Ports\Stock\Contracts\StockAvailabilit
     release(\Commerz\Ports\Stock\Data\ReleaseReservation $command): void;
     reserve(\Commerz\Ports\Stock\Data\ReserveStock $command): \Commerz\Ports\Stock\Data\ReservationResult;
     restock(\Commerz\Ports\Stock\Data\RestockStock $command): void;
+    writeOff(\Commerz\Ports\Stock\Data\WriteOffStock $command): void;
+}
+```
+
+### FakeStoredValue {#type-commerz-testkit-fakes-fakestoredvalue}
+
+`Commerz\Testkit\Fakes\FakeStoredValue`
+
+In-memory `StoredValueTender` enforcing `balance - held >= 0` (INV-SV-001) and idempotent ledger operations.
+
+```php
+final class FakeStoredValue implements \Commerz\Ports\StoredValue\Contracts\StoredValueTender {
+    applyToQuote(\Commerz\Quotes\Data\QuoteResult $quote, array $tenders): \Commerz\Ports\StoredValue\Data\TenderSettlement;
+    balanceOf(string $accountId): \Commerz\Money\Money;
+    capture(\Commerz\Ports\StoredValue\Data\CaptureStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueCapture;
+    freeze(string $accountId, string $reason = 'frozen'): self;
+    heldOf(string $accountId): \Commerz\Money\Money;
+    hold(\Commerz\Ports\StoredValue\Data\HoldStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueHold;
+    refundCredit(\Commerz\Ports\StoredValue\Data\RefundToStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueCredit;
+    release(\Commerz\Ports\StoredValue\Data\ReleaseStoredValue $command): void;
+    seed(string $accountId, \Commerz\Money\Money $balance, \Commerz\Ports\StoredValue\Enums\StoredValueKind $kind = Commerz\Ports\StoredValue\Enums\StoredValueKind::GiftCard, ?\Commerz\Identity\CustomerRef $customer = null, ?string $giftCardCode = null): self;
+    unfreeze(string $accountId): self;
+}
+```
+
+### FrozenClock {#type-commerz-testkit-fakes-frozenclock}
+
+`Commerz\Testkit\Fakes\FrozenClock`
+
+Deterministic UTC clock for tests; freeze at a known instant and advance explicitly.
+
+```php
+final class FrozenClock implements \Commerz\Time\Contracts\Clock {
+    __construct(\DateTimeImmutable|string $now = '2026-01-01T00:00:00+00:00');
+    advance(\DateInterval|string $interval): self;
+    now(): \DateTimeImmutable;
+    set(\DateTimeImmutable|string $now): self;
 }
 ```

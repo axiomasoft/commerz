@@ -189,7 +189,8 @@ final readonly class CampaignBudgetLedger
         $spent = 0;
 
         if (Rows::nullableInt($campaign, 'spend_cap_minor') !== null) {
-            $sumRow = (clone $consumed)->selectRaw('coalesce(sum(u.discount_minor), 0) as total')->first();
+            // SUM(bigint) returns numeric on PostgreSQL. Read the total in the same integer type as the counter.
+            $sumRow = (clone $consumed)->selectRaw('cast(coalesce(sum(u.discount_minor), 0) as bigint) as total')->first();
             $spent = $sumRow === null ? 0 : Rows::int($sumRow, 'total');
         }
 

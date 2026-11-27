@@ -27,7 +27,7 @@ final readonly class CreateCollection
 
     public static function manual(string $code, LocalizedText $name, ?LocalizedText $description = null): self
     {
-        return new self($code, $name, $description, null);
+        return new self($code, $name, $description);
     }
 
     public static function smart(string $code, LocalizedText $name, SmartCollection $smart, ?LocalizedText $description = null): self

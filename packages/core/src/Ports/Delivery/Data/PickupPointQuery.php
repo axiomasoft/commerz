@@ -13,9 +13,6 @@ use Packman\Attributes\Api;
 #[Api(since: '0.1')]
 final readonly class PickupPointQuery
 {
-    /** @var list<Parcel> */
-    public array $items;
-
     /**
      * @param  list<Parcel>  $items  optional per-item parcels to reject oversized items for small lockers
      */
@@ -27,7 +24,7 @@ final readonly class PickupPointQuery
         public ?Coordinates $near = null,
         public ?int $radiusMeters = null,
         public ?Parcel $parcel = null,
-        array $items = [],
+        public array $items = [],
         public ?DeliveryMode $mode = null,
         public ?string $provider = null,
         public bool $onlyLockers = false,
@@ -56,7 +53,5 @@ final readonly class PickupPointQuery
         if ($limit < 1 || $limit > 500) {
             throw new InvalidCommand('limit', 'must be between 1 and 500', 'delivery.invalid_pickup_query');
         }
-
-        $this->items = $items;
     }
 }

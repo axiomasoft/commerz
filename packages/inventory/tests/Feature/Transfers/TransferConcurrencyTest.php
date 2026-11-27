@@ -12,6 +12,7 @@ use Commerz\Inventory\Transfers\Exceptions\InvalidTransferState;
 use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -19,10 +20,10 @@ require_once __DIR__.'/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {

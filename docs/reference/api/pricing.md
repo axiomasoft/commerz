@@ -12,7 +12,7 @@ Public PHP surface of `packages/pricing` as recorded in `packages/pricing/resour
 | kinds | `tax_calculator` |
 | plugin | `commerz.pricing` |
 | providers | `Commerz\Pricing\PricingServiceProvider` |
-| tables | `price`, `tax` |
+| tables | `price`, `staged_price`, `tax`, `market` |
 
 ## (root)
 
@@ -29,9 +29,11 @@ Root of the pricing API: accessors of the module contracts.
 
 ```php
 final readonly class Pricing {
-    __construct(\Commerz\Pricing\PriceLists\Contracts\PriceLists $priceLists, \Commerz\Pricing\Prices\Contracts\Prices $prices, \Commerz\Pricing\Taxes\Contracts\Taxes $taxes);
+    __construct(\Commerz\Pricing\PriceLists\Contracts\PriceLists $priceLists, \Commerz\Pricing\Prices\Contracts\Prices $prices, \Commerz\Pricing\Taxes\Contracts\Taxes $taxes, \Commerz\Pricing\Markets\Contracts\Markets $markets, \Commerz\Pricing\Prices\Contracts\StagedPrices $stagedPrices);
+    markets(): \Commerz\Pricing\Markets\Contracts\Markets;
     priceLists(): \Commerz\Pricing\PriceLists\Contracts\PriceLists;
     prices(): \Commerz\Pricing\Prices\Contracts\Prices;
+    stagedPrices(): \Commerz\Pricing\Prices\Contracts\StagedPrices;
     taxes(): \Commerz\Pricing\Taxes\Contracts\Taxes;
 }
 ```
@@ -42,7 +44,7 @@ final readonly class Pricing {
 
 ```php
 final class PricingServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
-    const NOUNS = ['price', 'tax'];
+    const NOUNS = ['price', 'staged_price', 'tax', 'market'];
 }
 ```
 
@@ -96,14 +98,19 @@ final readonly class TaxAmount {
 
 `Commerz\Pricing\Calculation\Data\TaxRequest`
 
-What a tax calculator is asked: the items of one quote, in the quote's currency.
+What a tax calculator is asked: the items of one quote, in the quote's currency, plus optional B2B VAT / tax exemption claims.
 
 ```php
 final readonly class TaxRequest {
+    public readonly ?\Commerz\Pricing\Taxes\Data\VatRegistration $buyerVat;
     public readonly \Commerz\Context\CommerceContext $context;
     public readonly ?\Commerz\Ports\Delivery\Data\Address $destination;
+    public readonly ?\Commerz\Ports\Taxes\Data\TaxExemption $exemption;
     public readonly array $items;
-    __construct(\Commerz\Context\CommerceContext $context, ?\Commerz\Ports\Delivery\Data\Address $destination, array $items);
+    public readonly ?string $sellerCountry;
+    __construct(\Commerz\Context\CommerceContext $context, ?\Commerz\Ports\Delivery\Data\Address $destination, array $items, ?\Commerz\Ports\Taxes\Data\TaxExemption $exemption = null, ?\Commerz\Pricing\Taxes\Data\VatRegistration $buyerVat = null, ?string $sellerCountry = null);
+    isReverseCharge(): bool;
+    isTaxExempt(): bool;
 }
 ```
 
@@ -116,7 +123,10 @@ What a tax calculator answers. An empty result means nothing is taxed.
 ```php
 final readonly class TaxResult {
     public readonly array $amounts;
-    __construct(array $amounts);
+    public readonly bool $exempt;
+    public readonly ?string $exemptionReason;
+    public readonly bool $reverseCharge;
+    __construct(array $amounts, bool $reverseCharge = false, bool $exempt = false, ?string $exemptionReason = null);
 }
 ```
 
@@ -271,22 +281,34 @@ enum PricingErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case InvalidChannels = 'pricing.invalid_channels';
     case InvalidCode = 'pricing.invalid_code';
     case InvalidCompareAt = 'pricing.invalid_compare_at';
+    case InvalidCountries = 'pricing.invalid_countries';
+    case InvalidCurrencies = 'pricing.invalid_currencies';
+    case InvalidFormula = 'pricing.invalid_formula';
     case InvalidGroup = 'pricing.invalid_group';
     case InvalidMember = 'pricing.invalid_member';
     case InvalidName = 'pricing.invalid_name';
     case InvalidPriority = 'pricing.invalid_priority';
     case InvalidQuantity = 'pricing.invalid_quantity';
     case InvalidRate = 'pricing.invalid_rate';
+    case InvalidRoundingRule = 'pricing.invalid_rounding_rule';
     case InvalidTaxAmount = 'pricing.invalid_tax_amount';
     case InvalidTaxCode = 'pricing.invalid_tax_code';
+    case InvalidTaxExemption = 'pricing.invalid_tax_exemption';
     case InvalidTaxItem = 'pricing.invalid_tax_item';
     case InvalidTaxRequest = 'pricing.invalid_tax_request';
     case InvalidTaxResult = 'pricing.invalid_tax_result';
+    case InvalidVatNumber = 'pricing.invalid_vat_number';
     case InvalidWindow = 'pricing.invalid_window';
+    case MarketArchived = 'pricing.market_archived';
+    case MarketCountryTaken = 'pricing.market_country_taken';
+    case MarketNotFound = 'pricing.market_not_found';
     case PriceListArchived = 'pricing.price_list_archived';
+    case PriceListCycle = 'pricing.price_list_cycle';
     case PriceListNotFound = 'pricing.price_list_not_found';
     case PriceNotFound = 'pricing.price_not_found';
     case PriceWindowOverlap = 'pricing.price_window_overlap';
+    case StagedPriceNotFound = 'pricing.staged_price_not_found';
+    case StagedPriceStateConflict = 'pricing.staged_price_state_conflict';
     case TaxClassNotFound = 'pricing.tax_class_not_found';
     case TaxRateNotFound = 'pricing.tax_rate_not_found';
     case TaxRateOverlap = 'pricing.tax_rate_overlap';
@@ -339,6 +361,235 @@ Wires Commerz pricing services, extension plugin, options, schema ownership, dia
 final class PricingRegistrar implements \Packman\Foundation\Contracts\PackageRegistrar {
     boot(\Illuminate\Contracts\Foundation\Application $app): void;
     register(\Illuminate\Contracts\Foundation\Application $app): void;
+}
+```
+
+## Markets
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Markets`](#type-commerz-pricing-markets-contracts-markets) | interface | api | 0.1 |
+| [`ArchiveMarket`](#type-commerz-pricing-markets-data-archivemarket) | class | api | 0.1 |
+| [`CreateMarket`](#type-commerz-pricing-markets-data-createmarket) | class | api | 0.1 |
+| [`ListMarkets`](#type-commerz-pricing-markets-data-listmarkets) | class | api | 0.1 |
+| [`MarketId`](#type-commerz-pricing-markets-data-marketid) | class | api | 0.1 |
+| [`MarketView`](#type-commerz-pricing-markets-data-marketview) | class | api | 0.1 |
+| [`RestoreMarket`](#type-commerz-pricing-markets-data-restoremarket) | class | api | 0.1 |
+| [`SetMarketCountries`](#type-commerz-pricing-markets-data-setmarketcountries) | class | api | 0.1 |
+| [`UpdateMarket`](#type-commerz-pricing-markets-data-updatemarket) | class | api | 0.1 |
+| [`MarketStatus`](#type-commerz-pricing-markets-enums-marketstatus) | enum | api | 0.1 |
+| [`MarketChanged`](#type-commerz-pricing-markets-events-marketchanged) | class | api | 0.1 |
+| [`MarketArchived`](#type-commerz-pricing-markets-exceptions-marketarchived) | class | api | 0.1 |
+| [`MarketCountryTaken`](#type-commerz-pricing-markets-exceptions-marketcountrytaken) | class | api | 0.1 |
+| [`MarketNotFound`](#type-commerz-pricing-markets-exceptions-marketnotfound) | class | api | 0.1 |
+
+### Markets {#type-commerz-pricing-markets-contracts-markets}
+
+`Commerz\Pricing\Markets\Contracts\Markets`
+
+Regional markets: countries, currencies, tax inclusion, and default price list linked to a channel.
+
+```php
+interface Markets {
+    archive(\Commerz\Pricing\Markets\Data\ArchiveMarket $command): \Commerz\Pricing\Markets\Data\MarketView;
+    create(\Commerz\Pricing\Markets\Data\CreateMarket $command): \Commerz\Pricing\Markets\Data\MarketView;
+    find(\Commerz\Pricing\Markets\Data\MarketId $id): \Commerz\Pricing\Markets\Data\MarketView;
+    findByCode(string $code): \Commerz\Pricing\Markets\Data\MarketView;
+    list(\Commerz\Pricing\Markets\Data\ListMarkets $query): \Commerz\Pagination\Page;
+    // Resolves the active market serving `$country` (ISO-2) in `$channel`, or null when unmapped.
+    resolveForCountry(\Commerz\Stores\Data\ChannelId $channel, string $country): ?\Commerz\Pricing\Markets\Data\MarketView;
+    restore(\Commerz\Pricing\Markets\Data\RestoreMarket $command): \Commerz\Pricing\Markets\Data\MarketView;
+    setCountries(\Commerz\Pricing\Markets\Data\SetMarketCountries $command): \Commerz\Pricing\Markets\Data\MarketView;
+    update(\Commerz\Pricing\Markets\Data\UpdateMarket $command): \Commerz\Pricing\Markets\Data\MarketView;
+}
+```
+
+### ArchiveMarket {#type-commerz-pricing-markets-data-archivemarket}
+
+`Commerz\Pricing\Markets\Data\ArchiveMarket`
+
+```php
+final readonly class ArchiveMarket {
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $market;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $market);
+}
+```
+
+### CreateMarket {#type-commerz-pricing-markets-data-createmarket}
+
+`Commerz\Pricing\Markets\Data\CreateMarket`
+
+Defines a regional market linked to a channel with its countries, currencies, tax inclusion, and default price list.
+
+```php
+final readonly class CreateMarket {
+    public readonly array $allowedCurrencies;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly string $code;
+    public readonly array $countries;
+    public readonly \Commerz\Money\Currency $defaultCurrency;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId;
+    public readonly string $name;
+    public readonly bool $taxIncluded;
+    __construct(string $code, string $name, \Commerz\Stores\Data\ChannelId $channel, array $countries, \Commerz\Money\Currency $defaultCurrency, array $allowedCurrencies = [], bool $taxIncluded = false, ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId = null);
+    static normalizeCountries(array $countries): array;
+    static normalizeCurrencies(\Commerz\Money\Currency $defaultCurrency, array $currencies): array;
+}
+```
+
+### ListMarkets {#type-commerz-pricing-markets-data-listmarkets}
+
+`Commerz\Pricing\Markets\Data\ListMarkets`
+
+```php
+final readonly class ListMarkets {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly ?\Commerz\Stores\Data\ChannelId $channel;
+    public readonly ?string $country;
+    public readonly int $first;
+    public readonly ?\Commerz\Pricing\Markets\Enums\MarketStatus $status;
+    __construct(?\Commerz\Pricing\Markets\Enums\MarketStatus $status = null, ?\Commerz\Stores\Data\ChannelId $channel = null, ?string $country = null, int $first = 100, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### MarketId {#type-commerz-pricing-markets-data-marketid}
+
+`Commerz\Pricing\Markets\Data\MarketId`
+
+```php
+final readonly class MarketId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### MarketView {#type-commerz-pricing-markets-data-marketview}
+
+`Commerz\Pricing\Markets\Data\MarketView`
+
+```php
+final readonly class MarketView {
+    public readonly array $allowedCurrencies;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly string $code;
+    public readonly array $countries;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly \Commerz\Money\Currency $defaultCurrency;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId;
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $id;
+    public readonly string $name;
+    public readonly \Commerz\Pricing\Markets\Enums\MarketStatus $status;
+    public readonly bool $taxIncluded;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $id, string $code, string $name, \Commerz\Stores\Data\ChannelId $channel, array $countries, \Commerz\Money\Currency $defaultCurrency, array $allowedCurrencies, bool $taxIncluded, ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId, \Commerz\Pricing\Markets\Enums\MarketStatus $status, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    allowsCurrency(\Commerz\Money\Currency $currency): bool;
+    servesCountry(string $country): bool;
+}
+```
+
+### RestoreMarket {#type-commerz-pricing-markets-data-restoremarket}
+
+`Commerz\Pricing\Markets\Data\RestoreMarket`
+
+```php
+final readonly class RestoreMarket {
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $market;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $market);
+}
+```
+
+### SetMarketCountries {#type-commerz-pricing-markets-data-setmarketcountries}
+
+`Commerz\Pricing\Markets\Data\SetMarketCountries`
+
+Replaces the countries served by a market.
+
+```php
+final readonly class SetMarketCountries {
+    public readonly array $countries;
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $market;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $market, array $countries);
+}
+```
+
+### UpdateMarket {#type-commerz-pricing-markets-data-updatemarket}
+
+`Commerz\Pricing\Markets\Data\UpdateMarket`
+
+Updates mutable attributes of a market; fields left null stay unchanged unless `$clearDefaultPriceList` is true.
+
+```php
+final readonly class UpdateMarket {
+    public readonly ?array $allowedCurrencies;
+    public readonly bool $clearDefaultPriceList;
+    public readonly ?\Commerz\Money\Currency $defaultCurrency;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId;
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $market;
+    public readonly ?string $name;
+    public readonly ?bool $taxIncluded;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $market, ?string $name = null, ?\Commerz\Money\Currency $defaultCurrency = null, ?array $allowedCurrencies = null, ?bool $taxIncluded = null, ?\Commerz\Pricing\PriceLists\Data\PriceListId $defaultPriceListId = null, bool $clearDefaultPriceList = false);
+}
+```
+
+### MarketStatus {#type-commerz-pricing-markets-enums-marketstatus}
+
+`Commerz\Pricing\Markets\Enums\MarketStatus`
+
+```php
+enum MarketStatus {
+    case Active = 'active';
+    case Archived = 'archived';
+}
+```
+
+### MarketChanged {#type-commerz-pricing-markets-events-marketchanged}
+
+`Commerz\Pricing\Markets\Events\MarketChanged`
+
+```php
+final readonly class MarketChanged {
+    public readonly \Commerz\Pricing\Markets\Data\MarketId $market;
+    __construct(\Commerz\Pricing\Markets\Data\MarketId $market);
+}
+```
+
+### MarketArchived {#type-commerz-pricing-markets-exceptions-marketarchived}
+
+`Commerz\Pricing\Markets\Exceptions\MarketArchived`
+
+```php
+final class MarketArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $market;
+    __construct(string $market);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### MarketCountryTaken {#type-commerz-pricing-markets-exceptions-marketcountrytaken}
+
+`Commerz\Pricing\Markets\Exceptions\MarketCountryTaken`
+
+```php
+final class MarketCountryTaken extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $channel;
+    public readonly string $country;
+    public readonly ?string $otherMarket;
+    __construct(string $channel, string $country, ?string $otherMarket);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### MarketNotFound {#type-commerz-pricing-markets-exceptions-marketnotfound}
+
+`Commerz\Pricing\Markets\Exceptions\MarketNotFound`
+
+```php
+final class MarketNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -433,15 +684,20 @@ final class PricingPlugin implements \Packman\Extensions\Contracts\Composition\W
 | [`AssignPriceListChannels`](#type-commerz-pricing-pricelists-data-assignpricelistchannels) | class | api | 0.1 |
 | [`CreatePriceList`](#type-commerz-pricing-pricelists-data-createpricelist) | class | api | 0.1 |
 | [`ListPriceLists`](#type-commerz-pricing-pricelists-data-listpricelists) | class | api | 0.1 |
+| [`PriceListFormula`](#type-commerz-pricing-pricelists-data-pricelistformula) | class | api | 0.1 |
 | [`PriceListId`](#type-commerz-pricing-pricelists-data-pricelistid) | class | api | 0.1 |
 | [`PriceListView`](#type-commerz-pricing-pricelists-data-pricelistview) | class | api | 0.1 |
 | [`RestorePriceList`](#type-commerz-pricing-pricelists-data-restorepricelist) | class | api | 0.1 |
+| [`RoundingRule`](#type-commerz-pricing-pricelists-data-roundingrule) | class | api | 0.1 |
 | [`UnassignPriceListChannels`](#type-commerz-pricing-pricelists-data-unassignpricelistchannels) | class | api | 0.1 |
 | [`UpdatePriceList`](#type-commerz-pricing-pricelists-data-updatepricelist) | class | api | 0.1 |
+| [`FormulaKind`](#type-commerz-pricing-pricelists-enums-formulakind) | enum | api | 0.1 |
 | [`PriceListStatus`](#type-commerz-pricing-pricelists-enums-priceliststatus) | enum | api | 0.1 |
+| [`RoundingStrategy`](#type-commerz-pricing-pricelists-enums-roundingstrategy) | enum | api | 0.1 |
 | [`TaxInclusion`](#type-commerz-pricing-pricelists-enums-taxinclusion) | enum | api | 0.1 |
 | [`PriceListChanged`](#type-commerz-pricing-pricelists-events-pricelistchanged) | class | api | 0.1 |
 | [`PriceListArchived`](#type-commerz-pricing-pricelists-exceptions-pricelistarchived) | class | api | 0.1 |
+| [`PriceListCycleDetected`](#type-commerz-pricing-pricelists-exceptions-pricelistcycledetected) | class | api | 0.1 |
 | [`PriceListNotFound`](#type-commerz-pricing-pricelists-exceptions-pricelistnotfound) | class | api | 0.1 |
 
 ### PriceLists {#type-commerz-pricing-pricelists-contracts-pricelists}
@@ -501,10 +757,13 @@ final readonly class CreatePriceList {
     public readonly array $channels;
     public readonly string $code;
     public readonly \Commerz\Money\Currency $currency;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula;
     public readonly string $name;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId;
     public readonly int $priority;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule;
     public readonly \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion;
-    __construct(string $code, string $name, \Commerz\Money\Currency $currency, array $channels = [], int $priority = 0, \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion = Commerz\Pricing\PriceLists\Enums\TaxInclusion::AsChannel);
+    __construct(string $code, string $name, \Commerz\Money\Currency $currency, array $channels = [], int $priority = 0, \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion = Commerz\Pricing\PriceLists\Enums\TaxInclusion::AsChannel, ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId = null, ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula = null, ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule = null);
     static assertName(string $name): void;
     static assertPriority(int $priority): void;
 }
@@ -527,6 +786,36 @@ final readonly class ListPriceLists {
 }
 ```
 
+### PriceListFormula {#type-commerz-pricing-pricelists-data-pricelistformula}
+
+`Commerz\Pricing\PriceLists\Data\PriceListFormula`
+
+Deterministic price derivation formula from a parent price list (`margin_percent`, `fixed_delta`, or `fx_rate_with_spread`). Uses exact `int` basis points / minor units and `brick/math` `BigRational` — zero floats.
+
+```php
+final readonly class PriceListFormula {
+    public readonly ?int $deltaMinor;
+    public readonly ?string $fxRate;
+    public readonly \Commerz\Pricing\PriceLists\Enums\FormulaKind $kind;
+    public readonly ?int $marginBp;
+    public readonly \Commerz\Money\RoundingMode $rounding;
+    public readonly int $spreadBp;
+    __construct(\Commerz\Pricing\PriceLists\Enums\FormulaKind $kind, ?int $marginBp = null, ?int $deltaMinor = null, ?string $fxRate = null, int $spreadBp = 0, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp);
+    assertCurrenciesCompatible(\Commerz\Money\Currency $parentCurrency, \Commerz\Money\Currency $childCurrency): void;
+    evaluate(\Commerz\Money\Money $parentAmount, \Commerz\Money\Currency $targetCurrency, ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule = null): \Commerz\Money\Money;
+    // Signed minor-unit adjustment in the price list currency, e.g. `500` (`+5.00`) or `-300` (`-3.00`).
+    static fixedDelta(int $deltaMinor): self;
+    static fromArray(array $data): self;
+    // Foreign-exchange conversion with a positive decimal rate string (units of target currency per 1 major unit of parent currency) and signed/non-negative spread in basis points (e.g. `150` = `+1.50%`).
+    static fxRateWithSpread(string $fxRate, int $spreadBp = 0, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): self;
+    // Signed basis-point markup or markdown, e.g. `2000` (`+20%`) or `-1500` (`-15%`).
+    static marginPercent(int $marginBp, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): self;
+    // Parses a signed percent string with up to two decimals (e.g. `'-15'`, `'20'`, `'12.5'`, `'+7.25'`).
+    static marginPercentDecimal(string $percent, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): self;
+    toArray(): array;
+}
+```
+
 ### PriceListId {#type-commerz-pricing-pricelists-data-pricelistid}
 
 `Commerz\Pricing\PriceLists\Data\PriceListId`
@@ -545,13 +834,16 @@ final readonly class PriceListView {
     public readonly string $code;
     public readonly \DateTimeImmutable $createdAt;
     public readonly \Commerz\Money\Currency $currency;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula;
     public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $id;
     public readonly string $name;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId;
     public readonly int $priority;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule;
     public readonly \Commerz\Pricing\PriceLists\Enums\PriceListStatus $status;
     public readonly \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion;
     public readonly \DateTimeImmutable $updatedAt;
-    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $id, string $code, string $name, \Commerz\Money\Currency $currency, int $priority, \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion, \Commerz\Pricing\PriceLists\Enums\PriceListStatus $status, array $channels, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $id, string $code, string $name, \Commerz\Money\Currency $currency, int $priority, \Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion, \Commerz\Pricing\PriceLists\Enums\PriceListStatus $status, array $channels, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId = null, ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula = null, ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule = null);
 }
 ```
 
@@ -563,6 +855,31 @@ final readonly class PriceListView {
 final readonly class RestorePriceList {
     public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
     __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList);
+}
+```
+
+### RoundingRule {#type-commerz-pricing-pricelists-data-roundingrule}
+
+`Commerz\Pricing\PriceLists\Data\RoundingRule`
+
+Psychological and step-based price rounding rule using exact integer / `brick/math` arithmetic (zero floats). Supports `.99`, `.90`, multiples of `5` or `10` major units, and custom minor-unit steps.
+
+```php
+final readonly class RoundingRule {
+    public readonly \Commerz\Money\RoundingMode $mode;
+    public readonly ?int $stepMinor;
+    public readonly \Commerz\Pricing\PriceLists\Enums\RoundingStrategy $strategy;
+    __construct(\Commerz\Pricing\PriceLists\Enums\RoundingStrategy $strategy, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp, ?int $stepMinor = null);
+    apply(\Commerz\Money\Money $amount): \Commerz\Money\Money;
+    assertCompatibleWith(\Commerz\Money\Currency $currency): void;
+    static ending90(\Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): self;
+    static ending99(\Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): self;
+    static fromArray(array $data): self;
+    static minorMultiple(int $stepMinor, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): self;
+    static multipleOf10(\Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): self;
+    static multipleOf5(\Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): self;
+    static none(): self;
+    toArray(): array;
 }
 ```
 
@@ -582,15 +899,32 @@ final readonly class UnassignPriceListChannels {
 
 `Commerz\Pricing\PriceLists\Data\UpdatePriceList`
 
-Renames a price list or changes its priority or tax inclusion; a field left null stays. Code and currency never change.
+Renames a price list or changes its priority, tax inclusion, parent/formula, or rounding rule; a field left null stays. Code and currency never change.
 
 ```php
 final readonly class UpdatePriceList {
+    public readonly bool $clearParent;
+    public readonly bool $clearRoundingRule;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula;
     public readonly ?string $name;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId;
     public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
     public readonly ?int $priority;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule;
     public readonly ?\Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion;
-    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList, ?string $name = null, ?int $priority = null, ?\Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion = null);
+    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList, ?string $name = null, ?int $priority = null, ?\Commerz\Pricing\PriceLists\Enums\TaxInclusion $taxInclusion = null, ?\Commerz\Pricing\PriceLists\Data\PriceListId $parentPriceListId = null, ?\Commerz\Pricing\PriceLists\Data\PriceListFormula $formula = null, ?\Commerz\Pricing\PriceLists\Data\RoundingRule $roundingRule = null, bool $clearParent = false, bool $clearRoundingRule = false);
+}
+```
+
+### FormulaKind {#type-commerz-pricing-pricelists-enums-formulakind}
+
+`Commerz\Pricing\PriceLists\Enums\FormulaKind`
+
+```php
+enum FormulaKind {
+    case MarginPercent = 'margin_percent';
+    case FixedDelta = 'fixed_delta';
+    case FxRateWithSpread = 'fx_rate_with_spread';
 }
 ```
 
@@ -602,6 +936,21 @@ final readonly class UpdatePriceList {
 enum PriceListStatus {
     case Active = 'active';
     case Archived = 'archived';
+}
+```
+
+### RoundingStrategy {#type-commerz-pricing-pricelists-enums-roundingstrategy}
+
+`Commerz\Pricing\PriceLists\Enums\RoundingStrategy`
+
+```php
+enum RoundingStrategy {
+    case None = 'none';
+    case Ending99 = 'ending_99';
+    case Ending90 = 'ending_90';
+    case MultipleOf5 = 'multiple_of_5';
+    case MultipleOf10 = 'multiple_of_10';
+    case MinorMultiple = 'minor_multiple';
 }
 ```
 
@@ -651,6 +1000,22 @@ final class PriceListArchived extends \Commerz\Errors\CommerzException implement
 }
 ```
 
+### PriceListCycleDetected {#type-commerz-pricing-pricelists-exceptions-pricelistcycledetected}
+
+`Commerz\Pricing\PriceLists\Exceptions\PriceListCycleDetected`
+
+```php
+final class PriceListCycleDetected extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $parentPriceList;
+    public readonly string $priceList;
+    __construct(string $priceList, string $parentPriceList);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ### PriceListNotFound {#type-commerz-pricing-pricelists-exceptions-pricelistnotfound}
 
 `Commerz\Pricing\PriceLists\Exceptions\PriceListNotFound`
@@ -667,20 +1032,37 @@ final class PriceListNotFound extends \Commerz\Errors\NotFound implements \Strin
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`Prices`](#type-commerz-pricing-prices-contracts-prices) | interface | api | 0.1 |
+| [`StagedPrices`](#type-commerz-pricing-prices-contracts-stagedprices) | interface | api | 0.1 |
+| [`DiscardStagedPrices`](#type-commerz-pricing-prices-data-discardstagedprices) | class | api | 0.1 |
 | [`ExplainPrice`](#type-commerz-pricing-prices-data-explainprice) | class | api | 0.1 |
+| [`ListPriceHistory`](#type-commerz-pricing-prices-data-listpricehistory) | class | api | 0.1 |
 | [`ListPrices`](#type-commerz-pricing-prices-data-listprices) | class | api | 0.1 |
+| [`ListStagedPrices`](#type-commerz-pricing-prices-data-liststagedprices) | class | api | 0.1 |
 | [`PriceCandidate`](#type-commerz-pricing-prices-data-pricecandidate) | class | api | 0.1 |
 | [`PriceExplanation`](#type-commerz-pricing-prices-data-priceexplanation) | class | api | 0.1 |
+| [`PriceHistoryEntry`](#type-commerz-pricing-prices-data-pricehistoryentry) | class | api | 0.1 |
 | [`PriceId`](#type-commerz-pricing-prices-data-priceid) | class | api | 0.1 |
 | [`PriceView`](#type-commerz-pricing-prices-data-priceview) | class | api | 0.1 |
+| [`PublishStagedPrices`](#type-commerz-pricing-prices-data-publishstagedprices) | class | api | 0.1 |
 | [`RemovePrice`](#type-commerz-pricing-prices-data-removeprice) | class | api | 0.1 |
 | [`ReschedulePrice`](#type-commerz-pricing-prices-data-rescheduleprice) | class | api | 0.1 |
 | [`SetPrice`](#type-commerz-pricing-prices-data-setprice) | class | api | 0.1 |
 | [`SetPrices`](#type-commerz-pricing-prices-data-setprices) | class | api | 0.1 |
+| [`SimulateStagedPrices`](#type-commerz-pricing-prices-data-simulatestagedprices) | class | api | 0.1 |
+| [`SimulatedLinePrice`](#type-commerz-pricing-prices-data-simulatedlineprice) | class | api | 0.1 |
+| [`StagePrice`](#type-commerz-pricing-prices-data-stageprice) | class | api | 0.1 |
+| [`StagePrices`](#type-commerz-pricing-prices-data-stageprices) | class | api | 0.1 |
+| [`StagedPriceId`](#type-commerz-pricing-prices-data-stagedpriceid) | class | api | 0.1 |
+| [`StagedPriceSimulation`](#type-commerz-pricing-prices-data-stagedpricesimulation) | class | api | 0.1 |
+| [`StagedPriceView`](#type-commerz-pricing-prices-data-stagedpriceview) | class | api | 0.1 |
 | [`CandidateVerdict`](#type-commerz-pricing-prices-enums-candidateverdict) | enum | api | 0.1 |
+| [`PriceHistoryEvent`](#type-commerz-pricing-prices-enums-pricehistoryevent) | enum | api | 0.1 |
+| [`StagedPriceStatus`](#type-commerz-pricing-prices-enums-stagedpricestatus) | enum | api | 0.1 |
 | [`PricesChanged`](#type-commerz-pricing-prices-events-priceschanged) | class | api | 0.1 |
 | [`PriceNotFoundById`](#type-commerz-pricing-prices-exceptions-pricenotfoundbyid) | class | api | 0.1 |
 | [`PriceWindowOverlap`](#type-commerz-pricing-prices-exceptions-pricewindowoverlap) | class | api | 0.1 |
+| [`StagedPriceNotFound`](#type-commerz-pricing-prices-exceptions-stagedpricenotfound) | class | api | 0.1 |
+| [`StagedPriceStateConflict`](#type-commerz-pricing-prices-exceptions-stagedpricestateconflict) | class | api | 0.1 |
 
 ### Prices {#type-commerz-pricing-prices-contracts-prices}
 
@@ -692,6 +1074,8 @@ Prices of sellables: a currency amount per price list, customer group, quantity 
 interface Prices {
     // Why a sellable costs what it costs: every candidate price with its verdict. Never throws for a missing price.
     explain(\Commerz\Pricing\Prices\Data\ExplainPrice $query): \Commerz\Pricing\Prices\Data\PriceExplanation;
+    // Reads immutable entries from the append-only `cmz_price_history` journal, newest first.
+    history(\Commerz\Pricing\Prices\Data\ListPriceHistory $query): array;
     list(\Commerz\Pricing\Prices\Data\ListPrices $query): \Commerz\Pagination\Page;
     remove(\Commerz\Pricing\Prices\Data\RemovePrice $command): void;
     reschedule(\Commerz\Pricing\Prices\Data\ReschedulePrice $command): \Commerz\Pricing\Prices\Data\PriceView;
@@ -700,6 +1084,40 @@ interface Prices {
     set(\Commerz\Pricing\Prices\Data\SetPrice $command): \Commerz\Pricing\Prices\Data\PriceView;
     // All or none. The views come in the order of the command.
     setMany(\Commerz\Pricing\Prices\Data\SetPrices $command): array;
+}
+```
+
+### StagedPrices {#type-commerz-pricing-prices-contracts-stagedprices}
+
+`Commerz\Pricing\Prices\Contracts\StagedPrices`
+
+Staged price workflow (`cmz_staged_prices`): stage draft price changes, dry-run `simulate()` against active promotions, then `publish()` atomically into `cmz_prices` or `discard()`.
+
+```php
+interface StagedPrices {
+    // Marks matching `staged` rows as `discarded`.
+    discard(\Commerz\Pricing\Prices\Data\DiscardStagedPrices $command): array;
+    find(\Commerz\Pricing\Prices\Data\StagedPriceId $id): \Commerz\Pricing\Prices\Data\StagedPriceView;
+    list(\Commerz\Pricing\Prices\Data\ListStagedPrices $query): \Commerz\Pagination\Page;
+    // Atomically promotes matching `staged` rows into `cmz_prices` and marks them `published`.
+    publish(\Commerz\Pricing\Prices\Data\PublishStagedPrices $command): array;
+    // Simulates staged prices through the full `QuotePipeline` (including active catalog/cart promotions and taxes) without writing to `cmz_prices`.
+    simulate(\Commerz\Pricing\Prices\Data\SimulateStagedPrices $query): \Commerz\Pricing\Prices\Data\StagedPriceSimulation;
+    stage(\Commerz\Pricing\Prices\Data\StagePrice $command): \Commerz\Pricing\Prices\Data\StagedPriceView;
+    stageMany(\Commerz\Pricing\Prices\Data\StagePrices $command): array;
+}
+```
+
+### DiscardStagedPrices {#type-commerz-pricing-prices-data-discardstagedprices}
+
+`Commerz\Pricing\Prices\Data\DiscardStagedPrices`
+
+```php
+final readonly class DiscardStagedPrices {
+    public readonly ?string $batchCode;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly array $stagedPriceIds;
+    __construct(?string $batchCode = null, array $stagedPriceIds = [], ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null);
 }
 ```
 
@@ -719,6 +1137,22 @@ final readonly class ExplainPrice {
 }
 ```
 
+### ListPriceHistory {#type-commerz-pricing-prices-data-listpricehistory}
+
+`Commerz\Pricing\Prices\Data\ListPriceHistory`
+
+```php
+final readonly class ListPriceHistory {
+    public readonly ?\Commerz\Money\Currency $currency;
+    public readonly int $limit;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\DateTimeImmutable $since;
+    public readonly ?\DateTimeImmutable $until;
+    __construct(\Commerz\Identity\SellableRef $sellable, ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null, ?\Commerz\Money\Currency $currency = null, ?\DateTimeImmutable $since = null, ?\DateTimeImmutable $until = null, int $limit = 100);
+}
+```
+
 ### ListPrices {#type-commerz-pricing-prices-data-listprices}
 
 `Commerz\Pricing\Prices\Data\ListPrices`
@@ -732,6 +1166,22 @@ final readonly class ListPrices {
     public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
     public readonly ?\Commerz\Identity\SellableRef $sellable;
     __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList, ?\Commerz\Identity\SellableRef $sellable = null, int $first = 100, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### ListStagedPrices {#type-commerz-pricing-prices-data-liststagedprices}
+
+`Commerz\Pricing\Prices\Data\ListStagedPrices`
+
+```php
+final readonly class ListStagedPrices {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly ?string $batchCode;
+    public readonly int $first;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly ?\Commerz\Identity\SellableRef $sellable;
+    public readonly ?\Commerz\Pricing\Prices\Enums\StagedPriceStatus $status;
+    __construct(?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null, ?string $batchCode = null, ?\Commerz\Pricing\Prices\Enums\StagedPriceStatus $status = null, ?\Commerz\Identity\SellableRef $sellable = null, int $first = 100, ?\Commerz\Pagination\Cursor $after = null);
 }
 ```
 
@@ -770,6 +1220,30 @@ final readonly class PriceExplanation {
 }
 ```
 
+### PriceHistoryEntry {#type-commerz-pricing-prices-data-pricehistoryentry}
+
+`Commerz\Pricing\Prices\Data\PriceHistoryEntry`
+
+One immutable entry in the append-only `cmz_price_history` journal.
+
+```php
+final readonly class PriceHistoryEntry {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly ?string $customerGroup;
+    public readonly \Commerz\Pricing\Prices\Enums\PriceHistoryEvent $event;
+    public readonly int $id;
+    public readonly int $minQuantity;
+    public readonly \Commerz\Pricing\Prices\Data\PriceId $price;
+    public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly \DateTimeImmutable $recordedAt;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\DateTimeImmutable $validFrom;
+    public readonly ?\DateTimeImmutable $validUntil;
+    __construct(int $id, \Commerz\Pricing\Prices\Data\PriceId $price, \Commerz\Pricing\PriceLists\Data\PriceListId $priceList, \Commerz\Identity\SellableRef $sellable, ?string $customerGroup, int $minQuantity, \Commerz\Money\Money $amount, ?\Commerz\Money\Money $compareAt, \Commerz\Pricing\Prices\Enums\PriceHistoryEvent $event, ?\DateTimeImmutable $validFrom, ?\DateTimeImmutable $validUntil, \DateTimeImmutable $recordedAt);
+}
+```
+
 ### PriceId {#type-commerz-pricing-prices-data-priceid}
 
 `Commerz\Pricing\Prices\Data\PriceId`
@@ -796,6 +1270,19 @@ final readonly class PriceView {
     public readonly ?\DateTimeImmutable $validFrom;
     public readonly ?\DateTimeImmutable $validUntil;
     __construct(\Commerz\Pricing\Prices\Data\PriceId $id, \Commerz\Pricing\PriceLists\Data\PriceListId $priceList, \Commerz\Identity\SellableRef $sellable, ?string $customerGroup, int $minQuantity, \Commerz\Money\Money $amount, ?\Commerz\Money\Money $compareAt, ?\DateTimeImmutable $validFrom, ?\DateTimeImmutable $validUntil, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### PublishStagedPrices {#type-commerz-pricing-prices-data-publishstagedprices}
+
+`Commerz\Pricing\Prices\Data\PublishStagedPrices`
+
+```php
+final readonly class PublishStagedPrices {
+    public readonly ?string $batchCode;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly array $stagedPriceIds;
+    __construct(?string $batchCode = null, array $stagedPriceIds = [], ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null);
 }
 ```
 
@@ -862,6 +1349,133 @@ final readonly class SetPrices {
 }
 ```
 
+### SimulateStagedPrices {#type-commerz-pricing-prices-data-simulatestagedprices}
+
+`Commerz\Pricing\Prices\Data\SimulateStagedPrices`
+
+Dry-run simulation request evaluating staged prices through `QuotePipeline` against active promotions before publishing.
+
+```php
+final readonly class SimulateStagedPrices {
+    public readonly ?string $batchCode;
+    public readonly ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly \Commerz\Quotes\Data\QuoteInput $quoteInput;
+    public readonly array $stagedPriceIds;
+    __construct(\Commerz\Quotes\Data\QuoteInput $quoteInput, ?string $batchCode = null, array $stagedPriceIds = [], ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null);
+    // Convenience constructor building a `QuoteInput` with 1-unit (or custom quantity) lines for the given sellables.
+    static forSellables(\Commerz\Context\CommerceContext $context, array $sellables, ?string $batchCode = null, array $stagedPriceIds = [], ?\Commerz\Pricing\PriceLists\Data\PriceListId $priceList = null, array $codes = [], int $quantity = 1): self;
+}
+```
+
+### SimulatedLinePrice {#type-commerz-pricing-prices-data-simulatedlineprice}
+
+`Commerz\Pricing\Prices\Data\SimulatedLinePrice`
+
+Per-line comparison between live pricing and staged pricing after active promotions have run.
+
+```php
+final readonly class SimulatedLinePrice {
+    public readonly \Commerz\Money\Money $effectiveNetTotal;
+    public readonly string $lineId;
+    public readonly ?\Commerz\Money\Money $liveUnitPrice;
+    public readonly \Commerz\Money\Money $promotionDiscount;
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly \Commerz\Money\Money $settledTotal;
+    public readonly bool $stacksWithPromotions;
+    public readonly ?\Commerz\Money\Money $stagedCompareAt;
+    public readonly \Commerz\Money\Money $stagedSubtotal;
+    public readonly \Commerz\Money\Money $stagedUnitPrice;
+    __construct(string $lineId, \Commerz\Identity\SellableRef $sellable, int $quantity, ?\Commerz\Money\Money $liveUnitPrice, \Commerz\Money\Money $stagedUnitPrice, ?\Commerz\Money\Money $stagedCompareAt, \Commerz\Money\Money $stagedSubtotal, \Commerz\Money\Money $promotionDiscount, \Commerz\Money\Money $effectiveNetTotal, \Commerz\Money\Money $settledTotal, bool $stacksWithPromotions);
+}
+```
+
+### StagePrice {#type-commerz-pricing-prices-data-stageprice}
+
+`Commerz\Pricing\Prices\Data\StagePrice`
+
+Stages an unpublished price change in `cmz_staged_prices` for simulation against active promotions before publishing.
+
+```php
+final readonly class StagePrice {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?string $batchCode;
+    public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly ?string $customerGroup;
+    public readonly int $minQuantity;
+    public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly ?\DateTimeImmutable $validFrom;
+    public readonly ?\DateTimeImmutable $validUntil;
+    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList, \Commerz\Identity\SellableRef $sellable, \Commerz\Money\Money $amount, ?\Commerz\Money\Money $compareAt = null, int $minQuantity = 1, ?string $customerGroup = null, ?\DateTimeImmutable $validFrom = null, ?\DateTimeImmutable $validUntil = null, ?string $batchCode = null);
+}
+```
+
+### StagePrices {#type-commerz-pricing-prices-data-stageprices}
+
+`Commerz\Pricing\Prices\Data\StagePrices`
+
+```php
+final readonly class StagePrices {
+    const MAX = 1000;
+    public readonly ?string $batchCode;
+    public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly array $prices;
+    __construct(\Commerz\Pricing\PriceLists\Data\PriceListId $priceList, array $prices, ?string $batchCode = null);
+}
+```
+
+### StagedPriceId {#type-commerz-pricing-prices-data-stagedpriceid}
+
+`Commerz\Pricing\Prices\Data\StagedPriceId`
+
+```php
+final readonly class StagedPriceId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### StagedPriceSimulation {#type-commerz-pricing-prices-data-stagedpricesimulation}
+
+`Commerz\Pricing\Prices\Data\StagedPriceSimulation`
+
+Result of dry-running staged prices through `QuotePipeline` against active promotions before publishing.
+
+```php
+final readonly class StagedPriceSimulation {
+    public readonly array $appliedPromotions;
+    public readonly bool $hasStackedPromotions;
+    public readonly array $lines;
+    public readonly ?\Commerz\Quotes\Data\QuoteResult $liveQuote;
+    public readonly \Commerz\Quotes\Data\QuoteResult $simulatedQuote;
+    public readonly \Commerz\Money\Money $totalPromotionDiscount;
+    __construct(?\Commerz\Quotes\Data\QuoteResult $liveQuote, \Commerz\Quotes\Data\QuoteResult $simulatedQuote, array $lines, array $appliedPromotions, \Commerz\Money\Money $totalPromotionDiscount, bool $hasStackedPromotions);
+}
+```
+
+### StagedPriceView {#type-commerz-pricing-prices-data-stagedpriceview}
+
+`Commerz\Pricing\Prices\Data\StagedPriceView`
+
+```php
+final readonly class StagedPriceView {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?string $batchCode;
+    public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?string $customerGroup;
+    public readonly \Commerz\Pricing\Prices\Data\StagedPriceId $id;
+    public readonly int $minQuantity;
+    public readonly \Commerz\Pricing\PriceLists\Data\PriceListId $priceList;
+    public readonly ?\DateTimeImmutable $publishedAt;
+    public readonly ?\Commerz\Pricing\Prices\Data\PriceId $publishedPriceId;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    public readonly \Commerz\Pricing\Prices\Enums\StagedPriceStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    public readonly ?\DateTimeImmutable $validFrom;
+    public readonly ?\DateTimeImmutable $validUntil;
+    __construct(\Commerz\Pricing\Prices\Data\StagedPriceId $id, ?string $batchCode, \Commerz\Pricing\PriceLists\Data\PriceListId $priceList, \Commerz\Identity\SellableRef $sellable, ?string $customerGroup, int $minQuantity, \Commerz\Money\Money $amount, ?\Commerz\Money\Money $compareAt, ?\DateTimeImmutable $validFrom, ?\DateTimeImmutable $validUntil, \Commerz\Pricing\Prices\Enums\StagedPriceStatus $status, ?\Commerz\Pricing\Prices\Data\PriceId $publishedPriceId, ?\DateTimeImmutable $publishedAt, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
 ### CandidateVerdict {#type-commerz-pricing-prices-enums-candidateverdict}
 
 `Commerz\Pricing\Prices\Enums\CandidateVerdict`
@@ -875,6 +1489,30 @@ enum CandidateVerdict {
     case GroupMismatch = 'group_mismatch';
     case BelowMinQuantity = 'below_min_quantity';
     case OutsideWindow = 'outside_window';
+}
+```
+
+### PriceHistoryEvent {#type-commerz-pricing-prices-enums-pricehistoryevent}
+
+`Commerz\Pricing\Prices\Enums\PriceHistoryEvent`
+
+```php
+enum PriceHistoryEvent {
+    case Set = 'set';
+    case Rescheduled = 'rescheduled';
+    case Removed = 'removed';
+}
+```
+
+### StagedPriceStatus {#type-commerz-pricing-prices-enums-stagedpricestatus}
+
+`Commerz\Pricing\Prices\Enums\StagedPriceStatus`
+
+```php
+enum StagedPriceStatus {
+    case Staged = 'staged';
+    case Published = 'published';
+    case Discarded = 'discarded';
 }
 ```
 
@@ -924,6 +1562,33 @@ final class PriceWindowOverlap extends \Commerz\Errors\CommerzException implemen
 }
 ```
 
+### StagedPriceNotFound {#type-commerz-pricing-prices-exceptions-stagedpricenotfound}
+
+`Commerz\Pricing\Prices\Exceptions\StagedPriceNotFound`
+
+```php
+final class StagedPriceNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### StagedPriceStateConflict {#type-commerz-pricing-prices-exceptions-stagedpricestateconflict}
+
+`Commerz\Pricing\Prices\Exceptions\StagedPriceStateConflict`
+
+```php
+final class StagedPriceStateConflict extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $stagedPrice;
+    public readonly \Commerz\Pricing\Prices\Enums\StagedPriceStatus $status;
+    __construct(string $stagedPrice, \Commerz\Pricing\Prices\Enums\StagedPriceStatus $status);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Schema
 
 | Type | Kind | Layer | Since |
@@ -934,10 +1599,11 @@ final class PriceWindowOverlap extends \Commerz\Errors\CommerzException implemen
 
 `Commerz\Pricing\Schema\PricingSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-pricing`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-pricing`.
 
 ```php
 final readonly class PricingSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
 }
 ```
@@ -961,6 +1627,7 @@ final readonly class PricingSchemaSets implements \Packman\Schema\Contracts\Migr
 | [`TaxZoneId`](#type-commerz-pricing-taxes-data-taxzoneid) | class | api | 0.1 |
 | [`TaxZoneMember`](#type-commerz-pricing-taxes-data-taxzonemember) | class | api | 0.1 |
 | [`TaxZoneView`](#type-commerz-pricing-taxes-data-taxzoneview) | class | api | 0.1 |
+| [`VatRegistration`](#type-commerz-pricing-taxes-data-vatregistration) | class | api | 0.1 |
 | [`TaxRatesChanged`](#type-commerz-pricing-taxes-events-taxrateschanged) | class | api | 0.1 |
 | [`TaxClassNotFound`](#type-commerz-pricing-taxes-exceptions-taxclassnotfound) | class | api | 0.1 |
 | [`TaxRateNotFound`](#type-commerz-pricing-taxes-exceptions-taxratenotfound) | class | api | 0.1 |
@@ -1177,6 +1844,25 @@ final readonly class TaxZoneView {
     public readonly array $members;
     public readonly string $name;
     __construct(\Commerz\Pricing\Taxes\Data\TaxZoneId $id, string $code, string $name, array $members);
+}
+```
+
+### VatRegistration {#type-commerz-pricing-taxes-data-vatregistration}
+
+`Commerz\Pricing\Taxes\Data\VatRegistration`
+
+Validated country-prefixed B2B VAT registration identifier (e.g. `DE123456789`, `FR12345678901`, `EL999999999`). Evaluates cross-border B2B VAT Reverse Charge eligibility.
+
+```php
+final readonly class VatRegistration implements \Stringable {
+    const EU_COUNTRIES = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'XI'];
+    public readonly string $country;
+    public readonly string $vatNumber;
+    __construct(string $vatNumber);
+    __toString(): string;
+    isEuMember(): bool;
+    // Cross-border B2B VAT reverse charge applies when seller and destination countries are distinct, the buyer's VAT registration belongs to the destination country, and either both are EU VAT territories or cross-border B2B reverse charge is requested.
+    qualifiesForReverseCharge(string $sellerCountry, string $destinationCountry, bool $euOnly = true): bool;
 }
 ```
 

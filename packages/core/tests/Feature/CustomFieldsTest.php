@@ -22,7 +22,34 @@ use Illuminate\Support\Facades\DB;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Laravel\SchemaExtensions;
 
-function bootIsolatedIndexDatabase(): object
+final class IsolatedIndexMigration
+{
+    public function __construct(private object $migration) {}
+
+    public function up(): void
+    {
+        $migration = $this->migration;
+
+        if (! method_exists($migration, 'up')) {
+            throw new RuntimeException('Migration is missing up().');
+        }
+
+        $migration->up();
+    }
+
+    public function down(): void
+    {
+        $migration = $this->migration;
+
+        if (! method_exists($migration, 'down')) {
+            throw new RuntimeException('Migration is missing down().');
+        }
+
+        $migration->down();
+    }
+}
+
+function bootIsolatedIndexDatabase(): IsolatedIndexMigration
 {
     config()->set('database.connections.cf_sqlite_test', [
         'driver' => 'sqlite',
@@ -37,7 +64,13 @@ function bootIsolatedIndexDatabase(): object
     app()->forgetInstance(CustomFieldIndexer::class);
     app()->forgetInstance(CustomFieldQuery::class);
 
-    $migration = require dirname(__DIR__, 2).'/database/migrations/2026_11_26_100001_create_commerz_custom_field_index_table.php';
+    $loaded = require dirname(__DIR__, 2).'/database/migrations/2026_11_26_100001_create_commerz_custom_field_index_table.php';
+
+    if (! is_object($loaded)) {
+        throw new RuntimeException('Expected the custom field index migration.');
+    }
+
+    $migration = new IsolatedIndexMigration($loaded);
     $migration->up();
 
     DB::connection('cf_sqlite_test')->getSchemaBuilder()->create('cmz_sample_orders', static function (Blueprint $table): void {
@@ -51,13 +84,15 @@ function bootIsolatedIndexDatabase(): object
 it('registers CustomFields contracts, SchemaOwnership noun, and keeps CommerzServiceProvider <= 80 lines', function (): void {
     $migration = bootIsolatedIndexDatabase();
 
-    $providerLines = count(file(dirname(__DIR__, 2).'/src/CommerzServiceProvider.php') ?: []);
+    $providerFile = file(dirname(__DIR__, 2).'/src/CommerzServiceProvider.php');
+    $providerLines = count($providerFile === false ? [] : $providerFile);
     $ownership = SchemaExtensions::ownershipFor(app(SchemaOwnership::class), (new CorePlugin)->tablePrefix());
 
+    app(CustomFieldRegistry::class);
+    app(CustomFieldIndexer::class);
+    app(CustomFieldQuery::class);
+
     expect($providerLines)->toBeLessThanOrEqual(80)
-        ->and(app(CustomFieldRegistry::class))->toBeInstanceOf(CustomFieldRegistry::class)
-        ->and(app(CustomFieldIndexer::class))->toBeInstanceOf(CustomFieldIndexer::class)
-        ->and(app(CustomFieldQuery::class))->toBeInstanceOf(CustomFieldQuery::class)
         ->and($ownership->ownerOf('custom_field_index'))->toBe('commerz.core')
         ->and(app(TableNames::class)->table('custom_field_index'))->toBe('cmz_custom_field_index');
 

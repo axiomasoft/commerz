@@ -11,7 +11,9 @@ use PhpParser\NodeFinder;
 
 it('forbids direct now() and Carbon::now() calls in package src/ (INV-CORE-001)', function (): void {
     $root = dirname(__DIR__, 2);
-    $scanner = new SourceScanner($root, require __DIR__.'/ownership.php');
+    /** @var array<string, array{kind: string, nouns: list<string>, extra?: list<string>}> $map */
+    $map = require __DIR__.'/ownership.php';
+    $scanner = new SourceScanner($root, $map);
     $finder = new NodeFinder;
     $violations = [];
     $checked = 0;
@@ -41,7 +43,9 @@ it('forbids direct now() and Carbon::now() calls in package src/ (INV-CORE-001)'
 
 it('forbids duplicate Common\\Internal\\Clock and Common\\Internal\\Rows classes', function (): void {
     $root = dirname(__DIR__, 2);
-    $scanner = new SourceScanner($root, require __DIR__.'/ownership.php');
+    /** @var array<string, array{kind: string, nouns: list<string>, extra?: list<string>}> $map */
+    $map = require __DIR__.'/ownership.php';
+    $scanner = new SourceScanner($root, $map);
     $violations = [];
     $checked = 0;
 

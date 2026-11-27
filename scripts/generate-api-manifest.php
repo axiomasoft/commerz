@@ -9,36 +9,57 @@ declare(strict_types=1);
  * Usage: php scripts/generate-api-manifest.php [--check]   (--check writes nothing and fails on a stale manifest)
  */
 $root = dirname(__DIR__);
-$check = in_array('--check', $argv, true);
+$cliArguments = $_SERVER['argv'] ?? [];
+$check = is_array($cliArguments) && in_array('--check', $cliArguments, true);
 
-$run = static function (bool $write) use ($root): int {
+// Distinct $attempt values keep the repeated generations from being folded into one exit code.
+$run = static function (bool $write, int $attempt) use ($root): int {
+    if ($attempt < 1) {
+        return 1;
+    }
+
     $command = sprintf(
         'cd %s && %s%s vendor/bin/pest --colors=never tests/Arch/ApiManifestTest.php',
         escapeshellarg($root),
         $write ? 'COMMERZ_UPDATE_API_MANIFEST=1 ' : '',
         escapeshellarg(PHP_BINARY),
     );
+    $code = 0;
     passthru($command, $code);
 
     return $code;
 };
 
-$hash = static fn (): string => hash('sha256', implode('', array_map(
-    static fn (string $file): string => $file.hash_file('sha256', $file),
-    glob($root.'/packages/*/resources/contracts/php-api.json') ?: [],
-)));
+$hash = static function () use ($root): string {
+    $files = glob($root.'/packages/*/resources/contracts/php-api.json');
+    if ($files === false) {
+        $files = [];
+    }
+
+    return hash('sha256', implode('', array_map(
+        static function (string $file): string {
+            $digest = hash_file('sha256', $file);
+            if ($digest === false) {
+                throw new RuntimeException("Cannot hash {$file}.");
+            }
+
+            return $file.$digest;
+        },
+        $files,
+    )));
+};
 
 if ($check) {
-    exit($run(false));
+    exit($run(false, 1));
 }
 
-if ($run(true) !== 0) {
+if ($run(true, 1) !== 0) {
     exit(1);
 }
 
 $first = $hash();
 
-if ($run(true) !== 0) {
+if ($run(true, 2) !== 0) {
     exit(1);
 }
 
@@ -48,4 +69,4 @@ if ($first !== $hash()) {
     exit(1);
 }
 
-exit($run(false));
+exit($run(false, 3));

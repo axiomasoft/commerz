@@ -36,10 +36,18 @@ function pscnCart(string ...$codes): QuoteInput
  */
 function pscnApplied(QuoteResult $quote): array
 {
-    $codes = DB::table('cmz_promotions')->pluck('code', 'id')->all();
+    $codes = stanStringMap(DB::table('cmz_promotions')->pluck('code', 'id'));
 
     return array_map(
-        static fn (AppliedPromotion $a): string => $codes[$a->promotionId].'|'.($a->couponCode ?? '-').'|'.$a->discount->toDecimal(),
+        static function (AppliedPromotion $applied) use ($codes): string {
+            $code = $codes[$applied->promotionId] ?? null;
+
+            if (! is_string($code)) {
+                throw new RuntimeException("Missing promotion code for {$applied->promotionId}.");
+            }
+
+            return $code.'|'.($applied->couponCode ?? '-').'|'.$applied->discount->toDecimal();
+        },
         $quote->appliedPromotions(),
     );
 }
@@ -115,5 +123,5 @@ it('takes a coupon from the quote through the placement transaction to its limit
         ->and(DB::table('cmz_promotion_redemptions')->where('order_ref', 'order:2')->value('state'))->toBe('consumed');
 
     // The counters equal the usage log (PRM-01).
-    $this->artisan('commerz:promotions:reconcile')->expectsOutputToContain('Promotions are consistent.')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->expectsOutputToContain('Promotions are consistent.')->assertExitCode(0);
 });

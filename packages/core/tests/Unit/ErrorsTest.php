@@ -28,14 +28,12 @@ use Commerz\Webhooks\Exceptions\WebhookSubscriptionNotFound;
 use Commerz\Webhooks\Exceptions\WebhookTransportFailed;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 
 it('exposes stable codes, categories, descriptors and scalar context', function (CommerzException $e, string $code, ErrorCategory $category, CommerzErrorCode $packmanCode, ErrorCategory $packmanCategory, array $context): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($e->code())->toBe($code)
+    expect($e->code())->toBe($code)
         ->and($e->category())->toBe($category)
         ->and($e->context())->toBe($context)
         ->and($e->getMessage())->not->toBe('')
@@ -81,7 +79,6 @@ it('lets domain packages narrow the code', function (): void {
     $e = new NotFound('Product', '1', 'catalog.product_not_found');
 
     expect($e->code())->toBe('catalog.product_not_found')
-        ->and($e)->toBeInstanceOf(CommerzException::class)
         ->and($e->errorDescriptor()->errorCode)->toBe(CommerzErrorCode::NotFound);
 });
 

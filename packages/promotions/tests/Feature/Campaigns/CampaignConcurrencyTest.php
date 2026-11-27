@@ -12,15 +12,16 @@ use Commerz\Promotions\Facades\Promotions;
 use Commerz\Promotions\Usage\Data\HoldCoupon;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Usage/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -53,7 +54,7 @@ it('never breaches CampaignBudget spend_cap_minor under concurrent checkouts (IN
         ->and($budget->spentMinor)->toBe(100_000)
         ->and($budget->remainingSpendMinor())->toBe(0);
 
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('loses no campaign spend when spend_cap_minor is updated concurrently (INV-PRM-001)', function (): void {
@@ -90,7 +91,7 @@ it('loses no campaign spend when spend_cap_minor is updated concurrently (INV-PR
         ->and($budget->used)->toBe(80)
         ->and($budget->spentMinor)->toBe(400_000);
 
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('lets exactly one concurrent checkout hold a single-use coupon in hold_on_checkout mode', function (): void {
@@ -116,5 +117,5 @@ it('lets exactly one concurrent checkout hold a single-use coupon in hold_on_che
     expect($counts)->toBe(['exhausted' => 9, 'held' => 1])
         ->and(DB::table('cmz_coupons')->where('code', 'ONCEHOLD')->value('held'))->toBe(1);
 
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');

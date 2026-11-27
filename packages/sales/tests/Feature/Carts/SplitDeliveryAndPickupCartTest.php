@@ -10,6 +10,7 @@ use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Ports\Delivery\Data\Address;
 use Commerz\Ports\Delivery\Data\DeliveryOption;
+use Commerz\Ports\Delivery\Data\DeliveryRequest;
 use Commerz\Ports\Delivery\Data\PickupPointDestination;
 use Commerz\Ports\Delivery\Enums\DeliveryMode;
 use Commerz\Ports\Sellables\Data\SellableSnapshot;
@@ -22,6 +23,7 @@ use Commerz\Quotes\Enums\QuoteAnchor;
 use Commerz\Quotes\Enums\StagePosition;
 use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Data\AddCartLine;
+use Commerz\Sales\Carts\Data\CartDeliveryGroup;
 use Commerz\Sales\Carts\Data\ClearGroupDelivery;
 use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Carts\Data\RemoveCartLine;
@@ -309,8 +311,14 @@ it('supports split delivery method selection per cart line group, disjoint reass
     // Group-level deliveryOptions computes weight for just that group's lines
     $groupOpts = $carts->groupDeliveryOptions($cart->id, [$mugLine->id], pickupPoint: $lockerPoint);
     $requests = $this->commerce->delivery->requests;
+    $lastRequest = end($requests);
+
+    if (! $lastRequest instanceof DeliveryRequest) {
+        throw new RuntimeException('Expected a delivery request.');
+    }
+
     expect($groupOpts)->not->toBeEmpty()
-        ->and($requests[array_key_last($requests)]->parcel->weightGrams)->toBe(700); // 2 * 350 g
+        ->and($lastRequest->parcel->weightGrams)->toBe(700); // 2 * 350 g
 
     // Split quote prices goods (50000 + 1600 + 1500 = 53100.00) + deliveries (1200 + 150 + 0 = 1350.00) = 54450.00 RUB
     $splitQuote = $carts->quoteSplitDelivery($cart->id);
@@ -321,12 +329,12 @@ it('supports split delivery method selection per cart line group, disjoint reass
 
     // Removing shirtLine automatically prunes the now-empty store-bopis group
     $afterRemove = $carts->removeLine(new RemoveCartLine($cart->id, $shirtLine->id));
-    expect(array_map(static fn ($g): string => $g->groupKey, $afterRemove->deliveryGroups))
+    expect(array_map(static fn (CartDeliveryGroup $g): string => $g->groupKey, $afterRemove->deliveryGroups))
         ->toBe(['freight-home', 'pudo-locker']);
 
     // Clearing pudo-locker group leaves only freight-home
     $afterClear = $carts->clearGroupDelivery(new ClearGroupDelivery($cart->id, 'pudo-locker'));
-    expect(array_map(static fn ($g): string => $g->groupKey, $afterClear->deliveryGroups))
+    expect(array_map(static fn (CartDeliveryGroup $g): string => $g->groupKey, $afterClear->deliveryGroups))
         ->toBe(['freight-home']);
 
     // Unknown line ID is rejected

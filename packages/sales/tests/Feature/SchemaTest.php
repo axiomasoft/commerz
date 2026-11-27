@@ -32,13 +32,26 @@ it('adds booking intent to existing fulfillments without rewriting their shipmen
         'tracking' => 'OLD-1', 'shipped_at' => SALES_NOW,
     ]);
     $migration = require __DIR__.'/../../database/migrations/2026_10_14_100005_add_commerz_fulfillment_booking_intent.php';
-    $migration->down();
+    $down = [$migration, 'down'];
+    $up = [$migration, 'up'];
+
+    if (! is_object($migration) || ! is_callable($down) || ! is_callable($up)) {
+        throw new RuntimeException('Expected the booking-intent migration.');
+    }
+
+    $down();
     expect(DB::getSchemaBuilder()->hasColumn(slsTable('fulfillments'), 'booking_requested'))->toBeFalse()
         ->and(DB::table(slsTable('fulfillments'))->where('id', $id)->value('tracking'))->toBe('OLD-1');
-    $migration->up();
-    $stored = DB::table(slsTable('fulfillments'))->where('id', $id)->first();
+    $up();
+    $fetched = DB::table(slsTable('fulfillments'))->where('id', $id)->first();
 
-    expect([$stored->booking_requested, $stored->tracking, $stored->carrier])->toBe([false, 'OLD-1', 'manual']);
+    if (! is_object($fetched)) {
+        throw new RuntimeException('Expected the fulfillment row.');
+    }
+
+    $stored = get_object_vars($fetched);
+
+    expect([$stored['booking_requested'] ?? null, $stored['tracking'] ?? null, $stored['carrier'] ?? null])->toBe([false, 'OLD-1', 'manual']);
 });
 
 function slsTable(string $logical): string
@@ -49,33 +62,66 @@ function slsTable(string $logical): string
 /** @return list<string> */
 function slsConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [slsTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [slsTable($logical)]);
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->conname;
+    }
+
+    return $names;
 }
 
 // RefreshDatabase wraps each test in a transaction; DB::transaction opens a savepoint that keeps it usable after an expected violation.
 
-/** @param  array<string, mixed>  $row */
-function slsInsert(string $logical, array $row): void
+/** @return array<string, mixed> */
+function slsStringMap(mixed $row): array
 {
-    DB::transaction(static fn () => DB::table(slsTable($logical))->insert($row));
+    if (! is_array($row)) {
+        throw new RuntimeException('Expected a column map.');
+    }
+
+    $normalized = [];
+
+    foreach ($row as $key => $value) {
+        if (! is_string($key)) {
+            throw new RuntimeException('Expected string column names.');
+        }
+
+        $normalized[$key] = $value;
+    }
+
+    return $normalized;
 }
 
-/** @param  array<string, mixed>  $set */
-function slsUpdate(string $logical, string $key, string $id, array $set): void
+function slsInsert(string $logical, mixed $row): void
 {
-    DB::transaction(static fn () => DB::table(slsTable($logical))->where($key, $id)->update($set));
+    $columns = slsStringMap($row);
+
+    DB::transaction(static fn () => DB::table(slsTable($logical))->insert($columns));
 }
 
-/** The SQLSTATE a statement fails with, or null when it succeeds. */
+function slsUpdate(string $logical, string $key, string $id, mixed $set): void
+{
+    $columns = slsStringMap($set);
+
+    DB::transaction(static fn () => DB::table(slsTable($logical))->where($key, $id)->update($columns));
+}
+
+/**
+ * The SQLSTATE a statement fails with, or null when it succeeds.
+ *
+ * @param  Closure(): mixed  $statement
+ */
 function slsSqlState(Closure $statement): ?string
 {
     try {
         $statement();
     } catch (QueryException $e) {
-        return $e->errorInfo[0] ?? null;
+        $state = $e->errorInfo[0] ?? null;
+
+        return is_string($state) ? $state : null;
     }
 
     return null;
@@ -185,7 +231,10 @@ it('creates every table with canonical constraint names', function (): void {
             expect($name)->toMatch('/(_(pk|uq|fk|ck|ex)|_[0-9a-f]{8})\z/');
         }
 
-        foreach (DB::select('select indexname from pg_indexes where tablename = ?', [$physical]) as $index) {
+        /** @var list<object{indexname: string}> $indexes */
+        $indexes = DB::select('select indexname from pg_indexes where tablename = ?', [$physical]);
+
+        foreach ($indexes as $index) {
             expect($index->indexname)->toMatch('/(_(pk|uq|ix|ex)|_[0-9a-f]{8})\z/');
         }
 
@@ -194,10 +243,21 @@ it('creates every table with canonical constraint names', function (): void {
 });
 
 it('keeps money in bigint, a currency on every table that has an amount, and ids as uuid', function (): void {
-    $column = static fn (string $logical, string $name): object => DB::selectOne(
-        'select data_type, is_nullable from information_schema.columns where table_name = ? and column_name = ?',
-        [slsTable($logical), $name],
-    );
+    $column = static function (string $logical, string $name): object {
+        $row = DB::selectOne(
+            'select data_type, is_nullable from information_schema.columns where table_name = ? and column_name = ?',
+            [slsTable($logical), $name],
+        );
+
+        if (! is_object($row)) {
+            throw new RuntimeException("Expected column {$logical}.{$name}.");
+        }
+
+        /** @var object{data_type: string, is_nullable: string} $column */
+        $column = $row;
+
+        return $column;
+    };
 
     foreach (['orders' => 'total_minor', 'order_lines' => 'unit_price_minor', 'payments' => 'amount_minor', 'refunds' => 'amount_minor'] as $logical => $amount) {
         expect($column($logical, $amount)->data_type)->toBe('bigint')
@@ -220,6 +280,7 @@ it('keeps money in bigint, a currency on every table that has an amount, and ids
 
 it('has no foreign key to the core or other packages', function (): void {
     foreach (SALES_TABLES as $logical) {
+        /** @var list<object{target: string}> $targets */
         $targets = DB::select(
             "select confrelid::regclass::text as target from pg_constraint where conrelid = ?::regclass and contype = 'f'",
             [slsTable($logical)],
@@ -235,6 +296,7 @@ it('has no foreign key to the core or other packages', function (): void {
 
 it('checks the cart kind, state, version, currency and the conversion time', function (): void {
     $cart = slsCart();
+    /** @param  array<string, mixed>  $set */
     $update = static fn (array $set): Closure => static fn () => slsUpdate('carts', 'id', $cart, $set);
 
     expect(slsSqlState(static fn () => slsCart(['kind' => 'wishlist'])))->toBe(SLS_CHECK)
@@ -249,13 +311,20 @@ it('checks the cart kind, state, version, currency and the conversion time', fun
         ->and(slsSqlState($update(['state' => 'converted', 'converted_at' => SALES_NOW])))->toBeNull()
         ->and(slsSqlState(static fn () => slsCart(['kind' => 'draft'])))->toBeNull();
 
-    $row = DB::table(slsTable('carts'))->where('id', slsCart())->first();
+    $fetched = DB::table(slsTable('carts'))->where('id', slsCart())->first();
 
-    expect($row->kind)->toBe('cart')->and($row->state)->toBe('open')->and($row->version)->toBe(1)->and($row->codes)->toBe('[]');
+    if (! is_object($fetched)) {
+        throw new RuntimeException('Expected a cart row.');
+    }
+
+    $row = get_object_vars($fetched);
+
+    expect($row['kind'] ?? null)->toBe('cart')->and($row['state'] ?? null)->toBe('open')->and($row['version'] ?? null)->toBe(1)->and($row['codes'] ?? null)->toBe('[]');
 });
 
 it('keeps one line per sellable in a cart and a positive quantity', function (): void {
     $cart = slsCart();
+    /** @param  array<string, mixed>  $extra */
     $line = static fn (string $cart, array $extra = []): Closure => static fn () => slsInsert('cart_lines', [
         'id' => Uuid7::generate(), 'cart_id' => $cart, 'sellable_ref' => 'variant:1', 'quantity' => 1, 'position' => 0, ...$extra,
     ]);
@@ -281,6 +350,7 @@ it('places at most one order per cart (ORD-01) and keeps the number unique per s
 
 it('checks the three states, the cancel reason and their timestamps of an order', function (): void {
     $order = slsOrder();
+    /** @param  array<string, mixed>  $set */
     $update = static fn (array $set): Closure => static fn () => slsUpdate('orders', 'id', $order, $set);
 
     expect(slsSqlState(static fn () => slsOrder(null, ['state' => 'draft'])))->toBe(SLS_CHECK)
@@ -321,6 +391,7 @@ it('checks the amounts and the number of an order', function (): void {
 it('keeps the line journal inside the quantity (ORD-03)', function (): void {
     $order = slsOrder();
     $line = slsOrderLine($order, ['quantity' => 5]);
+    /** @param  array<string, mixed>  $set */
     $update = static fn (array $set): Closure => static fn () => slsUpdate('order_lines', 'id', $line, $set);
 
     expect(slsSqlState($update(['cancelled_quantity' => 3, 'fulfilled_quantity' => 3])))->toBe(SLS_CHECK) // cancelled + fulfilled > quantity
@@ -357,9 +428,11 @@ it('removes lines and events with their order on a fresh migration but never an 
 it('checks fulfillments and their lines', function (): void {
     $order = slsOrder();
     $line = slsOrderLine($order);
+    /** @param  array<string, mixed>  $extra */
     $fulfillment = static fn (array $extra = []): Closure => static fn () => slsInsert('fulfillments', ['id' => Uuid7::generate(), 'order_id' => $order, ...$extra]);
     $id = Uuid7::generate();
     slsInsert('fulfillments', ['id' => $id, 'order_id' => $order]);
+    /** @param  array<string, mixed>  $extra */
     $member = static fn (array $extra = []): Closure => static fn () => slsInsert('fulfillment_lines', ['fulfillment_id' => $id, 'order_line_id' => $line, 'quantity' => 1, ...$extra]);
 
     expect(slsSqlState($fulfillment(['status' => 'lost'])))->toBe(SLS_CHECK)
@@ -376,9 +449,11 @@ it('checks fulfillments and their lines', function (): void {
 it('checks returns and their lines', function (): void {
     $order = slsOrder();
     $line = slsOrderLine($order);
+    /** @param  array<string, mixed>  $extra */
     $return = static fn (array $extra = []): Closure => static fn () => slsInsert('returns', ['id' => Uuid7::generate(), 'order_id' => $order, ...$extra]);
     $id = Uuid7::generate();
     slsInsert('returns', ['id' => $id, 'order_id' => $order]);
+    /** @param  array<string, mixed>  $extra */
     $member = static fn (array $extra = []): Closure => static fn () => slsInsert('return_lines', ['return_id' => $id, 'order_line_id' => $line, 'quantity' => 2, ...$extra]);
 
     expect(slsSqlState($return(['status' => 'closed'])))->toBe(SLS_CHECK)
@@ -397,6 +472,7 @@ it('checks returns and their lines', function (): void {
 it('keeps the reference of a payment unique and checks its status and amounts', function (): void {
     $order = slsOrder();
     $id = slsPayment($order, ['reference' => 'payment:one']);
+    /** @param  array<string, mixed>  $set */
     $update = static fn (array $set): Closure => static fn () => slsUpdate('payments', 'id', $id, $set);
 
     expect(fn () => slsPayment($order, ['reference' => 'payment:one']))->toThrow(UniqueConstraintViolationException::class, ConstraintNames::unique(slsTable('payments'), 'reference'))
@@ -461,12 +537,30 @@ it('records a provider event once per gateway and event id (PAY-01) and ties it 
 it('has the order number sequence starting at 1001 that only goes forward', function (): void {
     $sequence = slsTable('order_number_seq');
 
-    $definition = DB::selectOne('select start_value, increment_by from pg_sequences where sequencename = ?', [$sequence]);
+    $fetchedDefinition = DB::selectOne('select start_value, increment_by from pg_sequences where sequencename = ?', [$sequence]);
+
+    if (! is_object($fetchedDefinition)) {
+        throw new RuntimeException('Expected the order-number sequence.');
+    }
+
+    /** @var object{start_value: int|string, increment_by: int|string} $definition */
+    $definition = $fetchedDefinition;
 
     expect((int) $definition->start_value)->toBe(1001)->and((int) $definition->increment_by)->toBe(1);
 
-    $first = DB::selectOne('select nextval(?::regclass) as n', [$sequence])->n;
-    $second = DB::selectOne('select nextval(?::regclass) as n', [$sequence])->n;
+    $fetchedFirst = DB::selectOne('select nextval(?::regclass) as n', [$sequence]);
+    $fetchedSecond = DB::selectOne('select nextval(?::regclass) as n', [$sequence]);
+
+    if (! is_object($fetchedFirst) || ! is_object($fetchedSecond)) {
+        throw new RuntimeException('Expected sequence values.');
+    }
+
+    /** @var object{n: int|string} $firstRow */
+    $firstRow = $fetchedFirst;
+    /** @var object{n: int|string} $secondRow */
+    $secondRow = $fetchedSecond;
+    $first = (int) $firstRow->n;
+    $second = (int) $secondRow->n;
 
     expect($first)->toBeGreaterThanOrEqual(1001)->and($second)->toBe($first + 1);
 });
@@ -478,6 +572,7 @@ it('checks order OCC version, order_changes, and order_change_actions constraint
         ->and(DB::table(slsTable('orders'))->where('id', $order)->value('version'))->toBe(1);
 
     $changeId = Uuid7::generate();
+    /** @param  array<string, mixed>  $extra */
     $insertChange = static fn (array $extra = []): Closure => static fn () => slsInsert('order_changes', [
         'id' => Uuid7::generate(),
         'order_id' => $order,
@@ -497,6 +592,7 @@ it('checks order OCC version, order_changes, and order_change_actions constraint
         ->and(slsSqlState($insertChange(['currency' => 'rub'])))->toBe(SLS_CHECK)
         ->and(slsSqlState($insertChange(['order_id' => Uuid7::generate()])))->toBe(SLS_FOREIGN);
 
+    /** @param  array<string, mixed>  $extra */
     $insertAction = static fn (array $extra = []): Closure => static fn () => slsInsert('order_change_actions', [
         'id' => Uuid7::generate(),
         'order_change_id' => $changeId,

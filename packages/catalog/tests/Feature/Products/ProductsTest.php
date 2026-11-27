@@ -32,6 +32,7 @@ use Commerz\Catalog\ProductTypes\Exceptions\ProductTypeNotFound;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
 use Commerz\Measures\Measure;
+use Commerz\Pagination\Page;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -120,20 +121,32 @@ it('refuses missing or archived types, duplicate handles and malformed commands'
     expect(fn () => prdTee($type->id, 'late'))->toThrow(ProductTypeArchived::class);
 });
 
-it('rolls the whole creation back when an attribute is wrong', function (array $attributes, string $error): void {
-    $type = prdApparel();
+it(
+    'rolls the whole creation back when an attribute is wrong',
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    function (array $attributes, string $error): void {
+        $type = prdApparel();
+        $typed = [];
+        foreach ($attributes as $key => $value) {
+            if (! is_string($key)) {
+                throw new RuntimeException('Attribute codes must be strings.');
+            }
+            $typed[$key] = $value;
+        }
 
-    expect(fn () => prdTee($type->id, 'tee', $attributes))->toThrow($error);
-    expect(DB::table('cmz_products')->count())->toBe(0)
-        ->and(DB::table('cmz_product_options')->count())->toBe(0)
-        ->and(DB::table('cmz_attribute_index')->count())->toBe(0);
-})->with([
-    'required missing' => [['note' => 'x'], MissingRequiredAttributes::class],
-    'variant level on the product' => [['material' => 'cotton', 'fit' => 'slim'], AttributeNotAllowed::class],
-    'unknown to the type' => [['material' => 'cotton', 'ghost' => 'x'], AttributeNotAllowed::class],
-    'invalid value' => [['material' => 'silk'], InvalidAttributeValue::class],
-    'null value' => [['material' => null], InvalidAttributeValue::class],
-]);
+        expect(fn () => prdTee($type->id, 'tee', $typed))->toThrow($error);
+        expect(DB::table('cmz_products')->count())->toBe(0)
+            ->and(DB::table('cmz_product_options')->count())->toBe(0)
+            ->and(DB::table('cmz_attribute_index')->count())->toBe(0);
+    })->with([
+        'required missing' => [['note' => 'x'], MissingRequiredAttributes::class],
+        'variant level on the product' => [['material' => 'cotton', 'fit' => 'slim'], AttributeNotAllowed::class],
+        'unknown to the type' => [['material' => 'cotton', 'ghost' => 'x'], AttributeNotAllowed::class],
+        'invalid value' => [['material' => 'silk'], InvalidAttributeValue::class],
+        'null value' => [['material' => null], InvalidAttributeValue::class],
+    ]);
 
 it('updates fields, moves between draft and active and refuses a taken handle', function (): void {
     $type = prdApparel();
@@ -209,7 +222,17 @@ it('lists by handle with a keyset cursor and type and status filters', function 
 
     $first = Catalog::products()->list(new ListProducts(first: 2));
     $second = Catalog::products()->list(new ListProducts(first: 2, after: $first->next));
-    $handles = static fn ($page): array => array_map(static fn (ProductView $p): string => $p->handle, $page->items);
+    $handles = static function (Page $page): array {
+        $handles = [];
+        foreach ($page->items as $product) {
+            if (! $product instanceof ProductView) {
+                throw new RuntimeException('Expected a product view.');
+            }
+            $handles[] = $product->handle;
+        }
+
+        return $handles;
+    };
 
     expect($handles($first))->toBe(['a', 'b'])
         ->and($first->hasMore())->toBeTrue()

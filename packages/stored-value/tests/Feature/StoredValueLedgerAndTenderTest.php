@@ -33,6 +33,7 @@ use Commerz\Quotes\Enums\StagePosition;
 use Commerz\StoredValue\Facades\StoredValue;
 use Commerz\StoredValue\GiftCards\Data\GiftCardCode;
 use Commerz\StoredValue\GiftCards\Data\IssueGiftCard;
+use Commerz\StoredValue\Ledger\Data\LedgerEntry;
 use Commerz\StoredValue\Ledger\Enums\AccountStatus;
 use Commerz\StoredValue\Ledger\Enums\LedgerDirection;
 use Commerz\StoredValue\Ledger\Enums\LedgerEntrySide;
@@ -49,6 +50,7 @@ use Illuminate\Support\Facades\DB;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Laravel\PluginRegistrar;
+use PHPUnit\Framework\Assert;
 
 final readonly class SvFlatVatStage implements QuoteStage
 {
@@ -99,7 +101,7 @@ final class SvVatQuotePlugin implements ExtensionPlugin
 
     public function register(PluginRegistrar $registrar): void
     {
-        $registrar->contribute(SellableProvider::KIND, (new FakeSellables('product'))->add(
+        $registrar->contribute(SellableProvider::KIND, new FakeSellables('product')->add(
             FakeSellables::snapshot('product:widget', Money::of('100.00', 'EUR')),
         ));
         $registrar->contribute(QuoteStage::KIND, new SvFlatVatStage(2000));
@@ -219,6 +221,7 @@ it('issues gift cards storing only SHA-256 code_hash, never plaintext, and suppo
         ->where('id', $issued->giftCard->id->value)
         ->first();
 
+    Assert::assertNotNull($rawRow);
     expect($rawRow)->not->toBeNull()
         ->and($rawRow->code_hash)->toBe(GiftCardCode::hash($issued->plainCode))
         ->and($rawRow->code_hash)->toHaveLength(64)
@@ -226,6 +229,7 @@ it('issues gift cards storing only SHA-256 code_hash, never plaintext, and suppo
         ->and($rawRow->code_last4)->toBe(GiftCardCode::last4($issued->plainCode));
 
     $found = StoredValue::giftCards()->findByCode(strtolower(str_replace('-', ' ', $issued->plainCode)));
+    Assert::assertNotNull($found);
     expect($found)->not->toBeNull()
         ->and($found->id->value)->toBe($issued->giftCard->id->value)
         ->and($found->available->equals(Money::of('100.00', 'USD')))->toBeTrue();
@@ -307,6 +311,7 @@ it('records balanced double-entry ledger entries across issue, hold, release, ca
     expect(StoredValue::giftCards()->expireDue())->toBe(1);
 
     $final = StoredValue::giftCards()->find($accountId);
+    Assert::assertNotNull($final);
     expect($final)->not->toBeNull()
         ->and($final->status)->toBe(AccountStatus::Expired)
         ->and($final->balance->isZero())->toBeTrue()
@@ -317,7 +322,7 @@ it('records balanced double-entry ledger entries across issue, hold, release, ca
     $accountEntries = StoredValue::ledger()->entriesForAccount($accountId, LedgerEntrySide::Account);
 
     expect($entries)->toHaveCount(12) // 6 journals x 2 legs
-        ->and(array_map(static fn ($e): string => $e->entryType->value, $accountEntries))->toBe([
+        ->and(array_map(static fn (LedgerEntry $e): string => $e->entryType->value, $accountEntries))->toBe([
             LedgerEntryType::Issue->value,
             LedgerEntryType::Hold->value,
             LedgerEntryType::Capture->value,
@@ -327,7 +332,7 @@ it('records balanced double-entry ledger entries across issue, hold, release, ca
         ])
         ->and(StoredValue::ledger()->isBalanced($accountId))->toBeTrue();
 
-    $journalIds = array_values(array_unique(array_map(static fn ($e): string => $e->journalId, $entries)));
+    $journalIds = array_values(array_unique(array_map(static fn (LedgerEntry $e): string => $e->journalId, $entries)));
     expect($journalIds)->toHaveCount(6);
 
     foreach ($journalIds as $journalId) {
@@ -399,6 +404,7 @@ it('enforces INV-SV-001 (balance_minor - held_minor >= 0) across double-spend at
     )))->toThrow(InsufficientStoredValue::class);
 
     $wallet = StoredValue::wallets()->findByCustomer($customer, Currency::of('USD'));
+    Assert::assertNotNull($wallet);
     expect($wallet)->not->toBeNull()
         ->and($wallet->balance->amountMinor)->toBe(10_000)
         ->and($wallet->held->amountMinor)->toBe(10_000)
@@ -427,6 +433,7 @@ it('enforces INV-SV-001 (balance_minor - held_minor >= 0) across double-spend at
     expect(StoredValue::giftCards()->expireDue())->toBe(1);
 
     $afterExpiry = StoredValue::giftCards()->find($gc->giftCard->id);
+    Assert::assertNotNull($afterExpiry);
     expect($afterExpiry)->not->toBeNull()
         ->and($afterExpiry->balance->equals(Money::of('30.00', 'USD')))->toBeTrue()
         ->and($afterExpiry->held->equals(Money::of('30.00', 'USD')))->toBeTrue()

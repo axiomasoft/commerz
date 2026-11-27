@@ -1,3 +1,6 @@
+# Quality, the supported PHP versions, and PostgreSQL on the floor and the
+# current major. A docs-only change skips the PHP lanes. The ci-gate job is the
+# required check.
 name: CI
 
 on:
@@ -8,55 +11,147 @@ on:
     - cron: '0 4 * * 1'
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  lint:
-    name: Lint & static analysis
-    runs-on: ubuntu-latest
+  changes:
+    name: Changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code: ${{ steps.plan.outputs.code }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
-      - uses: ./.github/actions/setup-packman
-      - uses: shivammathur/setup-php@v2
+      - name: Filter paths
+        id: filter
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         with:
-          php-version: '8.4'
-          extensions: dom, mbstring, pdo_pgsql, pcntl, bcmath, intl
-          coverage: none
-          tools: composer:v2
-      - id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+          base: main
+          predicate-quantifier: every
+          filters: |
+            code:
+              - "**"
+              - "!**/*.md"
+              - "!docs/**"
+              - "!LICENSE"
+      - name: Plan lanes
+        id: plan
+        env:
+          FILTER_CODE: ${{ steps.filter.outputs.code }}
+        run: |
+          code="${FILTER_CODE:-true}"
+          if [[ "$code" != "true" && "$code" != "false" ]]; then
+            echo "unexpected path filter result: $code" >&2
+            exit 1
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          printf '### Changes\n\nPHP lanes run: %s\n' "$code" >> "$GITHUB_STEP_SUMMARY"
+
+  quality:
+    name: Quality
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-lint-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-lint-
-      - run: composer install --prefer-dist --no-interaction --no-progress
-      - run: composer lint:check
-      - run: composer analyse
-      - run: composer refactor:check
-      - run: composer gate
-      - run: composer api:check
-      - run: composer docs:reference -- --check
-      - run: bash scripts/build-agent-docs.sh --check
+          persist-credentials: false
+      - name: Set up Packman
+        uses: ./.github/actions/setup-packman
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: '8.6'
+      - name: Composer audit
+        run: env -u COMPOSER_NO_AUDIT composer audit --locked
+      - name: Strict validation of every installing root
+        run: |
+          for manifest in composer.json packages/*/composer.json; do
+            composer validate --strict --working-dir="$(dirname "$manifest")"
+          done
+      - name: Pint
+        run: composer lint:check
+      - name: PHPStan
+        run: composer analyse
+      - name: Rector
+        run: composer refactor:check
+        env:
+          COMPOSER_PROCESS_TIMEOUT: '0'
+      - name: Packman gate
+        run: composer gate
+      - name: API manifest
+        run: composer api:check
+      - name: Generated reference
+        run: composer docs:reference -- --check
+      - name: Agent docs
+        run: composer ai:sync
 
   tests:
-    name: Tests (PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, PostgreSQL 17)
-    runs-on: ubuntu-latest
+    name: Tests (PHP ${{ matrix.php }})
+    needs:
+      - changes
+      - quality
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.4']
-        laravel: ['13.*']
+        php:
+          - '8.4'
+          - '8.5'
+          - '8.6'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Packman
+        uses: ./.github/actions/setup-packman
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Tests
+        run: composer test
+
+  tests-pg:
+    name: PostgreSQL ${{ matrix.postgres }}
+    needs:
+      - changes
+      - quality
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres:
+          - '16'
+          - '19'
     services:
       postgres:
-        image: postgres:17
+        image: postgres:${{ matrix.postgres }}
         env:
           POSTGRES_DB: commerz_test
           POSTGRES_USER: commerz
@@ -79,47 +174,117 @@ jobs:
       PGSQL_DATABASE: commerz_test
       PGSQL_USERNAME: commerz
       PGSQL_PASSWORD: commerz
-      COMPOSER_PROCESS_TIMEOUT: 0
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-packman
-      - uses: shivammathur/setup-php@v2
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, mbstring, pdo_pgsql, pcntl, bcmath, intl
-          coverage: none
-          tools: composer:v2
-      - run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update --no-interaction
-      - run: composer update --prefer-dist --no-interaction --no-progress
-      - run: composer test
-      - run: composer test:pg
-      - run: bash scripts/test-consumer-install.sh
+          persist-credentials: false
+      - name: Set up Packman
+        uses: ./.github/actions/setup-packman
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: '8.6'
+      - name: PostgreSQL tests
+        run: composer test:pg
+
+  consumer:
+    name: Consumer install (PHP 8.4, PostgreSQL 16)
+    needs:
+      - changes
+      - quality
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: commerz_test
+          POSTGRES_USER: commerz
+          POSTGRES_PASSWORD: commerz
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U commerz -d commerz_test"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 54329
+      DB_DATABASE: commerz_test
+      DB_USERNAME: commerz
+      DB_PASSWORD: commerz
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Packman
+        uses: ./.github/actions/setup-packman
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
+        with:
+          php-version: '8.4'
+      - name: Install the PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Consumer install
+        run: bash scripts/test-consumer-install.sh
 
   docs:
     name: Documentation site
-    runs-on: ubuntu-latest
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-packman
-      - uses: shivammathur/setup-php@v2
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          php-version: '8.4'
-          extensions: dom, mbstring, bcmath, intl
-          coverage: none
-          tools: composer:v2
-      - id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+          persist-credentials: false
+      - name: Set up Packman
+        uses: ./.github/actions/setup-packman
+      - name: Set up PHP
+        uses: ./.github/actions/setup-php
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-docs-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-docs-
-      - run: composer install --prefer-dist --no-interaction --no-progress
-      - run: composer docs:reference -- --check
-      - uses: actions/setup-node@v4
+          php-version: '8.6'
+      - name: Generated reference
+        run: composer docs:reference -- --check
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
           cache-dependency-path: docs/package-lock.json
-      - run: npm ci --prefix docs
-      - run: npm run docs:build --prefix docs
+      - name: Build the documentation site
+        run: |
+          npm ci --prefix docs
+          npm run docs:build --prefix docs
+
+  ci-gate:
+    name: CI gate
+    needs:
+      - changes
+      - quality
+      - tests
+      - tests-pg
+      - consumer
+      - docs
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verdict
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 .github/scripts/ci-verdict.py

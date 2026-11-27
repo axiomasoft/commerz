@@ -6,6 +6,7 @@ use Commerz\Catalog\Attributes\Enums\FilterOperator;
 use Commerz\Catalog\Attributes\Internal\Types\EnumType;
 use Commerz\Catalog\Attributes\Internal\Types\MultiEnumType;
 use Commerz\Catalog\Tests\Support\Attrs;
+use PHPUnit\Framework\Assert;
 
 describe('enum', function (): void {
     it('owns choices and has an empty config', function (): void {
@@ -33,8 +34,11 @@ describe('enum', function (): void {
         $definition = Attrs::definition($type, [], ['red', 'blue']);
         $facts = $type->index('blue', $definition);
 
+        $blue = $definition->choice('blue');
+        Assert::assertNotNull($blue);
+
         expect($facts)->toHaveCount(1)
-            ->and($facts[0]->choice)->toBe($definition->choice('blue')->id)
+            ->and($facts[0]->choice)->toBe($blue->id)
             ->and($type->index('green', $definition))->toBe([])
             ->and($type->operators())->toBe([FilterOperator::Equals, FilterOperator::In]);
     });
@@ -66,8 +70,11 @@ describe('multi_enum', function (): void {
         $definition = Attrs::definition($type, [], ['s', 'm']);
         $facts = $type->index(['s', 'm'], $definition);
 
+        $medium = $definition->choice('m');
+        Assert::assertNotNull($medium);
+
         expect($facts)->toHaveCount(2)
-            ->and($facts[1]->choice)->toBe($definition->choice('m')->id)
+            ->and($facts[1]->choice)->toBe($medium->id)
             ->and($type->operators())->toBe([FilterOperator::Equals, FilterOperator::In]);
     });
 });

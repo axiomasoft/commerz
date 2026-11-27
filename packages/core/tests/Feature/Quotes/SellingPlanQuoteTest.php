@@ -114,7 +114,7 @@ it('calculates 20% dueNowAmount and 80% remainingBalanceAmount before shipment f
     // 250.00 item + 20% VAT (50.00) + 20.00 delivery = 320.00 total -> 20% due now (64.00), 80% remaining (256.00)
     $result = app(QuotePipeline::class)->run(new QuoteInput(
         context: $context,
-        lines: [new QuoteLineInput('line-1', $sellable, 1, $depositPlan)],
+        lines: [new QuoteLineInput('line-1', $sellable, 1, sellingPlan: $depositPlan)],
         delivery: new DeliverySelection(
             'freight',
             new Address('DE', 'DE-BE', 'Berlin', '10115', ['Unter den Linden 1'], 'Ada', '+4900000000'),
@@ -150,7 +150,7 @@ it('partitions mixed one-time and deposit lines accurately and applies recurring
         context: $context,
         lines: [
             new QuoteLineInput('mug', FakeSellables::snapshot('product:mug', Money::of('30.00', 'USD')), 1),
-            new QuoteLineInput('jacket', FakeSellables::snapshot('product:jacket', Money::of('100.00', 'USD')), 1, $depositPlan),
+            new QuoteLineInput('jacket', FakeSellables::snapshot('product:jacket', Money::of('100.00', 'USD')), 1, sellingPlan: $depositPlan),
         ],
     ));
 
@@ -170,7 +170,7 @@ it('partitions mixed one-time and deposit lines accurately and applies recurring
     $recurringQuote = app(QuotePipeline::class)->run(new QuoteInput(
         context: $context,
         lines: [
-            new QuoteLineInput('beans', FakeSellables::snapshot('product:beans', Money::of('40.00', 'USD')), 2, $recurringPlan),
+            new QuoteLineInput('beans', FakeSellables::snapshot('product:beans', Money::of('40.00', 'USD')), 2, sellingPlan: $recurringPlan),
         ],
     ));
 

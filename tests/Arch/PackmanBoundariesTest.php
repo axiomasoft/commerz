@@ -10,7 +10,9 @@ use PhpParser\PrettyPrinter\Standard;
 
 it('marks every internal declaration and consumes only public Packman types', function (): void {
     $root = dirname(__DIR__, 2);
-    $scanner = new SourceScanner($root, require __DIR__.'/ownership.php');
+    /** @var array<string, array{kind: string, nouns: list<string>, extra?: list<string>}> $map */
+    $map = require __DIR__.'/ownership.php';
+    $scanner = new SourceScanner($root, $map);
     $violations = [];
 
     foreach ($scanner->files() as $file) {
@@ -59,7 +61,12 @@ it('marks every internal declaration and consumes only public Packman types', fu
 });
 
 it('keeps internal types out of the exported PHP and PHPDoc contracts', function (): void {
-    foreach (glob(dirname(__DIR__, 2).'/packages/*/resources/contracts/php-api.json') as $manifest) {
+    $manifests = glob(dirname(__DIR__, 2).'/packages/*/resources/contracts/php-api.json');
+    if ($manifests === false) {
+        throw new RuntimeException('Cannot list php-api manifests.');
+    }
+
+    foreach ($manifests as $manifest) {
         expect(file_get_contents($manifest))->not->toContain('\\\\Internal\\\\');
     }
 });

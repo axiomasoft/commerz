@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Data\Compiler\ConstraintNames;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -28,10 +29,15 @@ function catalogTable(string $logical): string
 /** @return list<string> */
 function catalogConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [catalogTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [catalogTable($logical)]);
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->conname;
+    }
+
+    return $names;
 }
 
 // RefreshDatabase wraps each test in a transaction; a savepoint keeps it usable after an expected violation.
@@ -77,10 +83,67 @@ function catalogSeed(): array
     return $ids;
 }
 
-/** @return array<string, mixed> */
+/**
+ * @param  array<string, mixed>  $base
+ * @param  array<string, mixed>  $extra
+ * @return array<string, mixed>
+ */
+function catalogRow(array $base, array $extra = []): array
+{
+    foreach ($extra as $column => $value) {
+        $base[$column] = $value;
+    }
+
+    return $base;
+}
+
+/** @param  array<string, mixed>  $row */
+function catalogRowId(array $row): string
+{
+    $id = $row['id'] ?? null;
+    if (! is_string($id)) {
+        throw new RuntimeException('Row id must be a string.');
+    }
+
+    return $id;
+}
+
+/**
+ * @param  array<string, mixed>  $extra
+ * @return array<string, mixed>
+ */
 function catalogVariant(string $productId, string $sku, string $signature, array $extra = []): array
 {
-    return ['id' => Uuid7::generate(), 'product_id' => $productId, 'sku' => $sku, 'option_signature' => $signature, ...$extra];
+    return catalogRow([
+        'id' => Uuid7::generate(),
+        'product_id' => $productId,
+        'sku' => $sku,
+        'option_signature' => $signature,
+    ], $extra);
+}
+
+function catalogMigration(string $file): object
+{
+    $migration = require $file;
+    if (! is_object($migration)) {
+        throw new RuntimeException($file.' must return a migration object.');
+    }
+
+    return $migration;
+}
+
+function catalogMigrate(object $migration, string $method): void
+{
+    if ($method !== 'up' && $method !== 'down') {
+        throw new RuntimeException('Unsupported migration method.');
+    }
+
+    $call = $method === 'up' ? [$migration, 'up'] : [$migration, 'down'];
+    if (! is_callable($call)) {
+        throw new RuntimeException("Migration is missing {$method}().");
+    }
+
+    $call();
 }
 
 it('declares the catalog nouns under commerz.catalog', function (): void {
@@ -101,7 +164,10 @@ it('creates every table with canonical constraint names', function (): void {
             expect($name)->toMatch('/_(pk|uq|fk|ck)\z/');
         }
 
-        foreach (DB::select('select indexname from pg_indexes where tablename = ?', [$physical]) as $index) {
+        /** @var list<object{indexname: string}> $indexes */
+        $indexes = DB::select('select indexname from pg_indexes where tablename = ?', [$physical]);
+
+        foreach ($indexes as $index) {
             expect($index->indexname)->toMatch('/_(pk|uq|ix)\z/');
         }
 
@@ -170,7 +236,7 @@ it('binds a variant option value to an axis of its own product and to the value 
 
     expect(fn () => catalogInsert('variant_option_values', $row($ids['size'], $ids['small'])))
         ->toThrow(QueryException::class, 'cmz_variant_option_values_product_id_option_id_fk')
-        ->and(fn () => catalogInsert('variant_option_values', $row($ids['color'], $ids['small'], $blueVariant['id'])))
+        ->and(fn () => catalogInsert('variant_option_values', $row($ids['color'], $ids['small'], catalogRowId($blueVariant))))
         ->toThrow(QueryException::class, 'cmz_variant_option_values_option_value_id_option_id_fk');
 
     $foreign = Uuid7::generate();
@@ -213,12 +279,23 @@ it('checks statuses, dimensions and attribute documents', function (): void {
     catalogUpdate('variants', $ids['variant'], ['weight_grams' => 0, 'attributes' => '{"k":1}']);
 
     $defaults = DB::table(catalogTable('products'))->where('id', $ids['product'])->first();
-    expect(jsonb_typeof_of($defaults->attributes))->toBe('object');
+    if (! $defaults instanceof stdClass) {
+        throw new RuntimeException('Product row is missing.');
+    }
+    $attributes = $defaults->attributes;
+    if (! is_string($attributes)) {
+        throw new RuntimeException('Product attributes must be a string.');
+    }
+    expect(jsonb_typeof_of($attributes))->toBe('object');
 });
 
 function jsonb_typeof_of(string $json): string
 {
-    return DB::selectOne('select jsonb_typeof(?::jsonb) as t', [$json])->t;
+    /** @var object{t: string}|null $row */
+    $row = DB::selectOne('select jsonb_typeof(?::jsonb) as t', [$json]);
+    Assert::assertNotNull($row);
+
+    return $row->t;
 }
 
 it('checks attribute and product type enums', function (): void {
@@ -232,11 +309,21 @@ it('checks attribute and product type enums', function (): void {
 
     catalogInsert('attributes', ['id' => $id, 'code' => 'a', 'type' => 'text', 'name' => $name]);
     $row = DB::table(catalogTable('attributes'))->first();
+    if (! $row instanceof stdClass) {
+        throw new RuntimeException('Attribute row is missing.');
+    }
+    $config = $row->config;
+    $configVersion = $row->config_version;
+    $status = $row->status;
+    $filterable = $row->filterable;
+    if (! is_string($config) || ! is_int($configVersion) || ! is_string($status) || ! is_bool($filterable)) {
+        throw new RuntimeException('Attribute row has an unexpected shape.');
+    }
 
-    expect(jsonb_typeof_of($row->config))->toBe('object')
-        ->and($row->config_version)->toBe(1)
-        ->and($row->status)->toBe('active')
-        ->and($row->filterable)->toBeFalse();
+    expect(jsonb_typeof_of($config))->toBe('object')
+        ->and($configVersion)->toBe(1)
+        ->and($status)->toBe('active')
+        ->and($filterable)->toBeFalse();
 
     $type = catalogSeed()['type'];
 
@@ -277,6 +364,7 @@ it('keeps exactly one value per attribute_index row and a choice of its own attr
     catalogInsert('attribute_index', ['product_id' => $ids['product'], 'attribute_id' => $other, 'day' => '2026-10-09']);
     catalogInsert('attribute_index', ['product_id' => $ids['product'], 'attribute_id' => $other, 'term' => 'matte']);
 
+    /** @var list<int|string> $ids */
     $ids = DB::table(catalogTable('attribute_index'))->orderBy('id')->pluck('id')->all();
 
     expect($ids)->toBe(array_values(array_unique($ids)))->and($ids)->toHaveCount(5);
@@ -363,7 +451,7 @@ it('drops and recreates the whole catalog schema on rollback and migrate', funct
     $path = realpath(__DIR__.'/../../database/migrations');
     $options = ['--path' => $path, '--realpath' => true];
 
-    $this->artisan('migrate:rollback', $options)->assertExitCode(0);
+    $this->pendingArtisan('migrate:rollback', $options)->assertExitCode(0);
 
     foreach (CATALOG_TABLES as $logical) {
         expect(DB::getSchemaBuilder()->hasTable(catalogTable($logical)))->toBeFalse($logical);
@@ -371,7 +459,7 @@ it('drops and recreates the whole catalog schema on rollback and migrate', funct
 
     expect(DB::getSchemaBuilder()->hasTable(catalogTable('stores')))->toBeTrue();
 
-    $this->artisan('migrate', $options)->assertExitCode(0);
+    $this->pendingArtisan('migrate', $options)->assertExitCode(0);
 
     foreach (CATALOG_TABLES as $logical) {
         expect(DB::getSchemaBuilder()->hasTable(catalogTable($logical)))->toBeTrue($logical);
@@ -379,24 +467,24 @@ it('drops and recreates the whole catalog schema on rollback and migrate', funct
 });
 
 it('widens an installed numeric projection without changing existing values and refuses a lossy rollback', function (): void {
-    $migration = require __DIR__.'/../../database/migrations/2026_10_09_100009_widen_commerz_attribute_numbers.php';
-    $migration->down();
+    $migration = catalogMigration(__DIR__.'/../../database/migrations/2026_10_09_100009_widen_commerz_attribute_numbers.php');
+    catalogMigrate($migration, 'down');
     $ids = catalogSeed();
     $attribute = Uuid7::generate();
     catalogInsert('attributes', ['id' => $attribute, 'code' => 'number', 'type' => 'decimal', 'name' => '{"en":"Number"}']);
     catalogInsert('attribute_index', ['product_id' => $ids['product'], 'attribute_id' => $attribute, 'num' => '123.123456789012']);
-    $migration->up();
+    catalogMigrate($migration, 'up');
 
     expect(DB::table(catalogTable('attribute_index'))->value('num'))->toBe('123.123456789012');
     DB::table(catalogTable('attribute_index'))->update(['num' => '123.1234567890123']);
-    expect(fn () => DB::transaction(fn () => $migration->down()))->toThrow(LogicException::class, 'without losing precision')
+    expect(fn () => DB::transaction(fn () => catalogMigrate($migration, 'down')))->toThrow(LogicException::class, 'without losing precision')
         ->and(DB::table(catalogTable('attribute_index'))->value('num'))->toBe('123.1234567890123');
 });
 
 it('refuses an int64 narrowing rollback without changing a stored measurement', function (): void {
     $ids = catalogSeed();
     DB::table(catalogTable('variants'))->where('id', $ids['variant'])->update(['weight_grams' => PHP_INT_MAX]);
-    $migration = require __DIR__.'/../../database/migrations/2026_10_09_100010_widen_commerz_catalog_integers.php';
-    expect(fn () => DB::transaction(fn () => $migration->down()))->toThrow(QueryException::class)
+    $migration = catalogMigration(__DIR__.'/../../database/migrations/2026_10_09_100010_widen_commerz_catalog_integers.php');
+    expect(fn () => DB::transaction(fn () => catalogMigrate($migration, 'down')))->toThrow(QueryException::class)
         ->and(DB::table(catalogTable('variants'))->where('id', $ids['variant'])->value('weight_grams'))->toBe(PHP_INT_MAX);
 });

@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Commerz\Plugins\CorePlugin;
+use Illuminate\Foundation\Application;
 use Packman\Context\Contracts\ContextScopeInterface;
 use Packman\Doctor\Contracts\DoctorCheck;
 use Packman\Doctor\Laravel\DoctorChecks;
+use Packman\Extensions\Data\ExtensionFacetProfile;
 use Packman\Panels\Contracts\Registry\PanelCatalogue;
+use Packman\Panels\Contracts\Registry\PanelProvider;
 use Packman\Panels\Data\Panel\PanelContext;
 use Packman\Panels\Data\Subjects\EntityReference;
 use Packman\Panels\Laravel\PanelsServiceProvider;
@@ -51,30 +54,58 @@ it('boots one Packman graph with every commerce facet in either provider order',
         $this->bootInReverseOrder();
     }
 
+    $app = $this->app;
+    if (! $app instanceof Application) {
+        throw new RuntimeException('Application is not booted.');
+    }
+
     ExtensionRegistrar::builtIn(CommerceBootPlugin::class);
-    $this->app->register(PanelsServiceProvider::class);
-    $inspector = $this->app->make(PluginInspector::class);
+    $app->register(PanelsServiceProvider::class);
+    $inspector = $app->make(PluginInspector::class);
     $plugins = $inspector->describe();
 
-    expect($inspector)->toBe($this->app->make(Contributions::class))
+    expect($inspector)->toBe($app->make(Contributions::class))
         ->and(array_column($plugins, 'id'))->toBe([
             'commerz.core', 'commerz.catalog', 'commerz.inventory', 'commerz.pricing',
             'commerz.promotions', 'commerz.sales', 'commerz.shipping', 'host.boot',
         ])
-        ->and($this->app->make(Capabilities::class)->require(CommerceBootCapability::class)->value())->toBe('active');
+        ->and($app->make(Capabilities::class)->require(CommerceBootCapability::class)->value())->toBe('active');
 
-    $standalone = PluginGraph::compile($this->app, [], builtIn: array_column($plugins, 'class'));
+    $builtIn = [];
+    foreach (array_column($plugins, 'class') as $class) {
+        if (! is_a($class, ExtensionPlugin::class, true)) {
+            throw new RuntimeException('Plugin class is not an extension plugin.');
+        }
+        $builtIn[] = $class;
+    }
+
+    $standalone = PluginGraph::compile($app, [], builtIn: $builtIn);
     expect(array_column($standalone->describe(), 'id'))->toBe(array_column($plugins, 'id'));
 
     $panelClasses = [];
-    $schemaClasses = array_map(static fn (SchemaSetProvider $provider): string => $provider::class, iterator_to_array($this->app->tagged(SchemaSetProvider::class)));
-    $checkClasses = array_map(static fn (DoctorCheck $check): string => $check::class, iterator_to_array($this->app->tagged(DoctorChecks::TAG)));
+    $schemaClasses = [];
+    foreach ($app->tagged(SchemaSetProvider::class) as $provider) {
+        if (! $provider instanceof SchemaSetProvider) {
+            throw new RuntimeException('Tagged schema set provider is invalid.');
+        }
+        $schemaClasses[] = $provider::class;
+    }
+    $checkClasses = [];
+    foreach ($app->tagged(DoctorChecks::TAG) as $check) {
+        if (! $check instanceof DoctorCheck) {
+            throw new RuntimeException('Tagged doctor check is invalid.');
+        }
+        $checkClasses[] = $check::class;
+    }
 
     foreach (array_slice($plugins, 0, 7) as $plugin) {
         $facets = $inspector->facetsOf($plugin->id);
         expect($facets)->not->toBeNull()
-            ->and($plugin->kinds)->not->toBeEmpty()
-            ->and($facets->panelProviders)->not->toBeEmpty()
+            ->and($plugin->kinds)->not->toBeEmpty();
+        if (! $facets instanceof ExtensionFacetProfile) {
+            throw new RuntimeException("Missing facets for {$plugin->id}.");
+        }
+        expect($facets->panelProviders)->not->toBeEmpty()
             ->and($facets->healthChecks)->not->toBeEmpty()
             ->and($facets->schemaSetProviders)->not->toBeEmpty();
         foreach ($facets->schemaSetProviders as $provider) {
@@ -87,7 +118,7 @@ it('boots one Packman graph with every commerce facet in either provider order',
     }
 
     expect($panelClasses)->toHaveCount(20);
-    $catalogue = $this->app->make(PanelCatalogue::class);
+    $catalogue = $app->make(PanelCatalogue::class);
     $tenant = new readonly class implements ContextScopeInterface
     {
         public function id(): string
@@ -97,5 +128,11 @@ it('boots one Packman graph with every commerce facet in either provider order',
     };
     $context = new PanelContext($tenant, 'user', 'actor-1');
     $descriptors = $catalogue->forEntity($context, new EntityReference('store', 'store-1'));
-    expect(array_column($descriptors, 'key'))->toEqualCanonicalizing(array_map(static fn (string $provider): string => (new $provider)->descriptor()->key, $panelClasses));
+    expect(array_column($descriptors, 'key'))->toEqualCanonicalizing(array_map(static function (string $provider): string {
+        if (! is_a($provider, PanelProvider::class, true)) {
+            throw new RuntimeException($provider.' is not a panel provider.');
+        }
+
+        return (new ReflectionClass($provider))->newInstance()->descriptor()->key;
+    }, $panelClasses));
 })->with(['forward' => false, 'reverse' => true]);

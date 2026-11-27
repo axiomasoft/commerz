@@ -24,7 +24,13 @@ it('defaults to half-up rounding, five codes, restore on cancel and expiry, and 
 });
 
 it('reads the shipped config file', function (): void {
-    expect(PromotionsOptions::fromArray(require __DIR__.'/../../config/commerz-promotions.php'))->toEqual(PromotionsOptions::fromArray([]));
+    $config = require __DIR__.'/../../config/commerz-promotions.php';
+
+    if (! is_array($config)) {
+        throw new RuntimeException('Expected the promotions config file to return an array.');
+    }
+
+    expect(PromotionsOptions::fromArray($config))->toEqual(PromotionsOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {

@@ -6,6 +6,7 @@ use Commerz\Money\Money;
 use Commerz\Operations\Contracts\Transactions;
 use Commerz\Sales\Common\Exceptions\OperationInsideTransaction;
 use Commerz\Sales\Gateways\Exceptions\InvalidGatewayResult;
+use Commerz\Sales\Orders\Data\OrderView;
 use Commerz\Sales\Orders\Enums\PaymentState;
 use Commerz\Sales\Refunds\Data\ReconcileRefund;
 use Commerz\Sales\Refunds\Data\RefundId;
@@ -38,12 +39,12 @@ beforeEach(function (): void {
 afterEach(fn () => slsTruncate());
 
 /** A refund of the whole payment whose answer timed out. */
-function rfUnknown(object $test): RefundView
+function rfUnknown(OrderView $order): RefundView
 {
     RecordingGateway::scenario(['refund' => 'timeout']);
 
     try {
-        rfIssue($test->order, '200.00');
+        rfIssue($order, '200.00');
     } catch (RefundOutcomeUnknown $e) {
         RecordingGateway::scenario([]);
 
@@ -59,7 +60,7 @@ function rfReconcile(RefundId|RefundView $refund): RefundView
 }
 
 it('settles an unknown refund with what the gateway found', function (): void {
-    $unknown = rfUnknown($this);
+    $unknown = rfUnknown($this->order);
     RecordingGateway::scenario(['found_refund' => 'succeeded']);
 
     $refund = rfReconcile($unknown);
@@ -72,7 +73,7 @@ it('settles an unknown refund with what the gateway found', function (): void {
 });
 
 it('fails an unknown refund the gateway never made, so the amount may be refunded anew', function (): void {
-    $unknown = rfUnknown($this);
+    $unknown = rfUnknown($this->order);
 
     $refund = rfReconcile($unknown);
     $again = rfIssue($this->order, '200.00');
@@ -82,7 +83,7 @@ it('fails an unknown refund the gateway never made, so the amount may be refunde
 });
 
 it('keeps an unknown refund unknown when the gateway cannot be reached', function (): void {
-    $unknown = rfUnknown($this);
+    $unknown = rfUnknown($this->order);
     RecordingGateway::scenario(['found_refund' => 'fail']);
 
     expect(fn () => rfReconcile($unknown))->toThrow(RefundOutcomeUnknown::class)

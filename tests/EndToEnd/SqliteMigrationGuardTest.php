@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Commerz\EndToEnd\Support\EndToEndTestCase;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Packman\Schema\Contracts\Migration\SchemaMigrator;
@@ -32,22 +33,31 @@ trait UsesSqliteTestDatabase
 
 uses(UsesSqliteTestDatabase::class);
 
+abstract class SqliteMigrationGuardCase extends EndToEndTestCase
+{
+    use UsesSqliteTestDatabase;
+}
+
 afterEach(function (): void {
     DB::disconnect('testing');
 
-    if ($this->sqlitePath !== '' && is_file($this->sqlitePath)) {
-        @unlink($this->sqlitePath);
+    $path = $this->sqlitePath;
+    if (is_string($path) && $path !== '' && is_file($path)) {
+        @unlink($path);
     }
 });
 
 /** @return list<string> */
 function sqliteCommerceTables(): array
 {
-    $rows = DB::connection('testing')->select(
-        "select name from sqlite_master where type = 'table' and name like 'cmz_%' order by name",
-    );
+    /** @var list<object{name: string}> $rows */
+    $rows = DB::connection('testing')->select("select name from sqlite_master where type = 'table' and name like 'cmz_%' order by name");
+    $tables = [];
+    foreach ($rows as $row) {
+        $tables[] = $row->name;
+    }
 
-    return array_map(static fn (object $row): string => (string) $row->name, $rows);
+    return $tables;
 }
 
 it('rejects SQLite migrations via SchemaMigrator with zero cmz_* tables created', function (): void {

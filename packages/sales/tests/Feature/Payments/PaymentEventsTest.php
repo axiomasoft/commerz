@@ -20,6 +20,7 @@ use Commerz\Sales\Payments\Exceptions\PaymentNotFound;
 use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -65,13 +66,19 @@ function evCount(string $table, string $type): int
 it('records the money of a manual payment and pays the order', function (): void {
     $result = slsPayments()->recordEvent(evCaptured($this->payment));
     $payment = slsPayments()->find($this->payment->id);
-    $stored = DB::table('cmz_payment_events')->first();
+    $row = DB::table('cmz_payment_events')->first();
+
+    if (! is_object($row)) {
+        throw new RuntimeException('Expected a stored payment event.');
+    }
+
+    $stored = get_object_vars($row);
 
     expect([$result->payment->value, $result->duplicate, $result->outcome, $result->status])
         ->toBe([$this->payment->id->value, false, PaymentEventOutcome::Applied, PaymentStatus::Captured])
         ->and([$payment->status, $payment->captured])->toEqual([PaymentStatus::Captured, $this->order->amountDue])
         ->and(slsOrders()->find($this->order->id))->paymentState->toBe(PaymentState::Paid)->captured->toEqual($this->order->amountDue)
-        ->and([$stored->gateway, $stored->external_event_id, $stored->type, $stored->outcome, $stored->payment_id])
+        ->and([$stored['gateway'] ?? null, $stored['external_event_id'] ?? null, $stored['type'] ?? null, $stored['outcome'] ?? null, $stored['payment_id'] ?? null])
         ->toBe(['manual', 'bank-tx-42', 'captured', 'applied', $this->payment->id->value]);
 });
 
@@ -114,7 +121,13 @@ it('keeps nothing of an event about a payment it does not know', function (): vo
 });
 
 it('refuses an event that does not fit its payment', function (Closure $event, string $reason): void {
-    expect(fn () => slsPayments()->recordEvent($event($this->payment)))->toThrow(InvalidPaymentEvent::class, $reason)
+    $command = $event($this->payment);
+
+    if (! $command instanceof RecordPaymentEvent) {
+        throw new RuntimeException('Expected a payment event.');
+    }
+
+    expect(fn () => slsPayments()->recordEvent($command))->toThrow(InvalidPaymentEvent::class, $reason)
         ->and(DB::table('cmz_payment_events')->count())->toBe(0)
         ->and(slsPayments()->find($this->payment->id)->status)->toBe(PaymentStatus::Pending);
 })->with([
@@ -125,7 +138,7 @@ it('refuses an event that does not fit its payment', function (Closure $event, s
 it('refuses a malformed event', function (Closure $event): void {
     try {
         $event();
-        $this->fail('The event was accepted.');
+        Assert::fail('The event was accepted.');
     } catch (InvalidPaymentEvent $e) {
         expect($e->code())->toBe('sales.invalid_payment_event');
     }
@@ -135,7 +148,7 @@ it('refuses a malformed event', function (Closure $event): void {
     'long event id' => [fn () => new RecordPaymentEvent('manual', str_repeat('e', 192), PaymentEventType::Captured, 'payment:x')],
     'bad gateway' => [fn () => new RecordPaymentEvent('Manual', 'e-1', PaymentEventType::Captured, 'payment:x')],
     'zero amount' => [fn () => new RecordPaymentEvent('manual', 'e-1', PaymentEventType::Captured, 'payment:x', amount: Money::zero('RUB'))],
-    'payload with a list' => [fn () => new RecordPaymentEvent('manual', 'e-1', PaymentEventType::Captured, 'payment:x', payload: ['a' => [1]])],
+    'payload with a list' => [fn () => new ReflectionClass(RecordPaymentEvent::class)->newInstance('manual', 'e-1', PaymentEventType::Captured, 'payment:x', null, null, null, ['a' => [1]])],
 ]);
 
 it('keeps an event that would move the payment back as ignored', function (): void {

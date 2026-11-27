@@ -20,6 +20,10 @@ it('leaves the counters of the order lines to OrderLedger alone', function (): v
     $writers = [];
 
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)) as $file) {
+        if (! $file instanceof SplFileInfo) {
+            continue;
+        }
+
         $path = substr($file->getPathname(), strlen($src) + 1);
 
         if ($file->getExtension() === 'php' && $path !== 'Common/Internal/OrderLedger.php' && olwWritesLedger((string) file_get_contents($file->getPathname()))) {

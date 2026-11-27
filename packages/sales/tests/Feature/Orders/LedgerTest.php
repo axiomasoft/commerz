@@ -12,6 +12,7 @@ use Commerz\Testkit\Commerce;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -32,7 +33,11 @@ function ldgCounters(OrderView $order, OrderLineId $line): array
 {
     $view = slsOrders()->find($order->id)->line($line);
 
-    return [$view?->cancelledQuantity, $view?->fulfilledQuantity, $view?->returnedQuantity];
+    if ($view === null) {
+        throw new RuntimeException('Expected the order line.');
+    }
+
+    return [$view->cancelledQuantity, $view->fulfilledQuantity, $view->returnedQuantity];
 }
 
 it('cancels, fulfills and returns units of a line', function (): void {
@@ -50,7 +55,7 @@ it('refuses more units than are outstanding and names what is left', function ()
 
     try {
         slsLedger()->cancel($this->order->id, new LineQuantity($this->line, 2));
-        $this->fail('cancelled fulfilled units');
+        Assert::fail('cancelled fulfilled units');
     } catch (QuantityExceedsOutstanding $e) {
         expect([$e->lineId, $e->requested, $e->available, $e->code()])->toBe([$this->line->value, 2, 1, 'sales.quantity_exceeds_outstanding']);
     }

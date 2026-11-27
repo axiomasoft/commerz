@@ -69,14 +69,14 @@ final class RuleStates
                 true,
                 categories: $line['categories'] ?? [],
             );
-            $inputs[] = new QuoteLineInput((string) $line['id'], $snapshots[$line['id']], $line['qty'] ?? 1);
+            $inputs[] = new QuoteLineInput($line['id'], $snapshots[$line['id']], $line['qty'] ?? 1);
         }
 
         $state = QuoteState::start(new QuoteInput($context, $inputs));
 
         foreach ($lines as $line) {
             $state = $state->withLine(new QuoteLine(
-                (string) $line['id'],
+                $line['id'],
                 $snapshots[$line['id']],
                 $line['qty'] ?? 1,
                 Money::of($line['unit'], 'RUB'),

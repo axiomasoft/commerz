@@ -39,6 +39,7 @@ use Commerz\Sales\Returns\Contracts\Returns;
 use Commerz\Sales\Sales;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\SalesFixturePlugin;
+use Commerz\Sales\Tests\TestCase as SalesTestCase;
 use Commerz\Schema\TableNames;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
@@ -47,7 +48,9 @@ use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
 
 /**
  * The fixture plugin goes in before the registry is compiled (the migrations already resolve it); without the inventory
@@ -62,6 +65,11 @@ trait SlsEnvironment
         $app['config']->set('commerz.plugins', [SalesFixturePlugin::class]);
         $app['config']->set('commerz.stock', 'unlimited');
     }
+}
+
+abstract class SlsEnvironmentHarness extends SalesTestCase
+{
+    use SlsEnvironment;
 }
 
 function slsCarts(): Carts
@@ -112,7 +120,14 @@ function slsRefunds(): Refunds
 function slsConfig(array $sections): void
 {
     foreach ($sections as $section => $values) {
-        config(["commerz-sales.{$section}" => $values + config("commerz-sales.{$section}")]);
+        $current = config("commerz-sales.{$section}");
+
+        if (! is_array($current)) {
+            $current = [];
+        }
+
+        /** @var array<string, mixed> $current */
+        config(["commerz-sales.{$section}" => $values + $current]);
     }
 
     foreach ([SalesOptions::class, Carts::class, Checkout::class, Orders::class, OrderChanges::class, Payments::class, Fulfillments::class, Returns::class, Refunds::class, Sales::class] as $abstract) {
@@ -238,9 +253,21 @@ function slsOrderPayment(OrderView $order, string $status, int $amountMinor, int
  * Payments call their gateway outside any transaction, so their tests cannot run inside the transaction of
  * `RefreshDatabase`: they commit, and the sales tables are emptied after each test (`slsTruncate`).
  */
+function slsPending(mixed $command): PendingCommand
+{
+    if (! $command instanceof PendingCommand) {
+        throw new RuntimeException('Expected a pending artisan command.');
+    }
+
+    return $command;
+}
+
 function slsCommitted(): void
 {
-    test()->artisan('migrate')->assertSuccessful();
+    if (Artisan::call('migrate') !== 0) {
+        throw new RuntimeException('migrate failed.');
+    }
+
     slsTruncate();
     RecordingGateway::reset();
 }
@@ -252,6 +279,23 @@ function slsTruncate(): void
         .' cmz_fulfillment_lines, cmz_fulfillments, cmz_order_change_actions, cmz_order_changes, cmz_order_events,'
         .' cmz_order_lines, cmz_orders, cmz_cart_lines,'
         .' cmz_carts, cmz_channels, cmz_stores, cmz_outbox_messages, cmz_operation_receipts cascade');
+}
+
+/** @return array<string, mixed> */
+function slsJsonObject(mixed $payload): array
+{
+    if (! is_string($payload)) {
+        throw new RuntimeException('Expected a JSON document.');
+    }
+
+    $decoded = json_decode($payload, true);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Expected a JSON object.');
+    }
+
+    /** @var array<string, mixed> $decoded */
+    return $decoded;
 }
 
 /** @param  array<string, scalar>  $meta */

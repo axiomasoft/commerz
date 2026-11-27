@@ -29,7 +29,10 @@ use Commerz\Sales\Payments\Internal\PaymentWorkflow;
 use Commerz\Sales\Tests\Fixtures\AcquiringRecordingGateway;
 use Commerz\Schema\TableNames;
 use Illuminate\Database\ConnectionResolverInterface;
+use Mockery\MockInterface;
 use Packman\Plugins\Contracts\Contributions\Contributions;
+use Packman\Schema\Contracts\Compiler\SchemaOwnership;
+use Packman\Schema\Data\Compiler\TableNames as PackmanTables;
 
 function buildWorkflowFixture(bool $inTransaction, PaymentGateway ...$gateways): PaymentWorkflow
 {
@@ -76,26 +79,59 @@ function buildWorkflowFixture(bool $inTransaction, PaymentGateway ...$gateways):
             return isset($this->map[$key]);
         }
 
+        /**
+         * @template T of object
+         *
+         * @param  class-string<T>  $expectedInterface
+         * @return T
+         */
         public function get(string $kind, string $key, string $expectedInterface): object
         {
-            return $this->map[$key] ?? throw new RuntimeException("Unknown gateway {$key}");
+            $gateway = $this->map[$key] ?? throw new RuntimeException("Unknown gateway {$key}");
+
+            if (! $gateway instanceof $expectedInterface) {
+                throw new RuntimeException("Gateway {$key} is not {$expectedInterface}.");
+            }
+
+            return $gateway;
         }
 
+        /** @return list<string> */
         public function keys(string $kind): array
         {
             return array_keys($this->map);
         }
 
+        /** @return list<PaymentGateway> */
         public function all(string $kind, string $expectedInterface): array
         {
             return array_values($this->map);
         }
     };
 
+    /** @var ConnectionResolverInterface&MockInterface $resolver */
     $resolver = Mockery::mock(ConnectionResolverInterface::class);
     $options = new CommerzOptions;
-    $tables = new TableNames(static fn (): Packman\Schema\Contracts\Compiler\TableNames => Mockery::mock(Packman\Schema\Contracts\Compiler\TableNames::class));
+    $ownership = new class implements SchemaOwnership
+    {
+        /** @param  list<string>  $nouns */
+        public function declare(string $owner, array $nouns): void {}
+
+        public function ownerOf(string $logical): string
+        {
+            return 'commerz.sales';
+        }
+
+        /** @return array<string, list<string>> */
+        public function owners(): array
+        {
+            return ['commerz.sales' => ['order']];
+        }
+    };
+    $tables = new TableNames(static fn (): PackmanTables => new PackmanTables('cmz_', $ownership, $resolver));
+    /** @var CommittedEvents&MockInterface $events */
     $events = Mockery::mock(CommittedEvents::class);
+    /** @var Outbox&MockInterface $outbox */
     $outbox = Mockery::mock(Outbox::class);
     $orderLocks = new OrderLocks($resolver, $options, $tables);
     $orderJournal = new OrderJournal($resolver, $options, $tables);

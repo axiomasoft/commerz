@@ -10,6 +10,7 @@ use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\StaticSellables;
 use Commerz\Testkit\Concurrency;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -21,7 +22,7 @@ uses(SlsEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     slsCommitted();

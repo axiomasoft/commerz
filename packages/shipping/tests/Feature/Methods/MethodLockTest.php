@@ -10,6 +10,7 @@ use Commerz\Shipping\Zones\Data\ArchiveZone;
 use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 require_once __DIR__.'/../Zones/Helpers.php';
@@ -19,10 +20,10 @@ require_once __DIR__.'/../Zones/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    mtMigrate();
 });
 
 afterEach(function (): void {

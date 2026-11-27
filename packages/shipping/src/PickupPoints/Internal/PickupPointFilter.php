@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Shipping\PickupPoints\Internal;
 
+use Commerz\Ports\Delivery\Data\Parcel;
 use Commerz\Ports\Delivery\Data\PickupPoint;
 use Commerz\Ports\Delivery\Data\PickupPointQuery;
 use Commerz\Shipping\Common\Data\PostalCode;
@@ -80,16 +81,7 @@ final class PickupPointFilter
             }
 
             if ($query->parcel === null && $query->items !== []) {
-                $allFit = true;
-
-                foreach ($query->items as $item) {
-                    if ($point->limits !== null && ! $point->limits->fitsParcel($item)) {
-                        $allFit = false;
-
-                        break;
-                    }
-                }
-
+                $allFit = array_all($query->items, fn (Parcel $item): bool => $point->limits === null || $point->limits->fitsParcel($item));
                 if (! $allFit) {
                     continue;
                 }

@@ -3,7 +3,7 @@
 Discounts, coupons and usage limits; implements `PromotionUsage` and the three promotion quote stages.
 
 Part of [Commerz](https://github.com/axiomasoft/commerz), an embeddable commerce
-engine for Laravel (PHP 8.4, Laravel 13, PostgreSQL ≥ 16).
+engine for Laravel (PHP 8.4–8.6, Laravel 13, PostgreSQL ≥ 16).
 
 ## Installation
 

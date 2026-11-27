@@ -339,7 +339,7 @@ final readonly class DatabaseExchanges implements Exchanges
 
             $itemsFp = array_map(
                 static fn (ClaimItem $item): array => [
-                    $item->target instanceof OrderLineId ? 'line:'.$item->target->value : 'sellable:'.(string) $item->target,
+                    $item->target instanceof OrderLineId ? 'line:'.$item->target->value : 'sellable:'.$item->target,
                     $item->quantity,
                 ],
                 $command->items,

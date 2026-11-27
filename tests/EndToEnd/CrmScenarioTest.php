@@ -9,6 +9,7 @@ use Commerz\EndToEnd\Fixtures\CrmCustomers;
 use Commerz\EndToEnd\Fixtures\CrmPlugin;
 use Commerz\EndToEnd\Fixtures\CrmServices;
 use Commerz\EndToEnd\Support\CommittedDatabase;
+use Commerz\EndToEnd\Support\EndToEndTestCase;
 use Commerz\EndToEnd\Support\PortMatrix;
 use Commerz\Facades\Commerz;
 use Commerz\Identity\ActorRef;
@@ -52,6 +53,7 @@ use Commerz\Stores\Data\CreateStore;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Testing\PendingCommand;
 
 // B3 for a CRM: the host installs the core, pricing (for taxes and its B2B prices) and sales — no catalog, inventory,
 // shipping or promotions — sells its own services through a sellable provider of its own and names its customers
@@ -59,6 +61,7 @@ use Illuminate\Support\Str;
 
 trait CrmEnvironment
 {
+    /** @return list<class-string> */
     protected function commerzProviders(): array
     {
         return [CommerzServiceProvider::class, PricingServiceProvider::class, SalesServiceProvider::class];
@@ -78,9 +81,18 @@ trait CrmEnvironment
 
 uses(CrmEnvironment::class);
 
+abstract class CrmScenarioCase extends EndToEndTestCase
+{
+    use CrmEnvironment;
+}
+
 // The schema of another provider set may still be there: the subset starts from its own migrations only.
 beforeEach(function (): void {
-    $this->artisan('migrate:fresh')->assertSuccessful();
+    $fresh = $this->artisan('migrate:fresh');
+    if (! $fresh instanceof PendingCommand) {
+        throw new RuntimeException('Expected a pending Artisan command for migrate:fresh.');
+    }
+    $fresh->assertSuccessful();
 });
 
 afterEach(fn () => CommittedDatabase::truncate());
@@ -183,5 +195,9 @@ it('keeps the shop packages out of the CRM installation', function (): void {
             PortMatrix::IMPLEMENTATIONS[PriceResolver::class],
         ]);
 
-    $this->artisan('packman:doctor')->assertSuccessful();
+    $doctor = $this->artisan('packman:doctor');
+    if (! $doctor instanceof PendingCommand) {
+        throw new RuntimeException('Expected a pending Artisan command for packman:doctor.');
+    }
+    $doctor->assertSuccessful();
 });

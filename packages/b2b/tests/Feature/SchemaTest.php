@@ -34,10 +34,15 @@ function b2bTable(string $logical): string
 /** @return list<string> */
 function b2bConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [b2bTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [b2bTable($logical)]);
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->conname;
+    }
+
+    return $names;
 }
 
 it('declares the b2b noun under commerz.b2b', function (): void {

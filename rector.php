@@ -10,6 +10,7 @@ use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
+use Rector\Php80\Rector\Ternary\TernaryToNullsafeCoalesceRector;
 use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 use Rector\Php82\Rector\Class_\ReadOnlyClassRector;
 use Rector\Php83\Rector\Class_\ReadOnlyAnonymousClassRector;
@@ -29,6 +30,8 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets([LaravelSetList::LARAVEL_130]);
 
     PackmanRectorSet::configure($rectorConfig, [
+        // `$x !== null ? $x->y : $fallback` is not `$x->y ?? $fallback` when y itself is null.
+        TernaryToNullsafeCoalesceRector::class,
         ReadOnlyClassRector::class,
         ReadOnlyPropertyRector::class,
         ReadOnlyAnonymousClassRector::class,

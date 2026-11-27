@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- PHP ^8.4 with `bcmath`, `intl`, `mbstring` and `pdo_pgsql`.
+- PHP 8.4–8.6 with `bcmath`, `intl`, `mbstring` and `pdo_pgsql`.
 - Laravel ^13 (`illuminate/*` ^13).
 - PostgreSQL ≥ 16. The pricing migration creates the `btree_gist` extension
   (`create extension if not exists btree_gist`); the migrating role needs

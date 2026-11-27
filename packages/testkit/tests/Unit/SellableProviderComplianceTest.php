@@ -20,7 +20,7 @@ final class SellableProviderComplianceTest extends TestCase
 
     protected function sellableProvider(): SellableProvider
     {
-        return $this->provider ??= (new FakeSellables('fake'))->add(
+        return $this->provider ??= new FakeSellables('fake')->add(
             FakeSellables::snapshot('fake:item-1', Money::ofMinor(1995, Currency::of('USD'))),
         );
     }

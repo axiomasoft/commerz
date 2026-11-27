@@ -17,6 +17,7 @@ use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Laravel\PluginRegistrar;
+use PHPUnit\Framework\Assert;
 
 // Committed data across processes: no transactional isolation; tables are emptied after each test.
 
@@ -50,13 +51,13 @@ final class FileLogPlugin implements ExtensionPlugin
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     $this->log = tempnam(sys_get_temp_dir(), 'commerz-log-');
     app()->instance(FileLogConsumer::class, new FileLogConsumer($this->log));
     CommerzPlugins::builtInFor(app(), FileLogPlugin::class);
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -89,8 +90,18 @@ it('runs keyed work exactly once when processes race on the same key', function 
 
     $winner = logLines($log);
 
+    $orders = array_map(static function (array $result): string {
+        $order = $result['order'] ?? null;
+
+        if (! is_string($order)) {
+            throw new RuntimeException('Expected an order result.');
+        }
+
+        return $order;
+    }, $results);
+
     expect($winner)->toHaveCount(1)
-        ->and(array_unique(array_map(fn (array $r): string => $r['order'], $results)))->toBe(['o-'.$winner[0]])
+        ->and(array_unique($orders))->toBe(['o-'.$winner[0]])
         ->and(DB::table('cmz_operation_receipts')->count())->toBe(1);
 })->group('concurrency');
 

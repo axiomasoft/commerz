@@ -8,12 +8,12 @@ Public PHP surface of `packages/core` as recorded in `packages/core/resources/co
 
 | Fact | Value |
 |---|---|
-| commands | `commerz:install`, `commerz:operations:prune`, `commerz:outbox:relay` |
+| commands | `commerz:install`, `commerz:operations:prune`, `commerz:outbox:relay`, `commerz:webhooks:dispatch` |
 | config | `commerz` |
-| kinds | `outbox_consumer`, `quote_stage`, `sellable_provider` |
+| kinds | `cart_transform_rule`, `order_routing_rule`, `outbox_consumer`, `pickup_point_provider`, `quote_stage`, `sellable_provider` |
 | plugin | `commerz.core` |
 | providers | `Commerz\CommerzServiceProvider` |
-| tables | `store`, `channel`, `schema`, `operation`, `outbox` |
+| tables | `store`, `channel`, `schema`, `operation`, `outbox`, `entity_link`, `custom_field`, `webhook` |
 
 ## (root)
 
@@ -46,7 +46,7 @@ final readonly class Commerz {
 
 ```php
 final class CommerzServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
-    const NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox'];
+    const NOUNS = ['store', 'channel', 'schema', 'operation', 'outbox', 'entity_link', 'custom_field', 'webhook'];
     register(): void;
 }
 ```
@@ -71,9 +71,10 @@ final readonly class CommerzOptions implements \Packman\Config\Contracts\Options
     public readonly array $disabledPlugins;
     public readonly array $plugins;
     public readonly int $receiptTtlDays;
+    public readonly \Packman\Schema\Enums\SchemaScope $schemaScope;
     public readonly \Commerz\Configuration\StockMode $stock;
     public readonly \Packman\Config\Data\TablePrefix $tablePrefix;
-    __construct(?string $connection = null, \Packman\Config\Data\TablePrefix $tablePrefix = new \Packman\Config\Data\TablePrefix, \Commerz\Configuration\StockMode $stock = Commerz\Configuration\StockMode::Inventory, ?string $customers = null, array $plugins = [], array $disabledPlugins = [], int $receiptTtlDays = 30);
+    __construct(?string $connection = null, \Packman\Config\Data\TablePrefix $tablePrefix = new \Packman\Config\Data\TablePrefix, \Commerz\Configuration\StockMode $stock = Commerz\Configuration\StockMode::Inventory, ?string $customers = null, array $plugins = [], array $disabledPlugins = [], int $receiptTtlDays = 30, \Packman\Schema\Enums\SchemaScope $schemaScope = Packman\Schema\Enums\SchemaScope::Central);
     static fromArray(array $config, string $path = 'commerz'): self;
 }
 ```
@@ -126,6 +127,325 @@ Host hook that assembles a context from whatever the host has at hand (request, 
 ```php
 interface ContextResolver {
     resolve(?\Commerz\Stores\Data\ChannelId $channel = null): \Commerz\Context\CommerceContext;
+}
+```
+
+## CustomFields
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CustomFieldIndexer`](#type-commerz-customfields-contracts-customfieldindexer) | interface | api | 0.1 |
+| [`CustomFieldQuery`](#type-commerz-customfields-contracts-customfieldquery) | interface | api | 0.1 |
+| [`CustomFieldRegistry`](#type-commerz-customfields-contracts-customfieldregistry) | interface | api | 0.1 |
+| [`CustomFieldDefinition`](#type-commerz-customfields-data-customfielddefinition) | class | api | 0.1 |
+| [`CustomFieldFilter`](#type-commerz-customfields-data-customfieldfilter) | class | api | 0.1 |
+| [`CustomFieldIndexFact`](#type-commerz-customfields-data-customfieldindexfact) | class | api | 0.1 |
+| [`CustomFieldProjectionRow`](#type-commerz-customfields-data-customfieldprojectionrow) | class | api | 0.1 |
+| [`PreparedCustomFields`](#type-commerz-customfields-data-preparedcustomfields) | class | api | 0.1 |
+| [`CustomFieldFilterOperator`](#type-commerz-customfields-enums-customfieldfilteroperator) | enum | api | 0.1 |
+| [`CustomFieldType`](#type-commerz-customfields-enums-customfieldtype) | enum | api | 0.1 |
+| [`FieldVisibility`](#type-commerz-customfields-enums-fieldvisibility) | enum | api | 0.1 |
+| [`CustomFieldNotFilterable`](#type-commerz-customfields-exceptions-customfieldnotfilterable) | class | api | 0.1 |
+| [`CustomFieldNotFound`](#type-commerz-customfields-exceptions-customfieldnotfound) | class | api | 0.1 |
+| [`CustomFieldVisibilityViolation`](#type-commerz-customfields-exceptions-customfieldvisibilityviolation) | class | api | 0.1 |
+| [`DuplicateCustomField`](#type-commerz-customfields-exceptions-duplicatecustomfield) | class | api | 0.1 |
+| [`InvalidCustomFieldValue`](#type-commerz-customfields-exceptions-invalidcustomfieldvalue) | class | api | 0.1 |
+| [`MissingRequiredCustomFields`](#type-commerz-customfields-exceptions-missingrequiredcustomfields) | class | api | 0.1 |
+
+### CustomFieldIndexer {#type-commerz-customfields-contracts-customfieldindexer}
+
+`Commerz\CustomFields\Contracts\CustomFieldIndexer`
+
+Maintains the `cmz_custom_field_index` projection for filterable custom fields on root aggregates.
+
+```php
+interface CustomFieldIndexer {
+    // Applies pre-validated `PreparedCustomFields` projection rows for `$aggregateId`.
+    apply(string $aggregateId, \Commerz\CustomFields\Data\PreparedCustomFields $prepared): void;
+    // Deletes all projection rows belonging to `($targetAggregate, $aggregateId)`.
+    deleteAggregate(string $targetAggregate, string $aggregateId): void;
+    // Deletes all projection rows for a specific custom field definition across `$targetAggregate`.
+    deleteField(string $targetAggregate, string $namespace, string $key): void;
+    // Validates `$metadata` against `CustomFieldRegistry`, replaces all index rows for `($targetAggregate, $aggregateId)`, and returns the normalized `MetadataBag`.
+    sync(string $targetAggregate, string $aggregateId, \Commerz\Metadata\MetadataBag $metadata, bool $creating = false): \Commerz\Metadata\MetadataBag;
+}
+```
+
+### CustomFieldQuery {#type-commerz-customfields-contracts-customfieldquery}
+
+`Commerz\CustomFields\Contracts\CustomFieldQuery`
+
+Compiles visibility-safe SQL filter predicates against `cmz_custom_field_index`.
+
+```php
+interface CustomFieldQuery {
+    // Appends `EXISTS` subqueries onto `$query` matching every predicate in `$filters` against `$aggregateIdColumn`. Fails closed if a `PublicStorefront` audience attempts to filter on a `PrivateAdmin` field.
+    applyFilters(\Illuminate\Database\Query\Builder $query, string $targetAggregate, string $aggregateIdColumn, array $filters, \Commerz\CustomFields\Enums\FieldVisibility $audience = Commerz\CustomFields\Enums\FieldVisibility::PublicStorefront): \Illuminate\Database\Query\Builder;
+    // Returns distinct `aggregate_id` values in `$targetAggregate` matching all `$filters` for `$audience`, sorted ascending.
+    matchingIds(string $targetAggregate, array $filters, \Commerz\CustomFields\Enums\FieldVisibility $audience = Commerz\CustomFields\Enums\FieldVisibility::PublicStorefront): array;
+}
+```
+
+### CustomFieldRegistry {#type-commerz-customfields-contracts-customfieldregistry}
+
+`Commerz\CustomFields\Contracts\CustomFieldRegistry`
+
+Central registry of typed custom field definitions across all Commerz root aggregates.
+
+```php
+interface CustomFieldRegistry {
+    all(): array;
+    // Lists filterable definitions on `$targetAggregate`, optionally restricted to `$audience`.
+    filterableFor(string $targetAggregate, ?\Commerz\CustomFields\Enums\FieldVisibility $audience = null): array;
+    find(string $targetAggregate, string $namespace, string $key): ?\Commerz\CustomFields\Data\CustomFieldDefinition;
+    // Lists registered definitions for `$targetAggregate`, optionally narrowed to an exact `FieldVisibility`.
+    forAggregate(string $targetAggregate, ?\Commerz\CustomFields\Enums\FieldVisibility $visibility = null): array;
+    get(string $targetAggregate, string $namespace, string $key): \Commerz\CustomFields\Data\CustomFieldDefinition;
+    has(string $targetAggregate, string $namespace, string $key): bool;
+    // Validates and normalizes custom field updates (`namespace:key` or `namespace.key` => value), routes values into `MetadataBag::$public` vs `MetadataBag::$private` strictly by each definition's `FieldVisibility`, enforces `isRequired` and `$actorAudience` access boundaries, and prepares `cmz_custom_field_index` rows.
+    prepareValues(string $targetAggregate, array $values, ?\Commerz\Metadata\MetadataBag $current = null, array $remove = [], bool $creating = true, ?\Commerz\CustomFields\Enums\FieldVisibility $actorAudience = null): \Commerz\CustomFields\Data\PreparedCustomFields;
+    // Projects an aggregate's `MetadataBag` for `$audience`, guaranteeing private metadata is never exposed to `FieldVisibility::PublicStorefront`.
+    projectMetadata(string $targetAggregate, \Commerz\Metadata\MetadataBag $metadata, \Commerz\CustomFields\Enums\FieldVisibility $audience): \Commerz\Metadata\MetadataBag;
+    register(\Commerz\CustomFields\Data\CustomFieldDefinition ...$definitions): void;
+    // Validates an aggregate's `MetadataBag` against all registered definitions for `$targetAggregate` (rejecting visibility leaks such as a `PrivateAdmin` custom field stored inside `publicMetadata`), normalizes registered values, and computes `cmz_custom_field_index` projection rows.
+    validateMetadata(string $targetAggregate, \Commerz\Metadata\MetadataBag $metadata, bool $creating = true): \Commerz\CustomFields\Data\PreparedCustomFields;
+    // Lists definitions on `$targetAggregate` accessible to `$audience` (`PublicStorefront` sees only public fields; `PrivateAdmin` sees both public and private fields).
+    visibleTo(string $targetAggregate, \Commerz\CustomFields\Enums\FieldVisibility $audience): array;
+}
+```
+
+### CustomFieldDefinition {#type-commerz-customfields-data-customfielddefinition}
+
+`Commerz\CustomFields\Data\CustomFieldDefinition`
+
+Immutable definition of a typed custom field attached to a root aggregate (`order`, `customer`, `product`, etc.).
+
+```php
+final readonly class CustomFieldDefinition {
+    public readonly bool $isFilterable;
+    public readonly bool $isRequired;
+    public readonly string $key;
+    public readonly \Commerz\Measures\LocalizedText $localizedLabel;
+    public readonly string $namespace;
+    public readonly string $targetAggregate;
+    public readonly \Commerz\CustomFields\Enums\CustomFieldType $type;
+    public readonly array $validationRules;
+    public readonly \Commerz\CustomFields\Enums\FieldVisibility $visibility;
+    __construct(string $targetAggregate, string $namespace, string $key, \Commerz\CustomFields\Enums\CustomFieldType $type, \Commerz\CustomFields\Enums\FieldVisibility $visibility = Commerz\CustomFields\Enums\FieldVisibility::PrivateAdmin, bool $isFilterable = false, bool $isRequired = false, array $validationRules = [], ?\Commerz\Measures\LocalizedText $localizedLabel = null);
+    isVisibleTo(\Commerz\CustomFields\Enums\FieldVisibility $audience): bool;
+    label(string $locale, string $fallback = 'en'): string;
+    // Human/diagnostic qualified identifier (`{namespace}.{key}`).
+    qualifiedKey(): string;
+    // Canonical metadata map key (`{namespace}:{key}`). Uses `:` to prevent ambiguity when `namespace` or `key` itself contains dots (`acme.crm:deal_stage`).
+    storageKey(): string;
+}
+```
+
+### CustomFieldFilter {#type-commerz-customfields-data-customfieldfilter}
+
+`Commerz\CustomFields\Data\CustomFieldFilter`
+
+Typed filter predicate against a filterable custom field in `cmz_custom_field_index`.
+
+```php
+final readonly class CustomFieldFilter {
+    const MAX_VALUES = 100;
+    public readonly string $key;
+    public readonly string $namespace;
+    public readonly \Commerz\CustomFields\Enums\CustomFieldFilterOperator $operator;
+    public readonly array $values;
+    static between(string $namespace, string $key, mixed $min = null, mixed $max = null): self;
+    static equals(string $namespace, string $key, mixed $value): self;
+    static in(string $namespace, string $key, array $values): self;
+    qualifiedKey(): string;
+}
+```
+
+### CustomFieldIndexFact {#type-commerz-customfields-data-customfieldindexfact}
+
+`Commerz\CustomFields\Data\CustomFieldIndexFact`
+
+One typed projection fact for `cmz_custom_field_index`: exactly one of `number`, `flag`, `day`, or `term` is set.
+
+```php
+final readonly class CustomFieldIndexFact {
+    public readonly ?string $day;
+    public readonly ?bool $flag;
+    public readonly ?string $number;
+    public readonly ?string $term;
+    static day(string $ymd): self;
+    static flag(bool $value): self;
+    static number(string $decimal): self;
+    static term(string $text): self;
+}
+```
+
+### CustomFieldProjectionRow {#type-commerz-customfields-data-customfieldprojectionrow}
+
+`Commerz\CustomFields\Data\CustomFieldProjectionRow`
+
+Validated custom field projection row ready for `cmz_custom_field_index`.
+
+```php
+final readonly class CustomFieldProjectionRow {
+    public readonly \Commerz\CustomFields\Data\CustomFieldIndexFact $fact;
+    public readonly string $key;
+    public readonly string $namespace;
+    public readonly \Commerz\CustomFields\Enums\FieldVisibility $visibility;
+    __construct(string $namespace, string $key, \Commerz\CustomFields\Enums\FieldVisibility $visibility, \Commerz\CustomFields\Data\CustomFieldIndexFact $fact);
+}
+```
+
+### PreparedCustomFields {#type-commerz-customfields-data-preparedcustomfields}
+
+`Commerz\CustomFields\Data\PreparedCustomFields`
+
+Validated custom field write unit containing the normalized `MetadataBag` and `cmz_custom_field_index` rows.
+
+```php
+final readonly class PreparedCustomFields {
+    public readonly \Commerz\Metadata\MetadataBag $metadata;
+    public readonly array $rows;
+    public readonly string $targetAggregate;
+    __construct(string $targetAggregate, \Commerz\Metadata\MetadataBag $metadata, array $rows);
+}
+```
+
+### CustomFieldFilterOperator {#type-commerz-customfields-enums-customfieldfilteroperator}
+
+`Commerz\CustomFields\Enums\CustomFieldFilterOperator`
+
+Comparison operators supported by `cmz_custom_field_index` filter queries.
+
+```php
+enum CustomFieldFilterOperator {
+    case Equals = 'equals';
+    case In = 'in';
+    case Range = 'range';
+}
+```
+
+### CustomFieldType {#type-commerz-customfields-enums-customfieldtype}
+
+`Commerz\CustomFields\Enums\CustomFieldType`
+
+Canonical value types supported by `CustomFieldRegistry` and `cmz_custom_field_index`.
+
+```php
+enum CustomFieldType {
+    case String = 'string';
+    case Integer = 'integer';
+    case Decimal = 'decimal';
+    case Boolean = 'boolean';
+    case Date = 'date';
+    case Enum = 'enum';
+    case MultiEnum = 'multi_enum';
+    case LocalizedString = 'localized_string';
+    case EntityRef = 'entity_ref';
+    case Json = 'json';
+    operators(): array;
+    supportsFiltering(): bool;
+}
+```
+
+### FieldVisibility {#type-commerz-customfields-enums-fieldvisibility}
+
+`Commerz\CustomFields\Enums\FieldVisibility`
+
+Controls whether a custom field is exposed on the public storefront or restricted to private backoffice/admin surfaces.
+
+```php
+enum FieldVisibility {
+    case PublicStorefront = 'public_storefront';
+    case PrivateAdmin = 'private_admin';
+    // Whether an actor/projection at `$this` audience level is permitted to read or filter a field of `$fieldVisibility`.
+    canAccess(self $fieldVisibility): bool;
+    isPrivate(): bool;
+    isPublic(): bool;
+}
+```
+
+### CustomFieldNotFilterable {#type-commerz-customfields-exceptions-customfieldnotfilterable}
+
+`Commerz\CustomFields\Exceptions\CustomFieldNotFilterable`
+
+Raised when a query attempts to filter on a custom field that was not registered with `isFilterable: true`.
+
+```php
+final class CustomFieldNotFilterable extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
+    __construct(string $targetAggregate, string $qualifiedKey);
+}
+```
+
+### CustomFieldNotFound {#type-commerz-customfields-exceptions-customfieldnotfound}
+
+`Commerz\CustomFields\Exceptions\CustomFieldNotFound`
+
+Raised when a custom field definition is not registered for the given target aggregate, namespace, and key.
+
+```php
+final class CustomFieldNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    public readonly string $key;
+    public readonly string $namespace;
+    public readonly string $targetAggregate;
+    __construct(string $targetAggregate, string $namespace, string $key);
+}
+```
+
+### CustomFieldVisibilityViolation {#type-commerz-customfields-exceptions-customfieldvisibilityviolation}
+
+`Commerz\CustomFields\Exceptions\CustomFieldVisibilityViolation`
+
+Raised when a private custom field is written to public metadata, or accessed/filtered from a storefront audience.
+
+```php
+final class CustomFieldVisibilityViolation extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
+    __construct(string $qualifiedKey, string $reason);
+}
+```
+
+### DuplicateCustomField {#type-commerz-customfields-exceptions-duplicatecustomfield}
+
+`Commerz\CustomFields\Exceptions\DuplicateCustomField`
+
+Raised when a custom field with the same `(targetAggregate, namespace, key)` is registered twice.
+
+```php
+final class DuplicateCustomField extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $key;
+    public readonly string $namespace;
+    public readonly string $targetAggregate;
+    __construct(string $targetAggregate, string $namespace, string $key);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### InvalidCustomFieldValue {#type-commerz-customfields-exceptions-invalidcustomfieldvalue}
+
+`Commerz\CustomFields\Exceptions\InvalidCustomFieldValue`
+
+Raised when a custom field value fails type normalization or configured validation rules.
+
+```php
+final class InvalidCustomFieldValue extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
+    __construct(string $qualifiedKey, string $reason);
+}
+```
+
+### MissingRequiredCustomFields {#type-commerz-customfields-exceptions-missingrequiredcustomfields}
+
+`Commerz\CustomFields\Exceptions\MissingRequiredCustomFields`
+
+Raised when one or more required custom fields for an aggregate are absent or removed.
+
+```php
+final class MissingRequiredCustomFields extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
+    public readonly array $missingKeys;
+    public readonly string $targetAggregate;
+    __construct(string $targetAggregate, array $missingKeys);
 }
 ```
 
@@ -206,8 +526,10 @@ enum CommerzErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case CurrencyMismatch = 'commerz.currency_mismatch';
     case CurrencyNotAllowed = 'commerz.currency_not_allowed';
     case DuplicateCode = 'commerz.duplicate_code';
+    case DuplicateWebhookSubscription = 'commerz.duplicate_webhook_subscription';
     case IdempotencyConflict = 'commerz.idempotency_conflict';
     case InsufficientStock = 'commerz.insufficient_stock';
+    case InsufficientStoredValue = 'commerz.insufficient_stored_value';
     case InvalidAmount = 'commerz.invalid_amount';
     case InvalidCommand = 'commerz.invalid_command';
     case InvalidConfiguration = 'commerz.invalid_configuration';
@@ -220,6 +542,7 @@ enum CommerzErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case InvalidPageSize = 'commerz.invalid_page_size';
     case InvalidRate = 'commerz.invalid_rate';
     case InvalidRef = 'commerz.invalid_ref';
+    case InvalidWebhookSignature = 'commerz.invalid_webhook_signature';
     case InvalidWeights = 'commerz.invalid_weights';
     case NotFound = 'commerz.not_found';
     case PriceNotFound = 'commerz.price_not_found';
@@ -228,8 +551,13 @@ enum CommerzErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case ReservationNotFound = 'commerz.reservation_not_found';
     case SellableUnavailable = 'commerz.sellable_unavailable';
     case StoreNotFound = 'commerz.store_not_found';
+    case StoredValueNotFound = 'commerz.stored_value_not_found';
+    case StoredValueUnavailable = 'commerz.stored_value_unavailable';
     case UnsupportedContribution = 'commerz.unsupported_contribution';
     case UsageLimitReached = 'commerz.usage_limit_reached';
+    case WebhookDeliveryNotFound = 'commerz.webhook_delivery_not_found';
+    case WebhookSubscriptionNotFound = 'commerz.webhook_subscription_not_found';
+    case WebhookTransportFailed = 'commerz.webhook_transport_failed';
     value(): string;
 }
 ```
@@ -312,6 +640,7 @@ final class Commerz extends \Illuminate\Support\Facades\Facade {}
 | [`IdempotencyKey`](#type-commerz-identity-idempotencykey) | class | api | 0.1 |
 | [`Ref`](#type-commerz-identity-ref) | class | api | 0.1 |
 | [`SellableRef`](#type-commerz-identity-sellableref) | class | api | 0.1 |
+| [`SellerRef`](#type-commerz-identity-sellerref) | class | api | 0.1 |
 | [`Uuid7`](#type-commerz-identity-uuid7) | class | api | 0.1 |
 
 ### ActorRef {#type-commerz-identity-actorref}
@@ -395,6 +724,16 @@ Reference to something that can be sold (product variant, service, bundle).
 final readonly class SellableRef extends \Commerz\Identity\Ref implements \Stringable {}
 ```
 
+### SellerRef {#type-commerz-identity-sellerref}
+
+`Commerz\Identity\SellerRef`
+
+Reference to a seller owned by the host application or a marketplace module.
+
+```php
+final readonly class SellerRef extends \Commerz\Identity\Ref implements \Stringable {}
+```
+
 ### Uuid7 {#type-commerz-identity-uuid7}
 
 `Commerz\Identity\Uuid7`
@@ -475,6 +814,128 @@ final class CommerzStoresRegistrar implements \Packman\Foundation\Contracts\Pack
 }
 ```
 
+## Links
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CrossModuleQuery`](#type-commerz-links-contracts-crossmodulequery) | interface | api | 0.1 |
+| [`LinkRegistry`](#type-commerz-links-contracts-linkregistry) | interface | api | 0.1 |
+| [`EntityLink`](#type-commerz-links-data-entitylink) | class | api | 0.1 |
+| [`LinkDefinition`](#type-commerz-links-data-linkdefinition) | class | api | 0.1 |
+| [`CascadeUnlinkPolicy`](#type-commerz-links-enums-cascadeunlinkpolicy) | enum | api | 0.1 |
+| [`LinkCardinality`](#type-commerz-links-enums-linkcardinality) | enum | api | 0.1 |
+
+### CrossModuleQuery {#type-commerz-links-contracts-crossmodulequery}
+
+`Commerz\Links\Contracts\CrossModuleQuery`
+
+N+1-free cross-module query helper over `cmz_entity_links` without foreign-key coupling between domain packages.
+
+```php
+interface CrossModuleQuery {
+    // Loads linked left-side entities for many right entity IDs in at most 2 queries: 1 batch query to `cmz_entity_links` and 1 batch call to `$loader` for all distinct left IDs.
+    getInverseLinkedForMany(string $linkCode, array $rightIds, \Closure $loader): array;
+    // Loads linked right-side entities for many left entity IDs in at most 2 queries: 1 batch query to `cmz_entity_links` and 1 batch call to `$loader` for all distinct right IDs.
+    getLinkedForMany(string $linkCode, array $leftIds, \Closure $loader): array;
+    // Filters a query builder using an `EXISTS` subquery against `cmz_entity_links`. Set `$inverse = true` when filtering right-side entities linked from a left-side `$targetId`.
+    whereLinked(\Illuminate\Database\Query\Builder $query, string $linkCode, string $idColumn, ?string $targetId = null, bool $inverse = false): \Illuminate\Database\Query\Builder;
+}
+```
+
+### LinkRegistry {#type-commerz-links-contracts-linkregistry}
+
+`Commerz\Links\Contracts\LinkRegistry`
+
+Registry of cross-module entity link definitions and FK-free persistence operations backed by `cmz_entity_links`.
+
+```php
+interface LinkRegistry {
+    define(\Commerz\Links\Data\LinkDefinition $definition): void;
+    definition(string $linkCode): \Commerz\Links\Data\LinkDefinition;
+    definitions(): array;
+    hasDefinition(string $linkCode): bool;
+    // Batch-loads inverse links for many right entity IDs in a single query, ordered by position then id.
+    inverseLinksForMany(string $linkCode, array $rightIds): array;
+    // Links `$leftId` to `$rightId` under `$linkCode`, enforcing cardinality rules. Re-linking an already linked pair updates its position and extra payload idempotently.
+    link(string $linkCode, string $leftId, string $rightId, int $position = 0, array $extra = []): \Commerz\Links\Data\EntityLink;
+    // Batch-loads forward links for many left entity IDs in a single query, ordered by position then id.
+    linksForMany(string $linkCode, array $leftIds): array;
+    // Removes a single link between `$leftId` and `$rightId`. Returns true when a link was deleted.
+    unlink(string $linkCode, string $leftId, string $rightId): bool;
+    // Applies cascade unlink policies for `$entityType:$entityId` across all matching definitions (or a single `$linkCode`). Returns the number of deleted link rows.
+    unlinkAllFor(string $entityType, string $entityId, ?string $linkCode = null): int;
+}
+```
+
+### EntityLink {#type-commerz-links-data-entitylink}
+
+`Commerz\Links\Data\EntityLink`
+
+Immutable view of a persisted cross-module link row in `cmz_entity_links`.
+
+```php
+final readonly class EntityLink {
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly array $extra;
+    public readonly string $id;
+    public readonly string $leftId;
+    public readonly string $leftType;
+    public readonly string $linkCode;
+    public readonly int $position;
+    public readonly string $rightId;
+    public readonly string $rightType;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(string $id, string $linkCode, string $leftType, string $leftId, string $rightType, string $rightId, int $position, array $extra, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### LinkDefinition {#type-commerz-links-data-linkdefinition}
+
+`Commerz\Links\Data\LinkDefinition`
+
+Declares a named cross-module link type between two logical entity types, including its cardinality and cascade unlink policy.
+
+```php
+final readonly class LinkDefinition {
+    public readonly \Commerz\Links\Enums\LinkCardinality $cardinality;
+    public readonly \Commerz\Links\Enums\CascadeUnlinkPolicy $cascadeUnlink;
+    public readonly string $code;
+    public readonly ?string $description;
+    public readonly string $leftType;
+    public readonly string $rightType;
+    __construct(string $code, string $leftType, string $rightType, \Commerz\Links\Enums\LinkCardinality $cardinality = Commerz\Links\Enums\LinkCardinality::ManyToMany, \Commerz\Links\Enums\CascadeUnlinkPolicy $cascadeUnlink = Commerz\Links\Enums\CascadeUnlinkPolicy::Unlink, ?string $description = null);
+}
+```
+
+### CascadeUnlinkPolicy {#type-commerz-links-enums-cascadeunlinkpolicy}
+
+`Commerz\Links\Enums\CascadeUnlinkPolicy`
+
+Policy applied by {@see LinkRegistry::unlinkAllFor()} when an entity participating in a link is unlinked or deleted.
+
+```php
+enum CascadeUnlinkPolicy {
+    case Unlink = 'unlink';
+    case Restrict = 'restrict';
+    case Ignore = 'ignore';
+}
+```
+
+### LinkCardinality {#type-commerz-links-enums-linkcardinality}
+
+`Commerz\Links\Enums\LinkCardinality`
+
+Cardinality constraint enforced by {@see LinkRegistry} for a link definition.
+
+```php
+enum LinkCardinality {
+    case OneToOne = 'one_to_one';
+    case OneToMany = 'one_to_many';
+    case ManyToOne = 'many_to_one';
+    case ManyToMany = 'many_to_many';
+}
+```
+
 ## Measures
 
 | Type | Kind | Layer | Since |
@@ -482,7 +943,9 @@ final class CommerzStoresRegistrar implements \Packman\Foundation\Contracts\Pack
 | [`LocalizedText`](#type-commerz-measures-localizedtext) | class | api | 0.1 |
 | [`Measure`](#type-commerz-measures-measure) | class | api | 0.1 |
 | [`Quantity`](#type-commerz-measures-quantity) | class | api | 0.1 |
+| [`QuantityStepPolicy`](#type-commerz-measures-quantitysteppolicy) | class | api | 0.1 |
 | [`Unit`](#type-commerz-measures-unit) | class | api | 0.1 |
+| [`UnitPrice`](#type-commerz-measures-unitprice) | class | api | 0.1 |
 
 ### LocalizedText {#type-commerz-measures-localizedtext}
 
@@ -540,6 +1003,33 @@ final readonly class Quantity {
 }
 ```
 
+### QuantityStepPolicy {#type-commerz-measures-quantitysteppolicy}
+
+`Commerz\Measures\QuantityStepPolicy`
+
+Defines allowed whole-unit quantities for a sellable: minimum, step increment, optional maximum, and base unit (e.g. min 500 g, step 100 g, max 5000 g for weighted goods, or min 1, step 1 for piece goods).
+
+```php
+final readonly class QuantityStepPolicy {
+    public readonly ?int $max;
+    public readonly int $min;
+    public readonly int $step;
+    public readonly string $unit;
+    __construct(int $min, int $step, ?int $max = null, string $unit = 'pcs');
+    assertValid(\Commerz\Measures\Quantity|int $quantity): void;
+    equals(self $other): bool;
+    isValid(\Commerz\Measures\Quantity|int $quantity): bool;
+    // Highest valid quantity permitted by the policy, or null when unbounded.
+    maxValid(): ?int;
+    // Rounds a non-negative quantity to a valid step using an explicit RoundingMode and clamps to [min, maxValid].
+    normalize(int $quantity, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): int;
+    // Normalizes a Quantity value object, checking that its unit matches this policy.
+    normalizeQuantity(\Commerz\Measures\Quantity $quantity, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): \Commerz\Measures\Quantity;
+    static of(int $min, int $step, ?int $max, string $unit): self;
+    static pieces(int $min = 1, int $step = 1, ?int $max = null): self;
+}
+```
+
 ### Unit {#type-commerz-measures-unit}
 
 `Commerz\Measures\Unit`
@@ -547,6 +1037,127 @@ final readonly class Quantity {
 ```php
 final class Unit {
     static assert(string $unit): void;
+}
+```
+
+### UnitPrice {#type-commerz-measures-unitprice}
+
+`Commerz\Measures\UnitPrice`
+
+A price quoted per a whole number of base units, e.g. 250.00 RUB per 1000 g, 120.00 RUB per 1000 mm, or 10.00 RUB per 1 pcs. All calculations use exact integer / arbitrary-precision decimal arithmetic with explicit rounding.
+
+```php
+final readonly class UnitPrice {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly int $perUnits;
+    public readonly string $unit;
+    __construct(\Commerz\Money\Money $amount, int $perUnits = 1, string $unit = 'pcs');
+    // Computes `round(amount × quantity / perUnits)` in the currency's minor units with explicit rounding.
+    calculate(\Commerz\Measures\Quantity|int $quantity, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp): \Commerz\Money\Money;
+    equals(self $other): bool;
+    static of(\Commerz\Money\Money $amount, int $perUnits, string $unit): self;
+    static perKilogram(\Commerz\Money\Money $amount): self;
+    static perLiter(\Commerz\Money\Money $amount): self;
+    static perMeter(\Commerz\Money\Money $amount): self;
+    static perPiece(\Commerz\Money\Money $amount): self;
+    withAmount(\Commerz\Money\Money $amount): self;
+}
+```
+
+## Metadata
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InvalidMetadata`](#type-commerz-metadata-exceptions-invalidmetadata) | class | api | 0.1 |
+| [`MetadataBag`](#type-commerz-metadata-metadatabag) | class | api | 0.1 |
+| [`MetadataSerializer`](#type-commerz-metadata-metadataserializer) | class | api | 0.1 |
+| [`MetadataValidator`](#type-commerz-metadata-metadatavalidator) | class | api | 0.1 |
+
+### InvalidMetadata {#type-commerz-metadata-exceptions-invalidmetadata}
+
+`Commerz\Metadata\Exceptions\InvalidMetadata`
+
+Raised when a metadata map violates key, value, depth, or size constraints.
+
+```php
+final class InvalidMetadata extends \Commerz\Errors\InvalidCommand implements \Stringable, \Throwable {
+    __construct(string $field, string $reason);
+}
+```
+
+### MetadataBag {#type-commerz-metadata-metadatabag}
+
+`Commerz\Metadata\MetadataBag`
+
+Unified immutable container for an aggregate's `publicMetadata` (storefront-safe) and `privateMetadata` (admin-only).
+
+```php
+final readonly class MetadataBag {
+    public readonly array $private;
+    public readonly array $public;
+    __construct(array $public = [], array $private = []);
+    static empty(): self;
+    equals(self $other): bool;
+    // Admin projection: returns both public and private metadata maps.
+    forAdmin(): array;
+    // Storefront projection: returns only public metadata and never exposes private keys.
+    forStorefront(): array;
+    static fromArray(array $data): self;
+    static fromCombinedJson(string $json): self;
+    static fromJson(?string $publicJson, ?string $privateJson = null): self;
+    static fromPrivate(array $private): self;
+    static fromPublic(array $public): self;
+    getPrivate(string $key, mixed $default = null): mixed;
+    getPublic(string $key, mixed $default = null): mixed;
+    hasPrivate(string $key): bool;
+    hasPublic(string $key): bool;
+    isEmpty(): bool;
+    merge(self $other): self;
+    mergePrivate(array $set, array $remove = []): self;
+    mergePublic(array $set, array $remove = []): self;
+    // Returns a copy with all private metadata stripped out for safe boundary crossing.
+    redactPrivate(): self;
+    toArray(bool $includePrivate = true): array;
+    toJson(bool $includePrivate = true): string;
+    toPrivateJson(): string;
+    toPublicJson(): string;
+    visibleTo(\Commerz\CustomFields\Enums\FieldVisibility $audience): array;
+    withPrivate(string $key, mixed $value): self;
+    withPublic(string $key, mixed $value): self;
+    withoutPrivate(string ...$keys): self;
+    withoutPublic(string ...$keys): self;
+}
+```
+
+### MetadataSerializer {#type-commerz-metadata-metadataserializer}
+
+`Commerz\Metadata\MetadataSerializer`
+
+Encodes and decodes JSONB metadata object maps while preserving PostgreSQL `jsonb_typeof = 'object'` invariants.
+
+```php
+final class MetadataSerializer {
+    static decodeColumns(object|array $row, string $publicColumn = 'public_metadata', string $privateColumn = 'private_metadata'): \Commerz\Metadata\MetadataBag;
+    static decodeMap(?string $json, string $field = 'metadata'): array;
+    static encodeColumns(\Commerz\Metadata\MetadataBag $bag, string $publicColumn = 'public_metadata', string $privateColumn = 'private_metadata'): array;
+    static encodeMap(array $metadata, string $field = 'metadata'): string;
+}
+```
+
+### MetadataValidator {#type-commerz-metadata-metadatavalidator}
+
+`Commerz\Metadata\MetadataValidator`
+
+Validates public and private metadata maps for root domain aggregates.
+
+```php
+final class MetadataValidator {
+    const MAX_BYTES = 65536;
+    const MAX_DEPTH = 8;
+    const MAX_KEYS = 256;
+    const MAX_KEY_LENGTH = 128;
+    static validateKey(string $key, string $field = 'metadata'): string;
+    static validateMap(array $metadata, string $field = 'metadata'): array;
 }
 ```
 
@@ -917,7 +1528,11 @@ final readonly class StorePanel implements \Packman\Panels\Contracts\Registry\Pa
 | Type | Kind | Layer | Since |
 |---|---|---|---|
 | [`CommerzPlugins`](#type-commerz-plugins-commerzplugins) | class | api | 0.1 |
+| [`DescribesConfigSchema`](#type-commerz-plugins-contracts-describesconfigschema) | interface | spi (implement) | 0.1 |
 | [`CorePlugin`](#type-commerz-plugins-coreplugin) | class | api | 0.1 |
+| [`ConfigFieldSchema`](#type-commerz-plugins-data-configfieldschema) | class | api | 0.1 |
+| [`ConfigFieldType`](#type-commerz-plugins-enums-configfieldtype) | enum | api | 0.1 |
+| [`PluginInspector`](#type-commerz-plugins-plugininspector) | class | api | 0.1 |
 
 ### CommerzPlugins {#type-commerz-plugins-commerzplugins}
 
@@ -929,6 +1544,18 @@ Entry point for registering built-in Commerz extension plugins with Packman.
 final class CommerzPlugins {
     static builtIn(string ...$plugins): void;
     static builtInFor(\Illuminate\Contracts\Container\Container $container, string ...$plugins): void;
+}
+```
+
+### DescribesConfigSchema {#type-commerz-plugins-contracts-describesconfigschema}
+
+`Commerz\Plugins\Contracts\DescribesConfigSchema`
+
+Optional interface implemented by plugins that declare a typed configuration schema for host validation and admin UI generation.
+
+```php
+interface DescribesConfigSchema {
+    configSchema(): array;
 }
 ```
 
@@ -958,24 +1585,115 @@ final class CorePlugin implements \Packman\Extensions\Contracts\Composition\With
 }
 ```
 
+### ConfigFieldSchema {#type-commerz-plugins-data-configfieldschema}
+
+`Commerz\Plugins\Data\ConfigFieldSchema`
+
+Typed schema descriptor for a single plugin configuration field, carrying type metadata, UI rendering hints, and validation rules for admin panels and host validators.
+
+```php
+final readonly class ConfigFieldSchema {
+    public readonly mixed $default;
+    public readonly ?string $description;
+    public readonly ?string $entityType;
+    public readonly ?string $group;
+    public readonly string $key;
+    public readonly string $label;
+    public readonly array $options;
+    public readonly ?string $placeholder;
+    public readonly bool $required;
+    public readonly bool $secret;
+    public readonly \Commerz\Plugins\Enums\ConfigFieldType $type;
+    public readonly array $uiHints;
+    public readonly array $validationRules;
+    public readonly ?string $widget;
+    __construct(string $key, \Commerz\Plugins\Enums\ConfigFieldType $type, string $label, bool $required = false, mixed $default = null, ?string $description = null, ?string $placeholder = null, ?string $group = null, ?string $widget = null, bool $secret = false, array $options = [], ?string $entityType = null, array $validationRules = [], array $uiHints = []);
+    toArray(): array;
+}
+```
+
+### ConfigFieldType {#type-commerz-plugins-enums-configfieldtype}
+
+`Commerz\Plugins\Enums\ConfigFieldType`
+
+Supported value types for plugin configuration fields declared via {@see ConfigFieldSchema}.
+
+```php
+enum ConfigFieldType {
+    case String = 'string';
+    case Int = 'int';
+    case Decimal = 'decimal';
+    case Money = 'money';
+    case Percent = 'percent';
+    case Bool = 'bool';
+    case Enum = 'enum';
+    case LocalizedString = 'localized_string';
+    case EntityRef = 'entity_ref';
+}
+```
+
+### PluginInspector {#type-commerz-plugins-plugininspector}
+
+`Commerz\Plugins\PluginInspector`
+
+Commerz view of the compiled plugin registry, extending Packman's inspector with typed configuration schema discovery for plugins implementing {@see DescribesConfigSchema}.
+
+```php
+final readonly class PluginInspector implements \Packman\Plugins\Contracts\Registry\PluginInspector {
+    __construct(\Packman\Plugins\Contracts\Registry\PluginInspector $inner);
+    describe(): array;
+    // Returns declared configuration field schemas keyed by plugin id for every active plugin that implements {@see DescribesConfigSchema}.
+    describeSchemas(): array;
+    disabledIds(): array;
+    facetsOf(string $pluginId): ?\Packman\Extensions\Data\ExtensionFacetProfile;
+    slotContributions(): array;
+    slots(): array;
+}
+```
+
 ## Ports
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`AssetResolverPort`](#type-commerz-ports-assets-contracts-assetresolverport) | interface | spi (implement) | 0.1 |
+| [`AssetRef`](#type-commerz-ports-assets-data-assetref) | class | api | 0.1 |
+| [`ResolvedAsset`](#type-commerz-ports-assets-data-resolvedasset) | class | api | 0.1 |
 | [`CustomerDirectory`](#type-commerz-ports-customers-contracts-customerdirectory) | interface | spi (implement) | 0.1 |
 | [`CustomerProfile`](#type-commerz-ports-customers-data-customerprofile) | class | api | 0.1 |
 | [`DeliveryOptions`](#type-commerz-ports-delivery-contracts-deliveryoptions) | interface | api | 0.1 |
+| [`OrderRoutingRule`](#type-commerz-ports-delivery-contracts-orderroutingrule) | interface | spi (implement) | 0.1 |
+| [`PickupPointProvider`](#type-commerz-ports-delivery-contracts-pickuppointprovider) | interface | spi (implement) | 0.1 |
 | [`ShipmentBooking`](#type-commerz-ports-delivery-contracts-shipmentbooking) | interface | api | 0.1 |
 | [`Address`](#type-commerz-ports-delivery-data-address) | class | api | 0.1 |
 | [`BookShipment`](#type-commerz-ports-delivery-data-bookshipment) | class | api | 0.1 |
+| [`BookedParcel`](#type-commerz-ports-delivery-data-bookedparcel) | class | api | 0.1 |
 | [`BookedShipment`](#type-commerz-ports-delivery-data-bookedshipment) | class | api | 0.1 |
+| [`Coordinates`](#type-commerz-ports-delivery-data-coordinates) | class | api | 0.1 |
 | [`DeliveryOption`](#type-commerz-ports-delivery-data-deliveryoption) | class | api | 0.1 |
 | [`DeliveryRequest`](#type-commerz-ports-delivery-data-deliveryrequest) | class | api | 0.1 |
+| [`FulfillmentAssignment`](#type-commerz-ports-delivery-data-fulfillmentassignment) | class | api | 0.1 |
+| [`FulfillmentAssignmentLine`](#type-commerz-ports-delivery-data-fulfillmentassignmentline) | class | api | 0.1 |
+| [`FulfillmentConstraints`](#type-commerz-ports-delivery-data-fulfillmentconstraints) | class | api | 0.1 |
+| [`GeoPoint`](#type-commerz-ports-delivery-data-geopoint) | class | api | 0.1 |
+| [`OrderRoutingContext`](#type-commerz-ports-delivery-data-orderroutingcontext) | class | api | 0.1 |
 | [`Parcel`](#type-commerz-ports-delivery-data-parcel) | class | api | 0.1 |
+| [`PickupPoint`](#type-commerz-ports-delivery-data-pickuppoint) | class | api | 0.1 |
+| [`PickupPointDestination`](#type-commerz-ports-delivery-data-pickuppointdestination) | class | api | 0.1 |
+| [`PickupPointLimits`](#type-commerz-ports-delivery-data-pickuppointlimits) | class | api | 0.1 |
+| [`PickupPointQuery`](#type-commerz-ports-delivery-data-pickuppointquery) | class | api | 0.1 |
+| [`RoutingCandidate`](#type-commerz-ports-delivery-data-routingcandidate) | class | api | 0.1 |
+| [`RoutingLocationProfile`](#type-commerz-ports-delivery-data-routinglocationprofile) | class | api | 0.1 |
+| [`DeliveryMode`](#type-commerz-ports-delivery-enums-deliverymode) | enum | api | 0.1 |
+| [`DigitalDeliveryPort`](#type-commerz-ports-digital-contracts-digitaldeliveryport) | interface | spi (implement) | 0.1 |
+| [`DigitalDeliveryGrant`](#type-commerz-ports-digital-data-digitaldeliverygrant) | class | api | 0.1 |
+| [`GrantDigitalDelivery`](#type-commerz-ports-digital-data-grantdigitaldelivery) | class | api | 0.1 |
+| [`RevokeDigitalDelivery`](#type-commerz-ports-digital-data-revokedigitaldelivery) | class | api | 0.1 |
 | [`PriceResolver`](#type-commerz-ports-prices-contracts-priceresolver) | interface | api | 0.1 |
 | [`ResolvePrice`](#type-commerz-ports-prices-data-resolveprice) | class | api | 0.1 |
 | [`ResolvedPrice`](#type-commerz-ports-prices-data-resolvedprice) | class | api | 0.1 |
 | [`PriceNotFound`](#type-commerz-ports-prices-exceptions-pricenotfound) | class | api | 0.1 |
+| [`PiiCipherPort`](#type-commerz-ports-privacy-contracts-piicipherport) | interface | spi (implement) | 0.1 |
+| [`CustomerPersonalDataErased`](#type-commerz-ports-privacy-events-customerpersonaldataerased) | class | api | 0.1 |
 | [`PromotionUsage`](#type-commerz-ports-promotions-contracts-promotionusage) | interface | api | 0.1 |
 | [`AppliedPromotion`](#type-commerz-ports-promotions-data-appliedpromotion) | class | api | 0.1 |
 | [`ConsumePromotionUsage`](#type-commerz-ports-promotions-data-consumepromotionusage) | class | api | 0.1 |
@@ -1004,8 +1722,79 @@ final class CorePlugin implements \Packman\Extensions\Contracts\Composition\With
 | [`RestockStock`](#type-commerz-ports-stock-data-restockstock) | class | api | 0.1 |
 | [`StockAllocation`](#type-commerz-ports-stock-data-stockallocation) | class | api | 0.1 |
 | [`StockLines`](#type-commerz-ports-stock-data-stocklines) | class | api | 0.1 |
+| [`WriteOffLine`](#type-commerz-ports-stock-data-writeoffline) | class | api | 0.1 |
+| [`WriteOffStock`](#type-commerz-ports-stock-data-writeoffstock) | class | api | 0.1 |
 | [`InsufficientStock`](#type-commerz-ports-stock-exceptions-insufficientstock) | class | api | 0.1 |
 | [`ReservationNotFound`](#type-commerz-ports-stock-exceptions-reservationnotfound) | class | api | 0.1 |
+| [`StoredValueTender`](#type-commerz-ports-storedvalue-contracts-storedvaluetender) | interface | spi (implement) | 0.1 |
+| [`AppliedTender`](#type-commerz-ports-storedvalue-data-appliedtender) | class | api | 0.1 |
+| [`CaptureStoredValue`](#type-commerz-ports-storedvalue-data-capturestoredvalue) | class | api | 0.1 |
+| [`HoldStoredValue`](#type-commerz-ports-storedvalue-data-holdstoredvalue) | class | api | 0.1 |
+| [`RefundToStoredValue`](#type-commerz-ports-storedvalue-data-refundtostoredvalue) | class | api | 0.1 |
+| [`ReleaseStoredValue`](#type-commerz-ports-storedvalue-data-releasestoredvalue) | class | api | 0.1 |
+| [`StoredValueCapture`](#type-commerz-ports-storedvalue-data-storedvaluecapture) | class | api | 0.1 |
+| [`StoredValueCredit`](#type-commerz-ports-storedvalue-data-storedvaluecredit) | class | api | 0.1 |
+| [`StoredValueHold`](#type-commerz-ports-storedvalue-data-storedvaluehold) | class | api | 0.1 |
+| [`TenderInstrument`](#type-commerz-ports-storedvalue-data-tenderinstrument) | class | api | 0.1 |
+| [`TenderRejection`](#type-commerz-ports-storedvalue-data-tenderrejection) | class | api | 0.1 |
+| [`TenderSettlement`](#type-commerz-ports-storedvalue-data-tendersettlement) | class | api | 0.1 |
+| [`StoredValueKind`](#type-commerz-ports-storedvalue-enums-storedvaluekind) | enum | api | 0.1 |
+| [`InsufficientStoredValue`](#type-commerz-ports-storedvalue-exceptions-insufficientstoredvalue) | class | api | 0.1 |
+| [`StoredValueNotFound`](#type-commerz-ports-storedvalue-exceptions-storedvaluenotfound) | class | api | 0.1 |
+| [`StoredValueUnavailable`](#type-commerz-ports-storedvalue-exceptions-storedvalueunavailable) | class | api | 0.1 |
+| [`TaxEngine`](#type-commerz-ports-taxes-contracts-taxengine) | interface | api | 0.1 |
+| [`CalculateTax`](#type-commerz-ports-taxes-data-calculatetax) | class | api | 0.1 |
+| [`CalculatedTax`](#type-commerz-ports-taxes-data-calculatedtax) | class | api | 0.1 |
+| [`CalculatedTaxLine`](#type-commerz-ports-taxes-data-calculatedtaxline) | class | api | 0.1 |
+| [`TaxExemption`](#type-commerz-ports-taxes-data-taxexemption) | class | api | 0.1 |
+| [`TaxableLine`](#type-commerz-ports-taxes-data-taxableline) | class | api | 0.1 |
+| [`TaxExemptionType`](#type-commerz-ports-taxes-enums-taxexemptiontype) | enum | api | 0.1 |
+
+### AssetResolverPort {#type-commerz-ports-assets-contracts-assetresolverport}
+
+`Commerz\Ports\Assets\Contracts\AssetResolverPort`
+
+Host-agnostic media and file resolution port. Commerce stores only opaque `AssetRef` pointers and asks the host to resolve public or temporary signed URLs without coupling to any storage or media subsystem.
+
+```php
+interface AssetResolverPort {
+    resolve(\Commerz\Ports\Assets\Data\AssetRef $asset, ?string $variant = null): ?\Commerz\Ports\Assets\Data\ResolvedAsset;
+    // Batch resolution without N+1 queries. Missing assets are omitted from the returned map.
+    resolveMany(array $assets, ?string $variant = null): array;
+    // Generates a time-limited URL for a protected asset, or `null` when unavailable.
+    signedUrl(\Commerz\Ports\Assets\Data\AssetRef $asset, \DateTimeImmutable $expiresAt, ?string $variant = null): ?string;
+}
+```
+
+### AssetRef {#type-commerz-ports-assets-data-assetref}
+
+`Commerz\Ports\Assets\Data\AssetRef`
+
+Opaque reference (`type:id`) to a media or file asset owned by the host application.
+
+```php
+final readonly class AssetRef extends \Commerz\Identity\Ref implements \Stringable {}
+```
+
+### ResolvedAsset {#type-commerz-ports-assets-data-resolvedasset}
+
+`Commerz\Ports\Assets\Data\ResolvedAsset`
+
+Host-resolved asset metadata and rendition URLs for storefront or administrative display.
+
+```php
+final readonly class ResolvedAsset {
+    public readonly ?string $altText;
+    public readonly ?int $heightPx;
+    public readonly ?string $mimeType;
+    public readonly \Commerz\Ports\Assets\Data\AssetRef $ref;
+    public readonly ?int $sizeBytes;
+    public readonly string $url;
+    public readonly array $variants;
+    public readonly ?int $widthPx;
+    __construct(\Commerz\Ports\Assets\Data\AssetRef $ref, string $url, ?string $mimeType = null, ?int $sizeBytes = null, ?int $widthPx = null, ?int $heightPx = null, ?string $altText = null, array $variants = []);
+}
+```
 
 ### CustomerDirectory {#type-commerz-ports-customers-contracts-customerdirectory}
 
@@ -1047,6 +1836,37 @@ interface DeliveryOptions {
 }
 ```
 
+### OrderRoutingRule {#type-commerz-ports-delivery-contracts-orderroutingrule}
+
+`Commerz\Ports\Delivery\Contracts\OrderRoutingRule`
+
+Pluggable rule in an order-routing pipeline, contributed under kind `order_routing_rule`. Pure: filters and/or re-orders candidate locations without side effects or I/O.
+
+```php
+interface OrderRoutingRule {
+    const KIND = 'order_routing_rule';
+    // Filters and/or re-orders candidate locations according to this rule.
+    apply(array $candidates, \Commerz\Ports\Delivery\Data\OrderRoutingContext $context): array;
+    key(): string;
+}
+```
+
+### PickupPointProvider {#type-commerz-ports-delivery-contracts-pickuppointprovider}
+
+`Commerz\Ports\Delivery\Contracts\PickupPointProvider`
+
+Supplies PUDO parcel lockers, carrier pickup offices, or BOPIS store locations matching city/coordinates and parcel limits.
+
+```php
+interface PickupPointProvider {
+    const KIND = 'pickup_point_provider';
+    find(string $pointId, \Commerz\Context\CommerceContext $context): ?\Commerz\Ports\Delivery\Data\PickupPoint;
+    // Contribution key, e.g. `database`, `cdek`, or `bopis`.
+    key(): string;
+    search(\Commerz\Ports\Delivery\Data\PickupPointQuery $query): array;
+}
+```
+
 ### ShipmentBooking {#type-commerz-ports-delivery-contracts-shipmentbooking}
 
 `Commerz\Ports\Delivery\Contracts\ShipmentBooking`
@@ -1073,6 +1893,10 @@ final readonly class Address {
     public readonly ?string $recipient;
     public readonly ?string $region;
     __construct(string $country, ?string $region = null, ?string $city = null, ?string $postalCode = null, array $lines = [], ?string $recipient = null, ?string $phone = null);
+    // Whether the address omits street lines, city, or phone (estimation-only / accelerated checkout).
+    isPartial(): bool;
+    // Partial address for product-page delivery estimates and accelerated checkout (Apple Pay / Google Pay).
+    static partial(string $country, ?string $region = null, ?string $city = null, ?string $postalCode = null): self;
 }
 ```
 
@@ -1087,8 +1911,29 @@ final readonly class BookShipment {
     public readonly array $meta;
     public readonly string $methodCode;
     public readonly \Commerz\Ports\Delivery\Data\Parcel $parcel;
+    public readonly array $parcels;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
     public readonly string $reference;
-    __construct(string $reference, string $carrier, string $methodCode, \Commerz\Ports\Delivery\Data\Address $destination, \Commerz\Ports\Delivery\Data\Parcel $parcel, array $meta = []);
+    __construct(string $reference, string $carrier, string $methodCode, \Commerz\Ports\Delivery\Data\Address $destination, \Commerz\Ports\Delivery\Data\Parcel $parcel, array $meta = [], array $parcels = [], ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null);
+    // Builds a multi-parcel shipment command, deriving the aggregate weight and declared value from `$parcels`.
+    static forParcels(string $reference, string $carrier, string $methodCode, \Commerz\Ports\Delivery\Data\Address $destination, array $parcels, array $meta = [], ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null): self;
+}
+```
+
+### BookedParcel {#type-commerz-ports-delivery-data-bookedparcel}
+
+`Commerz\Ports\Delivery\Data\BookedParcel`
+
+One booked parcel within a single- or multi-parcel shipment, carrying its own tracking number and label.
+
+```php
+final readonly class BookedParcel {
+    public readonly ?string $labelRef;
+    public readonly array $meta;
+    public readonly \Commerz\Ports\Delivery\Data\Parcel $parcel;
+    public readonly int $sequence;
+    public readonly string $tracking;
+    __construct(int $sequence, string $tracking, \Commerz\Ports\Delivery\Data\Parcel $parcel, ?string $labelRef = null, array $meta = []);
 }
 ```
 
@@ -1101,8 +1946,29 @@ final readonly class BookedShipment {
     public readonly string $carrier;
     public readonly ?string $labelRef;
     public readonly array $meta;
+    public readonly array $parcels;
     public readonly string $tracking;
-    __construct(string $carrier, string $tracking, ?string $labelRef = null, array $meta = []);
+    __construct(string $carrier, string $tracking, ?string $labelRef = null, array $meta = [], array $parcels = []);
+    trackingNumbers(): array;
+}
+```
+
+### Coordinates {#type-commerz-ports-delivery-data-coordinates}
+
+`Commerz\Ports\Delivery\Data\Coordinates`
+
+Geographic WGS-84 coordinates expressed in integer microdegrees (1° = 1,000,000 microdegrees, ~0.11 m resolution).
+
+```php
+final readonly class Coordinates {
+    public readonly int $latitudeMicrodeg;
+    public readonly int $longitudeMicrodeg;
+    __construct(int $latitudeMicrodeg, int $longitudeMicrodeg);
+    // Integer equirectangular surface distance in meters using exact BigInteger arithmetic.
+    distanceMetersTo(self $other): int;
+    static fromDecimal(string $latitude, string $longitude): self;
+    latitudeDecimal(): string;
+    longitudeDecimal(): string;
 }
 ```
 
@@ -1116,9 +1982,10 @@ final readonly class DeliveryOption {
     public readonly ?int $etaDays;
     public readonly array $meta;
     public readonly string $methodCode;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
     public readonly string $name;
     public readonly \Commerz\Money\Money $price;
-    __construct(string $methodCode, string $name, \Commerz\Money\Money $price, string $carrier, ?int $etaDays = null, array $meta = []);
+    __construct(string $methodCode, string $name, \Commerz\Money\Money $price, string $carrier, ?int $etaDays = null, array $meta = [], \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping);
 }
 ```
 
@@ -1128,11 +1995,100 @@ final readonly class DeliveryOption {
 
 ```php
 final readonly class DeliveryRequest {
+    public readonly \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints;
     public readonly \Commerz\Context\CommerceContext $context;
     public readonly \Commerz\Ports\Delivery\Data\Address $destination;
+    public readonly ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
     public readonly \Commerz\Ports\Delivery\Data\Parcel $parcel;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint;
     public readonly array $sellables;
-    __construct(\Commerz\Context\CommerceContext $context, \Commerz\Ports\Delivery\Data\Address $destination, \Commerz\Ports\Delivery\Data\Parcel $parcel, array $sellables = []);
+    __construct(\Commerz\Context\CommerceContext $context, \Commerz\Ports\Delivery\Data\Address $destination, \Commerz\Ports\Delivery\Data\Parcel $parcel, array $sellables = [], ?\Commerz\Ports\Delivery\Data\PickupPointDestination $pickupPoint = null, ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode = null, \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints = new \Commerz\Ports\Delivery\Data\FulfillmentConstraints);
+}
+```
+
+### FulfillmentAssignment {#type-commerz-ports-delivery-data-fulfillmentassignment}
+
+`Commerz\Ports\Delivery\Data\FulfillmentAssignment`
+
+Core-boundary warehouse assignment produced by order routing and consumed when creating a fulfillment order.
+
+```php
+final readonly class FulfillmentAssignment {
+    public readonly \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints;
+    public readonly array $lines;
+    public readonly string $locationCode;
+    __construct(string $locationCode, array $lines, \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints = new \Commerz\Ports\Delivery\Data\FulfillmentConstraints);
+}
+```
+
+### FulfillmentAssignmentLine {#type-commerz-ports-delivery-data-fulfillmentassignmentline}
+
+`Commerz\Ports\Delivery\Data\FulfillmentAssignmentLine`
+
+Units of one sellable assigned to a fulfillment location by order routing.
+
+```php
+final readonly class FulfillmentAssignmentLine {
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity);
+}
+```
+
+### FulfillmentConstraints {#type-commerz-ports-delivery-data-fulfillmentconstraints}
+
+`Commerz\Ports\Delivery\Data\FulfillmentConstraints`
+
+Operational constraints that govern which fulfillment locations may handle an order or shipment (e.g. cold chain, oversized freight, no-split shipping, or custom warehouse capability tags).
+
+```php
+final readonly class FulfillmentConstraints {
+    public readonly bool $coldChain;
+    public readonly bool $mustShipTogether;
+    public readonly bool $oversized;
+    public readonly array $requiredLocationTags;
+    __construct(bool $coldChain = false, bool $oversized = false, bool $mustShipTogether = false, array $requiredLocationTags = []);
+    static fromArray(array $data): self;
+    isEmpty(): bool;
+    // Combines two constraint sets so the result satisfies both.
+    merge(self $other): self;
+    static none(): self;
+    toArray(): array;
+}
+```
+
+### GeoPoint {#type-commerz-ports-delivery-data-geopoint}
+
+`Commerz\Ports\Delivery\Data\GeoPoint`
+
+Geographic coordinates stored as exact integer micro-degrees (degrees * 1_000_000, ~0.11 m resolution) to avoid floating-point values on the public data surface.
+
+```php
+final readonly class GeoPoint {
+    const SCALE = 1000000;
+    public readonly int $latitudeMicro;
+    public readonly int $longitudeMicro;
+    __construct(int $latitudeMicro, int $longitudeMicro);
+    // Great-circle Haversine distance to `$other` in whole meters.
+    distanceMetersTo(self $other): int;
+}
+```
+
+### OrderRoutingContext {#type-commerz-ports-delivery-data-orderroutingcontext}
+
+`Commerz\Ports\Delivery\Data\OrderRoutingContext`
+
+Shared context supplied to every {@see OrderRoutingRule} during routing.
+
+```php
+final readonly class OrderRoutingContext {
+    public readonly \Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints;
+    public readonly ?\Commerz\Ports\Delivery\Data\Address $destination;
+    public readonly ?\Commerz\Ports\Delivery\Data\GeoPoint $destinationCoordinates;
+    public readonly array $locationProfiles;
+    public readonly ?string $marketCode;
+    __construct(\Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints = new \Commerz\Ports\Delivery\Data\FulfillmentConstraints, ?\Commerz\Ports\Delivery\Data\Address $destination = null, ?\Commerz\Ports\Delivery\Data\GeoPoint $destinationCoordinates = null, ?string $marketCode = null, array $locationProfiles = []);
+    profileFor(string $locationCode): \Commerz\Ports\Delivery\Data\RoutingLocationProfile;
 }
 ```
 
@@ -1148,6 +2104,224 @@ final readonly class Parcel {
     public readonly int $weightGrams;
     public readonly ?int $widthMm;
     __construct(int $weightGrams, \Commerz\Money\Money $value, ?int $lengthMm = null, ?int $widthMm = null, ?int $heightMm = null);
+}
+```
+
+### PickupPoint {#type-commerz-ports-delivery-data-pickuppoint}
+
+`Commerz\Ports\Delivery\Data\PickupPoint`
+
+A carrier PUDO point (parcel locker / staffed counter) or merchant BOPIS store pickup location.
+
+```php
+final readonly class PickupPoint {
+    public readonly \Commerz\Ports\Delivery\Data\Address $address;
+    public readonly ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates;
+    public readonly string $id;
+    public readonly bool $isLocker;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits;
+    public readonly array $meta;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly string $name;
+    public readonly ?string $openingHours;
+    public readonly string $provider;
+    __construct(string $id, string $provider, string $name, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode, \Commerz\Ports\Delivery\Data\Address $address, ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates = null, ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits = null, bool $isLocker = false, ?string $openingHours = null, array $meta = []);
+    accepts(\Commerz\Ports\Delivery\Data\Parcel $parcel, array $items = [], bool $allowRotation = true): bool;
+    toDestination(?string $recipientName = null, ?string $recipientPhone = null): \Commerz\Ports\Delivery\Data\PickupPointDestination;
+}
+```
+
+### PickupPointDestination {#type-commerz-ports-delivery-data-pickuppointdestination}
+
+`Commerz\Ports\Delivery\Data\PickupPointDestination`
+
+Selected PUDO locker/point or BOPIS store destination, kept strictly separate from the buyer's billing address.
+
+```php
+final readonly class PickupPointDestination {
+    public readonly \Commerz\Ports\Delivery\Data\Address $address;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly ?string $name;
+    public readonly string $pointId;
+    public readonly string $provider;
+    public readonly ?string $recipientName;
+    public readonly ?string $recipientPhone;
+    __construct(string $pointId, string $provider, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode, \Commerz\Ports\Delivery\Data\Address $address, ?string $recipientName = null, ?string $recipientPhone = null, ?string $name = null);
+    // Resolves the physical delivery address of the pickup point with collector contact details for zone/carrier calls.
+    toDeliveryAddress(): \Commerz\Ports\Delivery\Data\Address;
+}
+```
+
+### PickupPointLimits {#type-commerz-ports-delivery-data-pickuppointlimits}
+
+`Commerz\Ports\Delivery\Data\PickupPointLimits`
+
+Physical capacity limits of a parcel locker compartment or pickup counter, in integer grams and millimeters.
+
+```php
+final readonly class PickupPointLimits {
+    public readonly ?int $maxHeightMm;
+    public readonly ?int $maxLengthMm;
+    public readonly ?int $maxWeightGrams;
+    public readonly ?int $maxWidthMm;
+    __construct(?int $maxWeightGrams = null, ?int $maxLengthMm = null, ?int $maxWidthMm = null, ?int $maxHeightMm = null);
+    // Checks both the aggregate parcel and any individual item parcels so an oversized item is rejected even when aggregate bounding dimensions have not been packed yet.
+    fitsAll(\Commerz\Ports\Delivery\Data\Parcel $parcel, array $itemParcels = [], bool $allowRotation = true): bool;
+    // Whether a parcel fits within the weight limit and 3D compartment dimensions (allowing 90° orthogonal rotation by default).
+    fitsParcel(\Commerz\Ports\Delivery\Data\Parcel $parcel, bool $allowRotation = true): bool;
+}
+```
+
+### PickupPointQuery {#type-commerz-ports-delivery-data-pickuppointquery}
+
+`Commerz\Ports\Delivery\Data\PickupPointQuery`
+
+Search criteria for PUDO / BOPIS pickup points by city, postal code, coordinates radius, and locker dimensions/weight.
+
+```php
+final readonly class PickupPointQuery {
+    public readonly ?string $city;
+    public readonly \Commerz\Context\CommerceContext $context;
+    public readonly string $country;
+    public readonly array $items;
+    public readonly int $limit;
+    public readonly ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly ?\Commerz\Ports\Delivery\Data\Coordinates $near;
+    public readonly bool $onlyLockers;
+    public readonly ?\Commerz\Ports\Delivery\Data\Parcel $parcel;
+    public readonly ?string $postalCode;
+    public readonly ?string $provider;
+    public readonly ?int $radiusMeters;
+    __construct(\Commerz\Context\CommerceContext $context, string $country, ?string $city = null, ?string $postalCode = null, ?\Commerz\Ports\Delivery\Data\Coordinates $near = null, ?int $radiusMeters = null, ?\Commerz\Ports\Delivery\Data\Parcel $parcel = null, array $items = [], ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode = null, ?string $provider = null, bool $onlyLockers = false, int $limit = 50);
+}
+```
+
+### RoutingCandidate {#type-commerz-ports-delivery-data-routingcandidate}
+
+`Commerz\Ports\Delivery\Data\RoutingCandidate`
+
+A candidate fulfillment location evaluated by an {@see OrderRoutingRule}.
+
+```php
+final readonly class RoutingCandidate {
+    public readonly bool $canFulfillAll;
+    public readonly int $fulfillableLineCount;
+    public readonly int $fulfillableUnits;
+    public readonly string $locationCode;
+    public readonly int $priority;
+    public readonly \Commerz\Ports\Delivery\Data\RoutingLocationProfile $profile;
+    __construct(string $locationCode, int $priority, \Commerz\Ports\Delivery\Data\RoutingLocationProfile $profile, bool $canFulfillAll, int $fulfillableUnits, int $fulfillableLineCount);
+}
+```
+
+### RoutingLocationProfile {#type-commerz-ports-delivery-data-routinglocationprofile}
+
+`Commerz\Ports\Delivery\Data\RoutingLocationProfile`
+
+Routing profile of a fulfillment location: physical capabilities, tags, geographic coordinates, served markets, and daily assignment quota state.
+
+```php
+final readonly class RoutingLocationProfile {
+    public readonly bool $coldChainCapable;
+    public readonly ?\Commerz\Ports\Delivery\Data\GeoPoint $coordinates;
+    public readonly int $dailyAssignedCount;
+    public readonly ?int $dailyQuota;
+    public readonly string $locationCode;
+    public readonly array $marketCodes;
+    public readonly bool $oversizedCapable;
+    public readonly array $tags;
+    __construct(string $locationCode, bool $coldChainCapable = false, bool $oversizedCapable = false, array $tags = [], ?\Commerz\Ports\Delivery\Data\GeoPoint $coordinates = null, array $marketCodes = [], ?int $dailyQuota = null, int $dailyAssignedCount = 0);
+    hasDailyQuotaRemaining(): bool;
+    remainingDailyQuota(): ?int;
+    // Whether this location satisfies every capability requirement of `$constraints`.
+    satisfies(\Commerz\Ports\Delivery\Data\FulfillmentConstraints $constraints): bool;
+    servesMarket(string $marketCode): bool;
+}
+```
+
+### DeliveryMode {#type-commerz-ports-delivery-enums-deliverymode}
+
+`Commerz\Ports\Delivery\Enums\DeliveryMode`
+
+How goods reach the buyer: carrier shipping to an address, PUDO locker/point, or BOPIS in-store pickup.
+
+```php
+enum DeliveryMode {
+    case Shipping = 'shipping';
+    case PickupPoint = 'pickup_point';
+    case LocalPickup = 'local_pickup';
+    requiresPickupPoint(): bool;
+}
+```
+
+### DigitalDeliveryPort {#type-commerz-ports-digital-contracts-digitaldeliveryport}
+
+`Commerz\Ports\Digital\Contracts\DigitalDeliveryPort`
+
+Host-agnostic digital fulfillment port for downloadable files, license keys, or access entitlements. Implementations must be idempotent per `GrantDigitalDelivery::$reference`.
+
+```php
+interface DigitalDeliveryPort {
+    find(string $grantId): ?\Commerz\Ports\Digital\Data\DigitalDeliveryGrant;
+    // Provisions a digital entitlement, or returns `null` when no digital delivery handler is active.
+    grant(\Commerz\Ports\Digital\Data\GrantDigitalDelivery $command): ?\Commerz\Ports\Digital\Data\DigitalDeliveryGrant;
+    // Idempotently revokes an entitlement by grant identifier.
+    revoke(\Commerz\Ports\Digital\Data\RevokeDigitalDelivery $command): void;
+}
+```
+
+### DigitalDeliveryGrant {#type-commerz-ports-digital-data-digitaldeliverygrant}
+
+`Commerz\Ports\Digital\Data\DigitalDeliveryGrant`
+
+Provisioned digital entitlement or download token returned by a host `DigitalDeliveryPort`.
+
+```php
+final readonly class DigitalDeliveryGrant {
+    public readonly ?string $downloadUrl;
+    public readonly ?\DateTimeImmutable $expiresAt;
+    public readonly string $grantId;
+    public readonly ?string $licenseKey;
+    public readonly string $reference;
+    public readonly ?int $remainingDownloads;
+    public readonly bool $revoked;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    __construct(string $grantId, string $reference, \Commerz\Identity\SellableRef $sellable, ?string $downloadUrl = null, ?string $licenseKey = null, ?\DateTimeImmutable $expiresAt = null, ?int $remainingDownloads = null, bool $revoked = false);
+}
+```
+
+### GrantDigitalDelivery {#type-commerz-ports-digital-data-grantdigitaldelivery}
+
+`Commerz\Ports\Digital\Data\GrantDigitalDelivery`
+
+Command to provision digital access, download links, or license entitlements for a purchased sellable.
+
+```php
+final readonly class GrantDigitalDelivery {
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly ?\DateTimeImmutable $expiresAt;
+    public readonly ?int $maxDownloads;
+    public readonly array $metadata;
+    public readonly string $orderRef;
+    public readonly int $quantity;
+    public readonly ?string $recipientEmail;
+    public readonly string $reference;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    __construct(string $reference, \Commerz\Identity\SellableRef $sellable, string $orderRef, int $quantity = 1, ?\Commerz\Identity\CustomerRef $customer = null, ?string $recipientEmail = null, ?\DateTimeImmutable $expiresAt = null, ?int $maxDownloads = null, array $metadata = []);
+}
+```
+
+### RevokeDigitalDelivery {#type-commerz-ports-digital-data-revokedigitaldelivery}
+
+`Commerz\Ports\Digital\Data\RevokeDigitalDelivery`
+
+Command to revoke a previously provisioned digital delivery entitlement (e.g. on refund or cancellation).
+
+```php
+final readonly class RevokeDigitalDelivery {
+    public readonly string $grantId;
+    public readonly ?string $reason;
+    __construct(string $grantId, ?string $reason = null);
 }
 ```
 
@@ -1183,10 +2357,11 @@ final readonly class ResolvePrice {
 ```php
 final readonly class ResolvedPrice {
     public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly ?\Commerz\Money\Money $lowestPriceLast30Days;
     public readonly string $source;
     public readonly bool $taxIncluded;
     public readonly \Commerz\Money\Money $unit;
-    __construct(\Commerz\Money\Money $unit, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $source);
+    __construct(\Commerz\Money\Money $unit, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $source, ?\Commerz\Money\Money $lowestPriceLast30Days = null);
 }
 ```
 
@@ -1200,6 +2375,39 @@ No price applies to the sellable in this context and currency.
 final class PriceNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $sellable, string $currency);
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### PiiCipherPort {#type-commerz-ports-privacy-contracts-piicipherport}
+
+`Commerz\Ports\Privacy\Contracts\PiiCipherPort`
+
+Host-agnostic PII encryption and deterministic blind-index port. Allows a host application to protect sensitive personal data at rest with its own KMS or key-rotation vault while keeping core commerce storage transport-neutral.
+
+```php
+interface PiiCipherPort {
+    // Computes a deterministic lowercase 64-hex digest for equality lookups without exposing plaintext.
+    blindIndex(string $value, string $purpose = 'default'): string;
+    // Decrypts a previously encrypted value scoped to `$purpose`.
+    decrypt(string $ciphertext, string $purpose = 'default'): string;
+    // Encrypts plaintext scoped to `$purpose` (e.g. `'customer.email'`, `'order.shipping_address'`).
+    encrypt(string $plaintext, string $purpose = 'default'): string;
+    // Reports whether `$value` carries an encrypted envelope produced by this cipher.
+    isEncrypted(string $value): bool;
+}
+```
+
+### CustomerPersonalDataErased {#type-commerz-ports-privacy-events-customerpersonaldataerased}
+
+`Commerz\Ports\Privacy\Events\CustomerPersonalDataErased`
+
+Dispatched after a customer's personal data has been erased in sales so peer packages (such as shipping bookings) can anonymize their own records for the same customer and related references.
+
+```php
+final readonly class CustomerPersonalDataErased {
+    public readonly array $bookingReferences;
+    public readonly \Commerz\Identity\CustomerRef $customer;
+    __construct(\Commerz\Identity\CustomerRef $customer, array $bookingReferences = []);
 }
 ```
 
@@ -1328,17 +2536,24 @@ final readonly class SellableSnapshot {
     public readonly array $attributes;
     public readonly ?\Commerz\Money\Money $basePrice;
     public readonly array $categories;
+    public readonly ?string $customsDescription;
+    public readonly ?string $hsCode;
     public readonly \Commerz\Ports\Sellables\Enums\SellableKind $kind;
+    public readonly ?string $material;
     public readonly string $name;
     public readonly array $options;
+    public readonly ?string $originCountryCode;
     public readonly bool $purchasable;
+    public readonly ?\Commerz\Measures\QuantityStepPolicy $quantityStepPolicy;
     public readonly \Commerz\Identity\SellableRef $ref;
     public readonly bool $requiresShipping;
+    public readonly ?\Commerz\Identity\SellerRef $sellerRef;
     public readonly string $sku;
     public readonly ?string $taxClass;
     public readonly ?string $unavailableReason;
+    public readonly ?\Commerz\Measures\UnitPrice $unitPrice;
     public readonly ?int $weightGrams;
-    __construct(\Commerz\Identity\SellableRef $ref, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, bool $purchasable = true, ?string $unavailableReason = null, array $options = [], ?\Commerz\Money\Money $basePrice = null, ?string $taxClass = null, ?int $weightGrams = null, array $attributes = [], array $categories = []);
+    __construct(\Commerz\Identity\SellableRef $ref, string $sku, string $name, \Commerz\Ports\Sellables\Enums\SellableKind $kind, bool $requiresShipping, bool $purchasable = true, ?string $unavailableReason = null, array $options = [], ?\Commerz\Money\Money $basePrice = null, ?string $taxClass = null, ?int $weightGrams = null, array $attributes = [], array $categories = [], ?\Commerz\Measures\QuantityStepPolicy $quantityStepPolicy = null, ?\Commerz\Measures\UnitPrice $unitPrice = null, ?string $hsCode = null, ?string $originCountryCode = null, ?string $material = null, ?string $customsDescription = null, ?\Commerz\Identity\SellerRef $sellerRef = null);
 }
 ```
 
@@ -1405,12 +2620,14 @@ interface StockReservations {
 
 `Commerz\Ports\Stock\Contracts\StockReturns`
 
-Puts returned units back on hand (REF-01: stock returns only through an explicit restock, never implicitly). Joins the caller's database transaction on the Commerz connection (or opens its own when there is none), so an accepted return commits or rolls back together with its restock.
+Puts returned units back on hand (REF-01: stock returns only through an explicit restock, never implicitly) or records damaged returned units as a `write_off` movement without ever increasing sellable `on_hand` (INV-INV-002). Joins the caller's database transaction on the Commerz connection (or opens its own when there is none), so an accepted return commits or rolls back together with its stock disposition.
 
 ```php
 interface StockReturns {
     // Idempotent per reference: restocking a reference that was already restocked changes nothing.
     restock(\Commerz\Ports\Stock\Data\RestockStock $command): void;
+    // Records damaged returned units as a `write_off` movement without ever increasing sellable `on_hand` (INV-INV-002). Idempotent per reference: writing off a reference that was already written off changes nothing.
+    writeOff(\Commerz\Ports\Stock\Data\WriteOffStock $command): void;
 }
 ```
 
@@ -1604,6 +2821,38 @@ final class StockLines {
 }
 ```
 
+### WriteOffLine {#type-commerz-ports-stock-data-writeoffline}
+
+`Commerz\Ports\Stock\Data\WriteOffLine`
+
+Units of a returned sellable recorded as a damaged write-off (`INV-INV-002`: never increases sellable `on_hand`).
+
+```php
+final readonly class WriteOffLine {
+    public readonly int $quantity;
+    public readonly \Commerz\Identity\SellableRef $sellable;
+    __construct(\Commerz\Identity\SellableRef $sellable, int $quantity);
+}
+```
+
+### WriteOffStock {#type-commerz-ports-stock-data-writeoffstock}
+
+`Commerz\Ports\Stock\Data\WriteOffStock`
+
+Records damaged returned units in `cmz_stock_movements` as `write_off` without ever increasing sellable `on_hand` (`INV-INV-002`). Idempotent per `$reference`.
+
+```php
+final readonly class WriteOffStock {
+    public readonly ?\Commerz\Identity\ActorRef $actor;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly array $lines;
+    public readonly ?string $locationCode;
+    public readonly ?string $reason;
+    public readonly string $reference;
+    __construct(string $reference, \Commerz\Stores\Data\ChannelId $channel, array $lines, ?string $locationCode = null, ?string $reason = null, ?\Commerz\Identity\ActorRef $actor = null);
+}
+```
+
 ### InsufficientStock {#type-commerz-ports-stock-exceptions-insufficientstock}
 
 `Commerz\Ports\Stock\Exceptions\InsufficientStock`
@@ -1636,15 +2885,435 @@ final class ReservationNotFound extends \Commerz\Errors\NotFound implements \Str
 }
 ```
 
+### StoredValueTender {#type-commerz-ports-storedvalue-contracts-storedvaluetender}
+
+`Commerz\Ports\StoredValue\Contracts\StoredValueTender`
+
+Stored-value payment tender port (gift cards and customer store-credit wallets).
+
+```php
+interface StoredValueTender {
+    // Computes how much of the settled quote's post-tax `grandTotal` (`$quote->totals->total`) can be paid using the presented stored-value tenders without altering subtotal, discounts, or tax lines.
+    applyToQuote(\Commerz\Quotes\Data\QuoteResult $quote, array $tenders): \Commerz\Ports\StoredValue\Data\TenderSettlement;
+    // Captures all or part of an existing hold into a final debit. Idempotent per `$command->idempotencyKey`.
+    capture(\Commerz\Ports\StoredValue\Data\CaptureStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueCapture;
+    // Places an idempotent hold against available stored value (`balance_minor - held_minor >= amount`).
+    hold(\Commerz\Ports\StoredValue\Data\HoldStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueHold;
+    // Credits a stored-value account (or customer store-credit wallet) for a refund. Idempotent per `$command->idempotencyKey`.
+    refundCredit(\Commerz\Ports\StoredValue\Data\RefundToStoredValue $command): \Commerz\Ports\StoredValue\Data\StoredValueCredit;
+    // Releases all or part of an existing hold back to available balance. Idempotent per `$command->idempotencyKey`. Releasing an already-released hold is a no-op.
+    release(\Commerz\Ports\StoredValue\Data\ReleaseStoredValue $command): void;
+}
+```
+
+### AppliedTender {#type-commerz-ports-storedvalue-data-appliedtender}
+
+`Commerz\Ports\StoredValue\Data\AppliedTender`
+
+One stored-value instrument's contribution toward a quote's post-tax grand total.
+
+```php
+final readonly class AppliedTender {
+    public readonly string $accountId;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?string $codeLast4;
+    public readonly \Commerz\Ports\StoredValue\Enums\StoredValueKind $kind;
+    public readonly \Commerz\Money\Money $remainingBalance;
+    __construct(string $accountId, \Commerz\Ports\StoredValue\Enums\StoredValueKind $kind, \Commerz\Money\Money $amount, \Commerz\Money\Money $remainingBalance, ?string $codeLast4 = null);
+}
+```
+
+### CaptureStoredValue {#type-commerz-ports-storedvalue-data-capturestoredvalue}
+
+`Commerz\Ports\StoredValue\Data\CaptureStoredValue`
+
+Captures all or part of an active stored-value hold.
+
+```php
+final readonly class CaptureStoredValue {
+    public readonly ?string $actorRef;
+    public readonly ?\Commerz\Money\Money $amount;
+    public readonly string $holdId;
+    public readonly string $idempotencyKey;
+    public readonly ?string $reason;
+    public readonly string $reference;
+    __construct(string $holdId, string $reference, string $idempotencyKey, ?\Commerz\Money\Money $amount = null, ?string $actorRef = null, ?string $reason = null);
+}
+```
+
+### HoldStoredValue {#type-commerz-ports-storedvalue-data-holdstoredvalue}
+
+`Commerz\Ports\StoredValue\Data\HoldStoredValue`
+
+Places an idempotent authorization hold on a stored-value account for an order or checkout.
+
+```php
+final readonly class HoldStoredValue {
+    public readonly string $accountId;
+    public readonly ?string $actorRef;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?\DateTimeImmutable $expiresAt;
+    public readonly string $idempotencyKey;
+    public readonly string $orderRef;
+    public readonly ?string $reason;
+    __construct(string $accountId, string $orderRef, \Commerz\Money\Money $amount, string $idempotencyKey, ?\DateTimeImmutable $expiresAt = null, ?string $actorRef = null, ?string $reason = null);
+}
+```
+
+### RefundToStoredValue {#type-commerz-ports-storedvalue-data-refundtostoredvalue}
+
+`Commerz\Ports\StoredValue\Data\RefundToStoredValue`
+
+Credits a stored-value account (or customer store-credit wallet) for an order refund.
+
+```php
+final readonly class RefundToStoredValue {
+    public readonly ?string $accountId;
+    public readonly ?string $actorRef;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly string $idempotencyKey;
+    public readonly ?string $reason;
+    public readonly string $reference;
+    __construct(\Commerz\Money\Money $amount, string $reference, string $idempotencyKey, ?string $accountId = null, ?\Commerz\Identity\CustomerRef $customer = null, ?string $actorRef = null, ?string $reason = null);
+}
+```
+
+### ReleaseStoredValue {#type-commerz-ports-storedvalue-data-releasestoredvalue}
+
+`Commerz\Ports\StoredValue\Data\ReleaseStoredValue`
+
+Releases all or part of an active stored-value hold back to available balance.
+
+```php
+final readonly class ReleaseStoredValue {
+    public readonly ?string $actorRef;
+    public readonly ?\Commerz\Money\Money $amount;
+    public readonly string $holdId;
+    public readonly string $idempotencyKey;
+    public readonly ?string $reason;
+    __construct(string $holdId, string $idempotencyKey, ?\Commerz\Money\Money $amount = null, ?string $actorRef = null, ?string $reason = null);
+}
+```
+
+### StoredValueCapture {#type-commerz-ports-storedvalue-data-storedvaluecapture}
+
+`Commerz\Ports\StoredValue\Data\StoredValueCapture`
+
+Result of capturing a stored-value hold.
+
+```php
+final readonly class StoredValueCapture {
+    public readonly string $accountId;
+    public readonly \Commerz\Money\Money $balanceAfter;
+    public readonly \Commerz\Money\Money $captured;
+    public readonly \Commerz\Money\Money $heldAfter;
+    public readonly string $holdId;
+    public readonly string $journalId;
+    __construct(string $holdId, string $accountId, \Commerz\Money\Money $captured, \Commerz\Money\Money $balanceAfter, \Commerz\Money\Money $heldAfter, string $journalId);
+}
+```
+
+### StoredValueCredit {#type-commerz-ports-storedvalue-data-storedvaluecredit}
+
+`Commerz\Ports\StoredValue\Data\StoredValueCredit`
+
+Result of crediting a stored-value account for a refund.
+
+```php
+final readonly class StoredValueCredit {
+    public readonly string $accountId;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly \Commerz\Money\Money $balanceAfter;
+    public readonly string $journalId;
+    __construct(string $accountId, \Commerz\Money\Money $amount, \Commerz\Money\Money $balanceAfter, string $journalId);
+}
+```
+
+### StoredValueHold {#type-commerz-ports-storedvalue-data-storedvaluehold}
+
+`Commerz\Ports\StoredValue\Data\StoredValueHold`
+
+Snapshot of an authorization hold on a stored-value account.
+
+```php
+final readonly class StoredValueHold {
+    public readonly string $accountId;
+    public readonly \Commerz\Money\Money $amount;
+    public readonly \Commerz\Money\Money $captured;
+    public readonly ?\DateTimeImmutable $expiresAt;
+    public readonly string $holdId;
+    public readonly string $orderRef;
+    public readonly \Commerz\Money\Money $released;
+    public readonly string $state;
+    __construct(string $holdId, string $accountId, string $orderRef, \Commerz\Money\Money $amount, \Commerz\Money\Money $captured, \Commerz\Money\Money $released, string $state, ?\DateTimeImmutable $expiresAt = null);
+    remaining(): \Commerz\Money\Money;
+}
+```
+
+### TenderInstrument {#type-commerz-ports-storedvalue-data-tenderinstrument}
+
+`Commerz\Ports\StoredValue\Data\TenderInstrument`
+
+A stored-value instrument presented as payment tender after taxes.
+
+```php
+final readonly class TenderInstrument {
+    public readonly ?string $accountId;
+    public readonly ?\Commerz\Identity\CustomerRef $customer;
+    public readonly ?string $giftCardCode;
+    public readonly \Commerz\Ports\StoredValue\Enums\StoredValueKind $kind;
+    public readonly ?\Commerz\Money\Money $maxAmount;
+    __construct(\Commerz\Ports\StoredValue\Enums\StoredValueKind $kind, ?string $accountId = null, ?string $giftCardCode = null, ?\Commerz\Identity\CustomerRef $customer = null, ?\Commerz\Money\Money $maxAmount = null);
+    static giftCardAccount(string $accountId, ?\Commerz\Money\Money $maxAmount = null): self;
+    static giftCardCode(string $code, ?\Commerz\Money\Money $maxAmount = null): self;
+    static walletAccount(string $accountId, ?\Commerz\Money\Money $maxAmount = null): self;
+    static walletFor(\Commerz\Identity\CustomerRef $customer, ?\Commerz\Money\Money $maxAmount = null): self;
+}
+```
+
+### TenderRejection {#type-commerz-ports-storedvalue-data-tenderrejection}
+
+`Commerz\Ports\StoredValue\Data\TenderRejection`
+
+Explains why a presented stored-value tender could not be applied to a quote.
+
+```php
+final readonly class TenderRejection {
+    public readonly string $message;
+    public readonly string $reason;
+    public readonly string $reference;
+    __construct(string $reference, string $reason, string $message);
+}
+```
+
+### TenderSettlement {#type-commerz-ports-storedvalue-data-tendersettlement}
+
+`Commerz\Ports\StoredValue\Data\TenderSettlement`
+
+Post-tax settlement of stored-value tenders against a quote's `grandTotal`.
+
+```php
+final readonly class TenderSettlement {
+    public readonly array $allocations;
+    public readonly \Commerz\Money\Money $grandTotal;
+    public readonly \Commerz\Money\Money $payableTotal;
+    public readonly array $rejections;
+    public readonly \Commerz\Money\Money $taxTotal;
+    public readonly \Commerz\Money\Money $tenderTotal;
+    __construct(\Commerz\Money\Money $grandTotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $tenderTotal, \Commerz\Money\Money $payableTotal, array $allocations = [], array $rejections = []);
+}
+```
+
+### StoredValueKind {#type-commerz-ports-storedvalue-enums-storedvaluekind}
+
+`Commerz\Ports\StoredValue\Enums\StoredValueKind`
+
+Distinguishes prepaid gift cards from customer store-credit wallets.
+
+```php
+enum StoredValueKind {
+    case GiftCard = 'gift_card';
+    case Wallet = 'wallet';
+}
+```
+
+### InsufficientStoredValue {#type-commerz-ports-storedvalue-exceptions-insufficientstoredvalue}
+
+`Commerz\Ports\StoredValue\Exceptions\InsufficientStoredValue`
+
+A hold or debit would violate INV-SV-001 (`balance_minor - held_minor >= 0`).
+
+```php
+final class InsufficientStoredValue extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $accountId;
+    public readonly int $availableMinor;
+    public readonly string $currency;
+    public readonly int $requestedMinor;
+    __construct(string $accountId, int $requestedMinor, int $availableMinor, string $currency);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### StoredValueNotFound {#type-commerz-ports-storedvalue-exceptions-storedvaluenotfound}
+
+`Commerz\Ports\StoredValue\Exceptions\StoredValueNotFound`
+
+A referenced stored-value account or hold does not exist.
+
+```php
+final class StoredValueNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $entity, string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### StoredValueUnavailable {#type-commerz-ports-storedvalue-exceptions-storedvalueunavailable}
+
+`Commerz\Ports\StoredValue\Exceptions\StoredValueUnavailable`
+
+A stored-value account or hold cannot accept the requested operation (e.g. frozen, expired, voided, closed).
+
+```php
+final class StoredValueUnavailable extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $accountId;
+    public readonly string $reason;
+    __construct(string $accountId, string $reason, ?string $message = null);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### TaxEngine {#type-commerz-ports-taxes-contracts-taxengine}
+
+`Commerz\Ports\Taxes\Contracts\TaxEngine`
+
+Read-only port evaluating taxes, exemptions, and B2B VAT reverse charge for taxable lines and delivery. Implemented by `axiomasoft/commerz-pricing`; defaults to `NullTaxEngine` when pricing is not installed.
+
+```php
+interface TaxEngine {
+    // Evaluates taxes without side effects or database mutations.
+    calculate(\Commerz\Ports\Taxes\Data\CalculateTax $request): \Commerz\Ports\Taxes\Data\CalculatedTax;
+}
+```
+
+### CalculateTax {#type-commerz-ports-taxes-data-calculatetax}
+
+`Commerz\Ports\Taxes\Data\CalculateTax`
+
+Read-only tax calculation query for the `TaxEngine` port.
+
+```php
+final readonly class CalculateTax {
+    public readonly ?string $buyerVatNumber;
+    public readonly \Commerz\Context\CommerceContext $context;
+    public readonly ?\Commerz\Ports\Delivery\Data\Address $destination;
+    public readonly ?\Commerz\Ports\Taxes\Data\TaxExemption $exemption;
+    public readonly array $lines;
+    public readonly ?string $sellerCountry;
+    __construct(\Commerz\Context\CommerceContext $context, ?\Commerz\Ports\Delivery\Data\Address $destination, array $lines, ?\Commerz\Ports\Taxes\Data\TaxExemption $exemption = null, ?string $buyerVatNumber = null, ?string $sellerCountry = null);
+}
+```
+
+### CalculatedTax {#type-commerz-ports-taxes-data-calculatedtax}
+
+`Commerz\Ports\Taxes\Data\CalculatedTax`
+
+Read-only tax evaluation result from `TaxEngine`.
+
+```php
+final readonly class CalculatedTax {
+    public readonly \Commerz\Money\Money $excludedTotal;
+    public readonly bool $exempt;
+    public readonly ?string $exemptionReason;
+    public readonly \Commerz\Money\Money $includedTotal;
+    public readonly array $lines;
+    public readonly bool $reverseCharge;
+    public readonly \Commerz\Money\Money $total;
+    __construct(array $lines, \Commerz\Money\Money $total, \Commerz\Money\Money $excludedTotal, \Commerz\Money\Money $includedTotal, bool $reverseCharge = false, bool $exempt = false, ?string $exemptionReason = null);
+    static fromLines(\Commerz\Money\Currency $currency, array $lines, bool $reverseCharge = false, bool $exempt = false, ?string $exemptionReason = null): self;
+}
+```
+
+### CalculatedTaxLine {#type-commerz-ports-taxes-data-calculatedtaxline}
+
+`Commerz\Ports\Taxes\Data\CalculatedTaxLine`
+
+One computed tax component returned by `TaxEngine`.
+
+```php
+final readonly class CalculatedTaxLine {
+    public readonly \Commerz\Money\Money $amount;
+    public readonly string $code;
+    public readonly bool $included;
+    public readonly ?string $lineId;
+    public readonly \Commerz\Money\Rate $rate;
+    public readonly \Commerz\Quotes\Enums\AdjustmentTarget $target;
+    __construct(\Commerz\Quotes\Enums\AdjustmentTarget $target, ?string $lineId, string $code, \Commerz\Money\Rate $rate, \Commerz\Money\Money $amount, bool $included);
+    itemKey(): string;
+}
+```
+
+### TaxExemption {#type-commerz-ports-taxes-data-taxexemption}
+
+`Commerz\Ports\Taxes\Data\TaxExemption`
+
+Validated tax exemption or B2B VAT Reverse Charge claim attached to a tax evaluation request.
+
+```php
+final readonly class TaxExemption {
+    public readonly ?string $certificateRef;
+    public readonly ?string $reason;
+    public readonly ?string $sellerCountry;
+    public readonly \Commerz\Ports\Taxes\Enums\TaxExemptionType $type;
+    public readonly ?string $vatNumber;
+    __construct(\Commerz\Ports\Taxes\Enums\TaxExemptionType $type, ?string $vatNumber = null, ?string $sellerCountry = null, ?string $certificateRef = null, ?string $reason = null);
+    static exempt(?string $reason = null, ?string $certificateRef = null): self;
+    static normalizeCountry(string $field, string $country): string;
+    static normalizeVatNumber(string $vatNumber, string $field = 'vatNumber'): string;
+    static reverseCharge(string $vatNumber, ?string $sellerCountry = null, ?string $reason = null): self;
+    vatCountryPrefix(): ?string;
+}
+```
+
+### TaxableLine {#type-commerz-ports-taxes-data-taxableline}
+
+`Commerz\Ports\Taxes\Data\TaxableLine`
+
+One line or delivery charge submitted to the read-only `TaxEngine` port.
+
+```php
+final readonly class TaxableLine {
+    public readonly \Commerz\Money\Money $base;
+    public readonly bool $included;
+    public readonly ?string $lineId;
+    public readonly int $quantity;
+    public readonly ?\Commerz\Identity\SellableRef $sellable;
+    public readonly \Commerz\Quotes\Enums\AdjustmentTarget $target;
+    public readonly ?string $taxClass;
+    __construct(\Commerz\Quotes\Enums\AdjustmentTarget $target, ?string $lineId, ?\Commerz\Identity\SellableRef $sellable, ?string $taxClass, int $quantity, \Commerz\Money\Money $base, bool $included = false);
+    static delivery(\Commerz\Money\Money $base, ?string $taxClass = null, bool $included = false): self;
+    key(): string;
+    static line(string $lineId, \Commerz\Money\Money $base, int $quantity = 1, ?string $taxClass = null, bool $included = false, ?\Commerz\Identity\SellableRef $sellable = null): self;
+}
+```
+
+### TaxExemptionType {#type-commerz-ports-taxes-enums-taxexemptiontype}
+
+`Commerz\Ports\Taxes\Enums\TaxExemptionType`
+
+How a buyer or transaction is relieved from standard tax collection.
+
+```php
+enum TaxExemptionType {
+    case Exempt = 'exempt';
+    case ReverseCharge = 'reverse_charge';
+}
+```
+
 ## Quotes
 
 | Type | Kind | Layer | Since |
 |---|---|---|---|
+| [`CartTransformOperation`](#type-commerz-quotes-contracts-carttransformoperation) | interface | api | 0.1 |
+| [`CartTransformRule`](#type-commerz-quotes-contracts-carttransformrule) | interface | spi (implement) | 0.1 |
 | [`QuotePipeline`](#type-commerz-quotes-contracts-quotepipeline) | interface | api | 0.1 |
 | [`QuoteStage`](#type-commerz-quotes-contracts-quotestage) | interface | spi (implement) | 0.1 |
+| [`QuoteStagePolicy`](#type-commerz-quotes-contracts-quotestagepolicy) | interface | spi (implement) | 0.1 |
 | [`Adjustment`](#type-commerz-quotes-data-adjustment) | class | api | 0.1 |
 | [`DeliveryCharge`](#type-commerz-quotes-data-deliverycharge) | class | api | 0.1 |
 | [`DeliverySelection`](#type-commerz-quotes-data-deliveryselection) | class | api | 0.1 |
+| [`ExpandedComponent`](#type-commerz-quotes-data-expandedcomponent) | class | api | 0.1 |
+| [`LineExpand`](#type-commerz-quotes-data-lineexpand) | class | api | 0.1 |
+| [`LineUpdate`](#type-commerz-quotes-data-lineupdate) | class | api | 0.1 |
+| [`LinesMerge`](#type-commerz-quotes-data-linesmerge) | class | api | 0.1 |
+| [`MergeTargetLine`](#type-commerz-quotes-data-mergetargetline) | class | api | 0.1 |
+| [`NearMissHint`](#type-commerz-quotes-data-nearmisshint) | class | api | 0.1 |
 | [`QuoteInput`](#type-commerz-quotes-data-quoteinput) | class | api | 0.1 |
 | [`QuoteLine`](#type-commerz-quotes-data-quoteline) | class | api | 0.1 |
 | [`QuoteLineInput`](#type-commerz-quotes-data-quotelineinput) | class | api | 0.1 |
@@ -1653,11 +3322,37 @@ final class ReservationNotFound extends \Commerz\Errors\NotFound implements \Str
 | [`QuoteTotals`](#type-commerz-quotes-data-quotetotals) | class | api | 0.1 |
 | [`QuotedLine`](#type-commerz-quotes-data-quotedline) | class | api | 0.1 |
 | [`Rejection`](#type-commerz-quotes-data-rejection) | class | api | 0.1 |
+| [`SelectableGiftOffer`](#type-commerz-quotes-data-selectablegiftoffer) | class | api | 0.1 |
 | [`TaxLine`](#type-commerz-quotes-data-taxline) | class | api | 0.1 |
 | [`AdjustmentTarget`](#type-commerz-quotes-enums-adjustmenttarget) | enum | api | 0.1 |
+| [`FailurePolicy`](#type-commerz-quotes-enums-failurepolicy) | enum | api | 0.1 |
 | [`QuoteAnchor`](#type-commerz-quotes-enums-quoteanchor) | enum | api | 0.1 |
 | [`StagePosition`](#type-commerz-quotes-enums-stageposition) | enum | api | 0.1 |
 | [`QuoteFailed`](#type-commerz-quotes-exceptions-quotefailed) | class | api | 0.1 |
+
+### CartTransformOperation {#type-commerz-quotes-contracts-carttransformoperation}
+
+`Commerz\Quotes\Contracts\CartTransformOperation`
+
+Marker interface for structural cart line transformations produced by a {@see CartTransformRule} during Stage 01 (`cart_transform`) before base pricing runs.
+
+```php
+interface CartTransformOperation {}
+```
+
+### CartTransformRule {#type-commerz-quotes-contracts-carttransformrule}
+
+`Commerz\Quotes\Contracts\CartTransformRule`
+
+Stage 01 (`cart_transform`) rule contributed via `PluginRegistrar::contribute(CartTransformRule::KIND, ...)`. Rules inspect the quote input lines and emit {@see CartTransformOperation} instructions (`LineExpand`, `LinesMerge`, `LineUpdate`). Rules may also implement {@see QuoteStagePolicy}; by default they use `FailurePolicy::BlockOnFailure` so a broken bundle/merge transform halts the quote rather than mispricing.
+
+```php
+interface CartTransformRule {
+    const KIND = 'cart_transform_rule';
+    key(): string;
+    transform(\Commerz\Quotes\Data\QuoteInput $input): array;
+}
+```
 
 ### QuotePipeline {#type-commerz-quotes-contracts-quotepipeline}
 
@@ -1684,6 +3379,20 @@ interface QuoteStage {
     apply(\Commerz\Quotes\Data\QuoteState $state): \Commerz\Quotes\Data\QuoteState;
     key(): string;
     position(): \Commerz\Quotes\Enums\StagePosition;
+}
+```
+
+### QuoteStagePolicy {#type-commerz-quotes-contracts-quotestagepolicy}
+
+`Commerz\Quotes\Contracts\QuoteStagePolicy`
+
+Optional resilience policy implemented by a {@see QuoteStage} or custom pipeline interceptor. Stages that do not implement this interface default to {@see FailurePolicy::BlockOnFailure} with no timeout.
+
+```php
+interface QuoteStagePolicy {
+    failurePolicy(): \Commerz\Quotes\Enums\FailurePolicy;
+    // Maximum allowed execution time in milliseconds before the stage is considered timed out. Null disables timeout enforcement.
+    timeoutMilliseconds(): ?int;
 }
 ```
 
@@ -1743,6 +3452,108 @@ final readonly class DeliverySelection {
 }
 ```
 
+### ExpandedComponent {#type-commerz-quotes-data-expandedcomponent}
+
+`Commerz\Quotes\Data\ExpandedComponent`
+
+One component line produced when {@see LineExpand} expands a parent bundle/kit line.
+
+```php
+final readonly class ExpandedComponent {
+    public readonly ?\Commerz\Money\Money $fixedUnitPrice;
+    public readonly ?string $lineId;
+    public readonly int $quantityPerUnit;
+    public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef $sellable;
+    public readonly ?bool $taxIncluded;
+    __construct(\Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef $sellable, int $quantityPerUnit = 1, ?\Commerz\Money\Money $fixedUnitPrice = null, ?bool $taxIncluded = null, ?string $lineId = null);
+}
+```
+
+### LineExpand {#type-commerz-quotes-data-lineexpand}
+
+`Commerz\Quotes\Data\LineExpand`
+
+Expands a single bundle/kit line into its constituent component lines (`quantity × quantityPerUnit`).
+
+```php
+final readonly class LineExpand implements \Commerz\Quotes\Contracts\CartTransformOperation {
+    public readonly array $components;
+    public readonly string $lineId;
+    __construct(string $lineId, array $components);
+}
+```
+
+### LineUpdate {#type-commerz-quotes-data-lineupdate}
+
+`Commerz\Quotes\Data\LineUpdate`
+
+Updates an existing input line's price, display title, sellable, or quantity before pricing.
+
+```php
+final readonly class LineUpdate implements \Commerz\Quotes\Contracts\CartTransformOperation {
+    public readonly ?\Commerz\Money\Money $fixedUnitPrice;
+    public readonly string $lineId;
+    public readonly ?int $quantity;
+    public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef|null $sellable;
+    public readonly ?bool $taxIncluded;
+    public readonly ?string $title;
+    __construct(string $lineId, ?\Commerz\Money\Money $fixedUnitPrice = null, ?string $title = null, \Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef|null $sellable = null, ?int $quantity = null, ?bool $taxIncluded = null);
+}
+```
+
+### LinesMerge {#type-commerz-quotes-data-linesmerge}
+
+`Commerz\Quotes\Data\LinesMerge`
+
+Merges one or more cart lines (or partial quantities of them) into a single parent bundle line.
+
+```php
+final readonly class LinesMerge implements \Commerz\Quotes\Contracts\CartTransformOperation {
+    public readonly ?\Commerz\Money\Money $fixedUnitPrice;
+    public readonly ?string $lineId;
+    public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef $parentSellable;
+    public readonly int $quantity;
+    public readonly array $targets;
+    public readonly ?bool $taxIncluded;
+    __construct(array $targets, \Commerz\Ports\Sellables\Data\SellableSnapshot|\Commerz\Identity\SellableRef $parentSellable, int $quantity = 1, ?\Commerz\Money\Money $fixedUnitPrice = null, ?bool $taxIncluded = null, ?string $lineId = null);
+}
+```
+
+### MergeTargetLine {#type-commerz-quotes-data-mergetargetline}
+
+`Commerz\Quotes\Data\MergeTargetLine`
+
+Identifies an input line and how many units of it are merged by {@see LinesMerge}. When `$quantity` is null, the entire line is consumed into the merged parent line.
+
+```php
+final readonly class MergeTargetLine {
+    public readonly string $lineId;
+    public readonly ?int $quantity;
+    __construct(string $lineId, ?int $quantity = null);
+}
+```
+
+### NearMissHint {#type-commerz-quotes-data-nearmisshint}
+
+`Commerz\Quotes\Data\NearMissHint`
+
+A storefront upsell hint explaining how close the quote is to unlocking a promotion (e.g. missing spend or units).
+
+```php
+final readonly class NearMissHint {
+    public readonly string $message;
+    public readonly ?\Commerz\Money\Money $missingAmount;
+    public readonly ?int $missingQuantity;
+    public readonly string $promotionCode;
+    public readonly string $promotionId;
+    public readonly string $promotionName;
+    public readonly string $reason;
+    public readonly ?\Commerz\Money\Money $thresholdAmount;
+    public readonly ?int $thresholdQuantity;
+    __construct(string $promotionId, string $promotionCode, string $promotionName, string $reason, string $message, ?\Commerz\Money\Money $missingAmount = null, ?int $missingQuantity = null, ?\Commerz\Money\Money $thresholdAmount = null, ?int $thresholdQuantity = null);
+}
+```
+
 ### QuoteInput {#type-commerz-quotes-data-quoteinput}
 
 `Commerz\Quotes\Data\QuoteInput`
@@ -1753,8 +3564,11 @@ final readonly class QuoteInput {
     public readonly \Commerz\Context\CommerceContext $context;
     public readonly ?\Commerz\Quotes\Data\DeliverySelection $delivery;
     public readonly array $lines;
-    __construct(\Commerz\Context\CommerceContext $context, array $lines, array $codes = [], ?\Commerz\Quotes\Data\DeliverySelection $delivery = null);
+    public readonly \Commerz\Money\RoundingMode $rounding;
+    public readonly ?\Commerz\Sellable\SellingPlan $sellingPlan;
+    __construct(\Commerz\Context\CommerceContext $context, array $lines, array $codes = [], ?\Commerz\Quotes\Data\DeliverySelection $delivery = null, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp, ?\Commerz\Sellable\SellingPlan $sellingPlan = null);
     line(string $lineId): ?\Commerz\Quotes\Data\QuoteLineInput;
+    withLines(array $lines, ?\Commerz\Quotes\Data\DeliverySelection $delivery = null): self;
 }
 ```
 
@@ -1767,13 +3581,18 @@ A priced line inside the pipeline: what the base stage resolved, before adjustme
 ```php
 final readonly class QuoteLine {
     public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly ?string $giftPromotionId;
+    public readonly bool $isGift;
     public readonly string $lineId;
+    public readonly ?\Commerz\Measures\UnitPrice $pricePerUnit;
     public readonly string $priceSource;
     public readonly int $quantity;
+    public readonly \Commerz\Money\RoundingMode $rounding;
     public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable;
+    public readonly ?\Commerz\Sellable\SellingPlan $sellingPlan;
     public readonly bool $taxIncluded;
     public readonly \Commerz\Money\Money $unitPrice;
-    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource);
+    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, ?\Commerz\Measures\UnitPrice $pricePerUnit = null, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp, bool $isGift = false, ?string $giftPromotionId = null, ?\Commerz\Sellable\SellingPlan $sellingPlan = null);
     subtotal(): \Commerz\Money\Money;
 }
 ```
@@ -1784,10 +3603,16 @@ final readonly class QuoteLine {
 
 ```php
 final readonly class QuoteLineInput {
+    public readonly ?\Commerz\Money\Money $fixedUnitPrice;
     public readonly string $lineId;
+    public readonly ?string $priceSource;
     public readonly int $quantity;
     public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable;
-    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity);
+    public readonly ?\Commerz\Sellable\SellingPlan $sellingPlan;
+    public readonly ?bool $taxIncluded;
+    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, ?\Commerz\Money\Money $fixedUnitPrice = null, ?bool $taxIncluded = null, ?string $priceSource = null, ?\Commerz\Sellable\SellingPlan $sellingPlan = null);
+    // Builds a line input whose quantity is normalized to the sellable's QuantityStepPolicy, if present.
+    static normalized(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, \Commerz\Money\RoundingMode $mode = Commerz\Money\RoundingMode::HalfUp, ?\Commerz\Sellable\SellingPlan $sellingPlan = null): self;
 }
 ```
 
@@ -1801,14 +3626,18 @@ final readonly class QuoteResult {
     public readonly \Commerz\Context\CommerceContext $context;
     public readonly ?\Commerz\Quotes\Data\DeliveryCharge $delivery;
     public readonly array $deliveryAdjustments;
+    public readonly \Commerz\Money\Money $dueNowAmount;
     public readonly string $fingerprint;
+    public readonly array $giftOffers;
     public readonly array $lines;
+    public readonly array $nearMissHints;
     public readonly array $orderAdjustments;
     public readonly array $rejections;
+    public readonly \Commerz\Money\Money $remainingBalanceAmount;
     public readonly array $taxLines;
     public readonly \Commerz\Money\Money $total;
     public readonly \Commerz\Quotes\Data\QuoteTotals $totals;
-    __construct(\Commerz\Context\CommerceContext $context, array $lines, array $orderAdjustments, ?\Commerz\Quotes\Data\DeliveryCharge $delivery, array $deliveryAdjustments, array $taxLines, \Commerz\Quotes\Data\QuoteTotals $totals, array $rejections, array $codes, string $fingerprint);
+    __construct(\Commerz\Context\CommerceContext $context, array $lines, array $orderAdjustments, ?\Commerz\Quotes\Data\DeliveryCharge $delivery, array $deliveryAdjustments, array $taxLines, \Commerz\Quotes\Data\QuoteTotals $totals, array $rejections, array $codes, string $fingerprint, array $giftOffers = [], array $nearMissHints = [], ?\Commerz\Money\Money $dueNowAmount = null, ?\Commerz\Money\Money $remainingBalanceAmount = null);
     // What each promotion took off this quote, for PromotionUsage::consume when the order is placed: one entry per promotion id, in order of first appearance — own line adjustments of the lines (lines in order), then the order-level adjustments as declared, then the delivery adjustments. The per-line shares of order-level adjustments are not counted again. Adjustments without a promotion id (host stages) are ignored.
     appliedPromotions(): array;
 }
@@ -1824,8 +3653,10 @@ The immutable state passed from stage to stage. The base stage prices the input 
 final readonly class QuoteState {
     public readonly array $adjustments;
     public readonly ?\Commerz\Quotes\Data\DeliveryCharge $delivery;
+    public readonly array $giftOffers;
     public readonly \Commerz\Quotes\Data\QuoteInput $input;
     public readonly array $lines;
+    public readonly array $nearMissHints;
     public readonly array $rejections;
     public readonly array $settledLines;
     public readonly array $taxLines;
@@ -1844,8 +3675,16 @@ final readonly class QuoteState {
     static start(\Commerz\Quotes\Data\QuoteInput $input): self;
     withAdjustment(\Commerz\Quotes\Data\Adjustment $adjustment): self;
     withDelivery(?\Commerz\Quotes\Data\DeliveryCharge $delivery): self;
+    // Adds an auto-added free gift line (not from input). Must be marked `$isGift = true` with zero unit price.
+    withGiftLine(\Commerz\Quotes\Data\QuoteLine $line): self;
+    // Records a selectable gift offer without changing amounts.
+    withGiftOffer(\Commerz\Quotes\Data\SelectableGiftOffer $offer): self;
+    // Replaces the quote input before lines are priced (used by Stage 01 `cart_transform`).
+    withInput(\Commerz\Quotes\Data\QuoteInput $input): self;
     // Adds the line, or replaces the line with the same id. The id must come from the input.
     withLine(\Commerz\Quotes\Data\QuoteLine $line): self;
+    // Records a near-miss promotion hint without changing amounts, so it keeps settled totals.
+    withNearMissHint(\Commerz\Quotes\Data\NearMissHint $hint): self;
     // Recording a rejection does not change amounts, so it keeps settled totals.
     withRejection(\Commerz\Quotes\Data\Rejection $rejection): self;
     withTaxLine(\Commerz\Quotes\Data\TaxLine $tax): self;
@@ -1858,16 +3697,18 @@ final readonly class QuoteState {
 
 `Commerz\Quotes\Data\QuoteTotals`
 
-`total = subtotal − discountTotal + deliveryTotal + excluded taxes`. `discountTotal` (positive) sums line and order adjustments; `deliveryTotal` is the delivery price after delivery adjustments; `taxTotal` sums all taxes, included and excluded.
+`total = subtotal − discountTotal + deliveryTotal + excluded taxes`. `discountTotal` (positive) sums line and order adjustments; `deliveryTotal` is the delivery price after delivery adjustments; `taxTotal` sums all taxes, included and excluded. `dueNowAmount` and `remainingBalanceAmount` partition `total` across immediate checkout collection and deferred / deposit collection (`dueNowAmount + remainingBalanceAmount === total`).
 
 ```php
 final readonly class QuoteTotals {
     public readonly \Commerz\Money\Money $deliveryTotal;
     public readonly \Commerz\Money\Money $discountTotal;
+    public readonly \Commerz\Money\Money $dueNowAmount;
+    public readonly \Commerz\Money\Money $remainingBalanceAmount;
     public readonly \Commerz\Money\Money $subtotal;
     public readonly \Commerz\Money\Money $taxTotal;
     public readonly \Commerz\Money\Money $total;
-    __construct(\Commerz\Money\Money $subtotal, \Commerz\Money\Money $discountTotal, \Commerz\Money\Money $deliveryTotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $total);
+    __construct(\Commerz\Money\Money $subtotal, \Commerz\Money\Money $discountTotal, \Commerz\Money\Money $deliveryTotal, \Commerz\Money\Money $taxTotal, \Commerz\Money\Money $total, ?\Commerz\Money\Money $dueNowAmount = null, ?\Commerz\Money\Money $remainingBalanceAmount = null);
 }
 ```
 
@@ -1881,16 +3722,20 @@ A settled line of a quote result: what an order line snapshots.
 final readonly class QuotedLine {
     public readonly array $adjustments;
     public readonly ?\Commerz\Money\Money $compareAt;
+    public readonly ?string $giftPromotionId;
+    public readonly bool $isGift;
     public readonly string $lineId;
+    public readonly ?\Commerz\Measures\UnitPrice $pricePerUnit;
     public readonly string $priceSource;
     public readonly int $quantity;
     public readonly \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable;
+    public readonly ?\Commerz\Sellable\SellingPlan $sellingPlan;
     public readonly \Commerz\Money\Money $subtotal;
     public readonly bool $taxIncluded;
     public readonly array $taxLines;
     public readonly \Commerz\Money\Money $total;
     public readonly \Commerz\Money\Money $unitPrice;
-    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, \Commerz\Money\Money $subtotal, array $adjustments, array $taxLines, \Commerz\Money\Money $total);
+    __construct(string $lineId, \Commerz\Ports\Sellables\Data\SellableSnapshot $sellable, int $quantity, \Commerz\Money\Money $unitPrice, ?\Commerz\Money\Money $compareAt, bool $taxIncluded, string $priceSource, \Commerz\Money\Money $subtotal, array $adjustments, array $taxLines, \Commerz\Money\Money $total, ?\Commerz\Measures\UnitPrice $pricePerUnit = null, bool $isGift = false, ?string $giftPromotionId = null, ?\Commerz\Sellable\SellingPlan $sellingPlan = null);
 }
 ```
 
@@ -1908,6 +3753,25 @@ final readonly class Rejection {
     public readonly string $reason;
     public readonly string $source;
     __construct(string $source, string $reason, string $message, ?string $promotionId = null, ?string $code = null);
+}
+```
+
+### SelectableGiftOffer {#type-commerz-quotes-data-selectablegiftoffer}
+
+`Commerz\Quotes\Data\SelectableGiftOffer`
+
+A selectable gift offer unlocked by a promotion: the storefront lets the buyer pick up to `$maxSelections` sellables from `$sellableRefs`, each granted at `$quantityPerSelection` units free of charge.
+
+```php
+final readonly class SelectableGiftOffer {
+    public readonly ?string $couponCode;
+    public readonly int $maxSelections;
+    public readonly string $promotionCode;
+    public readonly string $promotionId;
+    public readonly int $quantityPerSelection;
+    public readonly array $sellableRefs;
+    public readonly string $title;
+    __construct(string $promotionId, string $promotionCode, string $title, array $sellableRefs, int $maxSelections = 1, int $quantityPerSelection = 1, ?string $couponCode = null);
 }
 ```
 
@@ -1943,6 +3807,19 @@ enum AdjustmentTarget {
 }
 ```
 
+### FailurePolicy {#type-commerz-quotes-enums-failurepolicy}
+
+`Commerz\Quotes\Enums\FailurePolicy`
+
+Governs how {@see QuotePipeline} reacts when a stage or interceptor throws an exception or exceeds its configured timeout budget.
+
+```php
+enum FailurePolicy {
+    case BlockOnFailure = 'block_on_failure';
+    case IgnoreOnFailure = 'ignore_on_failure';
+}
+```
+
 ### QuoteAnchor {#type-commerz-quotes-enums-quoteanchor}
 
 `Commerz\Quotes\Enums\QuoteAnchor`
@@ -1951,6 +3828,7 @@ Fixed points of the quote pipeline, in run order (the order of the cases).
 
 ```php
 enum QuoteAnchor {
+    case CartTransform = 'cart_transform';
     case Base = 'base';
     case CatalogPromotions = 'promotions.catalog';
     case CartPromotions = 'promotions.cart';
@@ -1993,6 +3871,7 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
     code(): string;
     context(): array;
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+    static timedOut(string $stage, int $timeoutMs): self;
 }
 ```
 
@@ -2002,6 +3881,7 @@ final class QuoteFailed extends \Commerz\Errors\CommerzException implements \Str
 |---|---|---|---|
 | [`CommerzMigration`](#type-commerz-schema-commerzmigration) | class | spi (implement) | 0.1 |
 | [`CommerzSchemaSets`](#type-commerz-schema-commerzschemasets) | class | spi (call) | 0.1 |
+| [`Rows`](#type-commerz-schema-rows) | class | spi (call) | 0.1 |
 | [`TableNames`](#type-commerz-schema-tablenames) | class | api | 0.1 |
 
 ### CommerzMigration {#type-commerz-schema-commerzmigration}
@@ -2026,12 +3906,35 @@ Declares the central PostgreSQL schema set owned by `axiomasoft/commerz` and gov
 
 ```php
 final readonly class CommerzSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     // Validates that the configured Commerz database connection satisfies every registered Commerz `SchemaSet`.
     static assertConnectionSupported(\Illuminate\Contracts\Foundation\Application $app): void;
+    static forPackage(\Commerz\Configuration\CommerzOptions|\Illuminate\Contracts\Config\Repository|null $config, string $package, string $name, string $path, int $version = 1): \Packman\Schema\Data\Migration\SchemaSet;
     // Registers Commerz `SchemaSet` paths with Laravel's `migrator` and guards execution so unsupported database drivers fail cleanly with {@see SchemaSetException} before creating partial commerce tables.
     static governMigrations(\Illuminate\Contracts\Foundation\Application $app): void;
     static migrationPaths(\Illuminate\Contracts\Foundation\Application $app): array;
     sets(): array;
+}
+```
+
+### Rows {#type-commerz-schema-rows}
+
+`Commerz\Schema\Rows`
+
+Typed readers of a raw query-builder row; a missing or mistyped column is a programming error.
+
+```php
+final class Rows {
+    static bool(object $row, string $column): bool;
+    static date(object $row, string $column): \DateTimeImmutable;
+    static int(object $row, string $column): int;
+    static json(object $row, string $column): array;
+    static localized(object $row, string $column): \Commerz\Measures\LocalizedText;
+    static nullableBool(object $row, string $column): ?bool;
+    static nullableInt(object $row, string $column): ?int;
+    static nullableString(object $row, string $column): ?string;
+    static string(object $row, string $column): string;
+    static strings(object $row, string $column): array;
 }
 ```
 
@@ -2050,6 +3953,173 @@ final class TableNames {
     resolver(): \Packman\Schema\Data\Compiler\TableNames;
     table(string $logical): string;
     static verifyFingerprint(\Illuminate\Database\ConnectionInterface $connection, string $prefix): void;
+}
+```
+
+## Sellable
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`BalanceDueTrigger`](#type-commerz-sellable-balanceduetrigger) | enum | api | 0.1 |
+| [`BillingPolicy`](#type-commerz-sellable-billingpolicy) | enum | api | 0.1 |
+| [`DeliveryPolicy`](#type-commerz-sellable-deliverypolicy) | class | api | 0.1 |
+| [`PricingAdjustmentKind`](#type-commerz-sellable-pricingadjustmentkind) | enum | api | 0.1 |
+| [`PricingPolicy`](#type-commerz-sellable-pricingpolicy) | class | api | 0.1 |
+| [`SellingPlan`](#type-commerz-sellable-sellingplan) | class | api | 0.1 |
+| [`SellingPlanInterval`](#type-commerz-sellable-sellingplaninterval) | enum | api | 0.1 |
+
+### BalanceDueTrigger {#type-commerz-sellable-balanceduetrigger}
+
+`Commerz\Sellable\BalanceDueTrigger`
+
+Event or schedule point at which the remaining unpaid balance of a deposit or deferred selling plan becomes due.
+
+```php
+enum BalanceDueTrigger {
+    case BeforeShipment = 'before_shipment';
+    case OnFulfillment = 'on_fulfillment';
+    case AfterCheckoutDays = 'after_checkout_days';
+    case FixedDate = 'fixed_date';
+}
+```
+
+### BillingPolicy {#type-commerz-sellable-billingpolicy}
+
+`Commerz\Sellable\BillingPolicy`
+
+How a selling plan schedules customer payment collection: - `Recurring`: automatic recurring billing cycles (subscriptions) - `Deposit`: partial upfront deposit now, remaining balance later (pre-orders, layaway, made-to-order) - `Deferred`: zero upfront charge at checkout, full balance collected later (try-before-you-buy)
+
+```php
+enum BillingPolicy {
+    case Recurring = 'recurring';
+    case Deposit = 'deposit';
+    case Deferred = 'deferred';
+}
+```
+
+### DeliveryPolicy {#type-commerz-sellable-deliverypolicy}
+
+`Commerz\Sellable\DeliveryPolicy`
+
+Fulfillment cadence or release schedule of a {@see SellingPlan}: - immediate one-time fulfillment - recurring interval delivery (e.g. every 1 month, every 2 weeks) - scheduled release date (pre-order) or lead-time days after checkout
+
+```php
+final readonly class DeliveryPolicy {
+    public readonly ?int $fulfillAfterDays;
+    public readonly ?\DateTimeImmutable $fulfillAt;
+    public readonly ?\Commerz\Sellable\SellingPlanInterval $interval;
+    public readonly ?int $intervalCount;
+    __construct(?\Commerz\Sellable\SellingPlanInterval $interval = null, ?int $intervalCount = null, ?\DateTimeImmutable $fulfillAt = null, ?int $fulfillAfterDays = null);
+    static afterDays(int $days): self;
+    equals(self $other): bool;
+    static every(\Commerz\Sellable\SellingPlanInterval $interval, int $intervalCount = 1): self;
+    static fromArray(array $data): self;
+    static immediate(): self;
+    isImmediate(): bool;
+    isRecurring(): bool;
+    nextDeliveryAt(\DateTimeImmutable $anchor, int $cycles = 1): \DateTimeImmutable;
+    static onDate(\DateTimeImmutable $fulfillAt): self;
+    toArray(): array;
+}
+```
+
+### PricingAdjustmentKind {#type-commerz-sellable-pricingadjustmentkind}
+
+`Commerz\Sellable\PricingAdjustmentKind`
+
+How a selling plan adjusts a sellable's resolved unit price.
+
+```php
+enum PricingAdjustmentKind {
+    case None = 'none';
+    case PercentageOff = 'percentage_off';
+    case FixedAmountOff = 'fixed_amount_off';
+    case FixedPrice = 'fixed_price';
+}
+```
+
+### PricingPolicy {#type-commerz-sellable-pricingpolicy}
+
+`Commerz\Sellable\PricingPolicy`
+
+Pricing policy of a {@see SellingPlan}: supports percentage discounts (e.g. Subscribe & Save 10%), fixed-amount discounts, fixed prices, and optional post-introductory pricing after N billing cycles.
+
+```php
+final readonly class PricingPolicy {
+    public readonly ?int $afterCycle;
+    public readonly ?self $afterCyclePolicy;
+    public readonly ?\Commerz\Money\Money $fixedAmount;
+    public readonly \Commerz\Sellable\PricingAdjustmentKind $kind;
+    public readonly ?\Commerz\Money\Rate $percentageOff;
+    __construct(\Commerz\Sellable\PricingAdjustmentKind $kind = Commerz\Sellable\PricingAdjustmentKind::None, ?\Commerz\Money\Rate $percentageOff = null, ?\Commerz\Money\Money $fixedAmount = null, ?int $afterCycle = null, ?self $afterCyclePolicy = null);
+    applyTo(\Commerz\Money\Money $baseUnitPrice, int $cycle = 1, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): \Commerz\Money\Money;
+    equals(self $other): bool;
+    static fixedAmountOff(\Commerz\Money\Money $amount): self;
+    static fixedPrice(\Commerz\Money\Money $price): self;
+    static fromArray(array $data): self;
+    static none(): self;
+    static percentageOff(\Commerz\Money\Rate $rate): self;
+    toArray(): array;
+    withAfterCycle(int $afterCycle, self $policy): self;
+}
+```
+
+### SellingPlan {#type-commerz-sellable-sellingplan}
+
+`Commerz\Sellable\SellingPlan`
+
+Universal selling plan describing how any sellable is priced, billed, and delivered: - {@see BillingPolicy::Recurring}: subscriptions (Subscribe & Save, replenishment, memberships) - {@see BillingPolicy::Deposit}: partial upfront payment (pre-orders, layaway, custom manufacturing, e.g. 20% now / 80% before shipment) - {@see BillingPolicy::Deferred}: Try-Before-You-Buy (0 due at checkout, full balance collected after trial or on fulfillment)
+
+```php
+final readonly class SellingPlan {
+    public readonly ?\DateTimeImmutable $balanceDueAt;
+    public readonly ?int $balanceDueDays;
+    public readonly ?\Commerz\Sellable\BalanceDueTrigger $balanceDueTrigger;
+    public readonly ?\Commerz\Sellable\SellingPlanInterval $billingInterval;
+    public readonly ?int $billingIntervalCount;
+    public readonly \Commerz\Sellable\BillingPolicy $billingPolicy;
+    public readonly \Commerz\Sellable\DeliveryPolicy $deliveryPolicy;
+    public readonly ?\Commerz\Money\Money $depositFixedAmount;
+    public readonly ?\Commerz\Money\Rate $depositRate;
+    public readonly string $id;
+    public readonly ?int $maxCycles;
+    public readonly ?int $minCycles;
+    public readonly string $name;
+    public readonly \Commerz\Sellable\PricingPolicy $pricingPolicy;
+    public readonly bool $requiresSavedPaymentMethod;
+    __construct(string $id, string $name, \Commerz\Sellable\BillingPolicy $billingPolicy, \Commerz\Sellable\PricingPolicy $pricingPolicy, \Commerz\Sellable\DeliveryPolicy $deliveryPolicy, bool $requiresSavedPaymentMethod, ?\Commerz\Sellable\SellingPlanInterval $billingInterval = null, ?int $billingIntervalCount = null, ?int $minCycles = null, ?int $maxCycles = null, ?\Commerz\Money\Rate $depositRate = null, ?\Commerz\Money\Money $depositFixedAmount = null, ?\Commerz\Sellable\BalanceDueTrigger $balanceDueTrigger = null, ?int $balanceDueDays = null, ?\DateTimeImmutable $balanceDueAt = null);
+    balanceDueDate(\DateTimeImmutable $checkoutAt): ?\DateTimeImmutable;
+    // Computes the portion of `$total` payable immediately at checkout.
+    computeDueNow(\Commerz\Money\Money $total, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): \Commerz\Money\Money;
+    // Computes the deferred balance of `$total` (`total - dueNow`), guaranteed non-negative and exact to the minor unit.
+    computeRemainingBalance(\Commerz\Money\Money $total, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): \Commerz\Money\Money;
+    static deferred(string $id, string $name, \Commerz\Sellable\BalanceDueTrigger $balanceDueTrigger = Commerz\Sellable\BalanceDueTrigger::AfterCheckoutDays, ?int $balanceDueDays = 14, ?\DateTimeImmutable $balanceDueAt = null, ?\Commerz\Sellable\PricingPolicy $pricingPolicy = null, ?\Commerz\Sellable\DeliveryPolicy $deliveryPolicy = null, bool $requiresSavedPaymentMethod = true): self;
+    static deposit(string $id, string $name, ?\Commerz\Money\Rate $depositRate = null, ?\Commerz\Money\Money $depositFixedAmount = null, \Commerz\Sellable\BalanceDueTrigger $balanceDueTrigger = Commerz\Sellable\BalanceDueTrigger::BeforeShipment, ?int $balanceDueDays = null, ?\DateTimeImmutable $balanceDueAt = null, ?\Commerz\Sellable\PricingPolicy $pricingPolicy = null, ?\Commerz\Sellable\DeliveryPolicy $deliveryPolicy = null, bool $requiresSavedPaymentMethod = false): self;
+    equals(self $other): bool;
+    static fromArray(array $data): self;
+    isDeferred(): bool;
+    isDeposit(): bool;
+    isRecurring(): bool;
+    nextBillingAt(\DateTimeImmutable $anchor, int $cycles = 1): \DateTimeImmutable;
+    static recurring(string $id, string $name, \Commerz\Sellable\SellingPlanInterval $interval = Commerz\Sellable\SellingPlanInterval::Month, int $intervalCount = 1, ?\Commerz\Sellable\PricingPolicy $pricingPolicy = null, ?\Commerz\Sellable\DeliveryPolicy $deliveryPolicy = null, ?int $minCycles = null, ?int $maxCycles = null, bool $requiresSavedPaymentMethod = true): self;
+    toArray(): array;
+    unitPriceForCycle(\Commerz\Money\Money $baseUnitPrice, int $cycle = 1, \Commerz\Money\RoundingMode $rounding = Commerz\Money\RoundingMode::HalfUp): \Commerz\Money\Money;
+}
+```
+
+### SellingPlanInterval {#type-commerz-sellable-sellingplaninterval}
+
+`Commerz\Sellable\SellingPlanInterval`
+
+Calendar cadence unit for recurring billing and delivery schedules.
+
+```php
+enum SellingPlanInterval {
+    case Day = 'day';
+    case Week = 'week';
+    case Month = 'month';
+    case Year = 'year';
+    addTo(\DateTimeImmutable $anchor, int $count = 1): \DateTimeImmutable;
 }
 ```
 
@@ -2461,6 +4531,614 @@ final class DuplicateCode extends \Commerz\Errors\CommerzException implements \S
 ```php
 final class StoreNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Time
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Clock`](#type-commerz-time-contracts-clock) | interface | api | 0.1 |
+| [`PgTimestamp`](#type-commerz-time-pgtimestamp) | class | spi (call) | 0.1 |
+
+### Clock {#type-commerz-time-contracts-clock}
+
+`Commerz\Time\Contracts\Clock`
+
+Source of the current UTC instant across all Commerz packages.
+
+```php
+interface Clock {
+    now(): \DateTimeImmutable;
+}
+```
+
+### PgTimestamp {#type-commerz-time-pgtimestamp}
+
+`Commerz\Time\PgTimestamp`
+
+Formats UTC instants for PostgreSQL `timestamptz(6)` columns using the active {@see Clock}.
+
+```php
+final class PgTimestamp {
+    const FORMAT = 'Y-m-d H:i:s.uP';
+    static current(?\Commerz\Time\Contracts\Clock $clock = null): \DateTimeImmutable;
+    static format(\DateTimeImmutable $instant): string;
+    static now(?\Commerz\Time\Contracts\Clock $clock = null): string;
+}
+```
+
+## Webhooks
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`InboundWebhookGateway`](#type-commerz-webhooks-contracts-inboundwebhookgateway) | interface | api | 0.1 |
+| [`InboundWebhookHandler`](#type-commerz-webhooks-contracts-inboundwebhookhandler) | interface | spi (implement) | 0.1 |
+| [`WebhookSubscriptions`](#type-commerz-webhooks-contracts-webhooksubscriptions) | interface | api | 0.1 |
+| [`WebhookTransport`](#type-commerz-webhooks-contracts-webhooktransport) | interface | spi (implement) | 0.1 |
+| [`CreateWebhookSubscription`](#type-commerz-webhooks-data-createwebhooksubscription) | class | api | 0.1 |
+| [`InboundWebhookEventId`](#type-commerz-webhooks-data-inboundwebhookeventid) | class | api | 0.1 |
+| [`InboundWebhookPayload`](#type-commerz-webhooks-data-inboundwebhookpayload) | class | api | 0.1 |
+| [`InboundWebhookResult`](#type-commerz-webhooks-data-inboundwebhookresult) | class | api | 0.1 |
+| [`InboundWebhookSource`](#type-commerz-webhooks-data-inboundwebhooksource) | class | api | 0.1 |
+| [`ListWebhookDeliveries`](#type-commerz-webhooks-data-listwebhookdeliveries) | class | api | 0.1 |
+| [`ListWebhookSubscriptions`](#type-commerz-webhooks-data-listwebhooksubscriptions) | class | api | 0.1 |
+| [`OutboundWebhookRequest`](#type-commerz-webhooks-data-outboundwebhookrequest) | class | api | 0.1 |
+| [`ReceiveInboundWebhook`](#type-commerz-webhooks-data-receiveinboundwebhook) | class | api | 0.1 |
+| [`ReplayWebhookDelivery`](#type-commerz-webhooks-data-replaywebhookdelivery) | class | api | 0.1 |
+| [`UpdateWebhookSubscription`](#type-commerz-webhooks-data-updatewebhooksubscription) | class | api | 0.1 |
+| [`WebhookDeliveryId`](#type-commerz-webhooks-data-webhookdeliveryid) | class | api | 0.1 |
+| [`WebhookDeliveryView`](#type-commerz-webhooks-data-webhookdeliveryview) | class | api | 0.1 |
+| [`WebhookDispatchReport`](#type-commerz-webhooks-data-webhookdispatchreport) | class | api | 0.1 |
+| [`WebhookRetryPolicy`](#type-commerz-webhooks-data-webhookretrypolicy) | class | api | 0.1 |
+| [`WebhookSignature`](#type-commerz-webhooks-data-webhooksignature) | class | api | 0.1 |
+| [`WebhookSubscriptionId`](#type-commerz-webhooks-data-webhooksubscriptionid) | class | api | 0.1 |
+| [`WebhookSubscriptionView`](#type-commerz-webhooks-data-webhooksubscriptionview) | class | api | 0.1 |
+| [`WebhookTransportResponse`](#type-commerz-webhooks-data-webhooktransportresponse) | class | api | 0.1 |
+| [`InboundSignatureMode`](#type-commerz-webhooks-enums-inboundsignaturemode) | enum | api | 0.1 |
+| [`InboundWebhookOutcome`](#type-commerz-webhooks-enums-inboundwebhookoutcome) | enum | api | 0.1 |
+| [`WebhookDeliveryStatus`](#type-commerz-webhooks-enums-webhookdeliverystatus) | enum | api | 0.1 |
+| [`WebhookSubscriptionStatus`](#type-commerz-webhooks-enums-webhooksubscriptionstatus) | enum | api | 0.1 |
+| [`InboundWebhookReceived`](#type-commerz-webhooks-events-inboundwebhookreceived) | class | api | 0.1 |
+| [`WebhookDelivered`](#type-commerz-webhooks-events-webhookdelivered) | class | api | 0.1 |
+| [`WebhookSubscriptionDisabled`](#type-commerz-webhooks-events-webhooksubscriptiondisabled) | class | api | 0.1 |
+| [`DuplicateWebhookSubscription`](#type-commerz-webhooks-exceptions-duplicatewebhooksubscription) | class | api | 0.1 |
+| [`InvalidWebhookSignature`](#type-commerz-webhooks-exceptions-invalidwebhooksignature) | class | api | 0.1 |
+| [`WebhookDeliveryNotFound`](#type-commerz-webhooks-exceptions-webhookdeliverynotfound) | class | api | 0.1 |
+| [`WebhookSubscriptionNotFound`](#type-commerz-webhooks-exceptions-webhooksubscriptionnotfound) | class | api | 0.1 |
+| [`WebhookTransportFailed`](#type-commerz-webhooks-exceptions-webhooktransportfailed) | class | api | 0.1 |
+
+### InboundWebhookGateway {#type-commerz-webhooks-contracts-inboundwebhookgateway}
+
+`Commerz\Webhooks\Contracts\InboundWebhookGateway`
+
+Inbound webhook gateway: verifies HMAC-SHA256 signatures in constant time and deduplicates deliveries atomically by `(source, external_event_id)`.
+
+```php
+interface InboundWebhookGateway {
+    find(\Commerz\Webhooks\Data\InboundWebhookEventId $id): \Commerz\Webhooks\Data\InboundWebhookPayload;
+    // Verifies `$webhook->signature` against the configured or supplied `$source` and processes the event at most once per `(source, external_event_id)`.
+    receive(\Commerz\Webhooks\Data\ReceiveInboundWebhook $webhook, ?\Commerz\Webhooks\Data\InboundWebhookSource $source = null, ?\Commerz\Webhooks\Contracts\InboundWebhookHandler $handler = null): \Commerz\Webhooks\Data\InboundWebhookResult;
+    registerSource(\Commerz\Webhooks\Data\InboundWebhookSource $source, ?\Commerz\Webhooks\Contracts\InboundWebhookHandler $handler = null): void;
+}
+```
+
+### InboundWebhookHandler {#type-commerz-webhooks-contracts-inboundwebhookhandler}
+
+`Commerz\Webhooks\Contracts\InboundWebhookHandler`
+
+Processes a verified, deduplicated inbound webhook inside the gateway's deduplication transaction.
+
+```php
+interface InboundWebhookHandler {
+    handle(\Commerz\Webhooks\Data\InboundWebhookPayload $event): void;
+}
+```
+
+### WebhookSubscriptions {#type-commerz-webhooks-contracts-webhooksubscriptions}
+
+`Commerz\Webhooks\Contracts\WebhookSubscriptions`
+
+Outgoing webhook subscription registry and dispatcher layered on top of the transactional outbox: signs payloads with HMAC-SHA256, schedules exponential retries, trips a circuit-breaker to auto-disable dead endpoints after consecutive failures, and supports manual replay.
+
+```php
+interface WebhookSubscriptions {
+    create(\Commerz\Webhooks\Data\CreateWebhookSubscription $command): \Commerz\Webhooks\Data\WebhookSubscriptionView;
+    delete(\Commerz\Webhooks\Data\WebhookSubscriptionId $id): void;
+    // Dispatches due pending deliveries for active subscriptions outside a transaction, applying exponential retries and auto-disabling subscriptions whose consecutive failures reach `failureThreshold`.
+    dispatchPending(int $limit = 100): \Commerz\Webhooks\Data\WebhookDispatchReport;
+    // Re-activates a paused or circuit-broken subscription and resets its consecutive failure counter.
+    enable(\Commerz\Webhooks\Data\WebhookSubscriptionId $id): \Commerz\Webhooks\Data\WebhookSubscriptionView;
+    // Idempotently enqueues a pending delivery for each active subscription matching `$event->type`.
+    enqueue(\Commerz\Outbox\Data\IntegrationEvent $event): array;
+    // Scans recorded `outbox_messages` rows and idempotently enqueues deliveries for active matching subscriptions.
+    enqueueFromOutbox(int $limit = 100): int;
+    find(\Commerz\Webhooks\Data\WebhookSubscriptionId $id): \Commerz\Webhooks\Data\WebhookSubscriptionView;
+    findDelivery(\Commerz\Webhooks\Data\WebhookDeliveryId $id): \Commerz\Webhooks\Data\WebhookDeliveryView;
+    list(\Commerz\Webhooks\Data\ListWebhookSubscriptions $query = new \Commerz\Webhooks\Data\ListWebhookSubscriptions): \Commerz\Pagination\Page;
+    listDeliveries(\Commerz\Webhooks\Data\ListWebhookDeliveries $query = new \Commerz\Webhooks\Data\ListWebhookDeliveries): \Commerz\Pagination\Page;
+    pause(\Commerz\Webhooks\Data\WebhookSubscriptionId $id): \Commerz\Webhooks\Data\WebhookSubscriptionView;
+    // Manually replays a webhook delivery, resetting its error state and optionally re-enabling its subscription.
+    replay(\Commerz\Webhooks\Data\ReplayWebhookDelivery $command): \Commerz\Webhooks\Data\WebhookDeliveryView;
+    update(\Commerz\Webhooks\Data\UpdateWebhookSubscription $command): \Commerz\Webhooks\Data\WebhookSubscriptionView;
+}
+```
+
+### WebhookTransport {#type-commerz-webhooks-contracts-webhooktransport}
+
+`Commerz\Webhooks\Contracts\WebhookTransport`
+
+Outgoing HTTP transport port for signed webhook deliveries. Runs strictly outside any database transaction.
+
+```php
+interface WebhookTransport {
+    send(\Commerz\Webhooks\Data\OutboundWebhookRequest $request): \Commerz\Webhooks\Data\WebhookTransportResponse;
+}
+```
+
+### CreateWebhookSubscription {#type-commerz-webhooks-data-createwebhooksubscription}
+
+`Commerz\Webhooks\Data\CreateWebhookSubscription`
+
+```php
+final readonly class CreateWebhookSubscription {
+    public readonly string $code;
+    public readonly array $eventTypes;
+    public readonly int $failureThreshold;
+    public readonly array $headers;
+    public readonly int $maxAttempts;
+    public readonly string $signingSecret;
+    public readonly string $targetUrl;
+    __construct(string $code, string $targetUrl, string $signingSecret, array $eventTypes, int $maxAttempts = 5, int $failureThreshold = 5, array $headers = []);
+    static assertSigningSecret(string $signingSecret): void;
+    static assertTargetUrl(string $targetUrl): void;
+    static normalizeEventTypes(array $eventTypes): array;
+    static normalizeHeaders(array $headers): array;
+}
+```
+
+### InboundWebhookEventId {#type-commerz-webhooks-data-inboundwebhookeventid}
+
+`Commerz\Webhooks\Data\InboundWebhookEventId`
+
+```php
+final readonly class InboundWebhookEventId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### InboundWebhookPayload {#type-commerz-webhooks-data-inboundwebhookpayload}
+
+`Commerz\Webhooks\Data\InboundWebhookPayload`
+
+Verified and deduplicated inbound webhook event delivered to handlers and domain listeners.
+
+```php
+final readonly class InboundWebhookPayload {
+    public readonly string $eventType;
+    public readonly string $externalEventId;
+    public readonly array $headers;
+    public readonly \Commerz\Webhooks\Data\InboundWebhookEventId $id;
+    public readonly array $payload;
+    public readonly \DateTimeImmutable $receivedAt;
+    public readonly string $source;
+    __construct(\Commerz\Webhooks\Data\InboundWebhookEventId $id, string $source, string $externalEventId, string $eventType, array $payload, array $headers, \DateTimeImmutable $receivedAt);
+}
+```
+
+### InboundWebhookResult {#type-commerz-webhooks-data-inboundwebhookresult}
+
+`Commerz\Webhooks\Data\InboundWebhookResult`
+
+```php
+final readonly class InboundWebhookResult {
+    public readonly bool $duplicate;
+    public readonly string $eventType;
+    public readonly string $externalEventId;
+    public readonly \Commerz\Webhooks\Data\InboundWebhookEventId $id;
+    public readonly \Commerz\Webhooks\Enums\InboundWebhookOutcome $outcome;
+    public readonly string $source;
+    __construct(\Commerz\Webhooks\Data\InboundWebhookEventId $id, string $source, string $externalEventId, string $eventType, bool $duplicate, \Commerz\Webhooks\Enums\InboundWebhookOutcome $outcome);
+}
+```
+
+### InboundWebhookSource {#type-commerz-webhooks-data-inboundwebhooksource}
+
+`Commerz\Webhooks\Data\InboundWebhookSource`
+
+Configuration for an external webhook sender verified by `InboundWebhookGateway`.
+
+```php
+final readonly class InboundWebhookSource {
+    public readonly array $secrets;
+    public readonly \Commerz\Webhooks\Enums\InboundSignatureMode $signatureMode;
+    public readonly string $source;
+    public readonly int $toleranceSeconds;
+    __construct(string $source, array|string $secrets, \Commerz\Webhooks\Enums\InboundSignatureMode $signatureMode = Commerz\Webhooks\Enums\InboundSignatureMode::Timestamped, int $toleranceSeconds = Commerz\Webhooks\Data\WebhookSignature::DEFAULT_TOLERANCE_SECONDS);
+}
+```
+
+### ListWebhookDeliveries {#type-commerz-webhooks-data-listwebhookdeliveries}
+
+`Commerz\Webhooks\Data\ListWebhookDeliveries`
+
+```php
+final readonly class ListWebhookDeliveries {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $first;
+    public readonly ?\Commerz\Webhooks\Enums\WebhookDeliveryStatus $status;
+    public readonly ?\Commerz\Webhooks\Data\WebhookSubscriptionId $subscription;
+    __construct(?\Commerz\Webhooks\Data\WebhookSubscriptionId $subscription = null, ?\Commerz\Webhooks\Enums\WebhookDeliveryStatus $status = null, int $first = 50, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### ListWebhookSubscriptions {#type-commerz-webhooks-data-listwebhooksubscriptions}
+
+`Commerz\Webhooks\Data\ListWebhookSubscriptions`
+
+```php
+final readonly class ListWebhookSubscriptions {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $first;
+    public readonly ?\Commerz\Webhooks\Enums\WebhookSubscriptionStatus $status;
+    __construct(?\Commerz\Webhooks\Enums\WebhookSubscriptionStatus $status = null, int $first = 50, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### OutboundWebhookRequest {#type-commerz-webhooks-data-outboundwebhookrequest}
+
+`Commerz\Webhooks\Data\OutboundWebhookRequest`
+
+```php
+final readonly class OutboundWebhookRequest {
+    public readonly string $body;
+    public readonly \Commerz\Webhooks\Data\WebhookDeliveryId $deliveryId;
+    public readonly array $headers;
+    public readonly int $timeoutSeconds;
+    public readonly string $url;
+    __construct(\Commerz\Webhooks\Data\WebhookDeliveryId $deliveryId, string $url, string $body, array $headers, int $timeoutSeconds = 10);
+}
+```
+
+### ReceiveInboundWebhook {#type-commerz-webhooks-data-receiveinboundwebhook}
+
+`Commerz\Webhooks\Data\ReceiveInboundWebhook`
+
+```php
+final readonly class ReceiveInboundWebhook {
+    public readonly string $eventType;
+    public readonly string $externalEventId;
+    public readonly array $headers;
+    public readonly string $rawBody;
+    public readonly string $signature;
+    public readonly string $source;
+    __construct(string $source, string $externalEventId, string $eventType, string $rawBody, string $signature, array $headers = []);
+}
+```
+
+### ReplayWebhookDelivery {#type-commerz-webhooks-data-replaywebhookdelivery}
+
+`Commerz\Webhooks\Data\ReplayWebhookDelivery`
+
+Command to manually replay a webhook delivery, optionally re-enabling a circuit-broken or paused subscription.
+
+```php
+final readonly class ReplayWebhookDelivery {
+    public readonly \Commerz\Webhooks\Data\WebhookDeliveryId $delivery;
+    public readonly bool $immediate;
+    public readonly bool $reactivateSubscription;
+    __construct(\Commerz\Webhooks\Data\WebhookDeliveryId $delivery, bool $reactivateSubscription = false, bool $immediate = true);
+}
+```
+
+### UpdateWebhookSubscription {#type-commerz-webhooks-data-updatewebhooksubscription}
+
+`Commerz\Webhooks\Data\UpdateWebhookSubscription`
+
+```php
+final readonly class UpdateWebhookSubscription {
+    public readonly ?array $eventTypes;
+    public readonly ?int $failureThreshold;
+    public readonly ?array $headers;
+    public readonly ?int $maxAttempts;
+    public readonly ?string $signingSecret;
+    public readonly \Commerz\Webhooks\Data\WebhookSubscriptionId $subscription;
+    public readonly ?string $targetUrl;
+    __construct(\Commerz\Webhooks\Data\WebhookSubscriptionId $subscription, ?string $targetUrl = null, ?string $signingSecret = null, ?array $eventTypes = null, ?int $maxAttempts = null, ?int $failureThreshold = null, ?array $headers = null);
+}
+```
+
+### WebhookDeliveryId {#type-commerz-webhooks-data-webhookdeliveryid}
+
+`Commerz\Webhooks\Data\WebhookDeliveryId`
+
+```php
+final readonly class WebhookDeliveryId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### WebhookDeliveryView {#type-commerz-webhooks-data-webhookdeliveryview}
+
+`Commerz\Webhooks\Data\WebhookDeliveryView`
+
+```php
+final readonly class WebhookDeliveryView {
+    public readonly string $aggregateRef;
+    public readonly int $attempts;
+    public readonly \DateTimeImmutable $availableAt;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\DateTimeImmutable $deliveredAt;
+    public readonly string $eventId;
+    public readonly string $eventType;
+    public readonly int $eventVersion;
+    public readonly \Commerz\Webhooks\Data\WebhookDeliveryId $id;
+    public readonly ?string $lastError;
+    public readonly ?int $lastHttpStatus;
+    public readonly \DateTimeImmutable $occurredAt;
+    public readonly array $payload;
+    public readonly \Commerz\Webhooks\Enums\WebhookDeliveryStatus $status;
+    public readonly \Commerz\Webhooks\Data\WebhookSubscriptionId $subscriptionId;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Webhooks\Data\WebhookDeliveryId $id, \Commerz\Webhooks\Data\WebhookSubscriptionId $subscriptionId, string $eventId, string $eventType, int $eventVersion, string $aggregateRef, array $payload, \DateTimeImmutable $occurredAt, \Commerz\Webhooks\Enums\WebhookDeliveryStatus $status, int $attempts, \DateTimeImmutable $availableAt, ?\DateTimeImmutable $deliveredAt, ?int $lastHttpStatus, ?string $lastError, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### WebhookDispatchReport {#type-commerz-webhooks-data-webhookdispatchreport}
+
+`Commerz\Webhooks\Data\WebhookDispatchReport`
+
+```php
+final readonly class WebhookDispatchReport {
+    public readonly int $attempted;
+    public readonly int $autoDisabled;
+    public readonly int $delivered;
+    public readonly int $failed;
+    public readonly int $retried;
+    __construct(int $attempted, int $delivered, int $retried, int $failed, int $autoDisabled);
+}
+```
+
+### WebhookRetryPolicy {#type-commerz-webhooks-data-webhookretrypolicy}
+
+`Commerz\Webhooks\Data\WebhookRetryPolicy`
+
+Exponential retry policy (`min(maxDelaySeconds, baseDelaySeconds * 2^(attempt - 1))`) for failed webhook deliveries.
+
+```php
+final readonly class WebhookRetryPolicy {
+    const DEFAULT_BASE_DELAY_SECONDS = 30;
+    const DEFAULT_MAX_DELAY_SECONDS = 3600;
+    public readonly int $baseDelaySeconds;
+    public readonly int $maxDelaySeconds;
+    __construct(int $baseDelaySeconds = self::DEFAULT_BASE_DELAY_SECONDS, int $maxDelaySeconds = self::DEFAULT_MAX_DELAY_SECONDS);
+    delaySecondsForAttempt(int $attempt): int;
+    static exponential(int $baseDelaySeconds = self::DEFAULT_BASE_DELAY_SECONDS, int $maxDelaySeconds = self::DEFAULT_MAX_DELAY_SECONDS): self;
+    nextAvailableAt(\DateTimeImmutable $from, int $attempt): \DateTimeImmutable;
+}
+```
+
+### WebhookSignature {#type-commerz-webhooks-data-webhooksignature}
+
+`Commerz\Webhooks\Data\WebhookSignature`
+
+Timestamped HMAC-SHA256 webhook signature (`t=<unix_ts>,v1=<hex>`) and payload-only HMAC-SHA256 helpers. Verification is constant-time (`hash_equals`) and supports multiple active secrets for zero-downtime rotation.
+
+```php
+final readonly class WebhookSignature implements \Stringable {
+    const DEFAULT_TOLERANCE_SECONDS = 300;
+    const DELIVERY_ID_HEADER = 'X-Commerz-Delivery-Id';
+    const EVENT_ID_HEADER = 'X-Commerz-Event-Id';
+    const EVENT_TYPE_HEADER = 'X-Commerz-Event-Type';
+    const SIGNATURE_HEADER = 'X-Commerz-Signature';
+    public readonly array $signatures;
+    public readonly int $timestamp;
+    __construct(int $timestamp, array $signatures);
+    __toString(): string;
+    static assertPayloadValid(string $header, string $rawBody, array|string $secrets, string $source = 'webhook'): void;
+    static assertValid(string $header, string $rawBody, array|string $secrets, \DateTimeImmutable|int $now, int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS, string $source = 'webhook'): void;
+    static parse(string $header, string $source = 'webhook'): self;
+    static sign(string $rawBody, string $secret, int $timestamp): self;
+    static signPayload(string $rawBody, string $secret): string;
+    toHeader(): string;
+    static verify(string $header, string $rawBody, array|string $secrets, \DateTimeImmutable|int $now, int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS): bool;
+    static verifyPayload(string $header, string $rawBody, array|string $secrets): bool;
+}
+```
+
+### WebhookSubscriptionId {#type-commerz-webhooks-data-webhooksubscriptionid}
+
+`Commerz\Webhooks\Data\WebhookSubscriptionId`
+
+```php
+final readonly class WebhookSubscriptionId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### WebhookSubscriptionView {#type-commerz-webhooks-data-webhooksubscriptionview}
+
+`Commerz\Webhooks\Data\WebhookSubscriptionView`
+
+Read-only view of a webhook subscription; signing secrets are intentionally omitted.
+
+```php
+final readonly class WebhookSubscriptionView {
+    public readonly string $code;
+    public readonly int $consecutiveFailures;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\DateTimeImmutable $disabledAt;
+    public readonly ?string $disabledReason;
+    public readonly array $eventTypes;
+    public readonly int $failureThreshold;
+    public readonly array $headers;
+    public readonly \Commerz\Webhooks\Data\WebhookSubscriptionId $id;
+    public readonly int $maxAttempts;
+    public readonly \Commerz\Webhooks\Enums\WebhookSubscriptionStatus $status;
+    public readonly string $targetUrl;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Webhooks\Data\WebhookSubscriptionId $id, string $code, string $targetUrl, array $eventTypes, \Commerz\Webhooks\Enums\WebhookSubscriptionStatus $status, int $maxAttempts, int $failureThreshold, int $consecutiveFailures, ?\DateTimeImmutable $disabledAt, ?string $disabledReason, array $headers, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+    matchesEventType(string $eventType): bool;
+}
+```
+
+### WebhookTransportResponse {#type-commerz-webhooks-data-webhooktransportresponse}
+
+`Commerz\Webhooks\Data\WebhookTransportResponse`
+
+```php
+final readonly class WebhookTransportResponse {
+    public readonly string $body;
+    public readonly int $statusCode;
+    __construct(int $statusCode, string $body = '');
+    isSuccessful(): bool;
+}
+```
+
+### InboundSignatureMode {#type-commerz-webhooks-enums-inboundsignaturemode}
+
+`Commerz\Webhooks\Enums\InboundSignatureMode`
+
+```php
+enum InboundSignatureMode {
+    case Timestamped = 'timestamped';
+    case PayloadHmac = 'payload_hmac';
+}
+```
+
+### InboundWebhookOutcome {#type-commerz-webhooks-enums-inboundwebhookoutcome}
+
+`Commerz\Webhooks\Enums\InboundWebhookOutcome`
+
+```php
+enum InboundWebhookOutcome {
+    case Processed = 'processed';
+    case Duplicate = 'duplicate';
+}
+```
+
+### WebhookDeliveryStatus {#type-commerz-webhooks-enums-webhookdeliverystatus}
+
+`Commerz\Webhooks\Enums\WebhookDeliveryStatus`
+
+```php
+enum WebhookDeliveryStatus {
+    case Pending = 'pending';
+    case Delivered = 'delivered';
+    case Failed = 'failed';
+}
+```
+
+### WebhookSubscriptionStatus {#type-commerz-webhooks-enums-webhooksubscriptionstatus}
+
+`Commerz\Webhooks\Enums\WebhookSubscriptionStatus`
+
+```php
+enum WebhookSubscriptionStatus {
+    case Active = 'active';
+    case Paused = 'paused';
+    case Disabled = 'disabled';
+}
+```
+
+### InboundWebhookReceived {#type-commerz-webhooks-events-inboundwebhookreceived}
+
+`Commerz\Webhooks\Events\InboundWebhookReceived`
+
+Dispatched after commit on the first verified delivery of an inbound webhook (`UNIQUE(source, external_event_id)`).
+
+```php
+final readonly class InboundWebhookReceived {
+    public readonly \Commerz\Webhooks\Data\InboundWebhookPayload $event;
+    __construct(\Commerz\Webhooks\Data\InboundWebhookPayload $event);
+}
+```
+
+### WebhookDelivered {#type-commerz-webhooks-events-webhookdelivered}
+
+`Commerz\Webhooks\Events\WebhookDelivered`
+
+```php
+final readonly class WebhookDelivered {
+    public readonly \Commerz\Webhooks\Data\WebhookDeliveryView $delivery;
+    __construct(\Commerz\Webhooks\Data\WebhookDeliveryView $delivery);
+}
+```
+
+### WebhookSubscriptionDisabled {#type-commerz-webhooks-events-webhooksubscriptiondisabled}
+
+`Commerz\Webhooks\Events\WebhookSubscriptionDisabled`
+
+Dispatched after commit when consecutive endpoint failures trip the circuit-breaker and auto-disable a subscription.
+
+```php
+final readonly class WebhookSubscriptionDisabled {
+    public readonly \Commerz\Webhooks\Data\WebhookSubscriptionView $subscription;
+    __construct(\Commerz\Webhooks\Data\WebhookSubscriptionView $subscription);
+}
+```
+
+### DuplicateWebhookSubscription {#type-commerz-webhooks-exceptions-duplicatewebhooksubscription}
+
+`Commerz\Webhooks\Exceptions\DuplicateWebhookSubscription`
+
+```php
+final class DuplicateWebhookSubscription extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $subscriptionCode;
+    __construct(string $subscriptionCode);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### InvalidWebhookSignature {#type-commerz-webhooks-exceptions-invalidwebhooksignature}
+
+`Commerz\Webhooks\Exceptions\InvalidWebhookSignature`
+
+```php
+final class InvalidWebhookSignature extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $reason;
+    public readonly string $source;
+    __construct(string $source, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### WebhookDeliveryNotFound {#type-commerz-webhooks-exceptions-webhookdeliverynotfound}
+
+`Commerz\Webhooks\Exceptions\WebhookDeliveryNotFound`
+
+```php
+final class WebhookDeliveryNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### WebhookSubscriptionNotFound {#type-commerz-webhooks-exceptions-webhooksubscriptionnotfound}
+
+`Commerz\Webhooks\Exceptions\WebhookSubscriptionNotFound`
+
+```php
+final class WebhookSubscriptionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $id);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### WebhookTransportFailed {#type-commerz-webhooks-exceptions-webhooktransportfailed}
+
+`Commerz\Webhooks\Exceptions\WebhookTransportFailed`
+
+```php
+final class WebhookTransportFailed extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $reason;
+    public readonly ?int $statusCode;
+    public readonly string $url;
+    __construct(string $url, string $reason, ?int $statusCode = null, ?\Throwable $previous = null);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```

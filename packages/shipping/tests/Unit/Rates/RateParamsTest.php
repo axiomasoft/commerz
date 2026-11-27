@@ -12,7 +12,11 @@ enum RatePurpose: string
     case Courier = 'courier';
 }
 
-/** The field of the InvalidRateConfig a call fails with, or null. */
+/**
+ * The field of the InvalidRateConfig a call fails with, or null.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function rpmField(Closure $call): ?string
 {
     try {
@@ -45,10 +49,16 @@ it('turns Money, enums and dates into plain values and sorts the keys', function
 it('gives the same canonical form whatever the order of the keys and survives a trip through JSON', function (): void {
     $params = RateParams::fromInput(['steps' => [['up_to_grams' => 1000, 'amount' => Money::of('3.00', 'RUB')]], 'a' => 1]);
 
+    $decoded = json_decode(json_encode($params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('canonical params must decode to an array');
+    }
+
     expect(RateParams::fromInput(['a' => 1, 'b' => 2]))->toEqual(RateParams::fromInput(['b' => 2, 'a' => 1]))
         ->and(json_encode(RateParams::fromInput(['b' => ['y' => 1, 'x' => 2], 'a' => 1])->toArray()))->toBe('{"a":1,"b":{"x":2,"y":1}}')
         ->and(RateParams::fromInput([])->toArray())->toBe([])
-        ->and(RateParams::fromStored(json_decode(json_encode($params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR)))->toEqual($params);
+        ->and(RateParams::fromStored($decoded))->toEqual($params);
 });
 
 it('refuses what cannot be stored', function (array $input, string $field): void {

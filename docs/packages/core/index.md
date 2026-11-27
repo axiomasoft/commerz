@@ -13,7 +13,7 @@ composer require axiomasoft/commerz
 php artisan commerz:install
 ```
 
-Requires PHP ^8.4, `illuminate/*` ^13 and `brick/math`. The provider
+Requires PHP 8.4–8.6, `illuminate/*` ^13 and `brick/math`. The provider
 `Commerz\CommerzServiceProvider` is discovered automatically.
 
 ## Configuration

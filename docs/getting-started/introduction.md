@@ -35,7 +35,7 @@ ports and events, so any subset installs on its own.
 
 ## Stack
 
-PHP ^8.4, Laravel ^13, PostgreSQL ≥ 16. SQLite is not supported: invariants
+PHP 8.4–8.6, Laravel ^13, PostgreSQL ≥ 16. SQLite is not supported: invariants
 rely on `EXCLUDE` constraints, partial unique indexes, `jsonb` and row locks.
 
 ## What Commerz is not

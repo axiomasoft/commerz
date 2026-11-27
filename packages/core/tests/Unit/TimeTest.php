@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Testkit\Fakes\FrozenClock;
-use Commerz\Time\Contracts\Clock;
 use Commerz\Time\Internal\SystemClock;
 use Commerz\Time\PgTimestamp;
 
@@ -11,8 +10,7 @@ it('provides UTC instants from SystemClock and formats them for PostgreSQL', fun
     $clock = new SystemClock;
     $now = $clock->now();
 
-    expect($clock)->toBeInstanceOf(Clock::class)
-        ->and($now->getTimezone()->getName())->toBe('UTC')
+    expect($now->getTimezone()->getName())->toBe('UTC')
         ->and(PgTimestamp::format($now))->toMatch('/\A\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}\+00:00\z/');
 });
 

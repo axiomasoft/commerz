@@ -18,10 +18,13 @@ DB_PASSWORD="${DB_PASSWORD:-commerz}"
 ADMIN_DB="${CONSUMER_ADMIN_DB:-commerz_test}"
 CONSUMER_DB="commerz_consumer_test"
 
-PACKAGES=(core catalog inventory pricing promotions shipping sales full testkit)
+PACKAGES=()
+for manifest in "$ROOT"/packages/*/composer.json; do
+  package_dir="${manifest%/composer.json}"
+  PACKAGES+=("${package_dir##*/}")
+done
 PACKMAN_PACKAGES=(packman packman-plugins packman-schema packman-panels packman-testkit)
 PACKMAN_RUNTIME=(packman packman-plugins packman-schema packman-panels)
-LOCKED_ZIPS=(commerz commerz-catalog commerz-inventory commerz-pricing commerz-promotions commerz-shipping commerz-sales)
 
 log() { printf '[consumer] %s\n' "$*"; }
 die() { log "ERROR: $*" >&2; exit 1; }
@@ -150,6 +153,13 @@ assert_lock() {
     }
     require $argv[3];
     $want = array_slice($argv, 4);
+    if (in_array("axiomasoft/commerz-full", $want, true)) {
+      $full = json_decode(file_get_contents(dirname($argv[3], 2)."/packages/full/composer.json"), true, 512, JSON_THROW_ON_ERROR);
+      foreach (array_keys($full["require"]) as $name) {
+        if (str_starts_with($name, "axiomasoft/")) { $want[] = $name; }
+      }
+      $want = array_unique($want);
+    }
     sort($want);
     $have = array_keys($found);
     sort($have);
@@ -173,7 +183,7 @@ run_profile() {
   new_app "$dir"
   (cd "$dir" && composer require "$@" --with-all-dependencies --no-interaction)
   if [[ "$profile" == "full" ]]; then
-    assert_lock "$dir" axiomasoft/commerz-full "${LOCKED_ZIPS[@]/#/axiomasoft/}" "${PACKMAN_RUNTIME[@]/#/axiomasoft/}"
+    assert_lock "$dir" axiomasoft/commerz-full "${PACKMAN_RUNTIME[@]/#/axiomasoft/}"
   else
     assert_lock "$dir" axiomasoft/commerz axiomasoft/commerz-sales "${PACKMAN_RUNTIME[@]/#/axiomasoft/}"
   fi

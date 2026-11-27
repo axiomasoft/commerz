@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Commerz\Errors\CommerzException;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\Address;
@@ -35,10 +34,9 @@ it('classifies the carrier errors', function (): void {
     $rejected = new CarrierRejected('cdek', 'address_not_served', 'No pickup point there.');
     $invalid = new InvalidCarrierResult('cdek', 'no tracking number');
 
-    expect($rejected)->toBeInstanceOf(CommerzException::class)
-        ->and([$rejected->code(), $rejected->category(), $rejected->context()])->toBe([
-            'shipping.carrier_rejected', ErrorCategory::Unavailable, ['carrier' => 'cdek', 'reason' => 'address_not_served', 'detail' => 'No pickup point there.'],
-        ])
+    expect([$rejected->code(), $rejected->category(), $rejected->context()])->toBe([
+        'shipping.carrier_rejected', ErrorCategory::Unavailable, ['carrier' => 'cdek', 'reason' => 'address_not_served', 'detail' => 'No pickup point there.'],
+    ])
         ->and($rejected->getMessage())->toContain('cdek')->toContain('address_not_served')
         ->and([$invalid->code(), $invalid->category(), $invalid->context()])->toBe([
             'shipping.invalid_carrier_result', ErrorCategory::Unavailable, ['carrier' => 'cdek', 'reason' => 'no tracking number'],

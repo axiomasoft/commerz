@@ -589,7 +589,6 @@ final readonly class OrderChangeCalculator
             kind: $line->kind,
             requiresShipping: $line->requiresShipping,
             purchasable: true,
-            unavailableReason: null,
             options: $line->options,
             basePrice: $line->unitPrice,
             taxClass: $line->taxClass,

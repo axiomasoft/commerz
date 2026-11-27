@@ -67,7 +67,7 @@ Research corpus behind these choices: `docs/discovery/2026-10-08/`, `audits/`.
 
 ## Stack
 
-PHP ^8.4, Laravel ^13 (`illuminate/*` ^13), PostgreSQL ≥ 16 (CI on 17), Pest
+PHP >=8.4 <8.7 (CI on 8.4, 8.5 and 8.6), Laravel ^13 (`illuminate/*` ^13), PostgreSQL ≥ 16 (CI on 16 and 19), Pest
 with Orchestra Testbench, PHPStan max with strict rules and Larastan, Pint,
 Rector. The local default `php` may be older; run PHP and Composer through
 `scripts/php84`.
@@ -75,7 +75,7 @@ Rector. The local default `php` may be older; run PHP and Composer through
 ## Quality gates
 
 - Tests live in `packages/<pkg>/tests/{Unit,Feature}`; feature tests run on
-  real PostgreSQL (`postgres:17` in Docker). SQLite never proves locking.
+  real PostgreSQL (`postgres:19` in Docker). SQLite never proves locking.
 - Architecture gates in `tests/Arch`: dependency direction, no foreign
   `Internal` imports, `#[Api]`/`#[Spi]` markers on public types, migrations
   touch only the package's own table nouns, no Eloquent types in public

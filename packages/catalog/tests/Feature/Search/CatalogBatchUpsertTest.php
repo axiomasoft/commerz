@@ -276,7 +276,7 @@ beforeEach(function (): void {
 afterEach(function (): void {
     DB::purge('catalog_batch_sqlite');
 
-    if (isset($this->sqliteDbPath) && is_string($this->sqliteDbPath) && file_exists($this->sqliteDbPath)) {
+    if (property_exists($this, 'sqliteDbPath') && is_file($this->sqliteDbPath)) {
         @unlink($this->sqliteDbPath);
     }
 });

@@ -24,6 +24,7 @@ use Commerz\Testkit\Fakes\FakeSellables;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Laravel\PluginRegistrar;
+use PHPUnit\Framework\Assert;
 
 /**
  * Turns presented codes into adjustments: `line:<id>:<amount>:<promotion>[:<coupon>]`,
@@ -99,7 +100,7 @@ function apQuote(array $lines, array $codes): QuoteResult
     $inputs = [];
 
     foreach ($lines as $id => $price) {
-        $inputs[] = new QuoteLineInput((string) $id, FakeSellables::snapshot("item-{$id}", Money::of($price, 'RUB')), 1);
+        $inputs[] = new QuoteLineInput($id, FakeSellables::snapshot("item-{$id}", Money::of($price, 'RUB')), 1);
     }
 
     return app(QuotePipeline::class)->run(new QuoteInput($context, $inputs, $codes));
@@ -171,7 +172,7 @@ it('refuses a coupon code against none on the same promotion', function (): void
 
     try {
         $result->appliedPromotions();
-        $this->fail('expected InvalidCommand');
+        Assert::fail('expected InvalidCommand');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('quotes.inconsistent_promotion');
     }

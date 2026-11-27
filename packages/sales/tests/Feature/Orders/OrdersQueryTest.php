@@ -38,7 +38,10 @@ function oqPlace(ChannelId $channel, ?string $customer = null): OrderView
     return slsPlace($cart);
 }
 
-/** @param  list<OrderView>  $orders */
+/**
+ * @param  list<OrderView>  $orders
+ * @return list<string>
+ */
 function oqIds(array $orders): array
 {
     return array_map(static fn (OrderView $order): string => $order->id->value, $orders);

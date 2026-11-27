@@ -7,6 +7,7 @@ use Commerz\Identity\ActorRef;
 use Commerz\Identity\CustomerRef;
 use Commerz\Identity\SellableRef;
 use Commerz\Pagination\Cursor;
+use Commerz\Pagination\Page;
 use Commerz\Ports\Customers\Contracts\CustomerDirectory;
 use Commerz\Ports\Customers\Data\CustomerProfile;
 use Commerz\Ports\Sellables\Exceptions\SellableUnavailable;
@@ -14,6 +15,7 @@ use Commerz\Sales\Carts\Contracts\Carts;
 use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
 use Commerz\Sales\Carts\Data\CartLineView;
+use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Data\ClearDelivery;
 use Commerz\Sales\Carts\Data\CreateCart;
 use Commerz\Sales\Carts\Data\EnterCode;
@@ -296,7 +298,19 @@ it('lists carts newest first by keyset, filtered by kind, state and customer', f
     $first = ctCarts()->list(new ListCarts(limit: 2));
     $second = ctCarts()->list(new ListCarts(after: $first->next, limit: 2));
     $third = ctCarts()->list(new ListCarts(after: $second->next, limit: 2));
-    $ids = fn ($page) => array_map(fn ($cart) => $cart->id->value, $page->items);
+    $ids = static function (Page $page): array {
+        $values = [];
+
+        foreach ($page->items as $cart) {
+            if (! $cart instanceof CartView) {
+                throw new RuntimeException('Expected a cart.');
+            }
+
+            $values[] = $cart->id->value;
+        }
+
+        return $values;
+    };
 
     expect($ids($first))->toBe([$carts[4]->id->value, $carts[3]->id->value])
         ->and($ids($second))->toBe([$carts[2]->id->value, $carts[1]->id->value])

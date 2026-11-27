@@ -12,7 +12,6 @@ use Commerz\Quotes\Data\QuoteTotals;
 use Commerz\Quotes\Data\TaxLine;
 use Commerz\Sales\Orders\Data\OrderId;
 use Commerz\Sales\Orders\Data\OrderLineId;
-use Commerz\Sales\Orders\Data\OrderLineView;
 use Commerz\Sales\Orders\Data\OrderView;
 use Packman\Attributes\Api;
 
@@ -46,7 +45,7 @@ final readonly class OrderExcerpt
             orderVersion: $order->version,
             currency: $order->currency,
             lines: array_map(
-                static fn (OrderLineView $line): OrderExcerptLine => OrderExcerptLine::fromOrderLine($line),
+                OrderExcerptLine::fromOrderLine(...),
                 $order->lines,
             ),
             orderAdjustments: $order->orderAdjustments,

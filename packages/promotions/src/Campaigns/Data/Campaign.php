@@ -38,6 +38,6 @@ final readonly class Campaign
             return false;
         }
 
-        return ! ($this->endsAt instanceof DateTimeImmutable && $instant >= $this->endsAt);
+        return ! $this->endsAt instanceof DateTimeImmutable || $instant < $this->endsAt;
     }
 }

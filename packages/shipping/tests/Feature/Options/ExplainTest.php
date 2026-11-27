@@ -82,6 +82,7 @@ it('keeps healthy options and admin reads available when a stored tariff plugin 
     $method = mtMethod('broken', ['channels' => [$this->web], 'rates' => [mtRate($this->golden['zones']['ru']->id, ['rate' => new RateSpec('test.broken_loading')])]]);
     $rate = app(Contributions::class)->get(DeliveryRate::KIND, 'test.broken_loading', DeliveryRate::class);
     expect($rate)->toBeInstanceOf(BrokenLoadingRate::class);
+    assert($rate instanceof BrokenLoadingRate);
     $rate->failOn = 'normalize';
 
     expect(opVerdict(opRequest($this->web), 'broken')->verdict)->toBe('unsupported_rate')

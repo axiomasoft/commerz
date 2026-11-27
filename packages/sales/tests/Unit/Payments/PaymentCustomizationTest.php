@@ -32,6 +32,7 @@ function emptyContributionsStub(): Contributions
             return [];
         }
 
+        /** @return list<object> */
         public function all(string $kind, string $expectedInterface): array
         {
             return [];

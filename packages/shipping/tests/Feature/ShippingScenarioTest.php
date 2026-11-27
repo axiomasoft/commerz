@@ -30,7 +30,7 @@ function sscnTruncate(): void
 }
 
 beforeEach(function (): void {
-    $this->artisan('migrate')->assertSuccessful();
+    mtMigrate();
     sscnTruncate();
 });
 

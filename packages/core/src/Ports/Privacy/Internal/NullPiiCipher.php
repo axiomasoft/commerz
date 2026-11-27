@@ -8,6 +8,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Ports\Privacy\Contracts\PiiCipherPort;
 use Override;
 use Packman\Attributes\Internal;
+use SensitiveParameter;
 
 /**
  * No-op passthrough default when the host does not bind a `PiiCipherPort`: stores values unencrypted and computes
@@ -17,7 +18,7 @@ use Packman\Attributes\Internal;
 final readonly class NullPiiCipher implements PiiCipherPort
 {
     #[Override]
-    public function encrypt(#[\SensitiveParameter] string $plaintext, string $purpose = 'default'): string
+    public function encrypt(#[SensitiveParameter] string $plaintext, string $purpose = 'default'): string
     {
         self::assertPurpose($purpose);
 
@@ -25,7 +26,7 @@ final readonly class NullPiiCipher implements PiiCipherPort
     }
 
     #[Override]
-    public function decrypt(#[\SensitiveParameter] string $ciphertext, string $purpose = 'default'): string
+    public function decrypt(#[SensitiveParameter] string $ciphertext, string $purpose = 'default'): string
     {
         self::assertPurpose($purpose);
 
@@ -33,7 +34,7 @@ final readonly class NullPiiCipher implements PiiCipherPort
     }
 
     #[Override]
-    public function blindIndex(#[\SensitiveParameter] string $value, string $purpose = 'default'): string
+    public function blindIndex(#[SensitiveParameter] string $value, string $purpose = 'default'): string
     {
         self::assertPurpose($purpose);
 

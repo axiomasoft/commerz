@@ -50,15 +50,32 @@ use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FrozenClock;
 use Commerz\Time\Contracts\Clock;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+require_once __DIR__.'/../Support/Rows.php';
+
 final class PromotionsSqliteTransactions implements Transactions
 {
+    /**
+     * @template T
+     *
+     * @param  callable(): T  $work
+     * @return T
+     */
     public function run(callable $work, int $lockTimeoutMs = 3000): mixed
     {
-        return DB::connection('promotions_sqlite')->transaction($work);
+        return DB::connection('promotions_sqlite')->transaction(
+            static function (Connection $connection) use ($work): mixed {
+                if ($connection->transactionLevel() < 1) {
+                    throw new RuntimeException('Expected an open promotions transaction.');
+                }
+
+                return $work();
+            },
+        );
     }
 
     public function inTransaction(): bool
@@ -103,7 +120,10 @@ function p2Channel(): ChannelId
     return new ChannelId($channelId);
 }
 
-/** @param list<array{id: string, price: string, qty?: int}> $lines */
+/**
+ * @param  list<array{id: string, price: string, qty?: int}>  $lines
+ * @param  list<string>  $codes
+ */
 function p2QuoteInput(ChannelId $channel, array $lines, array $codes = [], ?CustomerRef $customer = null): QuoteInput
 {
     $context = CommerceContext::for($channel, Currency::of('RUB'), 'ru', new DateTimeImmutable('2026-11-26T12:00:00Z'));
@@ -480,9 +500,9 @@ it('supports optional 2-phase coupon holds (hold_on_checkout with TTL: held -> r
         new AppliedPromotion($promo->id->value, 'VIP1', Money::of('100.00', 'RUB')),
     ]));
 
-    $couponRow = DB::connection('promotions_sqlite')->table('cmz_coupons')->where('code', 'VIP1')->first();
-    expect((int) $couponRow->used)->toBe(1)
-        ->and((int) $couponRow->held)->toBe(0);
+    $couponRow = stanRow(DB::connection('promotions_sqlite')->table('cmz_coupons')->where('code', 'VIP1')->first());
+    expect(stanInt($couponRow->used))->toBe(1)
+        ->and(stanInt($couponRow->held))->toBe(0);
 
     // expireDue sweeps remaining expired holds
     DB::connection('promotions_sqlite')->table('cmz_coupons')->insert([
@@ -511,7 +531,6 @@ it('applies AutoAddGiftLine in auto mode and emits SelectableGiftOffer[] on Quot
         stage: PromotionStage::Cart,
         activator: 'automatic',
         channels: [$channel],
-        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
         effects: [new RuleSpec('gift.auto_add_line', [
             'sellables' => ['variant:mug-red'],
             'quantity' => 1,
@@ -519,6 +538,7 @@ it('applies AutoAddGiftLine in auto mode and emits SelectableGiftOffer[] on Quot
             'sku' => 'GIFT-MUG-RED',
             'title' => 'Free Red Mug',
         ])],
+        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
     ));
 
     $selectableGift = Promotions::promotions()->create(new CreatePromotion(
@@ -527,7 +547,6 @@ it('applies AutoAddGiftLine in auto mode and emits SelectableGiftOffer[] on Quot
         stage: PromotionStage::Cart,
         activator: 'automatic',
         channels: [$channel],
-        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
         effects: [new RuleSpec('gift.auto_add_line', [
             'sellables' => ['variant:sample-a', 'variant:sample-b'],
             'quantity' => 1,
@@ -535,6 +554,7 @@ it('applies AutoAddGiftLine in auto mode and emits SelectableGiftOffer[] on Quot
             'maxSelections' => 1,
             'title' => 'Choose a free sample',
         ])],
+        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
     ));
 
     $result = app(QuotePipeline::class)->run(p2QuoteInput($channel, [
@@ -556,7 +576,7 @@ it('applies AutoAddGiftLine in auto mode and emits SelectableGiftOffer[] on Quot
         ->and($result->giftOffers[0]->promotionCode)->toBe('pick-sample')
         ->and($result->giftOffers[0]->title)->toBe('Choose a free sample')
         ->and($result->giftOffers[0]->maxSelections)->toBe(1)
-        ->and(array_map(static fn ($ref): string => (string) $ref, $result->giftOffers[0]->sellableRefs))
+        ->and(array_map(static fn (SellableRef $ref): string => (string) $ref, $result->giftOffers[0]->sellableRefs))
         ->toBe(['variant:sample-a', 'variant:sample-b']);
 });
 
@@ -569,8 +589,8 @@ it('emits NearMissHint entries and never crashes QuotePipeline under FailurePoli
         stage: PromotionStage::Cart,
         activator: 'automatic',
         channels: [$channel],
-        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
         effects: [new RuleSpec('order.percent_off', ['rateBp' => 1000])],
+        conditions: [new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')])],
     ));
 
     $qtyPromo = Promotions::promotions()->create(new CreatePromotion(
@@ -579,8 +599,8 @@ it('emits NearMissHint entries and never crashes QuotePipeline under FailurePoli
         stage: PromotionStage::Cart,
         activator: 'automatic',
         channels: [$channel],
-        conditions: [new RuleSpec('cart.quantity_at_least', ['quantity' => 3])],
         effects: [new RuleSpec('order.fixed_off', ['amount' => Money::of('150.00', 'RUB')])],
+        conditions: [new RuleSpec('cart.quantity_at_least', ['quantity' => 3])],
     ));
 
     // Promotion with customer.in_group + subtotal should NOT produce a near-miss hint for a guest
@@ -590,11 +610,11 @@ it('emits NearMissHint entries and never crashes QuotePipeline under FailurePoli
         stage: PromotionStage::Cart,
         activator: 'automatic',
         channels: [$channel],
+        effects: [new RuleSpec('order.fixed_off', ['amount' => Money::of('200.00', 'RUB')])],
         conditions: [
             new RuleSpec('customer.in_group', ['groups' => ['vip']]),
             new RuleSpec('cart.subtotal_at_least', ['amount' => Money::of('1000.00', 'RUB')]),
         ],
-        effects: [new RuleSpec('order.fixed_off', ['amount' => Money::of('200.00', 'RUB')])],
     ));
 
     $quote = app(QuotePipeline::class)->run(p2QuoteInput($channel, [

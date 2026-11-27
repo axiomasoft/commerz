@@ -11,7 +11,6 @@ use Commerz\Catalog\Media\Data\ListProductAssets;
 use Commerz\Catalog\Media\Data\UpdateAssetAttachment;
 use Commerz\Catalog\Media\Enums\AssetRole;
 use Commerz\Catalog\Media\Exceptions\AssetAttachmentNotFound;
-use Commerz\Catalog\Options\Data\AddOptionValues;
 use Commerz\Catalog\Options\Data\DefineOption;
 use Commerz\Catalog\Options\Data\OptionValueId;
 use Commerz\Catalog\Options\Exceptions\UnknownOptionValue;
@@ -27,8 +26,9 @@ it('exposes media as the bound singleton', function (): void {
 });
 
 it('attaches, updates, filters by role and option value, and detaches product assets', function (): void {
-    $color = Catalog::options()->define(new DefineOption('color', LocalizedText::of('en', 'Color')));
-    $color = Catalog::options()->addValues(new AddOptionValues($color->id, ['red' => LocalizedText::of('en', 'Red')]));
+    $color = Catalog::options()->define(new DefineOption('color', LocalizedText::of('en', 'Color'), [
+        'red' => LocalizedText::of('en', 'Red'),
+    ]));
     $redId = $color->values[0]->id;
 
     $type = Catalog::productTypes()->create(new CreateProductType('shirt', LocalizedText::of('en', 'Shirt'), 'physical'));
@@ -63,8 +63,8 @@ it('attaches, updates, filters by role and option value, and detaches product as
         attachment: $swatch->id,
         role: AssetRole::Gallery,
         clearAlt: true,
-        clearOptionValue: true,
         position: 5,
+        clearOptionValue: true,
     ));
 
     expect($updated->role)->toBe(AssetRole::Gallery)

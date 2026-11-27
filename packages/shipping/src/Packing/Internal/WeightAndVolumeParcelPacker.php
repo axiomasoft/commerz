@@ -186,7 +186,6 @@ final readonly class WeightAndVolumeParcelPacker implements ParcelPacker
     {
         $boxLimits = ($constraints->maxLengthMm !== null || $constraints->maxWidthMm !== null || $constraints->maxHeightMm !== null)
             ? new PickupPointLimits(
-                maxWeightGrams: null,
                 maxLengthMm: $constraints->maxLengthMm,
                 maxWidthMm: $constraints->maxWidthMm,
                 maxHeightMm: $constraints->maxHeightMm,
@@ -331,7 +330,6 @@ final readonly class WeightAndVolumeParcelPacker implements ParcelPacker
 
         if ($hasAllDims && ($constraints->maxLengthMm !== null || $constraints->maxWidthMm !== null || $constraints->maxHeightMm !== null)) {
             $limits = new PickupPointLimits(
-                maxWeightGrams: null,
                 maxLengthMm: $constraints->maxLengthMm,
                 maxWidthMm: $constraints->maxWidthMm,
                 maxHeightMm: $constraints->maxHeightMm,

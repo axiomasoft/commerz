@@ -50,6 +50,7 @@ use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -83,6 +84,7 @@ function plcCounts(): array
     ];
 }
 
+/** @return array<string, int> */
 function plcNothingWritten(): array
 {
     return ['orders' => 0, 'order_lines' => 0, 'order_events' => 0, 'outbox' => 0, 'receipts' => 0];
@@ -280,7 +282,7 @@ it('refuses a placed cart without a key, naming the order', function (): void {
 
     try {
         slsPlace($cart);
-        $this->fail('placed twice');
+        Assert::fail('placed twice');
     } catch (CartAlreadyPlaced $e) {
         expect($e->order)->toBe($order->id->value)
             ->and($e->code())->toBe('sales.cart_already_placed');
@@ -298,7 +300,7 @@ it('records the placement in the journal and the outbox and announces it after c
 
     expect($message->type)->toBe('sales.order_placed')
         ->and($message->aggregate_ref)->toBe('order:'.$order->id->value)
-        ->and(json_decode($message->payload, true))->toEqual([
+        ->and(slsJsonObject($message->payload))->toEqual([
             'order_id' => $order->id->value,
             'number' => $order->number,
             'channel_id' => $this->web->value,

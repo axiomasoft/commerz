@@ -48,9 +48,7 @@ final readonly class ContributedPaymentMethodResolver implements PaymentMethodRe
         $active = [];
 
         foreach ($context->methods as $index => $method) {
-            if (! isset($active[$method->key])) {
-                $active[$method->key] = ['descriptor' => $method, 'index' => $index];
-            }
+            $active[$method->key] ??= ['descriptor' => $method, 'index' => $index];
         }
 
         /** @var array<string, true> $hidden */

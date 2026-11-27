@@ -14,6 +14,8 @@ use Packman\Schema\Data\Compiler\ConstraintNames;
 
 uses(RefreshDatabase::class);
 
+require_once __DIR__.'/../Support/Rows.php';
+
 const PROMOTIONS_TABLES = [
     'campaigns', 'promotions', 'promotion_channels', 'promotion_rules', 'promotion_customer_usages',
     'coupon_batches', 'coupons', 'coupon_holds', 'promotion_redemptions', 'promotion_usages',
@@ -27,10 +29,10 @@ function prmTable(string $logical): string
 /** @return list<string> */
 function prmConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [prmTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [prmTable($logical)]);
+
+    return array_map(static fn (object $row): string => $row->conname, $rows);
 }
 
 // RefreshDatabase wraps each test in a transaction; a savepoint keeps it usable after an expected violation.
@@ -52,13 +54,19 @@ function prmDelete(string $logical, string $id): void
     DB::transaction(static fn () => DB::table(prmTable($logical))->where('id', $id)->delete());
 }
 
-/** The SQLSTATE a statement fails with, or null when it succeeds. */
+/**
+ * The SQLSTATE a statement fails with, or null when it succeeds.
+ *
+ * @param  Closure(): mixed  $statement
+ */
 function prmSqlState(Closure $statement): ?string
 {
     try {
         $statement();
     } catch (QueryException $e) {
-        return $e->errorInfo[0] ?? null;
+        $state = $e->errorInfo[0] ?? null;
+
+        return is_string($state) ? $state : null;
     }
 
     return null;
@@ -115,7 +123,10 @@ it('creates every table with canonical constraint names', function (): void {
             expect($name)->toMatch('/(_(pk|uq|fk|ck|ex)|_[0-9a-f]{8})\z/'); // a name over 63 bytes ends in the hash of ConstraintNames::shorten
         }
 
-        foreach (DB::select('select indexname from pg_indexes where tablename = ?', [$physical]) as $index) {
+        /** @var list<object{indexname: string}> $indexes */
+        $indexes = DB::select('select indexname from pg_indexes where tablename = ?', [$physical]);
+
+        foreach ($indexes as $index) {
             expect($index->indexname)->toMatch('/(_(pk|uq|ix|ex)|_[0-9a-f]{8})\z/');
         }
 
@@ -124,10 +135,18 @@ it('creates every table with canonical constraint names', function (): void {
 });
 
 it('keeps money and counters in bigint and integer, ids as uuid and rule parameters as jsonb', function (): void {
-    $type = static fn (string $logical, string $column): string => DB::selectOne(
-        'select data_type from information_schema.columns where table_name = ? and column_name = ?',
-        [prmTable($logical), $column],
-    )->data_type;
+    $type = static function (string $logical, string $column): string {
+        $columnRow = DB::selectOne(
+            'select data_type from information_schema.columns where table_name = ? and column_name = ?',
+            [prmTable($logical), $column],
+        );
+
+        if (! $columnRow instanceof stdClass || ! is_string($columnRow->data_type)) {
+            throw new RuntimeException("Expected data_type of {$logical}.{$column}.");
+        }
+
+        return $columnRow->data_type;
+    };
 
     expect($type('promotions', 'budget_minor'))->toBe('bigint')
         ->and($type('promotions', 'spent_minor'))->toBe('bigint')
@@ -147,6 +166,7 @@ it('has no foreign key to the core or other packages', function (): void {
     $prefix = substr(prmTable('promotions'), 0, -strlen('promotions'));
 
     foreach (PROMOTIONS_TABLES as $logical) {
+        /** @var list<object{target: string}> $targets */
         $targets = DB::select(
             "select confrelid::regclass::text as target from pg_constraint where conrelid = ?::regclass and contype = 'f'",
             [prmTable($logical)],
@@ -166,7 +186,7 @@ it('keeps promotion codes unique and checks the enumerations, with defaults', fu
         ->and(fn () => prmUpdate('promotions', $id, ['stacking' => 'maybe']))->toThrow(QueryException::class, 'cmz_promotions_stacking_valid_ck')
         ->and(fn () => prmUpdate('promotions', $id, ['status' => 'deleted']))->toThrow(QueryException::class, 'cmz_promotions_status_valid_ck');
 
-    $row = DB::table(prmTable('promotions'))->where('id', $id)->first();
+    $row = stanRow(DB::table(prmTable('promotions'))->where('id', $id)->first());
 
     expect($row->status)->toBe('active')
         ->and($row->stop_further)->toBeFalse()
@@ -185,7 +205,7 @@ it('keeps promotion codes unique and checks the enumerations, with defaults', fu
 
 it('checks the window, the limits, the counters and the budget of a promotion (PRM-01)', function (): void {
     $id = prmPromotion();
-    $update = static fn (array $set): Closure => static fn () => prmUpdate('promotions', $id, $set);
+    $update = static fn (array $set): Closure => static fn () => prmUpdate('promotions', $id, stanStringKeyed($set));
 
     expect($update(['starts_at' => '2026-02-01', 'ends_at' => '2026-02-01']))->toThrow(QueryException::class, 'cmz_promotions_window_ordered_ck')
         ->and($update(['usage_limit' => 0]))->toThrow(QueryException::class, 'cmz_promotions_usage_limit_positive_ck')
@@ -213,7 +233,15 @@ it('assigns a promotion to a channel once and removes the assignment with the pr
 
 it('keeps one rule per promotion, role and position and checks role and version', function (): void {
     $id = prmPromotion();
-    $rule = static fn (array $extra = []): array => ['promotion_id' => $id, 'role' => 'effect', 'position' => 0, 'rule_key' => 'order.percent_off', 'config_version' => 1, 'config' => '{"rate_bp":1000}', ...$extra];
+    $rule = static fn (array $extra = []) => [
+        'promotion_id' => $id,
+        'role' => 'effect',
+        'position' => 0,
+        'rule_key' => 'order.percent_off',
+        'config_version' => 1,
+        'config' => '{"rate_bp":1000}',
+        ...stanStringKeyed($extra),
+    ];
     prmInsert('promotion_rules', $rule());
 
     expect(fn () => prmInsert('promotion_rules', $rule()))->toThrow(UniqueConstraintViolationException::class)
@@ -224,8 +252,14 @@ it('keeps one rule per promotion, role and position and checks role and version'
         ->and(prmSqlState(static fn () => prmInsert('promotion_rules', $rule(['role' => 'condition']))))->toBeNull() // the same position in another role
         ->and(prmSqlState(static fn () => prmInsert('promotion_rules', $rule(['position' => 1]))))->toBeNull();
 
-    $stored = DB::table(prmTable('promotion_rules'))->where('promotion_id', $id)->where('role', 'effect')->where('position', 0)->first();
-    expect(json_decode($stored->config, true))->toBe(['rate_bp' => 1000]);
+    $stored = stanRow(DB::table(prmTable('promotion_rules'))->where('promotion_id', $id)->where('role', 'effect')->where('position', 0)->first());
+    $config = $stored->config;
+
+    if (! is_string($config)) {
+        throw new RuntimeException('Expected rule config JSON.');
+    }
+
+    expect(json_decode($config, true))->toBe(['rate_bp' => 1000]);
 
     prmDelete('promotions', $id);
     expect(DB::table(prmTable('promotion_rules'))->count())->toBe(0);
@@ -257,7 +291,7 @@ it('stores only canonical coupon codes, once per installation (PRM-03)', functio
 it('checks the coupon status, limit and counter, defaults them and refuses to orphan a coupon', function (): void {
     $promotion = prmPromotion();
     $coupon = prmCoupon($promotion);
-    $update = static fn (array $set): Closure => static fn () => prmUpdate('coupons', $coupon, $set);
+    $update = static fn (array $set): Closure => static fn () => prmUpdate('coupons', $coupon, stanStringKeyed($set));
 
     expect($update(['status' => 'deleted']))->toThrow(QueryException::class, 'cmz_coupons_status_valid_ck')
         ->and($update(['usage_limit' => 0]))->toThrow(QueryException::class, 'cmz_coupons_usage_limit_positive_ck')
@@ -265,7 +299,7 @@ it('checks the coupon status, limit and counter, defaults them and refuses to or
         ->and(fn () => prmCoupon(Uuid7::generate(), 'OTHER'))->toThrow(QueryException::class, 'cmz_coupons_promotion_id_fk')
         ->and(fn () => prmDelete('promotions', $promotion))->toThrow(QueryException::class, 'cmz_coupons_promotion_id_fk');
 
-    $row = DB::table(prmTable('coupons'))->where('id', $coupon)->first();
+    $row = stanRow(DB::table(prmTable('coupons'))->where('id', $coupon)->first());
     expect($row->status)->toBe('active')->and($row->used)->toBe(0)->and($row->usage_limit)->toBeNull()->and($row->batch_id)->toBeNull();
 });
 
@@ -302,7 +336,13 @@ it('records one usage per promotion on a redemption and protects the promotion r
     $promotion = prmPromotion();
     $coupon = prmCoupon($promotion);
     $redemption = prmRedemption();
-    $usage = static fn (array $extra = []): array => ['redemption_id' => $redemption, 'promotion_id' => $promotion, 'discount_minor' => 500, 'currency' => 'RUB', ...$extra];
+    $usage = static fn (array $extra = []) => [
+        'redemption_id' => $redemption,
+        'promotion_id' => $promotion,
+        'discount_minor' => 500,
+        'currency' => 'RUB',
+        ...stanStringKeyed($extra),
+    ];
     prmInsert('promotion_usages', $usage(['coupon_id' => $coupon]));
     $plain = prmPromotion('plain'); // no coupon, so only a usage holds it
     prmInsert('promotion_usages', $usage(['promotion_id' => $plain]));

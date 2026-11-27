@@ -131,7 +131,7 @@ final class StressPaymentGateway implements PaymentGateway
         return new GatewayRefundResult(GatewayRefundStatus::Succeeded, 'ext-ref-'.$request->reference);
     }
 
-    public function findRefund(string $reference): ?GatewayRefundResult
+    public function findRefund(string $reference): GatewayRefundResult
     {
         return new GatewayRefundResult(GatewayRefundStatus::Succeeded, 'ext-ref-'.$reference);
     }

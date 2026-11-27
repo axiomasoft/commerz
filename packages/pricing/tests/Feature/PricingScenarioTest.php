@@ -53,7 +53,11 @@ function pscContext(ChannelId $channel, string $at): CommerceContext
     return new CommerceContext($channel, Currency::of('RUB'), 'ru', null, [], plsAt($at));
 }
 
-/** The line is quoted through the real pipeline: pricing is the PriceResolver and owns the `tax` stage. */
+/**
+ * The line is quoted through the real pipeline: pricing is the PriceResolver and owns the `tax` stage.
+ *
+ * @return array{string, string, list<string>}
+ */
 function pscQuote(ChannelId $channel, string $at): array
 {
     $sellable = FakeSellables::snapshot(SellableRef::of('variant', 'tee'), Money::of('999.00', 'RUB'));

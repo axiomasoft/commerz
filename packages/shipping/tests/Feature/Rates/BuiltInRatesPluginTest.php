@@ -48,7 +48,13 @@ it('encodes and decodes the built-in rates through the codec', function (): void
         ->and([$table->key, $table->version])->toBe(['weight_table', 1]);
 
     $loadedFlat = $codec->decode($flat, $scope);
-    $loadedTable = $codec->decodeRow($table->key, $table->version, json_decode(json_encode($table->params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR), $scope);
+    $roundTripped = json_decode(json_encode($table->params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    if (! is_array($roundTripped)) {
+        throw new RuntimeException('encoded params must decode to an array');
+    }
+
+    $loadedTable = $codec->decodeRow($table->key, $table->version, $roundTripped, $scope);
 
     expect($loadedFlat->isSupported())->toBeTrue()
         ->and($loadedFlat->rate)->toBeInstanceOf(FlatRate::class)

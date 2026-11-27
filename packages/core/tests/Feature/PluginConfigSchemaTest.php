@@ -42,7 +42,7 @@ final class ConfigurableDemoPlugin implements DescribesConfigSchema, ExtensionPl
             new ConfigFieldSchema(key: 'min_order', type: ConfigFieldType::Money, label: 'Minimum Order'),
             new ConfigFieldSchema(key: 'handling_fee', type: ConfigFieldType::Percent, label: 'Handling Fee', default: '2.50'),
             new ConfigFieldSchema(key: 'sandbox', type: ConfigFieldType::Bool, label: 'Sandbox Mode', default: false),
-            new ConfigFieldSchema(key: 'mode', type: ConfigFieldType::Enum, label: 'Mode', options: ['sync' => 'Synchronous', 'async' => 'Asynchronous'], default: 'sync'),
+            new ConfigFieldSchema(key: 'mode', type: ConfigFieldType::Enum, label: 'Mode', default: 'sync', options: ['sync' => 'Synchronous', 'async' => 'Asynchronous']),
             new ConfigFieldSchema(key: 'checkout_note', type: ConfigFieldType::LocalizedString, label: 'Checkout Note'),
             new ConfigFieldSchema(key: 'default_channel', type: ConfigFieldType::EntityRef, label: 'Default Channel', entityType: 'channel'),
         ];

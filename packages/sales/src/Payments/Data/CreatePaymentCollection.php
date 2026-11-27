@@ -91,7 +91,6 @@ final readonly class CreatePaymentCollection
             targetRef: $targetRef,
             amount: $amount,
             kind: PaymentCollectionKind::TopUp,
-            order: null,
             customer: $customer,
             customerEmail: $customerEmail,
             meta: $meta,

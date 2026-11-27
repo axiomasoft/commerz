@@ -75,6 +75,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Packman\Errors\Enums\ErrorCategory;
+use PHPUnit\Framework\Assert;
 
 // Multi-process PostgreSQL (>= 16) concurrency stress test suite covering all five high-contention invariants:
 // (1) Last remaining stock oversell prevention (regular SKU + InventoryKit sharing scarce components)
@@ -101,9 +102,14 @@ trait PgStressEnvironment
 
 uses(PgStressEnvironment::class);
 
+abstract class PgConcurrencyStressCase extends EndToEndTestCase
+{
+    use PgStressEnvironment;
+}
+
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required for multi-process PostgreSQL stress tests.');
+        Assert::markTestSkipped('pcntl is required for multi-process PostgreSQL stress tests.');
     }
 
     CommittedDatabase::prepare();
@@ -307,13 +313,17 @@ it('2a: never breaches the last remaining single-use coupon across 12 concurrent
     $tally = Concurrency::tally($outcomes);
     $rejected = ($tally['limit_reached'] ?? 0) + ($tally['quote_changed'] ?? 0);
     $orders = Sales::orders()->list(new ListOrders)->items;
+    $used = DB::table('cmz_coupons')->where('code', 'LASTONE')->value('used');
+    if (! is_int($used) && ! is_string($used)) {
+        throw new RuntimeException('Coupon used count is missing.');
+    }
 
     expect($tally['ok'] ?? 0)->toBe(1)
         ->and($rejected)->toBe(11)
         ->and($orders)->toHaveCount(1)
         ->and($orders[0]->codes)->toBe(['LASTONE'])
         ->and(Promotions::promotions()->find($lastCouponPromo->id)->usage->orders)->toBe(1)
-        ->and((int) DB::table('cmz_coupons')->where('code', 'LASTONE')->value('used'))->toBe(1)
+        ->and((int) $used)->toBe(1)
         ->and(Inventory::stock()->level($world->mugItem, $world->location)->reserved)->toBe(1);
 
     stressAssertReconcilersClean();
@@ -428,9 +438,12 @@ it('3a: prevents concurrent double-spend of a GiftCard across 12 processes (INV-
     Concurrency::assertRaceSettled($outcomes, ['captured' => 3, 'insufficient' => 9], $deadlocksBefore);
 
     $card = StoredValue::giftCards()->find($issued->giftCard->id);
+    expect($card)->not->toBeNull();
+    if ($card === null) {
+        throw new RuntimeException('Gift card is missing.');
+    }
 
-    expect($card)->not->toBeNull()
-        ->and($card->balance->amountMinor)->toBe(1_000)
+    expect($card->balance->amountMinor)->toBe(1_000)
         ->and($card->held->amountMinor)->toBe(0)
         ->and($card->available->amountMinor)->toBe(1_000)
         ->and(StoredValue::ledger()->isBalanced($issued->giftCard->id))->toBeTrue();
@@ -477,9 +490,12 @@ it('3b: prevents concurrent double-spend of a CustomerWallet across 12 processes
     Concurrency::assertRaceSettled($outcomes, ['captured' => 2, 'insufficient' => 10], $deadlocksBefore);
 
     $after = StoredValue::wallets()->find($wallet->id);
+    expect($after)->not->toBeNull();
+    if ($after === null) {
+        throw new RuntimeException('Customer wallet is missing.');
+    }
 
-    expect($after)->not->toBeNull()
-        ->and($after->balance->amountMinor)->toBe(2_000)
+    expect($after->balance->amountMinor)->toBe(2_000)
         ->and($after->held->amountMinor)->toBe(0)
         ->and($after->available->amountMinor)->toBe(2_000)
         ->and(StoredValue::ledger()->isBalanced($wallet->id))->toBeTrue();
@@ -525,9 +541,12 @@ it('4: enforces OrderChange::confirm() OCC with 409 ORDERS_ORDER_CHANGE_VERSION_
                     return 'error:unexpected_class';
                 }
 
+                $constants = new ReflectionClass($e);
+                $domainCode = $constants->getConstant('DOMAIN_CODE');
+                $invariant = $constants->getConstant('INVARIANT');
                 $valid = $e->errorDescriptor()->category === ErrorCategory::Conflict
-                    && $e::DOMAIN_CODE === 'ORDERS_ORDER_CHANGE_VERSION_CONFLICT'
-                    && $e::INVARIANT === 'INV-OMS-001'
+                    && $domainCode === 'ORDERS_ORDER_CHANGE_VERSION_CONFLICT'
+                    && $invariant === 'INV-OMS-001'
                     && str_contains($e->getMessage(), 'ORDERS_ORDER_CHANGE_VERSION_CONFLICT')
                     && $e->expectedVersion === 1
                     && $e->actualVersion === 2;
@@ -575,8 +594,12 @@ it('5a: settles a timed-out payment via concurrent reconcile while blocking dupl
         $paymentId = new PaymentId($e->payment);
     }
 
-    expect($paymentId)->not->toBeNull()
-        ->and(Sales::payments()->find($paymentId)->status)->toBe(PaymentStatus::Unknown)
+    expect($paymentId)->not->toBeNull();
+    if (! $paymentId instanceof PaymentId) {
+        throw new RuntimeException('The timed-out payment id is missing.');
+    }
+
+    expect(Sales::payments()->find($paymentId)->status)->toBe(PaymentStatus::Unknown)
         ->and(StressPaymentGateway::initiateCalls())->toHaveCount(1)
         ->and(StressPaymentGateway::charges())->toHaveCount(1);
 
@@ -650,8 +673,12 @@ it('5b: reconciles a lost network timeout to failed and allows exactly one safe 
         $paymentId = new PaymentId($e->payment);
     }
 
-    expect($paymentId)->not->toBeNull()
-        ->and(Sales::payments()->find($paymentId)->status)->toBe(PaymentStatus::Unknown)
+    expect($paymentId)->not->toBeNull();
+    if (! $paymentId instanceof PaymentId) {
+        throw new RuntimeException('The timed-out payment id is missing.');
+    }
+
+    expect(Sales::payments()->find($paymentId)->status)->toBe(PaymentStatus::Unknown)
         ->and(StressPaymentGateway::charges())->toHaveCount(0);
 
     // 6 concurrent reconcile workers confirm the gateway never created the payment -> transitions to Failed.

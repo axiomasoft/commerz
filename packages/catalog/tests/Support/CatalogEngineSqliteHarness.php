@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Commerz\Catalog\Tests\Support;
 
+use Closure;
 use Commerz\Catalog\Attributes\Contracts\Attributes;
 use Commerz\Catalog\Attributes\Internal\AttributeIndexer;
 use Commerz\Catalog\Attributes\Internal\AttributeOwner;
@@ -42,42 +43,55 @@ use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PDO;
+use RuntimeException;
+
+final class CatalogBooleanSqliteConnection extends SQLiteConnection
+{
+    /** @var list<string> */
+    private const array BOOL_COLUMNS = ['filterable', 'required', 'prices_include_tax', 'in_stock', 'flag'];
+
+    /**
+     * @param  array<array-key, mixed>  $bindings
+     * @param  array<array-key, mixed>  $fetchUsing
+     * @return array<int|string, mixed>
+     */
+    public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
+    {
+        $rows = parent::select($query, $bindings, $useReadPdo, $fetchUsing);
+        $normalized = [];
+
+        foreach ($rows as $key => $row) {
+            if (is_object($row)) {
+                foreach (self::BOOL_COLUMNS as $column) {
+                    if (property_exists($row, $column) && is_int($row->{$column})) {
+                        $row->{$column} = $row->{$column} !== 0;
+                    }
+                }
+            }
+
+            $normalized[$key] = $row;
+        }
+
+        return $normalized;
+    }
+}
 
 final class CatalogEngineSqliteHarness
 {
-    private const array BOOL_COLUMNS = ['filterable', 'required', 'prices_include_tax', 'in_stock', 'flag'];
-
+    /**
+     * @return array{dbPath: string, clock: FrozenClock}
+     */
     public static function boot(string $now = '2026-11-26T12:00:00Z'): array
     {
         $dbPath = sys_get_temp_dir().'/commerz_catalog_engine_'.bin2hex(random_bytes(6)).'_test';
         touch($dbPath);
 
-        Connection::resolverFor('sqlite', static function (PDO|\Closure $connection, string $database = '', string $prefix = '', array $config = []): SQLiteConnection {
+        Connection::resolverFor('sqlite', static function (PDO|Closure $connection, string $database = '', string $prefix = '', array $config = []): SQLiteConnection {
             if (($config['boolean_emulation'] ?? false) !== true) {
                 return new SQLiteConnection($connection, $database, $prefix, $config);
             }
 
-            return new class($connection, $database, $prefix, $config) extends SQLiteConnection
-            {
-                public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
-                {
-                    $rows = parent::select($query, $bindings, $useReadPdo, $fetchUsing);
-
-                    foreach ($rows as $row) {
-                        if (! is_object($row)) {
-                            continue;
-                        }
-
-                        foreach (['filterable', 'required', 'prices_include_tax', 'in_stock', 'flag'] as $col) {
-                            if (property_exists($row, $col) && is_int($row->{$col})) {
-                                $row->{$col} = $row->{$col} !== 0;
-                            }
-                        }
-                    }
-
-                    return $rows;
-                }
-            };
+            return new CatalogBooleanSqliteConnection($connection, $database, $prefix, $config);
         });
 
         config([
@@ -143,6 +157,15 @@ final class CatalogEngineSqliteHarness
         if (is_file($dbPath)) {
             @unlink($dbPath);
         }
+    }
+
+    public static function path(mixed $dbPath): string
+    {
+        if (! is_string($dbPath) || $dbPath === '') {
+            throw new RuntimeException('SQLite database path was not booted.');
+        }
+
+        return $dbPath;
     }
 
     /**

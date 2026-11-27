@@ -8,7 +8,11 @@ use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Promotions\Rules\Exceptions\InvalidRuleConfig;
 
-/** The field of the InvalidRuleConfig a call fails with, or null. */
+/**
+ * The field of the InvalidRuleConfig a call fails with, or null.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function rpField(Closure $call): ?string
 {
     try {
@@ -46,8 +50,14 @@ it('gives the same canonical form whatever the order of the keys', function (): 
 it('accepts an empty map and survives a trip through JSON', function (): void {
     $params = RuleParams::fromInput(['amount' => Money::of('5.00', 'RUB'), 'groups' => ['vip'], 'min' => 2]);
 
+    $decoded = json_decode(json_encode($params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Expected rule parameters to survive JSON.');
+    }
+
     expect(RuleParams::fromInput([])->toArray())->toBe([])
-        ->and(RuleParams::fromInput(json_decode(json_encode($params->toArray(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR)))->toEqual($params);
+        ->and(RuleParams::fromInput($decoded))->toEqual($params);
 });
 
 it('refuses what cannot be stored', function (array $input, string $field): void {

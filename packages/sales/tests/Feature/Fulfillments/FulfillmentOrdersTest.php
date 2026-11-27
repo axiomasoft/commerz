@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Commerz\Commerz;
 use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Ports\Delivery\Data\FulfillmentConstraints;
+use Commerz\Ports\Sellables\Contracts\Sellables;
 use Commerz\Sales\Common\Data\LineQuantity;
 use Commerz\Sales\Common\Exceptions\LineNotFound;
 use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
@@ -23,20 +25,26 @@ use Commerz\Sales\Fulfillments\Exceptions\InvalidFulfillmentOrderState;
 use Commerz\Sales\Fulfillments\Exceptions\OrderNotFulfillable;
 use Commerz\Sales\Orders\Data\CancelOrder;
 use Commerz\Sales\Orders\Enums\CancelReason;
-use Commerz\Testkit\Commerce;
+use Commerz\Testkit\Fakes\FakeSellableRouter;
+use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Facade;
 
 require_once __DIR__.'/Helpers.php';
 
 uses(RefreshDatabase::class, SlsEnvironment::class);
 
 beforeEach(function (): void {
-    $this->commerce = Commerce::fake();
-    $this->commerce->sellables->add(
+    // Sellables only. Commerce::fake() would replace unlimited stock with the single-location fake,
+    // and these orders are fulfilled from warehouse codes.
+    $sellables = (new FakeSellables)->add(
         slsSnapshot('fake:cold', '100.00'),
         slsSnapshot('fake:dry', '40.00'),
     );
+    app()->instance(Sellables::class, new FakeSellableRouter($sellables));
+    Facade::clearResolvedInstance(Commerz::class);
+    app()->forgetInstance(Commerz::class);
     slsConfig(['checkout' => ['require_delivery' => false]]);
     $this->order = slsPlace(slsCartWith(slsChannel(), ['fake:cold' => 3, 'fake:dry' => 2]));
 });

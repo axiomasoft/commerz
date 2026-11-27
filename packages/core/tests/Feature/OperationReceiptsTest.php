@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-/** @return array{0: int, 1: array{total: int}} */
+/** @return array{int, array{total: int, replayed?: true}} */
 function placeOnce(string $fingerprint, int &$runs, int $total = 100): array
 {
     $result = app(OperationReceipts::class)->once(
@@ -23,8 +23,16 @@ function placeOnce(string $fingerprint, int &$runs, int $total = 100): array
 
             return ['total' => $total];
         },
-        fn (array $result): array => $result,
-        fn (array $stored): array => ['total' => $stored['total'], 'replayed' => true],
+        static fn (array $result): array => $result,
+        static function (array $stored): array {
+            $storedTotal = $stored['total'] ?? null;
+
+            if (! is_int($storedTotal)) {
+                throw new RuntimeException('Expected a stored total.');
+            }
+
+            return ['total' => $storedTotal, 'replayed' => true];
+        },
     );
 
     return [$runs, $result];
@@ -42,6 +50,11 @@ it('runs the work once and replays the stored result for the same fingerprint', 
         ->and($second)->toBe(['total' => 100, 'replayed' => true]);
 
     $row = DB::table('cmz_operation_receipts')->first();
+
+    if (! $row instanceof stdClass || ! is_string($row->result)) {
+        throw new RuntimeException('Expected a receipt row.');
+    }
+
     expect($row->scope)->toBe('sales.place_order')
         ->and($row->key)->toBe('checkout-42')
         ->and($row->fingerprint)->toBe($fingerprint)
@@ -78,8 +91,9 @@ it('refuses re-entering the same key before a result exists', function (): void 
     $fingerprint = Fingerprint::of('x');
     $identity = fn (array $value): array => $value;
 
-    expect(fn () => $receipts->once('sales.place_order', $key, $fingerprint, fn () => $receipts->once('sales.place_order', $key, $fingerprint, fn () => [], $identity, $identity), $identity, $identity))
-        ->toThrow(LogicException::class, 're-entered itself');
+    expect(function () use ($receipts, $key, $fingerprint, $identity): void {
+        $receipts->once('sales.place_order', $key, $fingerprint, fn () => $receipts->once('sales.place_order', $key, $fingerprint, fn (): array => [], $identity, $identity), $identity, $identity);
+    })->toThrow(LogicException::class, 're-entered itself');
 });
 
 it('validates scope and fingerprint', function (): void {
@@ -114,7 +128,7 @@ it('prunes receipts and delivered outbox messages older than the retention', fun
         $message + ['event_id' => '0190a0a0-0000-7000-8000-000000000003', 'delivered_at' => now()->subDay()],
     ]);
 
-    $this->artisan('commerz:operations:prune')->assertSuccessful()->expectsOutputToContain('Pruned 1 receipts and 1 delivered outbox messages');
+    $this->pendingArtisan('commerz:operations:prune')->assertSuccessful()->expectsOutputToContain('Pruned 1 receipts and 1 delivered outbox messages');
 
     expect(DB::table('cmz_operation_receipts')->pluck('key')->all())->toBe(['new'])
         ->and(DB::table('cmz_outbox_messages')->count())->toBe(2);

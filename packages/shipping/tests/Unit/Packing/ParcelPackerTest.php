@@ -84,10 +84,10 @@ it('packs mixed multi-line orders with tare weight and box dimension limits, and
         ],
         constraints: new PackingConstraints(
             maxWeightGrams: 20_000,
-            tareWeightGrams: 500,
             maxLengthMm: 600,
             maxWidthMm: 400,
             maxHeightMm: 450,
+            tareWeightGrams: 500,
         ),
     ));
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Commerz\Identity\SellableRef;
 use Commerz\Money\Money;
 use Commerz\Money\RoundingMode;
 use Commerz\Promotions\Definitions\Data\PromotionId;
@@ -16,7 +17,6 @@ use Commerz\Promotions\Rules\Internal\Conditions\CartQuantityAtLeast;
 use Commerz\Promotions\Rules\Internal\Conditions\CartSubtotalAtLeast;
 use Commerz\Promotions\Rules\Internal\Effects\AutoAddGiftLine;
 use Commerz\Promotions\Tests\Support\RuleStates;
-use Commerz\Quotes\Data\SelectableGiftOffer;
 
 it('normalizes AutoAddGiftLine parameters and defaults mode by sellable count', function (): void {
     $effect = new AutoAddGiftLine;
@@ -86,10 +86,9 @@ it('produces zero-priced gift lines in auto mode and SelectableGiftOffer in sele
     );
     expect($selectableResult->giftLines)->toBe([])
         ->and($selectableResult->giftOffers)->toHaveCount(1)
-        ->and($selectableResult->giftOffers[0])->toBeInstanceOf(SelectableGiftOffer::class)
         ->and($selectableResult->giftOffers[0]->title)->toBe('Pick a free gift')
         ->and($selectableResult->giftOffers[0]->couponCode)->toBe('GIFTME')
-        ->and(array_map(static fn ($ref): string => (string) $ref, $selectableResult->giftOffers[0]->sellableRefs))
+        ->and(array_map(static fn (SellableRef $ref): string => (string) $ref, $selectableResult->giftOffers[0]->sellableRefs))
         ->toBe(['variant:mug', 'variant:bottle']);
 });
 

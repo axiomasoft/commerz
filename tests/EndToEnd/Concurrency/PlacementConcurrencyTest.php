@@ -15,6 +15,7 @@ use Commerz\Sales\Checkout\Exceptions\QuoteChanged;
 use Commerz\Sales\Facades\Sales;
 use Commerz\Sales\Orders\Data\ListOrders;
 use Commerz\Testkit\Concurrency;
+use PHPUnit\Framework\Assert;
 
 // E1–E3 of assembly-design#concurrency: placements on the real inventory and promotions at once. `Checkout::place`
 // reserves the stock (levels in key order) and then consumes the promotion usage (coupon → promotion → customer) in
@@ -23,7 +24,7 @@ use Commerz\Testkit\Concurrency;
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     CommittedDatabase::prepare();

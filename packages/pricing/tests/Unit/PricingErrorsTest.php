@@ -25,7 +25,6 @@ use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 
 it('covers every PricingErrorCode case with a matching ProblemDefinition', function (): void {
     $definitions = (new PricingProblemDefinitions)->definitions();
@@ -41,8 +40,7 @@ it('covers every PricingErrorCode case with a matching ProblemDefinition', funct
 it('exposes Packman error descriptors on pricing exceptions', function (CommerzException $e, PricingErrorCode $code, ErrorCategory $category): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($descriptor->errorCode)->toBe($code)
+    expect($descriptor->errorCode)->toBe($code)
         ->and($descriptor->category)->toBe($category);
 })->with([
     'invalid tax result' => [new InvalidTaxResult('rates', 'bad'), PricingErrorCode::InvalidTaxResult, ErrorCategory::Unavailable],

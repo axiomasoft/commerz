@@ -37,6 +37,7 @@ final class AcquiringRecordingGateway implements AcquiringPaymentGateway
     /** @var list<array{op: string, reference: string, amount?: int, is_final?: bool, line_items?: int}> */
     private static array $calls = [];
 
+    /** @param  array<string, scalar|null>  $scenario */
     public static function configure(
         ?PaymentCapabilities $capabilities = null,
         array $scenario = [],

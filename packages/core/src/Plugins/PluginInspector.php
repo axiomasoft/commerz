@@ -74,7 +74,6 @@ final readonly class PluginInspector implements PackmanPluginInspector
                 continue;
             }
 
-            /** @var DescribesConfigSchema $instance */
             $instance = new ($plugin->class)();
             $schemas[$plugin->id] = $instance->configSchema();
         }

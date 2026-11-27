@@ -14,6 +14,8 @@ use Commerz\Shipping\ShippingServiceProvider;
 use Commerz\Testkit\PackageTestCase;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\PendingCommand;
+use ReflectionMethod;
 
 /**
  * The whole family in one application: the seven real providers, real stock (`commerz.stock = inventory`), no fakes.
@@ -45,7 +47,7 @@ abstract class EndToEndTestCase extends PackageTestCase
 
         // The new application has new connections: the test transaction of `RefreshDatabase` must wrap them too.
         if (in_array(RefreshDatabase::class, class_uses_recursive($this), true)) {
-            $this->beginDatabaseTransaction();
+            (new ReflectionMethod($this, 'beginDatabaseTransaction'))->invoke($this);
         }
     }
 
@@ -54,6 +56,21 @@ abstract class EndToEndTestCase extends PackageTestCase
         $providers = self::allProviders();
 
         return self::$reversed ? array_reverse($providers) : $providers;
+    }
+
+    /**
+     * Artisan tests mock console output, so the command is a pending assertion, not an exit code.
+     * The command runs when this object is destroyed, which a chained call does at the end of the statement.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    protected function pendingArtisan(string $command, array $parameters = []): PendingCommand
+    {
+        $pending = $this->artisan($command, $parameters);
+
+        self::assertInstanceOf(PendingCommand::class, $pending);
+
+        return $pending;
     }
 
     /** @param  Application  $app */

@@ -11,6 +11,7 @@ use Commerz\Inventory\Allocation\Rules\MarketAffinityRule;
 use Commerz\Inventory\Allocation\Rules\MinimizeSplitShipmentsRule;
 use Commerz\Ports\Delivery\Contracts\OrderRoutingRule;
 use Commerz\Ports\Delivery\Data\Address;
+use Commerz\Ports\Delivery\Data\FulfillmentAssignment;
 use Commerz\Ports\Delivery\Data\FulfillmentConstraints;
 use Commerz\Ports\Delivery\Data\GeoPoint;
 use Commerz\Ports\Delivery\Data\OrderRoutingContext;
@@ -93,7 +94,7 @@ it('splits cleanly across minimal locations when no single warehouse can fulfill
     expect($result->isComplete())->toBeTrue()
         ->and($result->isSplit())->toBeTrue()
         ->and($result->locationCount())->toBe(2)
-        ->and(array_map(static fn ($a): string => $a->locationCode, $result->assignments))->toBe(['west', 'north'])
+        ->and(array_map(static fn (FulfillmentAssignment $a): string => $a->locationCode, $result->assignments))->toBe(['west', 'north'])
         ->and(alloc_describe($result->plan))->toBe(['variant:a@west=1', 'variant:b@west=1', 'variant:c@north=1']);
 });
 
@@ -263,7 +264,7 @@ it('supports custom pluggable OrderRoutingRule extensions and sanitizes unknown 
         }
     };
 
-    $router = (new OrderRouterPipeline([new MinimizeSplitShipmentsRule]))->withRule($preferEast);
+    $router = new OrderRouterPipeline([new MinimizeSplitShipmentsRule])->withRule($preferEast);
 
     $result = $router->route(new OrderRoutingRequest(
         allocation: alloc_request(

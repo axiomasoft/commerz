@@ -17,6 +17,7 @@ use Commerz\Shipping\Bookings\Exceptions\BookingInProgress;
 use Commerz\Shipping\Carriers\Contracts\Carrier;
 use Commerz\Shipping\Plugins\ShippingPlugin;
 use Commerz\Shipping\Tests\Fixtures\RecordingCarrier;
+use Commerz\Shipping\Tests\TestCase;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Packman\Errors\Exceptions\CodedException;
@@ -37,6 +38,11 @@ trait BkEnvironment
     }
 }
 
+abstract class BkEnvironmentTestCase extends TestCase
+{
+    use BkEnvironment;
+}
+
 final class BkPlugin implements ExtensionPlugin
 {
     #[Override]
@@ -55,7 +61,7 @@ final class BkPlugin implements ExtensionPlugin
 /** Migrates, empties the carrier log and creates the methods `recorded` (recording carrier) and `courier` (manual). */
 function bkSetUp(): void
 {
-    test()->artisan('migrate')->assertSuccessful();
+    mtMigrate();
     bkTruncate();
     RecordingCarrier::reset();
     mtMethod('recorded', ['carrier' => RecordingCarrier::KEY]);
@@ -100,10 +106,58 @@ function bkOutcome(BookShipment $command): string
     }
 }
 
+/**
+ * @return object{
+ *     id: string,
+ *     state: string,
+ *     attempts: int,
+ *     tracking: string|null,
+ *     error_code: string|null,
+ *     error_message: string|null,
+ *     booked_at: string|null,
+ *     method_code: string,
+ *     label_ref: string|null,
+ *     result: string|null
+ * }
+ */
 function bkRow(string $reference = 'fulfillment:1'): object
 {
-    return DB::table('cmz_shipping_bookings')->where('reference', $reference)->first()
-        ?? throw new RuntimeException("No booking '{$reference}'.");
+    /** @var list<object{
+     *     id: string,
+     *     state: string,
+     *     attempts: int,
+     *     tracking: string|null,
+     *     error_code: string|null,
+     *     error_message: string|null,
+     *     booked_at: string|null,
+     *     method_code: string,
+     *     label_ref: string|null,
+     *     result: string|null
+     * }> $rows
+     */
+    $rows = DB::select(
+        'select id, state, attempts, tracking, error_code, error_message, booked_at, method_code, label_ref, result'
+        .' from cmz_shipping_bookings where reference = ?',
+        [$reference],
+    );
+
+    return $rows[0] ?? throw new RuntimeException("No booking '{$reference}'.");
+}
+
+/** @return array<mixed> */
+function bkDecoded(mixed $result): array
+{
+    if (! is_string($result)) {
+        throw new RuntimeException('expected a stored booking result');
+    }
+
+    $decoded = json_decode($result, true);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('expected a JSON object result');
+    }
+
+    return $decoded;
 }
 
 /** Moves the lease of a booking into the past, as if its owner died long ago. */

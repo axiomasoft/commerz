@@ -19,10 +19,6 @@ use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Sales\Carts\Data\EnterCode;
 use Commerz\Sales\Carts\Data\SelectDelivery;
 use Commerz\Sales\Carts\Data\SetCartCustomer;
-use Commerz\Sales\Gateways\Data\GatewayPaymentResult;
-use Commerz\Sales\Gateways\Data\GatewayRefundResult;
-use Commerz\Sales\Gateways\Enums\GatewayPaymentStatus;
-use Commerz\Sales\Gateways\Enums\GatewayRefundStatus;
 use Commerz\Sales\OrderChanges\Contracts\OrderChangeCompensator;
 use Commerz\Sales\OrderChanges\Contracts\OrderChanges;
 use Commerz\Sales\OrderChanges\Data\AddLineAction;
@@ -47,9 +43,11 @@ uses(SlsEnvironment::class);
 beforeEach(function (): void {
     slsCommitted();
     StaticSellables::reset();
-    StaticSellables::put(slsSnapshot('variant:a', '100.00'));
-    StaticSellables::put(slsSnapshot('variant:b', '50.00'));
-    StaticSellables::put(slsSnapshot('variant:c', '80.00'));
+    StaticSellables::define(
+        slsSnapshot('test:a', '100.00'),
+        slsSnapshot('test:b', '50.00'),
+        slsSnapshot('test:c', '80.00'),
+    );
 });
 
 afterEach(function (): void {
@@ -58,9 +56,9 @@ afterEach(function (): void {
 
 it('previews dry-run without DB mutation and confirms add/remove line changes with tax & amountDelta reconciliation', function (): void {
     $channel = slsChannel();
-    $cart = slsCartWith($channel, ['variant:a' => 2, 'variant:b' => 1]);
+    $cart = slsCartWith($channel, ['test:a' => 2, 'test:b' => 1]);
     $cart = slsCarts()->enterCode(new EnterCode($cart->id, 'vat'));
-    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat'));
+    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat:15.00'));
     $order = slsPlace($cart);
 
     // VatStage adds 1.00 tax per line + 2.00 on delivery; FlatDeliveryStage charges 15.00.
@@ -70,10 +68,10 @@ it('previews dry-run without DB mutation and confirms add/remove line changes wi
         ->and($order->total)->toEqual(Money::of('269.00', 'RUB'));
 
     $change = slsOrderChanges()->create(new CreateOrderChange($order->id, 'Swap line B for line C and change quantity'));
-    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new AddLineAction(SellableRef::of('variant', 'c'), 1)));
-    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new RemoveLineAction(slsLine($order, 'variant:b'))));
-    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new ChangeLineQuantityAction(slsLine($order, 'variant:a'), 3)));
-    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new OverrideUnitPriceAction(slsLine($order, 'variant:a'), Money::of('90.00', 'RUB'))));
+    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new AddLineAction(SellableRef::of('test', 'c'), 1)));
+    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new RemoveLineAction(slsLine($order, 'test:b'))));
+    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new ChangeLineQuantityAction(slsLine($order, 'test:a'), 3)));
+    $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new OverrideUnitPriceAction(slsLine($order, 'test:a'), Money::of('90.00', 'RUB'))));
     $change = slsOrderChanges()->addAction(new AddOrderChangeAction($change->id, new ReplaceAdjustmentsAction([
         Adjustment::order(Money::of('-10.00', 'RUB'), 'manual', 'Adjustment'),
     ])));
@@ -104,15 +102,15 @@ it('previews dry-run without DB mutation and confirms add/remove line changes wi
 
 it('rejects stale expectedOrderVersion on confirm with 409 ORDERS_ORDER_CHANGE_VERSION_CONFLICT (INV-OMS-001)', function (): void {
     $channel = slsChannel();
-    $cart = slsCartWith($channel, ['variant:a' => 1, 'variant:b' => 1]);
-    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat'));
+    $cart = slsCartWith($channel, ['test:a' => 1, 'test:b' => 1]);
+    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat:15.00'));
     $order = slsPlace($cart);
 
     $change1 = slsOrderChanges()->create(new CreateOrderChange($order->id, 'First edit'));
-    slsOrderChanges()->addAction(new AddOrderChangeAction($change1->id, new ChangeLineQuantityAction(slsLine($order, 'variant:a'), 2)));
+    slsOrderChanges()->addAction(new AddOrderChangeAction($change1->id, new ChangeLineQuantityAction(slsLine($order, 'test:a'), 2)));
 
     $change2 = slsOrderChanges()->create(new CreateOrderChange($order->id, 'Conflicting concurrent edit'));
-    slsOrderChanges()->addAction(new AddOrderChangeAction($change2->id, new RemoveLineAction(slsLine($order, 'variant:b'))));
+    slsOrderChanges()->addAction(new AddOrderChangeAction($change2->id, new RemoveLineAction(slsLine($order, 'test:b'))));
 
     $confirmed = slsOrderChanges()->confirm($change1->id, expectedOrderVersion: 1);
     expect($confirmed->order->version)->toBe(2);
@@ -124,27 +122,19 @@ it('rejects stale expectedOrderVersion on confirm with 409 ORDERS_ORDER_CHANGE_V
 
 it('executes compensating delta charge on positive delta and partial refund or wallet credit on negative delta', function (): void {
     $channel = slsChannel();
-    $cart = slsCartWith($channel, ['variant:a' => 2, 'variant:b' => 1]);
+    $cart = slsCartWith($channel, ['test:a' => 2, 'test:b' => 1]);
     $cart = slsCarts()->setCustomer(new SetCartCustomer($cart->id, CustomerRef::of('user', '99')));
-    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat'));
+    $cart = slsCarts()->selectDelivery(new SelectDelivery($cart->id, 'flat:15.00'));
     $order = slsPlace($cart); // 200 + 50 + 15 = 265.00
 
-    RecordingGateway::$onInitiate = static fn ($req): GatewayPaymentResult => new GatewayPaymentResult(
-        status: GatewayPaymentStatus::Captured,
-        externalId: 'pay-'.uniqid(),
-        captured: $req->amount,
-    );
-    RecordingGateway::$onRefund = static fn ($req): GatewayRefundResult => new GatewayRefundResult(
-        status: GatewayRefundStatus::Succeeded,
-        externalId: 'ref-'.uniqid(),
-    );
+    RecordingGateway::scenario(['status' => 'captured']);
 
     slsPay($order, 'recording');
     $paid = slsOrders()->find($order->id);
 
     // 1. Positive delta (+80.00): initiates a delta charge via RecordingGateway.
     $increase = slsOrderChanges()->create(new CreateOrderChange($paid->id, 'Add line C'));
-    slsOrderChanges()->addAction(new AddOrderChangeAction($increase->id, new AddLineAction(SellableRef::of('variant', 'c'), 1)));
+    slsOrderChanges()->addAction(new AddOrderChangeAction($increase->id, new AddLineAction(SellableRef::of('test', 'c'), 1)));
 
     $incResult = slsOrderChanges()->confirm(
         $increase->id,
@@ -158,7 +148,7 @@ it('executes compensating delta charge on positive delta and partial refund or w
     // 2. Negative delta (-50.00): issues a partial refund via Refunds.
     $afterIncrease = slsOrders()->find($paid->id);
     $decrease = slsOrderChanges()->create(new CreateOrderChange($afterIncrease->id, 'Remove line B'));
-    slsOrderChanges()->addAction(new AddOrderChangeAction($decrease->id, new RemoveLineAction(slsLine($afterIncrease, 'variant:b'))));
+    slsOrderChanges()->addAction(new AddOrderChangeAction($decrease->id, new RemoveLineAction(slsLine($afterIncrease, 'test:b'))));
 
     $decResult = slsOrderChanges()->confirm(
         $decrease->id,

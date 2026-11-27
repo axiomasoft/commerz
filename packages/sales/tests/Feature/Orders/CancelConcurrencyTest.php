@@ -9,6 +9,7 @@ use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Tests\Fixtures\StaticSellables;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -19,10 +20,10 @@ uses(SlsEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    slsPending($this->artisan('migrate'))->assertSuccessful();
     StaticSellables::define(StaticSellables::item('a', '100.00'));
     slsConfig(['checkout' => ['require_delivery' => false]]);
     $this->web = slsChannel();
@@ -61,7 +62,7 @@ it('expires each order once for passes that run together', function (): void {
 
     foreach ($outcomes as $outcome) {
         [$ids, $skips] = explode('|', $outcome);
-        $expired = [...$expired, ...array_filter(explode(',', $ids))];
+        $expired = [...$expired, ...array_filter(explode(',', $ids), static fn (string $id): bool => $id !== '' && $id !== '0')];
         $skipped += (int) $skips;
     }
 

@@ -20,19 +20,58 @@ function taxContext(string $currency = 'RUB'): CommerceContext
     return CommerceContext::for(ChannelId::generate(), Currency::of($currency));
 }
 
+/** @param array<string, mixed> $args */
+function taxableItem(array $args): TaxableItem
+{
+    $target = $args['target'] ?? null;
+    $lineId = $args['lineId'] ?? null;
+    $sellable = $args['sellable'] ?? null;
+    $taxClass = $args['taxClass'] ?? null;
+    $quantity = $args['quantity'] ?? null;
+    $base = $args['base'] ?? null;
+    $included = $args['included'] ?? null;
+
+    if (! $target instanceof AdjustmentTarget
+        || ($lineId !== null && ! is_string($lineId))
+        || ($sellable !== null && ! $sellable instanceof SellableRef)
+        || ! is_string($taxClass)
+        || ! is_int($quantity)
+        || ! $base instanceof Money
+        || ! is_bool($included)
+    ) {
+        throw new InvalidArgumentException('Taxable item fields have the wrong type.');
+    }
+
+    return new TaxableItem($target, $lineId, $sellable, $taxClass, $quantity, $base, $included);
+}
+
+/** @param array<string, mixed> $extra */
 function lineItem(string $lineId = '1', string $base = '100.00', array $extra = []): TaxableItem
 {
-    return new TaxableItem(...[
-        'target' => AdjustmentTarget::Line, 'lineId' => $lineId, 'sellable' => SellableRef::of('variant', '7'), 'taxClass' => 'standard',
-        'quantity' => 1, 'base' => Money::of($base, 'RUB'), 'included' => false, ...$extra,
+    return taxableItem([
+        'target' => AdjustmentTarget::Line,
+        'lineId' => $lineId,
+        'sellable' => SellableRef::of('variant', '7'),
+        'taxClass' => 'standard',
+        'quantity' => 1,
+        'base' => Money::of($base, 'RUB'),
+        'included' => false,
+        ...$extra,
     ]);
 }
 
+/** @param array<string, mixed> $extra */
 function deliveryItem(array $extra = []): TaxableItem
 {
-    return new TaxableItem(...[
-        'target' => AdjustmentTarget::Delivery, 'lineId' => null, 'sellable' => null, 'taxClass' => 'standard',
-        'quantity' => 1, 'base' => Money::of('300.00', 'RUB'), 'included' => false, ...$extra,
+    return taxableItem([
+        'target' => AdjustmentTarget::Delivery,
+        'lineId' => null,
+        'sellable' => null,
+        'taxClass' => 'standard',
+        'quantity' => 1,
+        'base' => Money::of('300.00', 'RUB'),
+        'included' => false,
+        ...$extra,
     ]);
 }
 

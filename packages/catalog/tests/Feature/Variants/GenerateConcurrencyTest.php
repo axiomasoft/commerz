@@ -10,15 +10,22 @@ use Commerz\Catalog\Variants\Data\GenerateVariants;
 use Commerz\Measures\LocalizedText;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Assert;
 
 // Committed data across processes: no transactional isolation; the catalog tables are emptied after each test.
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $pending = $this->artisan('migrate');
+    if (! $pending instanceof PendingCommand) {
+        Assert::fail('Expected a pending Artisan command.');
+    }
+
+    $pending->assertSuccessful();
 });
 
 afterEach(function (): void {

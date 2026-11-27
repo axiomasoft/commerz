@@ -6,6 +6,7 @@ namespace Commerz\Webhooks\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Packman\Attributes\Api;
+use SensitiveParameter;
 
 #[Api(since: '0.1')]
 final readonly class CreateWebhookSubscription
@@ -23,7 +24,7 @@ final readonly class CreateWebhookSubscription
     public function __construct(
         public string $code,
         public string $targetUrl,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         public string $signingSecret,
         array $eventTypes,
         public int $maxAttempts = 5,
@@ -62,7 +63,7 @@ final readonly class CreateWebhookSubscription
         }
     }
 
-    public static function assertSigningSecret(#[\SensitiveParameter] string $signingSecret): void
+    public static function assertSigningSecret(#[SensitiveParameter] string $signingSecret): void
     {
         if ($signingSecret === '' || strlen($signingSecret) > 4096 || str_contains($signingSecret, "\0")) {
             throw new InvalidCommand('signingSecret', 'must be 1..4096 bytes without NUL', 'webhooks.invalid_subscription');
@@ -89,9 +90,7 @@ final readonly class CreateWebhookSubscription
             $normalized[] = $pattern;
         }
 
-        $unique = array_values(array_unique($normalized));
-
-        return $unique;
+        return array_values(array_unique($normalized));
     }
 
     /**

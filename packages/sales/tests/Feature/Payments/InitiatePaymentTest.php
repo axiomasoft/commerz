@@ -29,6 +29,7 @@ use Commerz\Testkit\Commerce;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -150,7 +151,7 @@ it('fails a declined attempt and lets a new one start', function (): void {
 it('leaves an attempt unknown, never failed, when the gateway times out', function (): void {
     try {
         slsPay($this->order, 'recording', meta: ['fail' => 'timeout']);
-        $this->fail('The timeout was swallowed.');
+        Assert::fail('The timeout was swallowed.');
     } catch (PaymentOutcomeUnknown $e) {
         expect($e->getPrevious()?->getMessage())->toBe('The gateway timed out.')
             ->and($e->context())->toBe(['payment' => $e->payment, 'gateway' => 'recording'])
@@ -183,9 +184,9 @@ it('returns the same payment for a repeat with the key, without calling the gate
 });
 
 it('keeps the capture the gateway answered after a webhook moved the attempt on', function (PaymentEventType $webhook): void {
-    RecordingGateway::during(static fn (GatewayPaymentRequest $request) => slsPayments()->recordEvent(
-        new RecordPaymentEvent('recording', 'evt-early', $webhook, paymentReference: $request->reference),
-    ));
+    RecordingGateway::during(static function (GatewayPaymentRequest $request) use ($webhook): void {
+        slsPayments()->recordEvent(new RecordPaymentEvent('recording', 'evt-early', $webhook, paymentReference: $request->reference));
+    });
 
     $payment = slsPay($this->order, 'recording', meta: ['status' => 'captured']);
 

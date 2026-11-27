@@ -11,7 +11,8 @@ use Commerz\Arch\ApiSurface;
  * Usage: php scripts/generate-api-reference.php [--check]   (--check writes nothing and fails on a stale page)
  */
 $root = dirname(__DIR__);
-$check = in_array('--check', $argv, true);
+$cliArguments = $_SERVER['argv'] ?? [];
+$check = is_array($cliArguments) && in_array('--check', $cliArguments, true);
 $target = $root.'/docs/reference/api';
 
 require $root.'/vendor/autoload.php';
@@ -26,8 +27,12 @@ function summary(string|false $doc): string
     }
 
     $words = [];
+    $lines = preg_split('/\R/', $doc);
+    if ($lines === false) {
+        $lines = [];
+    }
 
-    foreach (preg_split('/\R/', $doc) ?: [] as $line) {
+    foreach ($lines as $line) {
         $line = trim(preg_replace(['#^\s*/\*\*#', '#\*/\s*$#', '#^\s*\*#'], '', $line) ?? '');
 
         if (str_starts_with($line, '@') || ($line === '' && $words !== [])) {
@@ -61,12 +66,13 @@ function cell(string $text): string
     return str_replace(['|', "\n"], ['\|', ' '], $text);
 }
 
-/** @param  array<string, mixed>  $manifest */
+/**
+ * @param  array{schema: string, package: string, composer: string, types: array<string, array<string, mixed>>, platform: array<string, mixed>}  $manifest
+ */
 function page(array $manifest, string $namespace): string
 {
-    /** @var array<string, array<string, mixed>> $types */
-    $types = (array) $manifest['types'];
-    $platform = (array) $manifest['platform'];
+    $types = $manifest['types'];
+    $platform = $manifest['platform'];
     $modules = [];
 
     foreach ($types as $type => $entry) {
@@ -85,8 +91,11 @@ function page(array $manifest, string $namespace): string
         $out[] = '|---|---|';
 
         foreach ($platform as $fact => $value) {
-            $values = is_array($value) ? $value : [$value];
-            $out[] = '| '.$fact.' | '.implode(', ', array_map(static fn (mixed $v): string => '`'.cell((string) $v).'`', $values)).' |';
+            $values = [];
+            foreach (is_array($value) ? $value : [$value] as $item) {
+                $values[] = manifestScalar($item);
+            }
+            $out[] = '| '.$fact.' | '.implode(', ', array_map(static fn (string $v): string => '`'.cell($v).'`', $values)).' |';
         }
 
         $out[] = '';
@@ -99,15 +108,19 @@ function page(array $manifest, string $namespace): string
         $out[] = '|---|---|---|---|';
 
         foreach ($moduleTypes as $type => $entry) {
-            $layer = $entry['layer'].(isset($entry['spiKind']) ? " ({$entry['spiKind']})" : '');
-            $out[] = '| [`'.substr($type, strrpos($type, '\\') + 1).'`](#'.anchor($type).') | '.$entry['kind'].' | '.$layer.' | '.$entry['since'].' |';
+            $layer = manifestString($entry, 'layer');
+            $spiKind = manifestOptionalString($entry, 'spiKind');
+            if ($spiKind !== null) {
+                $layer .= " ({$spiKind})";
+            }
+            $out[] = '| [`'.shortTypeName($type).'`](#'.anchor($type).') | '.manifestString($entry, 'kind').' | '.$layer.' | '.manifestString($entry, 'since').' |';
         }
 
         $out[] = '';
 
         foreach ($moduleTypes as $type => $entry) {
-            $reflection = new ReflectionClass($type);
-            $out[] = '### '.substr($type, strrpos($type, '\\') + 1).' {#'.anchor($type).'}';
+            $reflection = reflectType($type);
+            $out[] = '### '.shortTypeName($type).' {#'.anchor($type).'}';
             $out[] = '';
             $out[] = '`'.$type.'`';
             $out[] = '';
@@ -118,29 +131,38 @@ function page(array $manifest, string $namespace): string
             }
 
             $lines = [];
-            $head = implode(' ', array_filter([...(array) ($entry['modifiers'] ?? []), $entry['kind'], substr($type, strrpos($type, '\\') + 1)]));
+            $headParts = manifestStrings($entry['modifiers'] ?? []);
+            $headParts[] = manifestString($entry, 'kind');
+            $headParts[] = shortTypeName($type);
+            $head = implode(' ', array_values(array_filter($headParts, static fn (string $part): bool => $part !== '')));
 
             if (isset($entry['extends'])) {
-                $head .= ' extends '.implode(', ', array_map(static fn (string $parent): string => '\\'.$parent, (array) $entry['extends']));
+                $head .= ' extends '.implode(', ', array_map(static fn (string $parent): string => '\\'.$parent, manifestStrings($entry['extends'])));
             }
 
             if (isset($entry['implements'])) {
-                $head .= ' implements '.implode(', ', array_map(static fn (string $interface): string => '\\'.$interface, (array) $entry['implements']));
+                $head .= ' implements '.implode(', ', array_map(static fn (string $interface): string => '\\'.$interface, manifestStrings($entry['implements'])));
             }
 
-            foreach ((array) ($entry['cases'] ?? []) as $case => $value) {
-                $lines[] = "case {$case}".($value === null ? '' : ' = '.var_export($value, true)).';';
+            foreach (manifestMap($entry['cases'] ?? []) as $case => $value) {
+                $lines[] = 'case '.$case.($value === null ? '' : ' = '.var_export($value, true)).';';
             }
 
-            foreach ((array) ($entry['constants'] ?? []) as $constant => $value) {
+            foreach (manifestMap($entry['constants'] ?? []) as $constant => $value) {
+                if (! is_string($value)) {
+                    throw new RuntimeException('Constant literal is not a string.');
+                }
                 $lines[] = "const {$constant} = {$value};";
             }
 
-            foreach ((array) ($entry['properties'] ?? []) as $property) {
+            foreach (manifestStrings($entry['properties'] ?? []) as $property) {
                 $lines[] = $property.';';
             }
 
-            foreach ((array) ($entry['methods'] ?? []) as $method => $signature) {
+            foreach (manifestMap($entry['methods'] ?? []) as $method => $signature) {
+                if (! is_string($signature)) {
+                    throw new RuntimeException('Method signature is not a string.');
+                }
                 $doc = $reflection->hasMethod($method) ? summary($reflection->getMethod($method)->getDocComment()) : '';
 
                 if ($doc !== '') {
@@ -175,22 +197,199 @@ function anchor(string $type): string
     return 'type-'.strtolower(str_replace('\\', '-', $type));
 }
 
+/** The same slice `substr($type, strrpos($type, '\\') + 1)` produces, including an absent separator. */
+function shortTypeName(string $type): string
+{
+    $separator = strrpos($type, '\\');
+
+    return substr($type, ($separator === false ? 0 : $separator) + 1);
+}
+
+function manifestScalar(mixed $value): string
+{
+    if (is_string($value) || is_int($value) || is_float($value) || is_bool($value) || $value === null) {
+        return (string) $value;
+    }
+
+    throw new RuntimeException('Platform fact is not a scalar.');
+}
+
+/** @param  array<string, mixed>  $entry */
+function manifestString(array $entry, string $key): string
+{
+    $value = $entry[$key] ?? null;
+    if (! is_string($value)) {
+        throw new RuntimeException("Manifest entry is missing string {$key}.");
+    }
+
+    return $value;
+}
+
+/** @param  array<string, mixed>  $entry */
+function manifestOptionalString(array $entry, string $key): ?string
+{
+    if (! array_key_exists($key, $entry)) {
+        return null;
+    }
+
+    return manifestString($entry, $key);
+}
+
+/** @return list<string> */
+function manifestStrings(mixed $value): array
+{
+    if (is_string($value)) {
+        return [$value];
+    }
+
+    if (! is_array($value)) {
+        throw new RuntimeException('Manifest list is not an array.');
+    }
+
+    $strings = [];
+    foreach ($value as $item) {
+        if (! is_string($item)) {
+            throw new RuntimeException('Manifest list item is not a string.');
+        }
+        $strings[] = $item;
+    }
+
+    return $strings;
+}
+
+/** @return array<string, mixed> */
+function manifestMap(mixed $value): array
+{
+    if (! is_array($value)) {
+        throw new RuntimeException('Manifest map is not an array.');
+    }
+
+    $mapped = [];
+    foreach ($value as $key => $item) {
+        $mapped[(string) $key] = $item;
+    }
+
+    return $mapped;
+}
+
+/** @return ReflectionClass<object> */
+function reflectType(string $type): ReflectionClass
+{
+    if (! class_exists($type) && ! interface_exists($type) && ! trait_exists($type)) {
+        throw new RuntimeException("Cannot reflect {$type}.");
+    }
+
+    /** @var class-string $type */
+    return new ReflectionClass($type);
+}
+
+/**
+ * @param  array<string, mixed>  $manifest
+ * @param  array<string, mixed>  $symbols
+ * @return array{schema: string, package: string, composer: string, types: array<string, array<string, mixed>>, platform: array<string, mixed>}
+ */
+function renderedPageManifest(array $manifest, string $schema, array $symbols): array
+{
+    $package = $manifest['package'] ?? null;
+    $composerName = $manifest['composer'] ?? null;
+    if (! is_string($package) || ! is_string($composerName)) {
+        throw new RuntimeException('Rendered manifest is missing package or composer.');
+    }
+
+    $types = $manifest['types'] ?? [];
+    if ($types instanceof stdClass) {
+        $types = (array) $types;
+    }
+    if (! is_array($types)) {
+        throw new RuntimeException('Rendered manifest types are not an array.');
+    }
+
+    $typed = [];
+    foreach (array_intersect_key($types, $symbols) as $name => $entry) {
+        if (! is_array($entry)) {
+            throw new RuntimeException('Rendered manifest type entry is invalid.');
+        }
+        /** @var array<string, mixed> $entry */
+        $typed[$name] = $entry;
+    }
+
+    $platform = $manifest['platform'] ?? [];
+    if ($platform instanceof stdClass) {
+        $platform = (array) $platform;
+    }
+    if (! is_array($platform)) {
+        throw new RuntimeException('Rendered manifest platform is not an array.');
+    }
+
+    /** @var array<string, mixed> $platform */
+    return [
+        'schema' => $schema,
+        'package' => $package,
+        'composer' => $composerName,
+        'types' => $typed,
+        'platform' => $platform,
+    ];
+}
+
+/**
+ * @return array{schema: string, symbols: array<string, mixed>}
+ */
+function readSnapshot(string $file): array
+{
+    $decoded = json_decode((string) file_get_contents($file), true, flags: JSON_THROW_ON_ERROR);
+    if (! is_array($decoded) || ! is_string($decoded['schema'] ?? null) || ! is_array($decoded['symbols'] ?? null)) {
+        throw new RuntimeException("Invalid php-api snapshot {$file}.");
+    }
+
+    /** @var array<string, mixed> $symbols */
+    $symbols = $decoded['symbols'];
+
+    return ['schema' => $decoded['schema'], 'symbols' => $symbols];
+}
+
+function psr4Namespace(string $composerFile): string
+{
+    $decoded = json_decode((string) file_get_contents($composerFile), true, flags: JSON_THROW_ON_ERROR);
+    if (! is_array($decoded)) {
+        throw new RuntimeException("Invalid composer file {$composerFile}.");
+    }
+
+    $autoload = $decoded['autoload'] ?? null;
+    $psr4 = is_array($autoload) ? ($autoload['psr-4'] ?? null) : null;
+    if (! is_array($psr4)) {
+        throw new RuntimeException("Missing psr-4 in {$composerFile}.");
+    }
+
+    $namespace = array_search('src/', $psr4, true);
+    if (! is_string($namespace)) {
+        throw new RuntimeException("Missing src/ namespace in {$composerFile}.");
+    }
+
+    return $namespace;
+}
+
 // Packman owns the snapshot format; the existing reflection renderer supplies readable
 // PHP signatures and platform facts only for symbols included in that snapshot.
 $rendered = (new ApiManifest(ApiSurface::fromRoot($root)))->build();
 $pages = [];
 $index = [GENERATED, '', '# API reference', '', 'Generated from the `php-api.json` manifests of each package (`composer api:manifest`, then `composer docs:reference`).', '', '| Package | Composer | Types |', '|---|---|---|'];
 
-foreach (glob($root.'/packages/*/resources/contracts/php-api.json') ?: [] as $file) {
-    $snapshot = json_decode((string) file_get_contents($file), true, flags: JSON_THROW_ON_ERROR);
+$snapshots = glob($root.'/packages/*/resources/contracts/php-api.json');
+if ($snapshots === false) {
+    $snapshots = [];
+}
+
+foreach ($snapshots as $file) {
+    $snapshot = readSnapshot($file);
     $directory = basename(dirname($file, 3));
-    $manifest = $rendered[$directory];
-    $manifest['schema'] = $snapshot['schema'];
-    $manifest['types'] = array_intersect_key((array) $manifest['types'], $snapshot['symbols']);
-    $composer = json_decode((string) file_get_contents($root.'/packages/'.$manifest['package'].'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
-    $namespace = (string) array_search('src/', $composer['autoload']['psr-4'], true);
+    $renderedManifest = $rendered[$directory] ?? null;
+    if (! is_array($renderedManifest)) {
+        throw new RuntimeException("Missing rendered manifest for {$directory}.");
+    }
+    $manifest = renderedPageManifest($renderedManifest, $snapshot['schema'], $snapshot['symbols']);
+    $namespace = psr4Namespace($root.'/packages/'.$manifest['package'].'/composer.json');
     $pages[$manifest['package'].'.md'] = page($manifest, $namespace);
-    $index[] = "| [{$manifest['package']}](./{$manifest['package']}.md) | `{$manifest['composer']}` | ".count((array) $manifest['types']).' |';
+    $index[] = "| [{$manifest['package']}](./{$manifest['package']}.md) | `{$manifest['composer']}` | ".count($manifest['types']).' |';
 }
 
 $pages['index.md'] = implode("\n", $index)."\n";
@@ -215,7 +414,12 @@ foreach ($pages as $name => $content) {
     file_put_contents($path, $content);
 }
 
-foreach (glob($target.'/*.md') ?: [] as $path) {
+$existing = glob($target.'/*.md');
+if ($existing === false) {
+    $existing = [];
+}
+
+foreach ($existing as $path) {
     if (! isset($pages[basename($path)])) {
         $check ? $stale[] = 'docs/reference/api/'.basename($path).' (orphan)' : unlink($path);
     }

@@ -35,6 +35,7 @@ use Commerz\Sales\Refunds\Enums\RefundStatus;
 use Commerz\Schema\TableNames;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 // E4–E7 of assembly-design#concurrency: the life of placed orders against the stock, the money and the promotion
 // counters of the real packages, two operations at a time over one shared resource. The world is committed in the
@@ -42,7 +43,7 @@ use Illuminate\Support\Facades\DB;
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     CommittedDatabase::prepare();
@@ -54,7 +55,11 @@ it('reserves a size while the warehouse adjusts and counts it (E4)', function ()
     $world = ShopWorld::build();
     $carts = array_map(static fn (int $i): array => Checkout::cart($world, [[$world->small, 1]], "e4-{$i}"), range(0, 3));
     $levels = app(TableNames::class)->table('stock_levels');
-    $level = (string) DB::table($levels)->where('stock_item_id', $world->smallItem->value)->where('location_id', $world->location->value)->value('id');
+    $levelId = DB::table($levels)->where('stock_item_id', $world->smallItem->value)->where('location_id', $world->location->value)->value('id');
+    if (! is_string($levelId) && ! is_int($levelId)) {
+        throw new RuntimeException('Stock level id is missing.');
+    }
+    $level = (string) $levelId;
     $before = Outcome::deadlocks();
 
     // Worker 0 holds the level so that everyone else queues on it together; workers 1–4 place one S each, worker 5
@@ -70,7 +75,13 @@ it('reserves a size while the warehouse adjusts and counts it (E4)', function ()
         match ($worker) {
             5 => Inventory::stock()->adjust(new AdjustStock($world->smallItem, $world->location, 3, 'found')),
             6 => Inventory::stock()->count(new CountStock($world->smallItem, $world->location, 8)),
-            default => Checkout::place($carts[$worker - 1]),
+            default => Checkout::place(match ($worker) {
+                1 => $carts[0],
+                2 => $carts[1],
+                3 => $carts[2],
+                4 => $carts[3],
+                default => throw new RuntimeException("Unexpected worker {$worker}."),
+            }),
         };
 
         return 'ok';
@@ -246,7 +257,14 @@ it('serializes the coupon use a full refund gives back with new orders spending 
         usleep(Outcome::CONTENDER_DELAY_US);
 
         if ($worker < 5) {
-            $refund = Sales::refunds()->issue(new IssueRefund($paid[$worker - 1]->id, $paid[$worker - 1]->total));
+            $paidOrder = match ($worker) {
+                1 => $paid[0],
+                2 => $paid[1],
+                3 => $paid[2],
+                4 => $paid[3],
+                default => throw new RuntimeException("Unexpected worker {$worker}."),
+            };
+            $refund = Sales::refunds()->issue(new IssueRefund($paidOrder->id, $paidOrder->total));
 
             return $refund->status === RefundStatus::Succeeded ? 'refunded' : 'refund:'.$refund->status->value;
         }
@@ -289,7 +307,14 @@ it('serializes a placement spending a coupon with the cancellation giving one ba
         usleep(Outcome::CONTENDER_DELAY_US);
 
         if ($worker < 5) {
-            Sales::orders()->cancel(new CancelOrder($placed[$worker - 1]->id, CancelReason::Customer));
+            $previous = match ($worker) {
+                1 => $placed[0],
+                2 => $placed[1],
+                3 => $placed[2],
+                4 => $placed[3],
+                default => throw new RuntimeException("Unexpected worker {$worker}."),
+            };
+            Sales::orders()->cancel(new CancelOrder($previous->id, CancelReason::Customer));
 
             return 'cancelled';
         }

@@ -65,7 +65,6 @@ use Commerz\Sales\Returns\Exceptions\ReturnNotFound;
 use Commerz\Sales\Returns\Exceptions\ReturnNotOpen;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 
 it('covers every SalesErrorCode case with a matching ProblemDefinition', function (): void {
     $definitions = (new SalesProblemDefinitions)->definitions();
@@ -81,8 +80,7 @@ it('covers every SalesErrorCode case with a matching ProblemDefinition', functio
 it('exposes Packman error descriptors on sales exceptions', function (CommerzException $e, SalesErrorCode $code, ErrorCategory $category): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($descriptor->errorCode)->toBe($code)
+    expect($descriptor->errorCode)->toBe($code)
         ->and($descriptor->category)->toBe($category);
 })->with([
     'cart line not found' => [new CartLineNotFound('cl1'), SalesErrorCode::CartLineNotFound, ErrorCategory::NotFound],

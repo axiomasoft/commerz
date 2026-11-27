@@ -17,15 +17,16 @@ use Commerz\Inventory\Stock\Data\AdjustStock;
 use Commerz\Inventory\Stock\Data\ReceiveStock;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 // Committed data across processes: no transactional isolation; the stock tables are emptied after each test.
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -46,21 +47,42 @@ it('journals every concurrent change of one level exactly once with sequential b
         }
     });
 
-    $moves = DB::table('cmz_stock_movements')->orderBy('id')->get(['delta', 'balance_after'])->all();
+    $moves = DB::table('cmz_stock_movements')->orderBy('id')->get(['delta', 'balance_after']);
     $level = DB::table('cmz_stock_levels')->first();
+
+    if (! $level instanceof stdClass) {
+        throw new RuntimeException('expected a stock level');
+    }
+
     $balance = 0;
     $sequential = true;
 
     foreach ($moves as $move) {
-        $balance += $move->delta;
-        $sequential = $sequential && $move->balance_after === $balance;
+        $values = get_object_vars($move);
+        $delta = $values['delta'] ?? null;
+        $after = $values['balance_after'] ?? null;
+
+        if (! is_int($delta) || ! is_int($after)) {
+            throw new RuntimeException('movement counters must be integers');
+        }
+
+        $balance += $delta;
+        $sequential = $sequential && $after === $balance;
+    }
+
+    $levelValues = get_object_vars($level);
+    $onHand = $levelValues['on_hand'] ?? null;
+    $version = $levelValues['version'] ?? null;
+
+    if (! is_int($onHand) || ! is_int($version)) {
+        throw new RuntimeException('level counters must be integers');
     }
 
     expect($moves)->toHaveCount(81)
         ->and($sequential)->toBeTrue()
-        ->and($level->on_hand)->toBe($balance)
-        ->and($level->on_hand)->toBe(100)
-        ->and($level->version)->toBe(81)
+        ->and($onHand)->toBe($balance)
+        ->and($onHand)->toBe(100)
+        ->and($version)->toBe(81)
         ->and(DB::table('cmz_outbox_messages')->count())->toBe(81);
 })->group('concurrency');
 

@@ -6,7 +6,6 @@ use Commerz\Identity\SellableRef;
 use Commerz\Inventory\Facades\Inventory;
 use Commerz\Inventory\Locations\Data\CreateLocation;
 use Commerz\Inventory\Transfers\Data\DispatchTransfer;
-use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Contracts\StockReservations;
 use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
@@ -16,6 +15,7 @@ use Commerz\Ports\Stock\Data\RestockStock;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Transfers/Helpers.php';
 
@@ -23,10 +23,10 @@ require_once __DIR__.'/Transfers/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -56,12 +56,10 @@ it('runs a warehouse end to end and stays reconciled after concurrent rounds', f
     rsvReceive($body, $main, 100);
     rsvReceive($strap, $main, 50);
 
-    $availability = app(StockAvailability::class);
     $held = rsvReserve($channel, 'order:1', ['kit' => 3]);
 
     expect(rsvHeld($held)['kit'])->toBe([['main', 3]])
-        ->and(rsvLevel($body, $main)->reserved)->toBe(6)
-        ->and($availability)->toBeInstanceOf(StockAvailability::class);
+        ->and(rsvLevel($body, $main)->reserved)->toBe(6);
 
     $moved = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($main, $shop, [$body->value => 10, $strap->value => 5])->id));
     trfReceive($moved, [$body->value => [10], $strap->value => [4, 1]]);
@@ -71,7 +69,7 @@ it('runs a warehouse end to end and stays reconciled after concurrent rounds', f
 
     expect(rsvLevel($body, $shop)->onHand)->toBe(12)
         ->and(rsvLevel($strap, $shop)->onHand)->toBe(5);
-    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->assertSuccessful();
 
     Concurrency::run(4, function (int $worker) use ($channel): void {
         for ($i = 0; $i < 3; $i++) {
@@ -79,5 +77,5 @@ it('runs a warehouse end to end and stays reconciled after concurrent rounds', f
         }
     });
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('Stock is consistent.')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('Stock is consistent.')->assertSuccessful();
 });

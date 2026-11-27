@@ -40,6 +40,7 @@ it('refuses malformed members', function (string $build): void {
         'prefix-empty' => ZoneMember::postalPrefix('RU', ' - '),
         'prefix-chars' => ZoneMember::postalPrefix('RU', '10%'),
         'prefix-long' => ZoneMember::postalPrefix('RU', '12345678901'),
+        default => throw new LogicException("Unexpected member build '{$build}'."),
     })->toThrow(InvalidCommand::class);
 })->with(['country', 'region', 'region-long', 'prefix-country', 'prefix-empty', 'prefix-chars', 'prefix-long']);
 

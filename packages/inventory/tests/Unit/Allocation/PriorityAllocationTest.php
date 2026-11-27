@@ -2,10 +2,17 @@
 
 declare(strict_types=1);
 
+use Commerz\Inventory\Allocation\Data\AllocationNeed;
+use Commerz\Inventory\Allocation\Data\SourceStock;
 use Commerz\Inventory\Allocation\Internal\PriorityAllocation;
 
 require_once __DIR__.'/Fixtures.php';
 
+/**
+ * @param  list<AllocationNeed>  $needs
+ * @param  list<SourceStock>  $sources
+ * @return list<string>
+ */
 function priority(array $needs, array $sources): array
 {
     return alloc_describe(new PriorityAllocation()->allocate(alloc_request($needs, $sources)));

@@ -9,6 +9,7 @@ use Commerz\Sales\Carts\Data\CartView;
 use Commerz\Sales\Carts\Data\SetCartAddress;
 use Commerz\Sales\Carts\Enums\AddressRole;
 use Commerz\Sales\Carts\Exceptions\ShippingAddressRequired;
+use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -28,9 +29,10 @@ beforeEach(function (): void {
     $this->web = ctChannel();
 });
 
-function doCart(array $lines, bool $address = true): CartView
+/** @param  array<string, int>  $lines */
+function doCart(ChannelId $channel, array $lines, bool $address = true): CartView
 {
-    $cart = ctCart(test()->web);
+    $cart = ctCart($channel);
 
     foreach ($lines as $ref => $quantity) {
         $cart = ctAdd($cart, $ref, $quantity);
@@ -44,7 +46,7 @@ function doCart(array $lines, bool $address = true): CartView
 }
 
 it('asks the port for the goods that ship: weight is the sum of weight × quantity', function (): void {
-    $cart = doCart(['sku:heavy' => 2, 'sku:light' => 3, 'sku:nogram' => 1, 'svc:install' => 1]);
+    $cart = doCart($this->web, ['sku:heavy' => 2, 'sku:light' => 3, 'sku:nogram' => 1, 'svc:install' => 1]);
 
     $options = ctCarts()->deliveryOptions($cart->id);
     $request = $this->commerce->delivery->requests[0];
@@ -59,7 +61,7 @@ it('asks the port for the goods that ship: weight is the sum of weight × quanti
 });
 
 it('rates delivery on the whole cart value, including services, as the quote stage does', function (): void {
-    $cart = doCart(['sku:heavy' => 1, 'svc:install' => 1]);
+    $cart = doCart($this->web, ['sku:heavy' => 1, 'svc:install' => 1]);
 
     ctCarts()->deliveryOptions($cart->id);
 
@@ -67,15 +69,15 @@ it('rates delivery on the whole cart value, including services, as the quote sta
 });
 
 it('needs the shipping address', function (): void {
-    $cart = doCart(['sku:heavy' => 1], address: false);
+    $cart = doCart($this->web, ['sku:heavy' => 1], address: false);
 
     expect(fn () => ctCarts()->deliveryOptions($cart->id))->toThrow(ShippingAddressRequired::class)
         ->and($this->commerce->delivery->requests)->toBe([]);
 });
 
 it('offers nothing when no line ships', function (): void {
-    $services = doCart(['svc:install' => 1]);
-    $empty = doCart([]);
+    $services = doCart($this->web, ['svc:install' => 1]);
+    $empty = doCart($this->web, []);
 
     expect(ctCarts()->deliveryOptions($services->id))->toBe([])
         ->and(ctCarts()->deliveryOptions($empty->id))->toBe([])
@@ -83,7 +85,7 @@ it('offers nothing when no line ships', function (): void {
 });
 
 it('offers only what the port offers in the currency of the cart', function (): void {
-    $cart = doCart(['sku:heavy' => 1]);
+    $cart = doCart($this->web, ['sku:heavy' => 1]);
     $this->commerce->delivery->offer(new DeliveryOption('abroad', 'Abroad', Money::of('10.00', 'USD'), 'dhl'));
 
     expect(array_map(fn (DeliveryOption $option) => $option->methodCode, ctCarts()->deliveryOptions($cart->id)))->toBe(['courier']);

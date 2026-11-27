@@ -2,7 +2,7 @@
     "schema_version": 1,
     "name": "axiomasoft/commerz-monorepo",
     "profile": "laravel-package",
-    "php": ">=8.4 <8.6",
+    "php": ">=8.4 <8.7",
     "phpstan_level": "max",
     "provider_max_lines": 80,
     "packages": [

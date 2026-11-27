@@ -71,6 +71,7 @@ use Commerz\Time\Contracts\Clock;
 use DateTimeImmutable;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 final readonly class SalesLockedOrderPlacementAdapter implements OrderPlacementPort
 {
@@ -98,7 +99,12 @@ final readonly class SalesLockedOrderPlacementAdapter implements OrderPlacementP
 
         $orderId = OrderId::generate();
         $number = 'B2B-'.strtoupper(substr(str_replace('-', '', $orderId->value), -8));
-        $db = DB::connection((string) config('commerz.connection'));
+        $connection = config('commerz.connection');
+        if (! is_string($connection)) {
+            throw new RuntimeException('commerz.connection must be a string.');
+        }
+
+        $db = DB::connection($connection);
         $now = $request->placedAt->format('Y-m-d H:i:s.uP');
 
         $db->table('cmz_orders')->insert([
@@ -195,8 +201,13 @@ final class B2bQuoteToOrderWorkflowTest extends PackageTestCase
         B2bSqliteSchema::boot('b2b_e2e_sqlite', withSales: true);
 
         $this->frozenClock = new FrozenClock(new DateTimeImmutable('2026-11-26T10:00:00Z'));
-        $this->app->instance(Clock::class, $this->frozenClock);
-        $this->app->singleton(OrderPlacementPort::class, SalesLockedOrderPlacementAdapter::class);
+        $app = $this->app;
+        if (! $app instanceof Application) {
+            self::fail('Application is not booted.');
+        }
+
+        $app->instance(Clock::class, $this->frozenClock);
+        $app->singleton(OrderPlacementPort::class, SalesLockedOrderPlacementAdapter::class);
 
         $store = app(Stores::class)->create(new CreateStore('acme-b2b-store', 'Acme Industrial Store', Currency::of('USD'), 'B2B-'));
         $channel = app(Channels::class)->create(new CreateChannel($store->id, 'b2b-portal', 'B2B Portal', [Currency::of('USD')]));
@@ -396,7 +407,9 @@ final class B2bQuoteToOrderWorkflowTest extends PackageTestCase
         self::assertCount(2, $orderLineRows);
         self::assertSame(8_000, $orderLineRows[0]->unit_price_minor);
         self::assertSame(4_000, $orderLineRows[1]->unit_price_minor);
-        self::assertStringStartsWith('b2b.negotiated_quote:', (string) $orderLineRows[0]->price_source);
+        $priceSource = $orderLineRows[0]->price_source;
+        self::assertIsString($priceSource);
+        self::assertStringStartsWith('b2b.negotiated_quote:', $priceSource);
 
         self::assertSame('net_30', $converted->paymentTerms?->code);
         self::assertEquals(Money::zero('USD'), $converted->paymentSchedule?->dueNowAmount);

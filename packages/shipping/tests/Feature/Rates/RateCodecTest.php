@@ -31,7 +31,11 @@ function rtScope(string $currency = 'RUB'): RateScope
     return new RateScope(Currency::of($currency));
 }
 
-/** The error code and field of the InvalidCommand a call fails with. */
+/**
+ * The error code and field of the InvalidCommand a call fails with.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function rtFailure(Closure $call): string
 {
     try {
@@ -46,8 +50,7 @@ function rtFailure(Closure $call): string
 it('encodes a rate with the key, the plugin version and canonical parameters', function (): void {
     $stored = rtCodec()->encode(new RateSpec('test.fixed', ['amount' => Money::of('300.00', 'RUB')]), rtScope(), 'rates.0.rate');
 
-    expect($stored)->toBeInstanceOf(StoredRate::class)
-        ->and($stored->key)->toBe('test.fixed')
+    expect($stored->key)->toBe('test.fixed')
         ->and($stored->version)->toBe(2)
         ->and($stored->params->toArray())->toBe(['amount' => ['amount_minor' => 30000, 'currency' => 'RUB']]);
 });
@@ -57,7 +60,19 @@ it('refuses an unknown key, naming the field', function (string $key): void {
 })->with(['acme.missing', 'carrier_like']);
 
 it('reports invalid parameters with the path of the field', function (): void {
-    $encode = static fn (array $params): Closure => static fn () => rtCodec()->encode(new RateSpec('test.fixed', $params), rtScope(), 'rates.0.rate');
+    $encode = static function (array $params): Closure {
+        $clean = [];
+
+        foreach ($params as $key => $value) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('rate params must be a map');
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return static fn () => rtCodec()->encode(new RateSpec('test.fixed', $clean), rtScope(), 'rates.0.rate');
+    };
 
     expect(rtFailure($encode(['amount' => Money::of('1.00', 'USD')])))->toBe('shipping.invalid_rate_config @ rates.0.rate.params.amount')
         ->and(rtFailure($encode([])))->toBe('shipping.invalid_rate_config @ rates.0.rate.params.amount')
@@ -122,6 +137,7 @@ it('refuses a price in a currency other than the tariff\'s', function (): void {
 it('contains unexpected plugin failures while loading a stored tariff', function (string $operation, int $version): void {
     $rate = app(Contributions::class)->get(DeliveryRate::KIND, 'test.broken_loading', DeliveryRate::class);
     expect($rate)->toBeInstanceOf(BrokenLoadingRate::class);
+    assert($rate instanceof BrokenLoadingRate);
     $rate->failOn = $operation;
 
     $loaded = rtCodec()->decode(new StoredRate($rate->key(), $version, RateParams::fromInput([])), rtScope());

@@ -22,19 +22,99 @@ uses(RefreshDatabase::class);
 /** @return list<string> */
 function constraintsOf(string $table): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [$table]),
-    );
+    $names = [];
+
+    foreach (DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [$table]) as $row) {
+        if (! $row instanceof stdClass) {
+            throw new RuntimeException('Expected a constraint row.');
+        }
+
+        $name = $row->conname;
+
+        if (! is_string($name)) {
+            throw new RuntimeException('Expected a constraint name.');
+        }
+
+        $names[] = $name;
+    }
+
+    return $names;
 }
 
 /** @return list<string> */
 function indexesOf(string $table): array
 {
-    return array_map(
-        static fn (object $row): string => $row->indexname,
-        DB::select('select indexname from pg_indexes where tablename = ? order by indexname', [$table]),
-    );
+    $names = [];
+
+    foreach (DB::select('select indexname from pg_indexes where tablename = ? order by indexname', [$table]) as $row) {
+        if (! $row instanceof stdClass) {
+            throw new RuntimeException('Expected an index row.');
+        }
+
+        $name = $row->indexname;
+
+        if (! is_string($name)) {
+            throw new RuntimeException('Expected an index name.');
+        }
+
+        $names[] = $name;
+    }
+
+    return $names;
+}
+
+/** @return array<mixed, mixed> */
+function decodeJsonColumn(mixed $json): array
+{
+    if (! is_string($json)) {
+        throw new RuntimeException('Expected a JSON string.');
+    }
+
+    $decoded = json_decode($json, true);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Expected a JSON object.');
+    }
+
+    return $decoded;
+}
+
+final class LoadedMigration
+{
+    public function __construct(private object $migration) {}
+
+    public function up(): void
+    {
+        $migration = $this->migration;
+
+        if (! method_exists($migration, 'up')) {
+            throw new RuntimeException('Migration is missing up().');
+        }
+
+        $migration->up();
+    }
+
+    public function down(): void
+    {
+        $migration = $this->migration;
+
+        if (! method_exists($migration, 'down')) {
+            throw new RuntimeException('Migration is missing down().');
+        }
+
+        $migration->down();
+    }
+}
+
+function requireMigration(string $path): LoadedMigration
+{
+    $migration = require $path;
+
+    if (! is_object($migration)) {
+        throw new RuntimeException("Expected a migration from {$path}.");
+    }
+
+    return new LoadedMigration($migration);
 }
 
 function usePrefix(string $prefix): void
@@ -43,6 +123,15 @@ function usePrefix(string $prefix): void
     app()->forgetInstance(CommerzOptions::class);
     app()->forgetInstance(TableNames::class);
 }
+
+it('runs the schema suite on a supported PostgreSQL server', function (): void {
+    $connection = DB::connection();
+    expect($connection->getDriverName())->toBe('pgsql');
+
+    $version = $connection->getServerVersion();
+    fwrite(STDERR, "PostgreSQL server_version {$version}\n");
+    expect((int) $version)->toBeGreaterThanOrEqual(16);
+});
 
 it('names constraints by the canon and shortens long names deterministically', function (): void {
     expect(ConstraintNames::index('cmz_stock_levels', ['stock_item_id', 'location_id']))->toBe('cmz_stock_levels_stock_item_id_location_id_ix')
@@ -115,9 +204,14 @@ it('creates the core tables with canonical constraint names and the install fing
         ->and(indexesOf('cmz_outbox_messages'))->toContain('cmz_outbox_messages_available_at_id_ix', 'cmz_outbox_messages_delivered_at_ix');
 
     $identity = DB::selectOne("select is_identity, identity_generation from information_schema.columns where table_name = 'cmz_outbox_messages' and column_name = 'id'");
+
+    if (! $identity instanceof stdClass || ! is_string($identity->is_identity) || ! is_string($identity->identity_generation)) {
+        throw new RuntimeException('Expected identity metadata.');
+    }
+
     expect($identity->is_identity)->toBe('YES')->and($identity->identity_generation)->toBe('ALWAYS');
 
-    $stored = json_decode(DB::table('cmz_schema_state')->where('key', 'fingerprint')->value('value'), true);
+    $stored = decodeJsonColumn(DB::table('cmz_schema_state')->where('key', 'fingerprint')->value('value'));
     expect($stored)->toEqual(SchemaFingerprint::document('cmz_', TableNames::OWNER))
         ->and($stored['id_strategy'])->toBe('uuid7')
         ->and($stored['schema_version'])->toBe(1)
@@ -169,8 +263,10 @@ it('installs Commerz and an independent Packman schema in either order', functio
         }
     };
     $commerz = static function (): void {
-        foreach (glob(dirname(__DIR__, 2).'/database/migrations/*.php') ?: [] as $path) {
-            (require $path)->up();
+        $paths = glob(dirname(__DIR__, 2).'/database/migrations/*.php');
+
+        foreach ($paths === false ? [] : $paths as $path) {
+            requireMigration($path)->up();
         }
     };
 
@@ -197,14 +293,14 @@ it('identifies legacy commerce schemas on upgrade and preserves unrelated finger
     usePrefix('new_');
     expect(fn () => app(TableNames::class)->table('outbox_messages'))->toThrow(InvalidConfiguration::class, "installed with prefix 'cmz_'");
     usePrefix('cmz_');
-    $this->artisan('packman:doctor')->assertSuccessful();
+    $this->pendingArtisan('packman:doctor')->assertSuccessful();
 
-    $migration = require dirname(__DIR__, 2).'/database/migrations/2026_11_19_000001_identify_commerz_schema_owner.php';
+    $migration = requireMigration(dirname(__DIR__, 2).'/database/migrations/2026_11_19_000001_identify_commerz_schema_owner.php');
     $migration->up();
     $migration->up();
-    expect(json_decode($row->value('value'), true))->toEqual(SchemaFingerprint::document('cmz_', TableNames::OWNER) + ['host_key' => 'keep']);
+    expect(decodeJsonColumn($row->value('value')))->toEqual(SchemaFingerprint::document('cmz_', TableNames::OWNER) + ['host_key' => 'keep']);
     $migration->down();
-    expect(json_decode($row->value('value'), true))->toEqual($legacy);
+    expect(decodeJsonColumn($row->value('value')))->toEqual($legacy);
 });
 
 it('preserves a legacy fingerprint with an unsupported schema version for investigation', function (): void {
@@ -212,9 +308,9 @@ it('preserves a legacy fingerprint with an unsupported schema version for invest
     $stored = array_replace(SchemaFingerprint::document('cmz_'), ['schema_version' => 42]);
     $row->update(['value' => json_encode($stored, JSON_THROW_ON_ERROR)]);
 
-    $migration = require dirname(__DIR__, 2).'/database/migrations/2026_11_19_000001_identify_commerz_schema_owner.php';
+    $migration = requireMigration(dirname(__DIR__, 2).'/database/migrations/2026_11_19_000001_identify_commerz_schema_owner.php');
     expect(fn () => $migration->up())->toThrow(InvalidConfiguration::class)
-        ->and(json_decode($row->value('value'), true))->toEqual($stored);
+        ->and(decodeJsonColumn($row->value('value')))->toEqual($stored);
 });
 
 it('gives migrations helpers for keys, money, refs, timestamps and checks', function (): void {
@@ -248,20 +344,41 @@ it('gives migrations helpers for keys, money, refs, timestamps and checks', func
 
     $migration->up();
 
-    $columns = collect(DB::select("select column_name, data_type, character_maximum_length, is_nullable from information_schema.columns where table_name = 'cmz_x_test_items'"))
-        ->keyBy('column_name');
+    /** @var array<string, array{data_type: string, character_maximum_length: int|string|null, is_nullable: string}> $columns */
+    $columns = [];
 
-    expect($columns->keys()->sort()->values()->all())->toBe([
+    foreach (DB::select("select column_name, data_type, character_maximum_length, is_nullable from information_schema.columns where table_name = 'cmz_x_test_items'") as $row) {
+        if (! $row instanceof stdClass || ! is_string($row->column_name) || ! is_string($row->data_type) || ! is_string($row->is_nullable)) {
+            throw new RuntimeException('Expected column metadata.');
+        }
+
+        $length = $row->character_maximum_length;
+
+        if ($length !== null && ! is_int($length) && ! is_string($length)) {
+            throw new RuntimeException('Expected character_maximum_length.');
+        }
+
+        $columns[$row->column_name] = [
+            'data_type' => $row->data_type,
+            'character_maximum_length' => $length,
+            'is_nullable' => $row->is_nullable,
+        ];
+    }
+
+    $columnNames = array_keys($columns);
+    sort($columnNames);
+
+    expect($columnNames)->toBe([
         'created_at', 'currency', 'customer_ref', 'discount_minor', 'id', 'price_minor', 'quantity', 'sellable_ref', 'updated_at',
     ])
-        ->and($columns['id']->data_type)->toBe('uuid')
-        ->and($columns['price_minor']->data_type)->toBe('bigint')
-        ->and($columns['currency']->data_type)->toBe('character')
-        ->and($columns['currency']->character_maximum_length)->toBe(3)
-        ->and($columns['sellable_ref']->character_maximum_length)->toBe(191)
-        ->and($columns['customer_ref']->is_nullable)->toBe('YES')
-        ->and($columns['created_at']->data_type)->toBe('timestamp with time zone')
-        ->and($columns['updated_at']->is_nullable)->toBe('NO')
+        ->and($columns['id']['data_type'])->toBe('uuid')
+        ->and($columns['price_minor']['data_type'])->toBe('bigint')
+        ->and($columns['currency']['data_type'])->toBe('character')
+        ->and($columns['currency']['character_maximum_length'])->toBe(3)
+        ->and($columns['sellable_ref']['character_maximum_length'])->toBe(191)
+        ->and($columns['customer_ref']['is_nullable'])->toBe('YES')
+        ->and($columns['created_at']['data_type'])->toBe('timestamp with time zone')
+        ->and($columns['updated_at']['is_nullable'])->toBe('NO')
         ->and(constraintsOf('cmz_x_test_items'))->toBe([
             'cmz_x_test_items_pk',
             'cmz_x_test_items_quantity_positive_ck',
@@ -272,5 +389,11 @@ it('gives migrations helpers for keys, money, refs, timestamps and checks', func
 
     $migration->down();
 
-    expect(DB::selectOne("select to_regclass('cmz_x_test_items') as t")->t)->toBeNull();
+    $regclass = DB::selectOne("select to_regclass('cmz_x_test_items') as t");
+
+    if (! $regclass instanceof stdClass || ! property_exists($regclass, 't')) {
+        throw new RuntimeException('Expected a regclass row.');
+    }
+
+    expect($regclass->t)->toBeNull();
 });

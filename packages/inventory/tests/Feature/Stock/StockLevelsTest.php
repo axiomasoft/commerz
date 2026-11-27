@@ -65,10 +65,22 @@ function lvlHold(StockItemId $item, LocationId $location, int $quantity): void
 /** @return list<array{kind: string, delta: int, balance_after: int}> */
 function lvlJournal(StockItemId $item): array
 {
-    return DB::table('cmz_stock_movements')->where('stock_item_id', $item->value)->orderBy('id')
-        ->get(['kind', 'delta', 'balance_after'])
-        ->map(fn (object $row): array => (array) $row)
-        ->all();
+    $journal = [];
+
+    foreach (DB::table('cmz_stock_movements')->where('stock_item_id', $item->value)->orderBy('id')->get(['kind', 'delta', 'balance_after']) as $row) {
+        $values = get_object_vars($row);
+        $kind = $values['kind'] ?? null;
+        $delta = $values['delta'] ?? null;
+        $balance = $values['balance_after'] ?? null;
+
+        if (! is_string($kind) || ! is_int($delta) || ! is_int($balance)) {
+            throw new RuntimeException('unexpected movement row');
+        }
+
+        $journal[] = ['kind' => $kind, 'delta' => $delta, 'balance_after' => $balance];
+    }
+
+    return $journal;
 }
 
 it('receives stock into a new level and journals a receipt', function (): void {
@@ -226,11 +238,31 @@ it('records one outbox event per changed level and command', function (): void {
     Inventory::stock()->count(new CountStock($item, $location, 5));
 
     $rows = DB::table('cmz_outbox_messages')->orderBy('occurred_at')->get();
-    $payload = json_decode($rows[0]->payload, true);
+    $row = $rows->first();
+
+    if (! $row instanceof stdClass) {
+        throw new RuntimeException('expected an outbox message');
+    }
+
+    $message = get_object_vars($row);
+    $payloadJson = $message['payload'] ?? null;
+    $type = $message['type'] ?? null;
+    $aggregate = $message['aggregate_ref'] ?? null;
+    $levelId = DB::table('cmz_stock_levels')->value('id');
+
+    if (! is_string($payloadJson) || ! is_string($type) || ! is_string($aggregate) || ! is_string($levelId)) {
+        throw new RuntimeException('expected outbox text and a stock level id');
+    }
+
+    $payload = json_decode($payloadJson, true);
+
+    if (! is_array($payload)) {
+        throw new RuntimeException('expected an outbox payload object');
+    }
 
     expect($rows)->toHaveCount(1)
-        ->and($rows[0]->type)->toBe('inventory.level_changed')
-        ->and($rows[0]->aggregate_ref)->toBe('stock_level:'.DB::table('cmz_stock_levels')->value('id'))
+        ->and($type)->toBe('inventory.level_changed')
+        ->and($aggregate)->toBe('stock_level:'.$levelId)
         ->and($payload)->toMatchArray([
             'stock_item_id' => $item->value, 'sku' => 'tee', 'location_id' => $location->value, 'location_code' => 'main',
             'on_hand' => 5, 'reserved' => 0, 'safety_stock' => 0, 'available' => 5, 'version' => 1,

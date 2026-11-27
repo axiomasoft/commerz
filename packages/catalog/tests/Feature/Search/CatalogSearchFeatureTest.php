@@ -15,6 +15,7 @@ use Commerz\Catalog\Search\Contracts\CatalogSearchPort;
 use Commerz\Catalog\Search\Data\CatalogSearchQuery;
 use Commerz\Catalog\Search\Data\CatalogSearchResult;
 use Commerz\Catalog\Search\Data\FacetRequest;
+use Commerz\Catalog\Search\Data\FacetValueCount;
 use Commerz\Catalog\Search\Enums\FacetKind;
 use Commerz\Catalog\Search\Enums\SearchSort;
 use Commerz\Catalog\Search\Internal\CatalogSearchOutboxSubscriber;
@@ -36,6 +37,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Pest\Expectation;
 
 final class SqliteCatalogSearchTransactions implements Transactions
 {
@@ -245,6 +247,7 @@ function seedCatalogSearchFixtures(): array
     $db = DB::connection('catalog_search_sqlite');
     $ts = '2026-11-26 12:00:00.000000+00';
 
+    /** @param  list<string>  $values */
     $addOption = static function (string $code, array $values) use ($db, $ts): string {
         $optId = Uuid7::generate();
         $db->table('cmz_options')->insert([
@@ -256,6 +259,9 @@ function seedCatalogSearchFixtures(): array
         ]);
 
         foreach (array_values($values) as $pos => $val) {
+            if (! is_string($val)) {
+                throw new RuntimeException('Option value code must be a string.');
+            }
             $db->table('cmz_option_values')->insert([
                 'id' => Uuid7::generate(),
                 'option_id' => $optId,
@@ -268,6 +274,10 @@ function seedCatalogSearchFixtures(): array
         return $optId;
     };
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  list<string>  $choices
+     */
     $addAttr = static function (string $code, string $type, array $config = [], array $choices = [], bool $filterable = true) use ($db, $ts): string {
         $attrId = Uuid7::generate();
         $db->table('cmz_attributes')->insert([
@@ -283,6 +293,9 @@ function seedCatalogSearchFixtures(): array
         ]);
 
         foreach (array_values($choices) as $pos => $choice) {
+            if (! is_string($choice)) {
+                throw new RuntimeException('Attribute choice code must be a string.');
+            }
             $db->table('cmz_attribute_choices')->insert([
                 'id' => Uuid7::generate(),
                 'attribute_id' => $attrId,
@@ -374,7 +387,7 @@ beforeEach(function (): void {
 afterEach(function (): void {
     DB::purge('catalog_search_sqlite');
 
-    if (isset($this->sqliteDbPath) && is_string($this->sqliteDbPath) && file_exists($this->sqliteDbPath)) {
+    if (property_exists($this, 'sqliteDbPath') && is_file($this->sqliteDbPath)) {
         @unlink($this->sqliteDbPath);
     }
 });
@@ -442,11 +455,15 @@ it('computes disjunctive facet counts so selecting color=red does not zero out o
         ->and(array_map(static fn (ProductView $p): string => $p->handle, $onlyRed->items()))->toBe(['shirt-a', 'shirt-b'])
         ->and($onlyRed->facet('color')?->kind)->toBe(FacetKind::Option)
         ->and($onlyRed->facet('color')?->counts())->toBe(['blue' => 2, 'red' => 2, 'green' => 1])
-        ->and($onlyRed->facet('color')?->values)->each(function ($entry): void {
-            if ($entry->value->value === 'red') {
-                expect($entry->value->selected)->toBeTrue();
+        ->and($onlyRed->facet('color')?->values)->each(function (Expectation $entry): void {
+            $count = $entry->value;
+            if (! $count instanceof FacetValueCount) {
+                throw new RuntimeException('Facet entry must be a value count.');
+            }
+            if ($count->value === 'red') {
+                expect($count->selected)->toBeTrue();
             } else {
-                expect($entry->value->selected)->toBeFalse();
+                expect($count->selected)->toBeFalse();
             }
         })
         ->and($onlyRed->facet('size')?->counts())->toBe(['m' => 1, 's' => 1])
@@ -616,7 +633,7 @@ it('supports full-text search, category subtree, channel availability window, an
 
         public function search(CatalogSearchQuery $query): CatalogSearchResult
         {
-            return new CatalogSearchResult(new Page([], null), 0);
+            return new CatalogSearchResult(new Page([]), 0);
         }
 
         public function indexProducts(array $productIds): void
@@ -637,15 +654,37 @@ it('supports full-text search, category subtree, channel availability window, an
     expect($outboxRows)->toHaveCount(2); // 1 products_upserted + 1 variants_upserted!
 
     foreach ($outboxRows as $row) {
-        /** @var array<string, mixed> $payload */
-        $payload = json_decode((string) $row->payload, true, 512, JSON_THROW_ON_ERROR);
+        $eventId = $row->event_id;
+        $type = $row->type;
+        $version = $row->version;
+        $aggregateRef = $row->aggregate_ref;
+        $payloadRaw = $row->payload;
+        $occurredAt = $row->occurred_at;
+        if (! is_string($eventId) || ! is_string($type) || ! is_int($version) || ! is_string($aggregateRef) || ! is_string($payloadRaw) || ! is_string($occurredAt)) {
+            throw new RuntimeException('Outbox row has an unexpected shape.');
+        }
+
+        $decoded = json_decode($payloadRaw, true, 512, JSON_THROW_ON_ERROR);
+        if (! is_array($decoded)) {
+            throw new RuntimeException('Outbox payload must be a JSON object.');
+        }
+
+        $payload = [];
+        foreach ($decoded as $key => $item) {
+            if (! is_string($key)) {
+                throw new RuntimeException('Outbox payload keys must be strings.');
+            }
+
+            $payload[$key] = $item;
+        }
+
         app(Dispatcher::class)->dispatch(new IntegrationEventDelivered(new IntegrationEvent(
-            (string) $row->event_id,
-            (string) $row->type,
-            (int) $row->version,
-            (string) $row->aggregate_ref,
+            $eventId,
+            $type,
+            $version,
+            $aggregateRef,
             $payload,
-            new DateTimeImmutable((string) $row->occurred_at),
+            new DateTimeImmutable($occurredAt),
         )));
     }
 

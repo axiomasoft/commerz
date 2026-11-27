@@ -11,9 +11,16 @@ use Commerz\Catalog\ProductTypes\Data\CreateProductType;
 use Commerz\Measures\LocalizedText;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Assert;
 
 beforeEach(function (): void {
-    $this->artisan('migrate')->assertSuccessful();
+    $pending = $this->artisan('migrate');
+    if (! $pending instanceof PendingCommand) {
+        Assert::fail('Expected a pending Artisan command.');
+    }
+
+    $pending->assertSuccessful();
 });
 
 afterEach(function (): void {

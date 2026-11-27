@@ -19,6 +19,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionProperty;
 use RuntimeException;
 
 /**
@@ -33,6 +34,9 @@ final class ApiSurface
 
     /** @var array<string, array<string, array{return: bool, parameters: array<string, bool>}>> file => Class::method => where it declares `self` */
     private array $selfTypes = [];
+
+    /** @var array<string, array<string, true>> class => properties declared with `self` */
+    private array $selfProperties = [];
 
     public function __construct(private readonly SourceScanner $scanner) {}
 
@@ -59,7 +63,9 @@ final class ApiSurface
     /**
      * The layer of a public type from its marker. A gate already requires one on every public type.
      *
-     * @param  ReflectionClass<object>  $type
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $type
      * @return array{layer: 'api'|'spi', since: string, spiKind?: string}
      */
     public static function classify(ReflectionClass $type): array
@@ -87,7 +93,11 @@ final class ApiSurface
     {
         $extra = $package->composer['extra'] ?? [];
         $providers = is_array($extra) && is_array($extra['laravel'] ?? null) ? ($extra['laravel']['providers'] ?? []) : [];
-        $configs = array_map(static fn (string $file): string => basename($file, '.php'), glob($package->path.'/config/*.php') ?: []);
+        $configFiles = glob($package->path.'/config/*.php');
+        if ($configFiles === false) {
+            $configFiles = [];
+        }
+        $configs = array_map(static fn (string $file): string => basename($file, '.php'), $configFiles);
         $commands = [];
         $plugins = [];
         $kinds = [];
@@ -100,13 +110,13 @@ final class ApiSurface
             }
 
             if ($reflection->implementsInterface(ExtensionPlugin::class) && $reflection->hasConstant('ID')) {
-                $plugins[] = (string) $reflection->getConstant('ID');
+                $plugins[] = self::stringConstant($reflection->getConstant('ID'), "{$type}::ID");
             }
 
             $hasSpi = $reflection->getAttributes(Spi::class) !== [];
 
             if (! SourceScanner::isInternal($type) && $reflection->isInterface() && $hasSpi && $reflection->hasConstant('KIND')) {
-                $kinds[] = (string) $reflection->getConstant('KIND');
+                $kinds[] = self::stringConstant($reflection->getConstant('KIND'), "{$type}::KIND");
             }
         }
 
@@ -115,8 +125,18 @@ final class ApiSurface
         sort($plugins);
         sort($kinds);
 
+        $providerNames = [];
+        if (is_array($providers)) {
+            foreach ($providers as $provider) {
+                if (! is_string($provider)) {
+                    throw new RuntimeException('A Laravel provider entry must be a class name.');
+                }
+                $providerNames[] = $provider;
+            }
+        }
+
         return array_filter([
-            'providers' => is_array($providers) ? array_values(array_map(strval(...), $providers)) : [],
+            'providers' => $providerNames,
             'config' => count($configs) === 1 ? $configs[0] : $configs,
             'commands' => $commands,
             'plugin' => count($plugins) === 1 ? $plugins[0] : $plugins,
@@ -135,39 +155,63 @@ final class ApiSurface
     {
         $file = $method->getFileName();
         $class = $method->getDeclaringClass()->getName();
+        $this->indexSelfTypes($file);
 
-        if (! is_string($file)) {
-            return ['return' => false, 'parameters' => []];
+        $methods = $file !== false ? $this->selfTypes[$file] : [];
+
+        return $methods[$class.'::'.strtolower($method->getName())] ?? ['return' => false, 'parameters' => []];
+    }
+
+    public function propertyDeclaresSelf(ReflectionProperty $property): bool
+    {
+        $class = $property->getDeclaringClass();
+        $this->indexSelfTypes($class->getFileName());
+
+        return isset($this->selfProperties[$class->getName()][$property->getName()]);
+    }
+
+    private function indexSelfTypes(string|false $file): void
+    {
+        if ($file === false || isset($this->selfTypes[$file])) {
+            return;
         }
 
-        if (! isset($this->selfTypes[$file])) {
-            $this->selfTypes[$file] = [];
-            $parsed = (new ParserFactory)->createForNewestSupportedVersion()->parse((string) file_get_contents($file)) ?? [];
-            $parsed = (new NodeTraverser(new NameResolver))->traverse($parsed);
+        $this->selfTypes[$file] = [];
+        $parsed = (new ParserFactory)->createForNewestSupportedVersion()->parse((string) file_get_contents($file)) ?? [];
+        $parsed = (new NodeTraverser(new NameResolver))->traverse($parsed);
 
-            foreach ((new NodeFinder)->findInstanceOf($parsed, ClassLike::class) as $type) {
-                if ($type->namespacedName === null) {
-                    continue;
-                }
+        foreach ((new NodeFinder)->findInstanceOf($parsed, ClassLike::class) as $type) {
+            if ($type->namespacedName === null) {
+                continue;
+            }
 
-                foreach ($type->getMethods() as $declared) {
-                    $parameters = [];
-
-                    foreach ($declared->params as $parameter) {
-                        if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
-                            $parameters[$parameter->var->name] = self::mentionsSelf($parameter->type);
-                        }
+            $class = $type->namespacedName->toString();
+            foreach ($type->getProperties() as $property) {
+                if (self::mentionsSelf($property->type)) {
+                    foreach ($property->props as $item) {
+                        $this->selfProperties[$class][$item->name->toString()] = true;
                     }
-
-                    $this->selfTypes[$file][$type->namespacedName->toString().'::'.strtolower($declared->name->toString())] = [
-                        'return' => self::mentionsSelf($declared->returnType),
-                        'parameters' => $parameters,
-                    ];
                 }
             }
-        }
 
-        return $this->selfTypes[$file][$class.'::'.strtolower($method->getName())] ?? ['return' => false, 'parameters' => []];
+            foreach ($type->getMethods() as $declared) {
+                $parameters = [];
+                foreach ($declared->params as $parameter) {
+                    if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
+                        $name = $parameter->var->name;
+                        $parameters[$name] = self::mentionsSelf($parameter->type);
+                        if ($parameter->isPromoted() && $parameters[$name]) {
+                            $this->selfProperties[$class][$name] = true;
+                        }
+                    }
+                }
+
+                $this->selfTypes[$file][$class.'::'.strtolower($declared->name->toString())] = [
+                    'return' => self::mentionsSelf($declared->returnType),
+                    'parameters' => $parameters,
+                ];
+            }
+        }
     }
 
     private static function mentionsSelf(?Node $type): bool
@@ -185,14 +229,18 @@ final class ApiSurface
         return false;
     }
 
-    /** @param  ReflectionClass<object>  $command */
+    /**
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $command
+     */
     private static function commandName(ReflectionClass $command): string
     {
         foreach ($command->getAttributes(Signature::class) as $attribute) {
             $signature = $attribute->getArguments()[0] ?? $attribute->getArguments()['signature'] ?? null;
 
             if (is_string($signature)) {
-                return strtok($signature, " \t\n{") ?: $signature;
+                return self::commandToken($signature);
             }
         }
 
@@ -203,7 +251,23 @@ final class ApiSurface
             throw new RuntimeException("Cannot read the name of the command {$command->getName()}.");
         }
 
-        return strtok($signature, " \t\n{") ?: $signature;
+        return self::commandToken($signature);
+    }
+
+    private static function commandToken(string $signature): string
+    {
+        $token = strtok($signature, " \t\n{");
+
+        return is_string($token) ? $token : $signature;
+    }
+
+    private static function stringConstant(mixed $value, string $name): string
+    {
+        if (! is_string($value)) {
+            throw new RuntimeException("{$name} must be a string.");
+        }
+
+        return $value;
     }
 
     /** @return array<string, list<class-string>> */

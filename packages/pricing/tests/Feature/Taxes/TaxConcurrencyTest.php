@@ -11,6 +11,8 @@ use Commerz\Pricing\Taxes\Exceptions\TaxZoneMemberTaken;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -19,10 +21,15 @@ require_once __DIR__.'/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $pending = $this->artisan('migrate');
+    if (! $pending instanceof PendingCommand) {
+        Assert::fail('Expected a pending Artisan command.');
+    }
+
+    $pending->assertSuccessful();
 });
 
 afterEach(function (): void {

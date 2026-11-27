@@ -24,13 +24,20 @@ it('binds OrderRouter in the container, exposes it on Inventory facade, and cont
     $router = app(OrderRouter::class);
     $contributions = app(Contributions::class);
 
+    $ruleKeys = [
+        'fulfillment_constraints',
+        'minimize_split_shipments',
+        'geo_proximity',
+        'market_affinity',
+        'daily_location_quota',
+    ];
+
     expect($router)->toBeInstanceOf(OrderRouterPipeline::class)
         ->and(InventoryFacade::orderRouter())->toBe($router)
-        ->and($contributions->get(OrderRoutingRule::KIND, 'fulfillment_constraints', OrderRoutingRule::class))->toBeInstanceOf(OrderRoutingRule::class)
-        ->and($contributions->get(OrderRoutingRule::KIND, 'minimize_split_shipments', OrderRoutingRule::class))->toBeInstanceOf(OrderRoutingRule::class)
-        ->and($contributions->get(OrderRoutingRule::KIND, 'geo_proximity', OrderRoutingRule::class))->toBeInstanceOf(OrderRoutingRule::class)
-        ->and($contributions->get(OrderRoutingRule::KIND, 'market_affinity', OrderRoutingRule::class))->toBeInstanceOf(OrderRoutingRule::class)
-        ->and($contributions->get(OrderRoutingRule::KIND, 'daily_location_quota', OrderRoutingRule::class))->toBeInstanceOf(OrderRoutingRule::class);
+        ->and(array_map(
+            static fn (string $key): string => $contributions->get(OrderRoutingRule::KIND, $key, OrderRoutingRule::class)->key(),
+            $ruleKeys,
+        ))->toBe($ruleKeys);
 
     $itemA = StockItemId::generate();
     $itemB = StockItemId::generate();

@@ -54,8 +54,31 @@ final class RogueEffect implements PromotionEffect
             'foreign_currency' => [Discount::order(Money::of('1.00', 'USD'))],
             'order' => [Discount::order($one)],
             'negative' => [Discount::line($input->lines[0], $one->negate())],
-            'not_a_discount' => [$one],
+            'not_a_discount' => self::notADiscount($one),
             default => throw new RuntimeException('the effect broke'),
         };
+    }
+
+    /**
+     * The engine must reject a contributor that returns a value which is not a Discount.
+     * The boxed list still contains the money at runtime.
+     *
+     * @return list<Discount>
+     */
+    private static function notADiscount(Money $money): array
+    {
+        $rows = self::boxed($money);
+
+        if (! is_array($rows) || ! array_is_list($rows)) {
+            throw new RuntimeException('an effect must return a list');
+        }
+
+        /** @var list<Discount> $rows */
+        return $rows;
+    }
+
+    private static function boxed(Money $money): mixed
+    {
+        return [$money];
     }
 }

@@ -27,10 +27,15 @@ function subTable(string $logical): string
 /** @return list<string> */
 function subConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [subTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [subTable($logical)]);
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->conname;
+    }
+
+    return $names;
 }
 
 it('declares the subscription noun under commerz.subscriptions', function (): void {

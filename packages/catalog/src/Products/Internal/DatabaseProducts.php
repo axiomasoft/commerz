@@ -18,6 +18,7 @@ use Commerz\Catalog\Products\Data\ProductId;
 use Commerz\Catalog\Products\Data\ProductView;
 use Commerz\Catalog\Products\Data\SetProductAttributes;
 use Commerz\Catalog\Products\Data\UpdateProduct;
+use Commerz\Catalog\Products\Data\UpsertProductItem;
 use Commerz\Catalog\Products\Data\UpsertProducts;
 use Commerz\Catalog\Products\Data\UpsertProductsResult;
 use Commerz\Catalog\Products\Enums\ProductStatus;
@@ -227,7 +228,7 @@ final readonly class DatabaseProducts implements Products
 
             // 1. Validate & lock all referenced product types in one query.
             $typeIds = array_values(array_unique(array_map(
-                static fn ($item): string => $item->type->value,
+                static fn (UpsertProductItem $item): string => $item->type->value,
                 $command->items,
             )));
             sort($typeIds);
@@ -257,7 +258,7 @@ final readonly class DatabaseProducts implements Products
             }
 
             // 2. Load & lock existing products by handle in chunked queries.
-            $handles = array_map(static fn ($item): string => $item->handle, $command->items);
+            $handles = array_map(static fn (UpsertProductItem $item): string => $item->handle, $command->items);
             $existingByHandle = [];
 
             foreach (array_chunk($handles, self::UPSERT_CHUNK) as $chunk) {

@@ -6,6 +6,7 @@ use Commerz\Errors\IdempotencyConflict;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Identity\SellableRef;
+use Commerz\Pagination\Page;
 use Commerz\Ports\Sellables\Enums\SellableKind;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReleaseReservation;
@@ -16,6 +17,7 @@ use Commerz\Sales\Common\Exceptions\QuantityExceedsOutstanding;
 use Commerz\Sales\Fulfillments\Data\BookFulfillment;
 use Commerz\Sales\Fulfillments\Data\CreateFulfillment;
 use Commerz\Sales\Fulfillments\Data\FulfillmentId;
+use Commerz\Sales\Fulfillments\Data\FulfillmentView;
 use Commerz\Sales\Fulfillments\Data\ListFulfillments;
 use Commerz\Sales\Fulfillments\Data\MarkFulfillmentDelivered;
 use Commerz\Sales\Fulfillments\Data\ShipFulfillment;
@@ -108,7 +110,8 @@ it('writes nothing when a line has fewer units outstanding than asked', function
 it('counts the units of earlier fulfillments against the outstanding', function (): void {
     slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 2)]));
 
-    $attempt = static fn (int $quantity) => fn () => slsFulfillments()->create(new CreateFulfillment(test()->order->id, [new LineQuantity(slsLine(test()->order, 'fake:a'), $quantity)]));
+    $order = $this->order;
+    $attempt = static fn (int $quantity) => fn () => slsFulfillments()->create(new CreateFulfillment($order->id, [new LineQuantity(slsLine($order, 'fake:a'), $quantity)]));
 
     expect($attempt(2))->toThrow(QuantityExceedsOutstanding::class)
         ->and(fulCount('fulfillments'))->toBe(1);
@@ -144,7 +147,7 @@ it('does not fulfil a cancelled or a completed order', function (): void {
     expect(fn () => slsFulfillments()->create(new CreateFulfillment($cancelled->id, [$line])))
         ->toThrow(OrderNotFulfillable::class, 'cancelled');
 
-    slsOrderPayment($this->order, 'captured', (int) $this->order->amountDue->amountMinor, capturedMinor: $this->order->amountDue->amountMinor);
+    slsOrderPayment($this->order, 'captured', $this->order->amountDue->amountMinor, capturedMinor: $this->order->amountDue->amountMinor);
     slsFulfillments()->create(new CreateFulfillment($this->order->id, [
         new LineQuantity(slsLine($this->order, 'fake:a'), 3),
         new LineQuantity(slsLine($this->order, 'fake:b'), 1),
@@ -246,7 +249,7 @@ it('ships a created fulfillment with the carrier and tracking handed over', func
         ->and([$shipped->carrier, $shipped->tracking, $shipped->labelRef, $shipped->methodCode])->toBe(['manual', 'RB123', null, null])
         ->and($shipped->shippedAt)->not->toBeNull()
         ->and(fulOutbox('sales.fulfillment_shipped'))->toBe(1)
-        ->and(json_decode((string) DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.fulfillment_shipped')->value('payload'), true))
+        ->and(slsJsonObject(DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.fulfillment_shipped')->value('payload')))
         ->toMatchArray(['order_id' => $this->order->id->value, 'number' => $this->order->number, 'fulfillment_id' => $created->id->value, 'carrier' => 'manual', 'tracking' => 'RB123'])
         ->and(fulHistory($this->order))->toContain('fulfillment_shipped');
     Event::assertDispatched(FulfillmentShipped::class, static fn (FulfillmentShipped $event): bool => $event->tracking === 'RB123' && $event->fulfillment->equals($created->id));
@@ -292,7 +295,19 @@ it('finds and lists fulfillments newest first, by order and status', function ()
     $second = slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 1)]));
     $third = slsFulfillments()->create(new CreateFulfillment($this->order->id, [new LineQuantity(slsLine($this->order, 'fake:a'), 1)]));
     slsFulfillments()->ship(new ShipFulfillment($second->id, 'manual', 'T'));
-    $ids = static fn ($page): array => array_map(static fn ($view): string => $view->id->value, $page->items);
+    $ids = static function (Page $page): array {
+        $values = [];
+
+        foreach ($page->items as $view) {
+            if (! $view instanceof FulfillmentView) {
+                throw new RuntimeException('Expected a fulfillment.');
+            }
+
+            $values[] = $view->id->value;
+        }
+
+        return $values;
+    };
 
     $page = slsFulfillments()->list(new ListFulfillments($this->order->id, limit: 2));
     $rest = slsFulfillments()->list(new ListFulfillments($this->order->id, after: $page->next, limit: 2));
@@ -319,6 +334,6 @@ it('rejects malformed commands', function (): void {
         ->and(fn () => new ShipFulfillment(FulfillmentId::generate(), ' '))->toThrow(InvalidCommand::class)
         ->and(fn () => new ShipFulfillment(FulfillmentId::generate(), tracking: "a\0b"))->toThrow(InvalidCommand::class)
         ->and(fn () => new BookFulfillment(FulfillmentId::generate(), lengthMm: 0))->toThrow(InvalidCommand::class, 'positive')
-        ->and(fn () => new BookFulfillment(FulfillmentId::generate(), meta: ['k' => [1]]))->toThrow(InvalidCommand::class, 'JSON scalars')
+        ->and(fn () => new ReflectionClass(BookFulfillment::class)->newInstance(FulfillmentId::generate(), null, null, null, ['k' => [1]]))->toThrow(InvalidCommand::class, 'JSON scalars')
         ->and(fn () => new ListFulfillments(limit: 0))->toThrow(InvalidCommand::class);
 });

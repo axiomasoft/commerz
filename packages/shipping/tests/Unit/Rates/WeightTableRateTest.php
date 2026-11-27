@@ -15,6 +15,7 @@ use Commerz\Shipping\Rates\Exceptions\InvalidRateConfig;
 use Commerz\Shipping\Rates\Internal\WeightTableRate;
 use Commerz\Stores\Data\ChannelId;
 
+/** @return array{up_to_grams: int|null, amount: Money} */
 function wtStep(?int $upTo, string $amount, string $currency = 'RUB'): array
 {
     return ['up_to_grams' => $upTo, 'amount' => Money::of($amount, $currency)];
@@ -26,12 +27,16 @@ function wtParams(bool $open = false): array
     return ['steps' => [wtStep(1000, '300.00'), wtStep(5000, '500.00'), ...($open ? [wtStep(null, '900.00')] : [])]];
 }
 
+/** @param array<string, mixed> $input */
 function wtNormalize(array $input): RateParams
 {
     return (new WeightTableRate)->normalize(RateParams::fromInput($input), new RateScope(Currency::of('RUB')));
 }
 
-/** @return array{int|null, string|null} the price in minor units, or null and the reason it was declined */
+/**
+ * @param  array<string, mixed>  $input
+ * @return array{int|null, string|null} the price in minor units, or null and the reason it was declined
+ */
 function wtPrice(array $input, int $grams): array
 {
     $context = CommerceContext::for(ChannelId::generate(), Currency::of('RUB'), at: new DateTimeImmutable('2026-10-13T12:00:00Z'));
@@ -41,7 +46,11 @@ function wtPrice(array $input, int $grams): array
     return [$price->amount?->amountMinor, $price->reason];
 }
 
-/** The field of the InvalidRateConfig a call fails with, or null. */
+/**
+ * The field of the InvalidRateConfig a call fails with, or null.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function wtField(Closure $call): ?string
 {
     try {
@@ -59,11 +68,17 @@ it('has the key weight_table at version 1', function (): void {
 });
 
 it('normalizes the steps to their canonical form, with or without an open step', function (): void {
+    $openSteps = wtNormalize(wtParams(open: true))->toArray()['steps'] ?? null;
+
+    if (! is_array($openSteps)) {
+        throw new RuntimeException('expected weight steps');
+    }
+
     expect(wtNormalize(wtParams())->toArray())->toBe(['steps' => [
         ['amount' => ['amount_minor' => 30000, 'currency' => 'RUB'], 'up_to_grams' => 1000],
         ['amount' => ['amount_minor' => 50000, 'currency' => 'RUB'], 'up_to_grams' => 5000],
     ]])
-        ->and(wtNormalize(wtParams(open: true))->toArray()['steps'][2])->toBe(['amount' => ['amount_minor' => 90000, 'currency' => 'RUB'], 'up_to_grams' => null])
+        ->and($openSteps[2])->toBe(['amount' => ['amount_minor' => 90000, 'currency' => 'RUB'], 'up_to_grams' => null])
         ->and(wtNormalize(['steps' => [wtStep(1, '0.00')]])->toArray()['steps'])->toHaveCount(1);
 });
 
@@ -74,7 +89,17 @@ it('is stable: normalizing a normalized table changes nothing', function (): voi
 });
 
 it('refuses a table that is empty, too long, unordered, or has an open step that is not last', function (array $input, string $field): void {
-    expect(wtField(fn () => wtNormalize($input)))->toBe($field);
+    $clean = [];
+
+    foreach ($input as $key => $value) {
+        if (! is_string($key)) {
+            throw new InvalidArgumentException('weight input must be a map');
+        }
+
+        $clean[$key] = $value;
+    }
+
+    expect(wtField(fn () => wtNormalize($clean)))->toBe($field);
 })->with([
     'no parameters' => [[], 'steps'],
     'no steps' => [['steps' => []], 'steps'],
