@@ -100,7 +100,7 @@ jobs:
       - name: Generated reference
         run: composer docs:reference -- --check
       - name: Agent docs
-        run: bash scripts/build-agent-docs.sh --check
+        run: composer ai:sync
 
   tests:
     name: Tests (PHP ${{ matrix.php }})
