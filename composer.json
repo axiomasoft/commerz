@@ -120,6 +120,9 @@
         "process-timeout": 0,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        },
+        "audit": {
+            "abandoned": "report"
         }
     },
     "minimum-stability": "dev",

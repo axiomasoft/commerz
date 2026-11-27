@@ -105,7 +105,7 @@ it('requires the corex CI controls that apply to this repository', function (): 
     expect($raw)->toContain('composer audit --locked')
         ->and($raw)->toContain('composer validate --strict --no-check-lock')
         ->and($raw)->toContain('dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d')
-        ->and($raw)->toContain('predicate-quantifier: some')
+        ->and($raw)->toContain('predicate-quantifier: every')
         ->and($raw)->toContain('!**/*.md')
         ->and($raw)->toContain('!docs/**');
 
