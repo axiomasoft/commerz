@@ -392,9 +392,11 @@ it('builds the registry lazily, once, and freezes the catalog', function (): voi
 
     $registry = app(Contributions::class);
 
-    expect($registry)->toBe(app(Contributions::class))->toBe(app(PluginInspector::class))
+    $inspector = app(PluginInspector::class);
+
+    expect($registry)->toBe(app(Contributions::class))->toBe($inspector)
         ->and($registry->keys('greeter'))->toBe(['test.hello'])
-        ->and(array_map(fn ($p): array => [$p->id, $p->source], $registry->describe()))->toBe([['commerz.core', PluginSource::BuiltIn], ['test.owner', PluginSource::BuiltIn]])
+        ->and(array_map(fn (PluginDescription $p): array => [$p->id, $p->source], $inspector->describe()))->toBe([['commerz.core', PluginSource::BuiltIn], ['test.owner', PluginSource::BuiltIn]])
         ->and(fn () => CommerzPlugins::builtIn(PlgExtension::class))->toThrow(LogicException::class, 'frozen');
 });
 
@@ -431,7 +433,7 @@ it('merges built-in and configured plugins, built-in first', function (): void {
     $registry = app(Contributions::class);
 
     expect($registry->keys('greeter'))->toBe(['test.hello', 'test.hola'])
-        ->and(array_map(fn ($p): string => $p->source->value, $registry->describe()))->toBe(['builtin', 'builtin', 'config']);
+        ->and(array_map(fn (PluginDescription $p): string => $p->source->value, app(PluginInspector::class)->describe()))->toBe(['builtin', 'builtin', 'config']);
 });
 
 it('fails the registry with the configuration error, again on every use', function (): void {

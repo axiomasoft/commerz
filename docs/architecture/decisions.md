@@ -11,8 +11,8 @@ Decided by: the owner for D1; the agent under the owner's delegation (see
 
 | ID | Status | Decision | Reason |
 |---|---|---|---|
-| D1 | accepted | Stack: PHP ^8.4, Laravel ^13 only. | Owner's instruction; one compatibility matrix on the current stack. |
-| D2 | accepted | Database: PostgreSQL ≥ 16 only (CI on 17). | Stock, price and limit invariants rely on `EXCLUDE`, partial unique indexes, `jsonb` and transactional DDL; legacy-platform is PostgreSQL-only. MySQL only by a later decision with a real consumer. |
+| D1 | accepted | Stack: PHP 8.4–8.6, Laravel ^13 only. | Owner's instruction; one compatibility matrix on the current stack. |
+| D2 | accepted | Database: PostgreSQL ≥ 16 only (CI on 16 and 19). | Stock, price and limit invariants rely on `EXCLUDE`, partial unique indexes, `jsonb` and transactional DDL; legacy-platform is PostgreSQL-only. MySQL only by a later decision with a real consumer. |
 | D3 | accepted | Packages: core + catalog, inventory, pricing, promotions, shipping, sales (+ full, testkit); feature packages depend only on the core and interact through core ports. | Each package installs alone (stock without catalog, CRM sales without catalog) and P2–P7 develop in parallel. |
 | D4 | accepted | Stores and channels are a core module (`Commerz::stores()`, `channels()`). | The channel is part of every operation's context; a separate package would become a second core. |
 | D5 | accepted | Coupons are a module of `commerz-promotions`, plugged in as activator `coupon` through the public SPI. | Keeps the promotion engine coupon-agnostic (SPI dogfooding) without an extra release unit. |

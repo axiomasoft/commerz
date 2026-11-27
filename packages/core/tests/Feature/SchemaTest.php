@@ -124,6 +124,15 @@ function usePrefix(string $prefix): void
     app()->forgetInstance(TableNames::class);
 }
 
+it('runs the schema suite on a supported PostgreSQL server', function (): void {
+    $connection = DB::connection();
+    expect($connection->getDriverName())->toBe('pgsql');
+
+    $version = $connection->getServerVersion();
+    fwrite(STDERR, "PostgreSQL server_version {$version}\n");
+    expect((int) $version)->toBeGreaterThanOrEqual(16);
+});
+
 it('names constraints by the canon and shortens long names deterministically', function (): void {
     expect(ConstraintNames::index('cmz_stock_levels', ['stock_item_id', 'location_id']))->toBe('cmz_stock_levels_stock_item_id_location_id_ix')
         ->and(ConstraintNames::unique('cmz_orders', 'cart_id'))->toBe('cmz_orders_cart_id_uq')

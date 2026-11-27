@@ -83,7 +83,7 @@ jobs:
       - name: Strict validation of every installing root
         run: |
           for manifest in composer.json packages/*/composer.json; do
-            composer validate --strict --no-check-lock --working-dir="$(dirname "$manifest")"
+            composer validate --strict --working-dir="$(dirname "$manifest")"
           done
       - name: Pint
         run: composer lint:check

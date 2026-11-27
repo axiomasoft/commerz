@@ -135,12 +135,13 @@ final readonly class ApiManifest
                     $property->isProtectedSet() && ! $property->isReadOnly() && $property->isPublic() => 'protected(set)',
                     default => null,
                 };
+                $propertyType = self::typeName($property->getType());
                 $properties[$property->getName()] = implode(' ', array_filter([
                     $property->isProtected() ? 'protected' : 'public',
                     $set,
                     $property->isStatic() ? 'static' : null,
                     $property->isReadOnly() ? 'readonly' : null,
-                    self::typeName($property->getType()),
+                    $this->surface->propertyDeclaresSelf($property) ? self::asSelf($propertyType, $name) : $propertyType,
                     '$'.$property->getName(),
                 ], static fn (?string $part): bool => $part !== null && $part !== '')).($property->hasDefaultValue() && ! $property->isPromoted() && $property->hasType() ? ' = '.self::literal($property->getDefaultValue()) : '');
             }

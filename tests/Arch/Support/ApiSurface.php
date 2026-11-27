@@ -19,6 +19,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionProperty;
 use RuntimeException;
 
 /**
@@ -33,6 +34,9 @@ final class ApiSurface
 
     /** @var array<string, array<string, array{return: bool, parameters: array<string, bool>}>> file => Class::method => where it declares `self` */
     private array $selfTypes = [];
+
+    /** @var array<string, array<string, true>> class => properties declared with `self` */
+    private array $selfProperties = [];
 
     public function __construct(private readonly SourceScanner $scanner) {}
 
@@ -151,39 +155,63 @@ final class ApiSurface
     {
         $file = $method->getFileName();
         $class = $method->getDeclaringClass()->getName();
+        $this->indexSelfTypes($file);
 
-        if (! is_string($file)) {
-            return ['return' => false, 'parameters' => []];
+        $methods = $file !== false ? $this->selfTypes[$file] : [];
+
+        return $methods[$class.'::'.strtolower($method->getName())] ?? ['return' => false, 'parameters' => []];
+    }
+
+    public function propertyDeclaresSelf(ReflectionProperty $property): bool
+    {
+        $class = $property->getDeclaringClass();
+        $this->indexSelfTypes($class->getFileName());
+
+        return isset($this->selfProperties[$class->getName()][$property->getName()]);
+    }
+
+    private function indexSelfTypes(string|false $file): void
+    {
+        if ($file === false || isset($this->selfTypes[$file])) {
+            return;
         }
 
-        if (! isset($this->selfTypes[$file])) {
-            $this->selfTypes[$file] = [];
-            $parsed = (new ParserFactory)->createForNewestSupportedVersion()->parse((string) file_get_contents($file)) ?? [];
-            $parsed = (new NodeTraverser(new NameResolver))->traverse($parsed);
+        $this->selfTypes[$file] = [];
+        $parsed = (new ParserFactory)->createForNewestSupportedVersion()->parse((string) file_get_contents($file)) ?? [];
+        $parsed = (new NodeTraverser(new NameResolver))->traverse($parsed);
 
-            foreach ((new NodeFinder)->findInstanceOf($parsed, ClassLike::class) as $type) {
-                if ($type->namespacedName === null) {
-                    continue;
-                }
+        foreach ((new NodeFinder)->findInstanceOf($parsed, ClassLike::class) as $type) {
+            if ($type->namespacedName === null) {
+                continue;
+            }
 
-                foreach ($type->getMethods() as $declared) {
-                    $parameters = [];
-
-                    foreach ($declared->params as $parameter) {
-                        if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
-                            $parameters[$parameter->var->name] = self::mentionsSelf($parameter->type);
-                        }
+            $class = $type->namespacedName->toString();
+            foreach ($type->getProperties() as $property) {
+                if (self::mentionsSelf($property->type)) {
+                    foreach ($property->props as $item) {
+                        $this->selfProperties[$class][$item->name->toString()] = true;
                     }
-
-                    $this->selfTypes[$file][$type->namespacedName->toString().'::'.strtolower($declared->name->toString())] = [
-                        'return' => self::mentionsSelf($declared->returnType),
-                        'parameters' => $parameters,
-                    ];
                 }
             }
-        }
 
-        return $this->selfTypes[$file][$class.'::'.strtolower($method->getName())] ?? ['return' => false, 'parameters' => []];
+            foreach ($type->getMethods() as $declared) {
+                $parameters = [];
+                foreach ($declared->params as $parameter) {
+                    if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
+                        $name = $parameter->var->name;
+                        $parameters[$name] = self::mentionsSelf($parameter->type);
+                        if ($parameter->isPromoted() && $parameters[$name]) {
+                            $this->selfProperties[$class][$name] = true;
+                        }
+                    }
+                }
+
+                $this->selfTypes[$file][$class.'::'.strtolower($declared->name->toString())] = [
+                    'return' => self::mentionsSelf($declared->returnType),
+                    'parameters' => $parameters,
+                ];
+            }
+        }
     }
 
     private static function mentionsSelf(?Node $type): bool

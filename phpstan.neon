@@ -2,16 +2,11 @@ includes:
     - vendor/axiomasoft/packman-devtools/config/phpstan-base.neon
     - vendor/larastan/larastan/extension.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/pestphp/pest/extension.neon
     - vendor/pestphp/pest-plugin-phpstan/extension.neon
 
 parameters:
     tmpDir: build/phpstan
-    universalObjectCratesClasses:
-        - Illuminate\Http\Request
-        - Illuminate\Support\Optional
-        - Pest\Support\HigherOrderTapProxy
-        - Pest\Expectation
-        - PHPUnit\Framework\TestCase
     scanFiles:
         - vendor/pestphp/pest/src/Functions.php
     excludePaths:

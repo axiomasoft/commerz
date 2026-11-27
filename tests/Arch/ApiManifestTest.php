@@ -40,6 +40,10 @@ abstract class ApiManifestOpenProbe
 
     public protected(set) int $count = 0;
 
+    public ?self $previous = null;
+
+    public function __construct(public ?self $next = null, public ?ApiManifestOpenProbe $explicit = null) {}
+
     final public function sealed(int $max = PHP_INT_MAX): void {}
 
     public function same(self $other, ?self $maybe = null): bool
@@ -65,7 +69,10 @@ it('records asymmetric visibility, property defaults and the parents of an inter
 
     expect($manifest->members(new ReflectionClass(ApiManifestOpenProbe::class))['properties'])->toBe([
         'count' => 'public protected(set) int $count = 0',
+        'explicit' => 'public ?\\ApiManifestOpenProbe $explicit',
         'log' => 'public private(set) array $log = []',
+        'next' => 'public ?self $next',
+        'previous' => 'public ?self $previous = null',
     ])
         ->and($manifest->members(new ReflectionClass(ApiManifestChildProbe::class))['extends'])->toBe([ApiManifestParentProbe::class]);
 });

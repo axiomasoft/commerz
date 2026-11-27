@@ -102,12 +102,26 @@ it('requires the corex CI controls that apply to this repository', function (): 
     $postgresMatrix = workflowMap(workflowMap($postgres['strategy'] ?? null)['matrix'] ?? null);
     expect($postgresMatrix['postgres'] ?? null)->toBe(['16', '19']);
 
+    $changes = workflowMap($jobs['changes'] ?? null);
+    $steps = $changes['steps'] ?? null;
+    $filterSteps = [];
+    foreach (is_array($steps) ? $steps : [] as $step) {
+        $step = workflowMap($step);
+        if (($step['id'] ?? null) === 'filter') {
+            $filterSteps[] = $step;
+        }
+    }
+    expect($filterSteps)->toHaveCount(1);
+    $filter = $filterSteps[0];
+    $inputs = workflowMap($filter['with'] ?? null);
+    expect($filter['uses'] ?? null)->toBe('dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d')
+        ->and($inputs['predicate-quantifier'] ?? null)->toBe('every')
+        ->and(Yaml::parse(requireString($inputs['filters'] ?? null, 'filters')))->toBe([
+            'code' => ['**', '!**/*.md', '!docs/**', '!LICENSE'],
+        ]);
+
     expect($raw)->toContain('composer audit --locked')
-        ->and($raw)->toContain('composer validate --strict --no-check-lock')
-        ->and($raw)->toContain('dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d')
-        ->and($raw)->toContain('predicate-quantifier: every')
-        ->and($raw)->toContain('!**/*.md')
-        ->and($raw)->toContain('!docs/**');
+        ->and($raw)->toContain('composer validate --strict');
 
     $packman = file_get_contents($root.'/.github/actions/setup-packman/action.yml');
     expect($packman)->toBeString()->toContain('ref: v0.1.1');
