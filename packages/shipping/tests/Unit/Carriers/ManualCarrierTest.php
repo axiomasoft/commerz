@@ -32,7 +32,17 @@ it('books with the tracking number it was given', function (): void {
 });
 
 it('falls back to the reference when there is no usable tracking number', function (array $meta): void {
-    expect((new ManualCarrier)->book(mcBooking($meta))->tracking)->toBe('fulfillment:7');
+    $clean = [];
+
+    foreach ($meta as $key => $value) {
+        if (! is_string($key) || ! is_scalar($value)) {
+            throw new InvalidArgumentException('booking meta must be scalar.');
+        }
+
+        $clean[$key] = $value;
+    }
+
+    expect((new ManualCarrier)->book(mcBooking($clean))->tracking)->toBe('fulfillment:7');
 })->with([
     'none' => [[]],
     'empty' => [['tracking' => '']],

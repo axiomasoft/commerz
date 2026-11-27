@@ -25,6 +25,7 @@ final class B2bPluginTest extends PackageTestCase
         return B2bPlugin::class;
     }
 
+    /** @return array<string, list<string>> */
     protected function expectedContributions(): array
     {
         return [

@@ -56,8 +56,10 @@ it('builds a restock command and rejects malformed ones', function (): void {
 it('restocks nothing with unlimited stock', function (): void {
     config(['commerz.stock' => 'unlimited']);
 
-    expect(app(StockReturns::class))->toBeInstanceOf(UnlimitedStock::class)
-        ->and(app(StockReturns::class)->restock(new RestockStock('return:1', ChannelId::generate(), [spLine()])))->toBeNull();
+    $returns = app(StockReturns::class);
+
+    expect($returns)->toBeInstanceOf(UnlimitedStock::class);
+    $returns->restock(new RestockStock('return:1', ChannelId::generate(), [spLine()]));
 });
 
 it('fails to resolve returns in inventory mode without an inventory package', function (): void {

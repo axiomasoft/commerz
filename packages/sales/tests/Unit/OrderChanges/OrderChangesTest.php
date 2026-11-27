@@ -123,10 +123,12 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\SQLiteConnection;
+use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Schema\Contracts\Compiler\SchemaOwnership;
 use Packman\Schema\Data\Compiler\TableNames as PackmanTables;
+use PHPUnit\Framework\Assert;
 
 /**
  * Builds an OrderChangeCalculator wired with a 20% excluded VAT stage, a tiered shipping stage (`standard` 10.00,
@@ -285,16 +287,30 @@ function ocCalculator(array $catalog = [], array $priceMinorByRef = []): OrderCh
             return $kind === QuoteStage::KIND && isset($this->stages[$key]);
         }
 
+        /**
+         * @template T of object
+         *
+         * @param  class-string<T>  $expected
+         * @return T
+         */
         public function get(string $kind, string $key, string $expected): object
         {
-            return $this->stages[$key];
+            $stage = $this->stages[$key] ?? throw new RuntimeException("Unknown stage {$key}.");
+
+            if (! $stage instanceof $expected) {
+                throw new RuntimeException("Stage {$key} is not {$expected}.");
+            }
+
+            return $stage;
         }
 
+        /** @return list<string> */
         public function keys(string $kind): array
         {
             return $kind === QuoteStage::KIND ? array_keys($this->stages) : [];
         }
 
+        /** @return list<QuoteStage> */
         public function all(string $kind, string $expected): array
         {
             return $kind === QuoteStage::KIND ? array_values($this->stages) : [];
@@ -644,7 +660,7 @@ it('runs compensating workflows for positive deltas (IncrementAuthorization & De
                     createdAt: $this->now,
                     updatedAt: $this->now,
                 ),
-            ], null);
+            ]);
         }
     };
 
@@ -697,7 +713,7 @@ it('runs compensating workflows for positive deltas (IncrementAuthorization & De
 
         public function list(ListRefunds $query): Page
         {
-            return new Page([], null);
+            return new Page([]);
         }
     };
 
@@ -794,9 +810,13 @@ it('runs compensating workflows for positive deltas (IncrementAuthorization & De
 it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VERSION_CONFLICT (INV-OMS-001) on stale expectedOrderVersion', function (): void {
     // Verify ProblemDefinition registers 409 Conflict for OrderChangeVersionConflict.
     $definitions = (new SalesProblemDefinitions)->definitions();
-    $conflictDef = array_find($definitions, static fn ($d): bool => $d->code === SalesErrorCode::OrderChangeVersionConflict);
-    expect($conflictDef)->not->toBeNull()
-        ->and($conflictDef->defaultStatus)->toBe(409)
+    $conflictDef = array_find($definitions, static fn (ProblemDefinition $definition): bool => $definition->code === SalesErrorCode::OrderChangeVersionConflict);
+
+    if (! $conflictDef instanceof ProblemDefinition) {
+        throw new RuntimeException('Expected the order-change version conflict problem.');
+    }
+
+    expect($conflictDef->defaultStatus)->toBe(409)
         ->and($conflictDef->category)->toBe(ErrorCategory::Conflict);
 
     // Boot an in-memory SQLite DB with PG-compatible boolean casting to test DatabaseOrderChanges end-to-end.
@@ -805,11 +825,16 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
     $baseConn = $capsule->getConnection();
     $conn = new class($baseConn->getPdo(), ':memory:') extends SQLiteConnection
     {
+        /**
+         * @param  array<int|string, mixed>  $bindings
+         * @param  array<int|string, mixed>  $fetchUsing
+         * @return list<mixed>
+         */
         public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
         {
-            $rows = parent::select($query, $bindings, $useReadPdo, $fetchUsing);
+            $rows = [];
 
-            foreach ($rows as $row) {
+            foreach (parent::select($query, $bindings, $useReadPdo, $fetchUsing) as $row) {
                 if (is_object($row)) {
                     foreach (['requires_shipping', 'tax_included'] as $col) {
                         if (property_exists($row, $col) && is_int($row->{$col})) {
@@ -817,6 +842,8 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
                         }
                     }
                 }
+
+                $rows[] = $row;
             }
 
             return $rows;
@@ -956,9 +983,9 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
         'customer_email' => $order->customerEmail,
         'customer_name' => $order->customerName,
         'codes' => '[]',
-        'shipping_address' => SalesCodec::addressToJson($order->shippingAddress),
+        'shipping_address' => $order->shippingAddress === null ? null : SalesCodec::addressToJson($order->shippingAddress),
         'billing_address' => null,
-        'delivery' => SalesCodec::deliveryToJson($order->delivery),
+        'delivery' => $order->delivery === null ? null : SalesCodec::deliveryToJson($order->delivery),
         'order_adjustments' => '[]',
         'delivery_adjustments' => '[]',
         'delivery_tax_lines' => SalesCodec::taxLinesToJson($order->deliveryTaxLines),
@@ -1040,6 +1067,7 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
     {
         public function record(IntegrationEvent $event): void {}
 
+        /** @return list<mixed> */
         public function claim(int $limit, ?string $worker = null): array
         {
             return [];
@@ -1085,7 +1113,7 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
     {
         public function declare(string $owner, array $nouns): void {}
 
-        public function ownerOf(string $logical): ?string
+        public function ownerOf(string $logical): string
         {
             return 'commerz.sales';
         }
@@ -1146,7 +1174,7 @@ it('enforces preview dry-run immutability and throws 409 ORDERS_ORDER_CHANGE_VER
 
     try {
         $service->confirm($change->id, expectedOrderVersion: 1);
-        test()->fail('Expected OrderChangeVersionConflict to be thrown.');
+        Assert::fail('Expected OrderChangeVersionConflict to be thrown.');
     } catch (OrderChangeVersionConflict $e) {
         expect($e->code())->toBe('sales.order_change_version_conflict')
             ->and($e->category())->toBe(ErrorCategory::Conflict)

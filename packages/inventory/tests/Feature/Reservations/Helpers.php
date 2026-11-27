@@ -37,10 +37,15 @@ use Illuminate\Support\Facades\Facade;
 
 function rsvChannel(string $code = 'web'): ChannelId
 {
-    $store = DB::table('cmz_stores')->where('code', 'main')->value('id')
-        ?? app(Stores::class)->create(new CreateStore('main', 'Main', Currency::of('RUB')))->id->value;
+    $stored = DB::table('cmz_stores')->where('code', 'main')->value('id');
 
-    return app(Channels::class)->create(new CreateChannel(new StoreId($store), $code, ucfirst($code), [Currency::of('RUB')]))->id;
+    $stored ??= app(Stores::class)->create(new CreateStore('main', 'Main', Currency::of('RUB')))->id->value;
+
+    if (! is_string($stored)) {
+        throw new RuntimeException('store id must be a string');
+    }
+
+    return app(Channels::class)->create(new CreateChannel(new StoreId($stored), $code, ucfirst($code), [Currency::of('RUB')]))->id;
 }
 
 function rsvSource(ChannelId $channel, string $code, int $priority = 100): LocationId

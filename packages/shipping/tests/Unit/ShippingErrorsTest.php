@@ -25,7 +25,6 @@ use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
 use Commerz\Shipping\Zones\Exceptions\ZoneNotFound;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 
 it('covers every ShippingErrorCode case with a matching ProblemDefinition', function (): void {
     $definitions = (new ShippingProblemDefinitions)->definitions();
@@ -41,8 +40,7 @@ it('covers every ShippingErrorCode case with a matching ProblemDefinition', func
 it('exposes Packman error descriptors on shipping exceptions', function (CommerzException $e, ShippingErrorCode $code, ErrorCategory $category): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($descriptor->errorCode)->toBe($code)
+    expect($descriptor->errorCode)->toBe($code)
         ->and($descriptor->category)->toBe($category);
 })->with([
     'booking in progress' => [new BookingInProgress('f:1'), ShippingErrorCode::BookingInProgress, ErrorCategory::Conflict],

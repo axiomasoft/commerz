@@ -9,7 +9,7 @@ Public PHP surface of `packages/shipping` as recorded in `packages/shipping/reso
 | Fact | Value |
 |---|---|
 | config | `commerz-shipping` |
-| kinds | `carrier`, `delivery_rate` |
+| kinds | `carrier`, `delivery_rate`, `parcel_packer` |
 | plugin | `commerz.shipping` |
 | providers | `Commerz\Shipping\ShippingServiceProvider` |
 | tables | `shipping` |
@@ -29,10 +29,12 @@ Root of the shipping API: accessors of the module contracts.
 
 ```php
 final readonly class Shipping {
-    __construct(\Commerz\Shipping\Zones\Contracts\Zones $zones, \Commerz\Shipping\Methods\Contracts\Methods $methods, \Commerz\Shipping\Options\Contracts\ShippingOptions $options, \Commerz\Shipping\Bookings\Contracts\Bookings $bookings);
+    __construct(\Commerz\Shipping\Zones\Contracts\Zones $zones, \Commerz\Shipping\Methods\Contracts\Methods $methods, \Commerz\Shipping\Options\Contracts\ShippingOptions $options, \Commerz\Shipping\Bookings\Contracts\Bookings $bookings, \Commerz\Shipping\PickupPoints\Contracts\PickupPoints $pickupPoints, \Commerz\Shipping\Packing\Contracts\ParcelPacker $packer);
     bookings(): \Commerz\Shipping\Bookings\Contracts\Bookings;
     methods(): \Commerz\Shipping\Methods\Contracts\Methods;
     options(): \Commerz\Shipping\Options\Contracts\ShippingOptions;
+    packer(): \Commerz\Shipping\Packing\Contracts\ParcelPacker;
+    pickupPoints(): \Commerz\Shipping\PickupPoints\Contracts\PickupPoints;
     zones(): \Commerz\Shipping\Zones\Contracts\Zones;
 }
 ```
@@ -71,6 +73,8 @@ The booking journal, read-only: shipments are booked through the kernel port `Sh
 
 ```php
 interface Bookings {
+    // Masks personal data (carrier result metadata and error messages) in `shipping_bookings` matching `$references`.
+    erasePersonalData(array $references): int;
     find(string $reference): \Commerz\Shipping\Bookings\Data\BookingView;
     list(\Commerz\Shipping\Bookings\Data\ListBookings $query): \Commerz\Pagination\Page;
 }
@@ -102,11 +106,13 @@ final readonly class BookingView {
     public readonly ?string $labelRef;
     public readonly array $meta;
     public readonly string $methodCode;
+    public readonly array $parcels;
     public readonly string $reference;
     public readonly \Commerz\Shipping\Bookings\Enums\BookingState $state;
     public readonly ?string $tracking;
     public readonly \DateTimeImmutable $updatedAt;
-    __construct(\Commerz\Shipping\Bookings\Data\BookingId $id, string $reference, string $carrier, string $methodCode, \Commerz\Shipping\Bookings\Enums\BookingState $state, int $attempts, ?string $tracking, ?string $labelRef, array $meta, ?string $errorCode, ?string $errorMessage, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?\DateTimeImmutable $bookedAt);
+    __construct(\Commerz\Shipping\Bookings\Data\BookingId $id, string $reference, string $carrier, string $methodCode, \Commerz\Shipping\Bookings\Enums\BookingState $state, int $attempts, ?string $tracking, ?string $labelRef, array $meta, ?string $errorCode, ?string $errorMessage, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt, ?\DateTimeImmutable $bookedAt, array $parcels = []);
+    trackingNumbers(): array;
 }
 ```
 
@@ -151,7 +157,8 @@ final readonly class ShipmentBooked {
     public readonly string $carrier;
     public readonly string $reference;
     public readonly string $tracking;
-    __construct(string $reference, string $carrier, string $tracking);
+    public readonly array $trackingNumbers;
+    __construct(string $reference, string $carrier, string $tracking, array $trackingNumbers = []);
 }
 ```
 
@@ -443,6 +450,8 @@ enum ShippingErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case InvalidEta = 'shipping.invalid_eta';
     case InvalidFreeAbove = 'shipping.invalid_free_above';
     case InvalidName = 'shipping.invalid_name';
+    case InvalidPacking = 'shipping.invalid_packing';
+    case InvalidPickupPoint = 'shipping.invalid_pickup_point';
     case InvalidPosition = 'shipping.invalid_position';
     case InvalidRate = 'shipping.invalid_rate';
     case InvalidRateConfig = 'shipping.invalid_rate_config';
@@ -452,10 +461,13 @@ enum ShippingErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case InvalidZoneMember = 'shipping.invalid_zone_member';
     case MethodArchived = 'shipping.method_archived';
     case MethodNotFound = 'shipping.method_not_found';
+    case PickupPointNotFound = 'shipping.pickup_point_not_found';
+    case PickupPointOversized = 'shipping.pickup_point_oversized';
     case TooManyRates = 'shipping.too_many_rates';
     case TooManyZoneMembers = 'shipping.too_many_zone_members';
     case UnknownCarrier = 'shipping.unknown_carrier';
     case UnknownRate = 'shipping.unknown_rate';
+    case UnpackableItem = 'shipping.unpackable_item';
     case ZoneArchived = 'shipping.zone_archived';
     case ZoneNotFound = 'shipping.zone_not_found';
     value(): string;
@@ -593,11 +605,12 @@ final readonly class CreateMethod {
     public readonly string $carrier;
     public readonly array $channels;
     public readonly string $code;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
     public readonly \Commerz\Measures\LocalizedText $name;
     public readonly int $position;
     public readonly array $rates;
     public readonly \Commerz\Shipping\Methods\Enums\MethodStatus $status;
-    __construct(string $code, \Commerz\Measures\LocalizedText $name, string $carrier, array $channels = [], array $rates = [], int $position = 0, \Commerz\Shipping\Methods\Enums\MethodStatus $status = Commerz\Shipping\Methods\Enums\MethodStatus::Active);
+    __construct(string $code, \Commerz\Measures\LocalizedText $name, string $carrier, array $channels = [], array $rates = [], int $position = 0, \Commerz\Shipping\Methods\Enums\MethodStatus $status = Commerz\Shipping\Methods\Enums\MethodStatus::Active, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping);
     static assertName(\Commerz\Measures\LocalizedText $name): void;
     static assertPosition(int $position): void;
 }
@@ -660,12 +673,13 @@ final readonly class MethodView {
     public readonly array $channels;
     public readonly string $code;
     public readonly \Commerz\Shipping\Methods\Data\MethodId $id;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
     public readonly \Commerz\Measures\LocalizedText $name;
     public readonly int $position;
     public readonly array $rates;
     public readonly \Commerz\Shipping\Methods\Enums\MethodStatus $status;
     public readonly \DateTimeImmutable $updatedAt;
-    __construct(\Commerz\Shipping\Methods\Data\MethodId $id, string $code, \Commerz\Measures\LocalizedText $name, string $carrier, \Commerz\Shipping\Methods\Enums\MethodStatus $status, int $position, array $channels, array $rates, \DateTimeImmutable $updatedAt);
+    __construct(\Commerz\Shipping\Methods\Data\MethodId $id, string $code, \Commerz\Measures\LocalizedText $name, string $carrier, \Commerz\Shipping\Methods\Enums\MethodStatus $status, int $position, array $channels, array $rates, \DateTimeImmutable $updatedAt, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::Shipping);
 }
 ```
 
@@ -725,9 +739,10 @@ Changes the given fields; a null field stays as it is.
 final readonly class UpdateMethod {
     public readonly ?string $carrier;
     public readonly \Commerz\Shipping\Methods\Data\MethodId $id;
+    public readonly ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
     public readonly ?\Commerz\Measures\LocalizedText $name;
     public readonly ?int $position;
-    __construct(\Commerz\Shipping\Methods\Data\MethodId $id, ?\Commerz\Measures\LocalizedText $name = null, ?string $carrier = null, ?int $position = null);
+    __construct(\Commerz\Shipping\Methods\Data\MethodId $id, ?\Commerz\Measures\LocalizedText $name = null, ?string $carrier = null, ?int $position = null, ?\Commerz\Ports\Delivery\Enums\DeliveryMode $mode = null);
 }
 ```
 
@@ -882,6 +897,159 @@ final class DeliveryUnavailable extends \Commerz\Errors\CommerzException impleme
 }
 ```
 
+## Packing
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ParcelPacker`](#type-commerz-shipping-packing-contracts-parcelpacker) | interface | spi (implement) | 0.1 |
+| [`PackableItem`](#type-commerz-shipping-packing-data-packableitem) | class | api | 0.1 |
+| [`PackedItem`](#type-commerz-shipping-packing-data-packeditem) | class | api | 0.1 |
+| [`PackedParcel`](#type-commerz-shipping-packing-data-packedparcel) | class | api | 0.1 |
+| [`PackingConstraints`](#type-commerz-shipping-packing-data-packingconstraints) | class | api | 0.1 |
+| [`PackingRequest`](#type-commerz-shipping-packing-data-packingrequest) | class | api | 0.1 |
+| [`PackingResult`](#type-commerz-shipping-packing-data-packingresult) | class | api | 0.1 |
+| [`UnpackableItem`](#type-commerz-shipping-packing-exceptions-unpackableitem) | class | api | 0.1 |
+
+### ParcelPacker {#type-commerz-shipping-packing-contracts-parcelpacker}
+
+`Commerz\Shipping\Packing\Contracts\ParcelPacker`
+
+Splits shippable order/fulfillment items into 1..N `Parcel` boxes using physical and volumetric weights.
+
+```php
+interface ParcelPacker {
+    const KIND = 'parcel_packer';
+    // Contribution key, e.g. `weight_volume` or `acme.3d_bin`.
+    key(): string;
+    pack(\Commerz\Shipping\Packing\Data\PackingRequest $request): \Commerz\Shipping\Packing\Data\PackingResult;
+}
+```
+
+### PackableItem {#type-commerz-shipping-packing-data-packableitem}
+
+`Commerz\Shipping\Packing\Data\PackableItem`
+
+A shippable line item with integer unit weight (grams), total line value, and optional 3D unit dimensions (mm).
+
+```php
+final readonly class PackableItem {
+    public readonly ?int $heightMm;
+    public readonly string $itemId;
+    public readonly ?int $lengthMm;
+    public readonly int $quantity;
+    public readonly \Commerz\Money\Money $totalValue;
+    public readonly int $unitWeightGrams;
+    public readonly ?int $widthMm;
+    __construct(string $itemId, int $quantity, int $unitWeightGrams, \Commerz\Money\Money $totalValue, ?int $lengthMm = null, ?int $widthMm = null, ?int $heightMm = null);
+    hasDimensions(): bool;
+    static ofUnitPrice(string $itemId, int $quantity, int $unitWeightGrams, \Commerz\Money\Money $unitPrice, ?int $lengthMm = null, ?int $widthMm = null, ?int $heightMm = null): self;
+    unitVolumeMm3(): \Brick\Math\BigInteger;
+    // Exact integer volumetric weight of one unit in grams: `ceil((lengthMm * widthMm * heightMm) / volumetricDivisor)`. Since `1 cm³ = 1000 mm³` and `1 kg = 1000 g`, a standard `5000 cm³/kg` divisor equals `5000 mm³/g`.
+    unitVolumetricWeightGrams(int $volumetricDivisor = 5000): int;
+}
+```
+
+### PackedItem {#type-commerz-shipping-packing-data-packeditem}
+
+`Commerz\Shipping\Packing\Data\PackedItem`
+
+Portion of a `PackableItem` placed into one `PackedParcel`.
+
+```php
+final readonly class PackedItem {
+    public readonly string $itemId;
+    public readonly int $physicalWeightGrams;
+    public readonly int $quantity;
+    public readonly \Commerz\Money\Money $value;
+    public readonly int $volumetricWeightGrams;
+    __construct(string $itemId, int $quantity, int $physicalWeightGrams, int $volumetricWeightGrams, \Commerz\Money\Money $value);
+}
+```
+
+### PackedParcel {#type-commerz-shipping-packing-data-packedparcel}
+
+`Commerz\Shipping\Packing\Data\PackedParcel`
+
+One packed box produced by `ParcelPacker`, carrying physical, volumetric, and chargeable weights in grams.
+
+```php
+final readonly class PackedParcel {
+    public readonly int $chargeableWeightGrams;
+    public readonly array $items;
+    public readonly \Commerz\Ports\Delivery\Data\Parcel $parcel;
+    public readonly int $physicalWeightGrams;
+    public readonly int $sequence;
+    public readonly int $volumetricWeightGrams;
+    __construct(int $sequence, \Commerz\Ports\Delivery\Data\Parcel $parcel, int $physicalWeightGrams, int $volumetricWeightGrams, int $chargeableWeightGrams, array $items);
+}
+```
+
+### PackingConstraints {#type-commerz-shipping-packing-data-packingconstraints}
+
+`Commerz\Shipping\Packing\Data\PackingConstraints`
+
+Physical and volumetric limits of a single parcel box, in integer grams and millimeters.
+
+```php
+final readonly class PackingConstraints {
+    public readonly ?int $maxHeightMm;
+    public readonly ?int $maxLengthMm;
+    public readonly ?int $maxVolumeMm3;
+    public readonly int $maxWeightGrams;
+    public readonly ?int $maxWidthMm;
+    public readonly int $tareWeightGrams;
+    public readonly bool $useVolumetricWeight;
+    public readonly int $volumetricDivisor;
+    __construct(int $maxWeightGrams = 30000, int $volumetricDivisor = 5000, ?int $maxVolumeMm3 = null, ?int $maxLengthMm = null, ?int $maxWidthMm = null, ?int $maxHeightMm = null, int $tareWeightGrams = 0, bool $useVolumetricWeight = true);
+}
+```
+
+### PackingRequest {#type-commerz-shipping-packing-data-packingrequest}
+
+`Commerz\Shipping\Packing\Data\PackingRequest`
+
+```php
+final readonly class PackingRequest {
+    public readonly \Commerz\Shipping\Packing\Data\PackingConstraints $constraints;
+    public readonly array $items;
+    __construct(array $items, \Commerz\Shipping\Packing\Data\PackingConstraints $constraints = new \Commerz\Shipping\Packing\Data\PackingConstraints);
+}
+```
+
+### PackingResult {#type-commerz-shipping-packing-data-packingresult}
+
+`Commerz\Shipping\Packing\Data\PackingResult`
+
+```php
+final readonly class PackingResult {
+    public readonly array $parcels;
+    __construct(array $parcels);
+    toParcels(): array;
+    totalChargeableWeightGrams(): int;
+    totalPhysicalWeightGrams(): int;
+    totalValue(): \Commerz\Money\Money;
+    totalVolumetricWeightGrams(): int;
+}
+```
+
+### UnpackableItem {#type-commerz-shipping-packing-exceptions-unpackableitem}
+
+`Commerz\Shipping\Packing\Exceptions\UnpackableItem`
+
+Thrown when a single unit exceeds `PackingConstraints` and cannot fit in an empty parcel.
+
+```php
+final class UnpackableItem extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $item;
+    public readonly string $reason;
+    __construct(string $item, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Panels
 
 | Type | Kind | Layer | Since |
@@ -929,6 +1097,136 @@ final readonly class ShippingZonesPanel implements \Packman\Panels\Contracts\Reg
     __construct(?\Illuminate\Contracts\Container\Container $container = null);
     access(\Packman\Panels\Data\Panel\PanelContext $context, \Packman\Panels\Data\Panel\PanelReference $panel): \Packman\Panels\Data\Admission\PanelAccess;
     descriptor(): \Packman\Panels\Data\Panel\PanelDescriptor;
+}
+```
+
+## PickupPoints
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`PickupPoints`](#type-commerz-shipping-pickuppoints-contracts-pickuppoints) | interface | api | 0.1 |
+| [`PickupPointId`](#type-commerz-shipping-pickuppoints-data-pickuppointid) | class | api | 0.1 |
+| [`PickupPointView`](#type-commerz-shipping-pickuppoints-data-pickuppointview) | class | api | 0.1 |
+| [`UpsertPickupPoint`](#type-commerz-shipping-pickuppoints-data-upsertpickuppoint) | class | api | 0.1 |
+| [`PickupPointStatus`](#type-commerz-shipping-pickuppoints-enums-pickuppointstatus) | enum | api | 0.1 |
+| [`PickupPointNotFound`](#type-commerz-shipping-pickuppoints-exceptions-pickuppointnotfound) | class | api | 0.1 |
+| [`PickupPointOversized`](#type-commerz-shipping-pickuppoints-exceptions-pickuppointoversized) | class | api | 0.1 |
+
+### PickupPoints {#type-commerz-shipping-pickuppoints-contracts-pickuppoints}
+
+`Commerz\Shipping\PickupPoints\Contracts\PickupPoints`
+
+Manages stored PUDO/BOPIS locations and searches across all `PickupPointProvider` contributions with locker dimension and weight filtering.
+
+```php
+interface PickupPoints {
+    archive(string $provider, string $code): \Commerz\Shipping\PickupPoints\Data\PickupPointView;
+    disable(string $provider, string $code): \Commerz\Shipping\PickupPoints\Data\PickupPointView;
+    enable(string $provider, string $code): \Commerz\Shipping\PickupPoints\Data\PickupPointView;
+    find(string $pointId, \Commerz\Context\CommerceContext $context, ?string $provider = null): \Commerz\Ports\Delivery\Data\PickupPoint;
+    findView(string $provider, string $code): \Commerz\Shipping\PickupPoints\Data\PickupPointView;
+    // Searches active pickup points across providers, rejecting small lockers that cannot fit the parcel or items.
+    search(\Commerz\Ports\Delivery\Data\PickupPointQuery $query): array;
+    upsert(\Commerz\Shipping\PickupPoints\Data\UpsertPickupPoint $command): \Commerz\Shipping\PickupPoints\Data\PickupPointView;
+    // Verifies that a selected pickup destination exists and its locker/counter limits accept the parcel and items.
+    validateSelection(\Commerz\Ports\Delivery\Data\PickupPointDestination $destination, \Commerz\Ports\Delivery\Data\Parcel $parcel, \Commerz\Context\CommerceContext $context, array $items = []): \Commerz\Ports\Delivery\Data\PickupPoint;
+}
+```
+
+### PickupPointId {#type-commerz-shipping-pickuppoints-data-pickuppointid}
+
+`Commerz\Shipping\PickupPoints\Data\PickupPointId`
+
+```php
+final readonly class PickupPointId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### PickupPointView {#type-commerz-shipping-pickuppoints-data-pickuppointview}
+
+`Commerz\Shipping\PickupPoints\Data\PickupPointView`
+
+```php
+final readonly class PickupPointView {
+    public readonly \Commerz\Ports\Delivery\Data\Address $address;
+    public readonly string $code;
+    public readonly ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates;
+    public readonly \Commerz\Shipping\PickupPoints\Data\PickupPointId $id;
+    public readonly bool $isLocker;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits;
+    public readonly array $meta;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly ?string $openingHours;
+    public readonly string $provider;
+    public readonly \Commerz\Shipping\PickupPoints\Enums\PickupPointStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Shipping\PickupPoints\Data\PickupPointId $id, string $provider, string $code, \Commerz\Measures\LocalizedText $name, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode, \Commerz\Ports\Delivery\Data\Address $address, ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates, ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits, bool $isLocker, ?string $openingHours, \Commerz\Shipping\PickupPoints\Enums\PickupPointStatus $status, array $meta, \DateTimeImmutable $updatedAt);
+    toPickupPoint(string $locale): \Commerz\Ports\Delivery\Data\PickupPoint;
+}
+```
+
+### UpsertPickupPoint {#type-commerz-shipping-pickuppoints-data-upsertpickuppoint}
+
+`Commerz\Shipping\PickupPoints\Data\UpsertPickupPoint`
+
+Creates or updates a stored PUDO locker/point or BOPIS local pickup location.
+
+```php
+final readonly class UpsertPickupPoint {
+    public readonly \Commerz\Ports\Delivery\Data\Address $address;
+    public readonly string $code;
+    public readonly ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates;
+    public readonly bool $isLocker;
+    public readonly ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits;
+    public readonly array $meta;
+    public readonly \Commerz\Ports\Delivery\Enums\DeliveryMode $mode;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly ?string $openingHours;
+    public readonly string $provider;
+    public readonly \Commerz\Shipping\PickupPoints\Enums\PickupPointStatus $status;
+    __construct(string $provider, string $code, \Commerz\Measures\LocalizedText $name, \Commerz\Ports\Delivery\Data\Address $address, \Commerz\Ports\Delivery\Enums\DeliveryMode $mode = Commerz\Ports\Delivery\Enums\DeliveryMode::PickupPoint, ?\Commerz\Ports\Delivery\Data\Coordinates $coordinates = null, ?\Commerz\Ports\Delivery\Data\PickupPointLimits $limits = null, bool $isLocker = false, ?string $openingHours = null, \Commerz\Shipping\PickupPoints\Enums\PickupPointStatus $status = Commerz\Shipping\PickupPoints\Enums\PickupPointStatus::Active, array $meta = []);
+}
+```
+
+### PickupPointStatus {#type-commerz-shipping-pickuppoints-enums-pickuppointstatus}
+
+`Commerz\Shipping\PickupPoints\Enums\PickupPointStatus`
+
+```php
+enum PickupPointStatus {
+    case Active = 'active';
+    case Disabled = 'disabled';
+    case Archived = 'archived';
+}
+```
+
+### PickupPointNotFound {#type-commerz-shipping-pickuppoints-exceptions-pickuppointnotfound}
+
+`Commerz\Shipping\PickupPoints\Exceptions\PickupPointNotFound`
+
+```php
+final class PickupPointNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $identifier);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### PickupPointOversized {#type-commerz-shipping-pickuppoints-exceptions-pickuppointoversized}
+
+`Commerz\Shipping\PickupPoints\Exceptions\PickupPointOversized`
+
+Thrown when a parcel or item exceeds a selected pickup point or locker's weight or dimension limits.
+
+```php
+final class PickupPointOversized extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $pointId;
+    public readonly string $provider;
+    public readonly string $reason;
+    __construct(string $pointId, string $provider, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
 
@@ -1126,10 +1424,11 @@ final class InvalidRateResult extends \Commerz\Errors\CommerzException implement
 
 `Commerz\Shipping\Schema\ShippingSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-shipping`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-shipping`.
 
 ```php
 final readonly class ShippingSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
 }
 ```

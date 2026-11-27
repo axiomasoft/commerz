@@ -19,6 +19,7 @@ use Commerz\Pricing\Calculation\Data\TaxResult;
 use Commerz\Pricing\Configuration\PricingOptions;
 use Commerz\Pricing\Plugins\PricingPlugin;
 use Commerz\Pricing\Taxes\Data\TaxZoneMember;
+use Commerz\Pricing\Tests\TestCase;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\DeliveryCharge;
@@ -34,11 +35,13 @@ use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Commerce;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Laravel\PluginRegistrar;
+use PHPUnit\Framework\Assert;
 
 trait TsEnvironment
 {
@@ -46,8 +49,14 @@ trait TsEnvironment
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
-        $app['config']->set('commerz.plugins', [TsPlugin::class]);
+
+        $app->make(Repository::class)->set('commerz.plugins', [TsPlugin::class]);
     }
+}
+
+abstract class TsEnvironmentProbe extends TestCase
+{
+    use TsEnvironment;
 }
 
 uses(RefreshDatabase::class, TsEnvironment::class);
@@ -150,9 +159,15 @@ function tsTaxes(QuoteResult $result): array
     );
 }
 
+/** @param array<string, string|null> $tax */
 function tsReconfigure(array $tax): void
 {
-    config()->set('commerz-pricing.tax', [...config('commerz-pricing.tax'), ...$tax]);
+    $current = config('commerz-pricing.tax');
+    if (! is_array($current)) {
+        throw new RuntimeException('commerz-pricing.tax must be an array.');
+    }
+
+    config()->set('commerz-pricing.tax', [...$current, ...$tax]);
     app()->forgetInstance(PricingOptions::class);
 }
 
@@ -313,7 +328,7 @@ it('fails the quote for a tax class without a rate in the zone (G13)', function 
 
     try {
         tsRun(tsInput(['100.00']));
-        $this->fail('expected QuoteFailed');
+        Assert::fail('expected QuoteFailed');
     } catch (QuoteFailed $failed) {
         expect($failed->stage)->toBe('tax')
             ->and($failed->reason)->toBe('stage_error')
@@ -338,7 +353,7 @@ it('rejects a calculator answer for an item that was not asked about', function 
 
     try {
         tsRun(tsInput(['100.00']));
-        $this->fail('expected QuoteFailed');
+        Assert::fail('expected QuoteFailed');
     } catch (QuoteFailed $failed) {
         expect($failed->stage)->toBe('tax')
             ->and($failed->context()['cause'])->toBe('pricing.invalid_tax_result');
@@ -357,7 +372,7 @@ it('fails with negative_total when the order discount exceeds the items', functi
     txRate();
     try {
         tsRun(tsInput(['100.00'], ['order:150.00']));
-        $this->fail('expected QuoteFailed');
+        Assert::fail('expected QuoteFailed');
     } catch (QuoteFailed $failed) {
         expect($failed->stage)->toBe('tax')->and($failed->reason)->toBe('negative_total');
     }
@@ -368,7 +383,7 @@ it('reports a negative line before attempting to allocate an order discount', fu
 
     try {
         tsRun(tsInput(['10.00', '100.00'], ['line:1:11.00', 'order:1.00']));
-        $this->fail('expected QuoteFailed');
+        Assert::fail('expected QuoteFailed');
     } catch (QuoteFailed $failed) {
         expect([$failed->stage, $failed->reason])->toBe(['tax', 'negative_line']);
     }

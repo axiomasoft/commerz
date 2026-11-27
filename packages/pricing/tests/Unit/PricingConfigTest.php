@@ -18,7 +18,12 @@ it('defaults to the base price fallback, the rates calculator and half-up tax ro
 });
 
 it('reads the shipped config file', function (): void {
-    $config = PricingOptions::fromArray(require __DIR__.'/../../config/commerz-pricing.php');
+    $loaded = require __DIR__.'/../../config/commerz-pricing.php';
+    if (! is_array($loaded)) {
+        throw new RuntimeException('commerz-pricing.php must return an array.');
+    }
+
+    $config = PricingOptions::fromArray($loaded);
 
     expect($config)->toEqual(PricingOptions::fromArray([]));
 });

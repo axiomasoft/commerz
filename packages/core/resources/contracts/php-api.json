@@ -11085,7 +11085,7 @@
                             "variadic": false,
                             "optional": true,
                             "default": "[]",
-                            "flags": 0
+                            "flags": 1
                         },
                         {
                             "name": "mode",
@@ -11128,18 +11128,7 @@
                     "doc": []
                 }
             },
-            "properties": {
-                "items": {
-                    "flags": 1,
-                    "type": "array",
-                    "readonly": true,
-                    "visibility": "public",
-                    "static": false,
-                    "default": null,
-                    "doc": [],
-                    "hooks": []
-                }
-            },
+            "properties": {},
             "constants": [],
             "enum_backing": null,
             "enum_cases": []

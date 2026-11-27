@@ -35,6 +35,7 @@ require_once __DIR__.'/../../packages/sales/tests/Feature/Helpers.php';
 
 trait SalesShippingEnvironment
 {
+    /** @return list<class-string> */
     protected function commerzProviders(): array
     {
         return [CommerzServiceProvider::class, SalesServiceProvider::class, ShippingServiceProvider::class];
@@ -64,6 +65,11 @@ final class SalesShippingDiscountPlugin implements ExtensionPlugin
 }
 
 uses(SalesTestCase::class, SalesShippingEnvironment::class, RefreshDatabase::class);
+
+abstract class SalesShippingQuoteCase extends SalesTestCase
+{
+    use SalesShippingEnvironment;
+}
 
 it('shows the same delivery tariff as the selected-method quote for a mixed cart after order discounts', function (SellableKind $kind, bool $discount, string $threshold, string $price): void {
     $fake = Commerce::fake();

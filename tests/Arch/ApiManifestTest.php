@@ -23,10 +23,9 @@ final class ApiManifestProbe
         return new self;
     }
 
-    /** @param  int|list<string>|null  $value */
     public function shapes(?int $value = null, int|string ...$rest): ?static
     {
-        return null;
+        return $value === PHP_INT_MIN || $rest === [PHP_INT_MIN] ? $this : null;
     }
 }
 
@@ -36,6 +35,7 @@ interface ApiManifestChildProbe extends ApiManifestParentProbe {}
 
 abstract class ApiManifestOpenProbe
 {
+    /** @var array<mixed> */
     public private(set) array $log = [];
 
     public protected(set) int $count = 0;
@@ -97,6 +97,10 @@ it('keeps every php-api.json manifest in sync with the code', function (): void 
 
     // No orphan manifest for a package that has no code any more.
     $expected = array_map(static fn (array $package): string => $root.'/'.$package['path'].'/resources/contracts/php-api.json', $packages);
+    $manifests = glob($root.'/packages/*/resources/contracts/php-api.json');
+    if ($manifests === false) {
+        $manifests = [];
+    }
 
-    expect(array_values(array_diff(glob($root.'/packages/*/resources/contracts/php-api.json') ?: [], $expected)))->toBe([]);
+    expect(array_values(array_diff($manifests, $expected)))->toBe([]);
 });

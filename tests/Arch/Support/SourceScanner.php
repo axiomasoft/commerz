@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Commerz\Arch;
 
 use JsonException;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
@@ -40,7 +41,10 @@ final class SourceScanner
         }
 
         $packages = [];
-        $directories = glob($this->root.'/packages/*', GLOB_ONLYDIR) ?: [];
+        $directories = glob($this->root.'/packages/*', GLOB_ONLYDIR);
+        if ($directories === false) {
+            $directories = [];
+        }
         sort($directories);
 
         foreach ($directories as $path) {
@@ -71,13 +75,20 @@ final class SourceScanner
         foreach ($this->packages() as $package) {
             foreach ($this->phpFiles($package->path.'/src') as $file) {
                 $source = file_get_contents($file);
-                $statements = $source === false ? null : $parser->parse($source);
+                $parsed = $source === false ? null : $parser->parse($source);
 
-                if ($statements === null) {
+                if ($parsed === null) {
                     throw new RuntimeException("Cannot parse {$file}.");
                 }
 
-                $statements = (new NodeTraverser(new NameResolver))->traverse($statements);
+                $statements = [];
+                foreach ((new NodeTraverser(new NameResolver))->traverse($parsed) as $statement) {
+                    if (! $statement instanceof Stmt) {
+                        throw new RuntimeException("Cannot parse {$file}.");
+                    }
+
+                    $statements[] = $statement;
+                }
 
                 $namespace = '';
                 foreach ($statements as $statement) {

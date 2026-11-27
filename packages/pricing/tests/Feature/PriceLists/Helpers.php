@@ -21,12 +21,21 @@ use Commerz\Stores\Data\CreateStore;
 use Commerz\Stores\Data\StoreId;
 use Illuminate\Support\Facades\DB;
 
+function plsMainStoreId(): string
+{
+    $existing = DB::table('cmz_stores')->where('code', 'main')->value('id');
+    $existing ??= app(Stores::class)->create(new CreateStore('main', 'Main', Currency::of('RUB')))->id->value;
+
+    if (! is_string($existing)) {
+        throw new RuntimeException('Store id must be a string.');
+    }
+
+    return $existing;
+}
+
 function plsChannel(string $code = 'web', string $currency = 'RUB'): ChannelId
 {
-    $store = DB::table('cmz_stores')->where('code', 'main')->value('id')
-        ?? app(Stores::class)->create(new CreateStore('main', 'Main', Currency::of('RUB')))->id->value;
-
-    return app(Channels::class)->create(new CreateChannel(new StoreId($store), $code, ucfirst($code), [Currency::of($currency)]))->id;
+    return app(Channels::class)->create(new CreateChannel(new StoreId(plsMainStoreId()), $code, ucfirst($code), [Currency::of($currency)]))->id;
 }
 
 /** @param  list<ChannelId>  $channels */

@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Commerz\Identity\SellableRef;
+use Commerz\Inventory\Allocation\Data\AllocationNeed;
 use Commerz\Inventory\Allocation\Data\AllocationPlan;
 use Commerz\Inventory\Allocation\Data\PlannedAllocation;
+use Commerz\Inventory\Allocation\Data\SourceStock;
 use Commerz\Inventory\Allocation\Exceptions\InvalidAllocationPlan;
 use Commerz\Inventory\Allocation\Internal\AllocationPlanValidator;
 use Commerz\Inventory\Allocation\Internal\PriorityAllocation;
@@ -17,6 +19,11 @@ function planned(string $sellable, string $location, int $units): PlannedAllocat
     return new PlannedAllocation(SellableRef::of('variant', $sellable), new LocationId(alloc_id("location:{$location}")), $units);
 }
 
+/**
+ * @param  list<PlannedAllocation>  $allocations
+ * @param  list<AllocationNeed>|null  $needs
+ * @param  list<SourceStock>|null  $sources
+ */
 function validated(array $allocations, ?array $needs = null, ?array $sources = null): void
 {
     $request = alloc_request(
@@ -35,9 +42,10 @@ it('accepts a plan within needs, sources and free stock', function (): void {
         [alloc_need('a', 10, [alloc_component('a')]), alloc_need('b', 2, [alloc_component('a', 3)])],
         [alloc_source('main', 1, ['a' => 6]), alloc_source('east', 2, ['a' => 7])],
     );
-    new AllocationPlanValidator()->validate($request, new PriorityAllocation()->allocate($request));
 
-    expect(true)->toBeTrue();
+    expect(function () use ($request): void {
+        new AllocationPlanValidator()->validate($request, new PriorityAllocation()->allocate($request));
+    })->not->toThrow(InvalidAllocationPlan::class);
 });
 
 it('rejects a plan the sources or needs do not allow', function (callable $plan, string $reason): void {

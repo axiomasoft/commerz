@@ -8,8 +8,10 @@ use Commerz\Errors\IdempotencyConflict;
 use Commerz\Identity\IdempotencyKey;
 use Commerz\Operations\Contracts\OperationReceipts;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Schema\CommerzMigration;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 final class B2bSqliteSchema
 {
@@ -54,11 +56,18 @@ final class B2bSqliteSchema
 
                 if ($existing !== null) {
                     if ($existing->fingerprint !== $fingerprint) {
-                        throw new IdempotencyConflict($scope, $key);
+                        throw new IdempotencyConflict($scope, (string) $key);
                     }
 
-                    /** @var array<array-key, mixed> $decoded */
-                    $decoded = json_decode((string) $existing->result, true, flags: JSON_THROW_ON_ERROR);
+                    $stored = $existing->result;
+                    if (! is_string($stored)) {
+                        throw new RuntimeException('Stored receipt result must be a string.');
+                    }
+
+                    $decoded = json_decode($stored, true, flags: JSON_THROW_ON_ERROR);
+                    if (! is_array($decoded)) {
+                        throw new RuntimeException('Stored receipt result must be a JSON array.');
+                    }
 
                     return $decode($decoded);
                 }
@@ -257,6 +266,11 @@ final class B2bSqliteSchema
             SQL);
         }
 
-        (include dirname(__DIR__, 2).'/database/migrations/2026_11_26_600002_create_commerz_b2b_tables.php')->up();
+        $migration = include dirname(__DIR__, 2).'/database/migrations/2026_11_26_600002_create_commerz_b2b_tables.php';
+        if (! $migration instanceof CommerzMigration || ! method_exists($migration, 'up')) {
+            throw new RuntimeException('B2B migration must be a CommerzMigration.');
+        }
+
+        $migration->up();
     }
 }

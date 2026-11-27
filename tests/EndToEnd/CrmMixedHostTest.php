@@ -6,6 +6,7 @@ use Commerz\Context\CommerceContext;
 use Commerz\EndToEnd\Fixtures\CrmCustomers;
 use Commerz\EndToEnd\Fixtures\CrmPlugin;
 use Commerz\EndToEnd\Fixtures\CrmServices;
+use Commerz\EndToEnd\Support\EndToEndTestCase;
 use Commerz\EndToEnd\Support\PortMatrix;
 use Commerz\EndToEnd\Support\ShopWorld;
 use Commerz\Inventory\Facades\Inventory;
@@ -37,6 +38,11 @@ trait CrmMixedHostEnvironment
 }
 
 uses(CrmMixedHostEnvironment::class, RefreshDatabase::class);
+
+abstract class CrmMixedHostCase extends EndToEndTestCase
+{
+    use CrmMixedHostEnvironment;
+}
 
 it('places a cart of a catalog variant and a host service and reserves only the variant', function (): void {
     $world = ShopWorld::build();

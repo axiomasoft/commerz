@@ -13,6 +13,7 @@ use Commerz\Ports\Stock\Exceptions\InsufficientStock;
 use Commerz\Ports\Stock\Exceptions\ReservationNotFound;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -21,10 +22,10 @@ require_once __DIR__.'/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -176,8 +177,21 @@ it('lets either the consume or the expiry of one demand win, never both (INV-04)
             ->where('r.demand', "cart:{$i}")
             ->first(['ln.units', 'ln.consumed_units', 'ln.expired_units', 'ln.released_units']);
 
-        expect([$line->consumed_units + $line->expired_units, $line->released_units])->toBe([2, 0])
-            ->and(in_array($line->consumed_units, [0, 2], true))->toBeTrue();
+        if (! $line instanceof stdClass) {
+            throw new RuntimeException('expected a reservation line');
+        }
+
+        $counters = get_object_vars($line);
+        $consumed = $counters['consumed_units'] ?? null;
+        $expired = $counters['expired_units'] ?? null;
+        $released = $counters['released_units'] ?? null;
+
+        if (! is_int($consumed) || ! is_int($expired) || ! is_int($released)) {
+            throw new RuntimeException('reservation counters must be integers');
+        }
+
+        expect([$consumed + $expired, $released])->toBe([2, 0])
+            ->and(in_array($consumed, [0, 2], true))->toBeTrue();
     }
 
     $consumed = (int) DB::table('cmz_stock_reservation_lines')->sum('consumed_units');

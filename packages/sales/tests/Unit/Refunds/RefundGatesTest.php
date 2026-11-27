@@ -16,9 +16,11 @@ function rgSources(): array
     $sources = [];
 
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)) as $file) {
-        if ($file->getExtension() === 'php') {
-            $sources[substr($file->getPathname(), strlen($src) + 1)] = (string) file_get_contents($file->getPathname());
+        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
+            continue;
         }
+
+        $sources[substr($file->getPathname(), strlen($src) + 1)] = (string) file_get_contents($file->getPathname());
     }
 
     ksort($sources);

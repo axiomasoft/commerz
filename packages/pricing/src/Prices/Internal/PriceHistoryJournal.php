@@ -180,8 +180,8 @@ final readonly class PriceHistoryJournal
                 'min_quantity' => Rows::int($row, 'min_quantity'),
                 'amount_minor' => Rows::int($row, 'amount_minor'),
                 'event_type' => PriceHistoryEvent::from(Rows::string($row, 'event_type')),
-                'valid_from' => $from === null ? null : (new DateTimeImmutable($from))->setTimezone(new DateTimeZone('UTC')),
-                'valid_until' => $until === null ? null : (new DateTimeImmutable($until))->setTimezone(new DateTimeZone('UTC')),
+                'valid_from' => $from === null ? null : new DateTimeImmutable($from)->setTimezone(new DateTimeZone('UTC')),
+                'valid_until' => $until === null ? null : new DateTimeImmutable($until)->setTimezone(new DateTimeZone('UTC')),
                 'recorded_at' => Rows::date($row, 'recorded_at')->setTimezone(new DateTimeZone('UTC')),
             ];
         }

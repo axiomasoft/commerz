@@ -9,6 +9,7 @@ use Commerz\Sales\Checkout\Exceptions\CartAlreadyPlaced;
 use Commerz\Sales\Tests\Fixtures\StaticSellables;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -20,10 +21,10 @@ uses(SlsEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    slsPending($this->artisan('migrate'))->assertSuccessful();
     StaticSellables::define(StaticSellables::item('a', '100.00'));
     slsConfig(['checkout' => ['require_delivery' => false]]);
     $this->web = slsChannel();
@@ -72,7 +73,15 @@ it('numbers the orders of different carts placed together apart (C3)', function 
     $carts = array_map(fn (): CartView => slsCartWith($this->web, ['test:a' => 1]), range(0, 3));
 
     $outcomes = Concurrency::run(4, fn (int $worker): string => pccPlace($carts[$worker], "checkout-{$worker}"), timeoutSeconds: 60);
-    $numbers = DB::table('cmz_orders')->pluck('number')->all();
+    $numbers = [];
+
+    foreach (DB::table('cmz_orders')->pluck('number') as $number) {
+        if (! is_string($number)) {
+            throw new RuntimeException('Expected an order number.');
+        }
+
+        $numbers[] = $number;
+    }
 
     expect(array_unique($outcomes))->toHaveCount(4)
         ->and($numbers)->toHaveCount(4)

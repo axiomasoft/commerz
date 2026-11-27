@@ -238,7 +238,7 @@ final readonly class CartTransformStage implements QuoteStage, QuoteStagePolicy
 
                 $firstTargetId = $operation->targets[0]->lineId;
                 $mergedLineId = $operation->lineId ?? self::deterministicUuid(
-                    "{$ruleKey}:merge:{$opIndex}:".implode('|', $targetSignatures).':'.(string) $parentSnapshot->ref,
+                    "{$ruleKey}:merge:{$opIndex}:".implode('|', $targetSignatures).':'.$parentSnapshot->ref,
                 );
 
                 $mergeInsertions[$firstTargetId][] = new QuoteLineInput(
@@ -273,7 +273,7 @@ final readonly class CartTransformStage implements QuoteStage, QuoteStagePolicy
                     self::assertOptionalCurrency($ruleKey, $component->fixedUnitPrice, $currency);
 
                     $expandedId = $component->lineId ?? self::deterministicUuid(
-                        "{$ruleKey}:expand:{$lineId}:{$compIndex}:".(string) $componentSnapshot->ref,
+                        "{$ruleKey}:expand:{$lineId}:{$compIndex}:".$componentSnapshot->ref,
                     );
 
                     $result[] = new QuoteLineInput(

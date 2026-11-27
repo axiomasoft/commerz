@@ -8,6 +8,7 @@ use Commerz\Sales\Payments\Data\PaymentId;
 use Commerz\Sales\Payments\Enums\PaymentStatus as S;
 use Commerz\Sales\Payments\Internal\PaymentRow;
 use Commerz\Sales\Payments\Internal\PaymentTransitions;
+use PHPUnit\Framework\Assert;
 
 // The transition table of knowledge/sales-design#payments: a payment of 100.00, amounts in minor units.
 
@@ -73,9 +74,15 @@ it('keeps the action url of a payment that requires an action', function (): voi
 
 it('updates the action url without moving an authorized or captured payment back', function (): void {
     $action = PaymentTransitions::apply(ptPayment(S::Pending), S::RequiresAction, actionUrl: 'https://pay.example/first');
+    if (! $action instanceof PaymentRow) {
+        Assert::fail('Expected a payment that requires action.');
+    }
     $changed = PaymentTransitions::apply($action, S::RequiresAction, actionUrl: 'https://pay.example/next');
+    if (! $changed instanceof PaymentRow) {
+        Assert::fail('Expected the action url to change.');
+    }
 
-    expect($changed?->actionUrl)->toBe('https://pay.example/next')
+    expect($changed->actionUrl)->toBe('https://pay.example/next')
         ->and(PaymentTransitions::apply($changed, S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull()
         ->and(PaymentTransitions::apply(ptPayment(S::Authorized, 10000), S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull()
         ->and(PaymentTransitions::apply(ptPayment(S::Captured, 10000, 10000), S::RequiresAction, actionUrl: 'https://pay.example/next'))->toBeNull();

@@ -278,6 +278,7 @@ function compilePlugins(string ...$plugins): Contributions&PluginInspector
     );
 }
 
+/** @param class-string ...$plugins */
 function compileError(string ...$plugins): string
 {
     try {
@@ -301,7 +302,7 @@ it('validates manifests', function (): void {
 
 it('validates contribution kinds', function (): void {
     expect(fn () => new ContributionKind('Greeter', Greeter::class, 'a.b'))->toThrow(InvalidConfiguration::class, 'snake_case')
-        ->and(fn () => new ContributionKind('greeter', 'Nope\\Missing', 'a.b'))->toThrow(InvalidConfiguration::class, 'does not exist')
+        ->and(fn () => new ReflectionClass(ContributionKind::class)->newInstance('greeter', 'Nope\\Missing', 'a.b'))->toThrow(InvalidConfiguration::class, 'does not exist')
         ->and(fn () => new ContributionKind('greeter', Greeter::class, 'owner'))->toThrow(InvalidConfiguration::class, 'plugin id');
 });
 
@@ -340,7 +341,17 @@ it('ignores an optional plugin that is absent and loads a present one first', fu
 });
 
 it('reports graph problems with the plugin and where it was registered', function (string $problem, array $plugins, string $expected): void {
-    expect(compileError(...$plugins))->toContain($expected);
+    $classes = [];
+
+    foreach ($plugins as $plugin) {
+        if (! is_string($plugin) || ! class_exists($plugin)) {
+            throw new RuntimeException('Expected a plugin class.');
+        }
+
+        $classes[] = $plugin;
+    }
+
+    expect(compileError(...$classes))->toContain($expected);
 })->with([
     'cycle' => ['cycle', [PlgCycleA::class, PlgCycleB::class], "plugin 'test.cycle-a' (PlgCycleA): dependency cycle among test.cycle-a, test.cycle-b"],
     'missing requirement' => ['missing', [PlgOptional::class, PlgMissingRequirement::class], "plugin 'test.needy' (PlgMissingRequirement): requires 'test.absent', which is not registered"],
@@ -432,6 +443,11 @@ it('fails the registry with the configuration error, again on every use', functi
 
 it('keeps the plugin list config:cache friendly', function (): void {
     $config = config('commerz');
+
+    if (! is_array($config)) {
+        throw new RuntimeException('Expected commerz config.');
+    }
+
     $config['plugins'] = [PlgOwner::class];
 
     expect(eval('return '.var_export($config, true).';'))->toBe($config)
@@ -444,7 +460,7 @@ it('lists plugins with packman:plugins', function (): void {
     CommerzPlugins::builtIn(PlgOwner::class);
     config(['commerz.plugins' => [PlgExtension::class]]);
 
-    $this->artisan('packman:plugins')
+    $this->pendingArtisan('packman:plugins')
         ->assertSuccessful()
         ->expectsOutputToContain('commerz.core')
         ->expectsOutputToContain('test.hello')
@@ -454,13 +470,13 @@ it('lists plugins with packman:plugins', function (): void {
 it('prints the registry as json', function (): void {
     CommerzPlugins::builtIn(PlgOwner::class);
 
-    $this->artisan('packman:plugins', ['--json' => true])->assertSuccessful()->expectsOutputToContain('"id": "test.owner"');
+    $this->pendingArtisan('packman:plugins', ['--json' => true])->assertSuccessful()->expectsOutputToContain('"id": "test.owner"');
 });
 
 it('fails packman:plugins with the configuration error', function (): void {
     config(['commerz.plugins' => [PlgCycleA::class, PlgCycleB::class]]);
 
-    $this->artisan('packman:plugins')->assertFailed()->expectsOutputToContain('dependency cycle');
+    $this->pendingArtisan('packman:plugins')->assertFailed()->expectsOutputToContain('dependency cycle');
 });
 
 final class PlgOptionalExtension extends PlgBase

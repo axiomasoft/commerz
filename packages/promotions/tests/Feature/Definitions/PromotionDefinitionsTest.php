@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
+use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Definitions\Data\ArchivePromotion;
 use Commerz\Promotions\Definitions\Data\AssignPromotionChannels;
 use Commerz\Promotions\Definitions\Data\ListPromotions;
 use Commerz\Promotions\Definitions\Data\PausePromotion;
 use Commerz\Promotions\Definitions\Data\PromotionId;
+use Commerz\Promotions\Definitions\Data\PromotionView;
 use Commerz\Promotions\Definitions\Data\PromotionWindow;
 use Commerz\Promotions\Definitions\Data\ResumePromotion;
 use Commerz\Promotions\Definitions\Data\UnassignPromotionChannels;
@@ -286,7 +288,13 @@ it('lists by code with a cursor and filters by status, stage and channel', funct
 
     $first = Promotions::promotions()->list(new ListPromotions(first: 2));
     $second = Promotions::promotions()->list(new ListPromotions(first: 2, after: $first->next));
-    $codes = static fn ($page): array => array_map(static fn ($promotion): string => $promotion->code, $page->items);
+    $codes = (static fn (Page $page): array => array_map(static function (object $promotion): string {
+        if (! $promotion instanceof PromotionView) {
+            throw new RuntimeException('Expected a promotion.');
+        }
+
+        return $promotion->code;
+    }, $page->items));
 
     expect($codes($first))->toBe(['a-promo', 'b-promo'])
         ->and($first->hasMore())->toBeTrue()

@@ -494,7 +494,7 @@ final class CustomFieldValueCodec
         ?array &$choices,
         bool $isDefinitionCheck,
     ): void {
-        if ($rule === 'required' || $rule === 'nullable' || $rule === 'string' || $rule === 'integer' || $rule === 'boolean' || $rule === 'date' || $rule === 'array') {
+        if (in_array($rule, ['required', 'nullable', 'string', 'integer', 'boolean', 'date', 'array'], true)) {
             return;
         }
 

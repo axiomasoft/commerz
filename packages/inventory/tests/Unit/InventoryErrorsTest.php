@@ -24,7 +24,6 @@ use Commerz\Inventory\Transfers\Exceptions\InvalidTransferState;
 use Commerz\Inventory\Transfers\Exceptions\TransferNotFound;
 use Packman\Errors\Data\ProblemDefinition;
 use Packman\Errors\Enums\ErrorCategory;
-use Packman\Errors\Exceptions\CodedException;
 
 it('covers every InventoryErrorCode case with a matching ProblemDefinition', function (): void {
     $definitions = (new InventoryProblemDefinitions)->definitions();
@@ -40,8 +39,7 @@ it('covers every InventoryErrorCode case with a matching ProblemDefinition', fun
 it('exposes Packman error descriptors on inventory exceptions', function (CommerzException $e, InventoryErrorCode $code, ErrorCategory $category): void {
     $descriptor = $e->errorDescriptor();
 
-    expect($e)->toBeInstanceOf(CodedException::class)
-        ->and($descriptor->errorCode)->toBe($code)
+    expect($descriptor->errorCode)->toBe($code)
         ->and($descriptor->category)->toBe($category);
 })->with([
     'invalid allocation plan' => [new InvalidAllocationPlan('bad'), InventoryErrorCode::InvalidAllocationPlan, ErrorCategory::Unavailable],

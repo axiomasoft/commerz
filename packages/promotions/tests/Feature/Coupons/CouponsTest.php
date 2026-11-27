@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Commerz\Pagination\Page;
 use Commerz\Promotions\Common\Exceptions\DuplicateCode;
 use Commerz\Promotions\Coupons\Data\CouponBatchId;
 use Commerz\Promotions\Coupons\Data\CouponId;
+use Commerz\Promotions\Coupons\Data\CouponView;
 use Commerz\Promotions\Coupons\Data\CreateCoupon;
 use Commerz\Promotions\Coupons\Data\DisableCoupon;
 use Commerz\Promotions\Coupons\Data\EnableCoupon;
@@ -155,7 +157,13 @@ it('lists the coupons of a promotion by code with a cursor, a status and a batch
     $second = Promotions::coupons()->list(new ListCoupons($promotion->id, first: 2, after: $first->next));
     $third = Promotions::coupons()->list(new ListCoupons($promotion->id, first: 2, after: $second->next));
 
-    $codes = static fn ($page): array => array_map(static fn ($coupon): string => $coupon->code, $page->items);
+    $codes = (static fn (Page $page): array => array_map(static function (object $coupon): string {
+        if (! $coupon instanceof CouponView) {
+            throw new RuntimeException('Expected a coupon.');
+        }
+
+        return $coupon->code;
+    }, $page->items));
 
     expect($codes($first))->toBe(['A', 'B'])
         ->and($first->hasMore())->toBeTrue()

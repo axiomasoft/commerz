@@ -27,14 +27,13 @@ use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
 use Commerz\Stores\Contracts\Channels;
-use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\ChannelId;
 use Commerz\Stores\Data\CreateChannel;
-use Commerz\Stores\Data\CreateStore;
 use Commerz\Stores\Data\StoreId;
 use Commerz\Testkit\Fakes\FakeSellables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -42,11 +41,8 @@ require_once __DIR__.'/../PriceLists/Helpers.php';
 
 function prChannel(string $code = 'web', bool $pricesIncludeTax = false, string $currency = 'RUB'): ChannelId
 {
-    $store = DB::table('cmz_stores')->where('code', 'main')->value('id')
-        ?? app(Stores::class)->create(new CreateStore('main', 'Main', Currency::of('RUB')))->id->value;
-
     return app(Channels::class)->create(new CreateChannel(
-        new StoreId($store),
+        new StoreId(plsMainStoreId()),
         $code,
         ucfirst($code),
         [Currency::of($currency)],
@@ -75,17 +71,22 @@ function prExplain(string $sellable, int $quantity, CommerceContext $context, ?s
     return new ExplainPrice(SellableRef::of('variant', $sellable), $quantity, $context, $fallback === null ? null : Money::of($fallback, 'RUB'));
 }
 
-/** Makes the next resolution read the config again. */
+/** @param array<string, mixed> $config */
 function prReconfigure(array $config): void
 {
-    config()->set('commerz-pricing', [...config('commerz-pricing'), ...$config]);
+    $current = config('commerz-pricing');
+    if (! is_array($current)) {
+        throw new RuntimeException('commerz-pricing must be an array.');
+    }
+
+    config()->set('commerz-pricing', [...$current, ...$config]);
 
     foreach ([PricingOptions::class, DatabasePriceResolver::class, PriceResolver::class, Prices::class, PricingRoot::class] as $abstract) {
         app()->forgetInstance($abstract);
     }
 }
 
-/** The example of knowledge/pricing-design#resolution. */
+/** @return array{ChannelId, PriceListView, PriceListView, PriceListView} */
 function prExample(): array
 {
     $channel = prChannel();
@@ -258,7 +259,7 @@ it('fails with PriceNotFound when nothing applies and there is no usable fallbac
 
     try {
         Pricing::prices()->resolveMany([prRequest('tee', 1, $fallback)], prContext($channel));
-        $this->fail('A price was resolved.');
+        Assert::fail('A price was resolved.');
     } catch (PriceNotFound $e) {
         expect($e->code())->toBe('prices.price_not_found');
     }

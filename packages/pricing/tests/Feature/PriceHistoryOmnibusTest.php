@@ -109,7 +109,7 @@ it('resolves lowestPriceLast30Days for multiple discounted SKUs in a single batc
     $this->clock->set('2026-11-10T10:00:00Z');
     for ($i = 1; $i <= 10; $i++) {
         $ref = SellableRef::of('variant', "item-{$i}");
-        Pricing::prices()->set(new SetPrice($list->id, $ref, Money::of((string) (100 + $i).'.00', 'EUR')));
+        Pricing::prices()->set(new SetPrice($list->id, $ref, Money::of((100 + $i).'.00', 'EUR')));
     }
 
     $this->clock->set('2026-11-26T10:00:00Z');
@@ -118,8 +118,8 @@ it('resolves lowestPriceLast30Days for multiple discounted SKUs in a single batc
         Pricing::prices()->set(new SetPrice(
             $list->id,
             $ref,
-            Money::of((string) (80 + $i).'.00', 'EUR'),
-            compareAt: Money::of((string) (120 + $i).'.00', 'EUR'),
+            Money::of((80 + $i).'.00', 'EUR'),
+            compareAt: Money::of((120 + $i).'.00', 'EUR'),
         ));
         $requests[] = new ResolvePrice($ref, 1);
     }

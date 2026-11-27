@@ -6,9 +6,22 @@ use Commerz\Configuration\CommerzOptions;
 use Commerz\Configuration\StockMode;
 use Packman\Config\Exceptions\InvalidConfiguration;
 use Packman\Schema\Enums\SchemaScope;
+use PHPUnit\Framework\Assert;
+
+/** @return array<mixed> */
+function shippedCommerzConfig(): array
+{
+    $config = require __DIR__.'/../../config/commerz.php';
+
+    if (! is_array($config)) {
+        throw new RuntimeException('commerz.php must return an array.');
+    }
+
+    return $config;
+}
 
 it('reads the shipped config file', function (): void {
-    $options = CommerzOptions::fromArray(require __DIR__.'/../../config/commerz.php');
+    $options = CommerzOptions::fromArray(shippedCommerzConfig());
 
     expect($options->connection)->toBeNull()
         ->and($options->tablePrefix->value())->toBe('cmz_')
@@ -21,7 +34,7 @@ it('reads the shipped config file', function (): void {
 });
 
 it('defaults every key when the array is empty', function (): void {
-    expect(CommerzOptions::fromArray([]))->toEqual(CommerzOptions::fromArray(require __DIR__.'/../../config/commerz.php'));
+    expect(CommerzOptions::fromArray([]))->toEqual(CommerzOptions::fromArray(shippedCommerzConfig()));
 });
 
 it('accepts valid overrides', function (): void {
@@ -56,7 +69,7 @@ it('rejects unknown keys under closed schema validation', function (): void {
 it('names the failing key path', function (array $input, string $path): void {
     try {
         CommerzOptions::fromArray($input, 'app.commerz');
-        $this->fail('expected InvalidConfiguration');
+        Assert::fail('expected InvalidConfiguration');
     } catch (InvalidConfiguration $e) {
         expect($e->getMessage())->toContain($path);
     }

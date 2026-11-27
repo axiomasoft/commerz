@@ -15,6 +15,7 @@ use Commerz\Promotions\Rules\Data\RuleSpec;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
 use Commerz\Quotes\Data\QuoteInput;
 use Commerz\Quotes\Data\QuoteLineInput;
+use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Data\Rejection;
 use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,11 +49,16 @@ it('gives the verdicts of every stage in order, with the code rejections, and le
     cpnPromotion('silent');
 
     $explanation = Promotions::promotions()->explain(new ExplainPromotions(evInput(['1000.00'], ['autumn', 'NOPE'])));
+    $quote = $explanation->quote;
+
+    if (! $quote instanceof QuoteResult) {
+        throw new RuntimeException('Expected a quote result.');
+    }
 
     expect(array_map(static fn (PromotionVerdict $v): string => "{$v->code}|{$v->stage->value}|{$v->couponCode}|{$v->kind->value}|".($v->reason ?? $v->discount?->toDecimal()), $explanation->verdicts))
         ->toBe(['catalog|catalog||applied|100.00', 'autumn|cart|AUTUMN|rejected|minimum_not_reached'])
         ->and(array_map(static fn (Rejection $r): string => "{$r->reason}|{$r->code}", $explanation->codeRejections))->toBe(['unknown_code|NOPE'])
-        ->and(evRejections($explanation->quote))->toBe(['promotions.catalog|unknown_code|NOPE', 'promotions.cart|minimum_not_reached|autumn']);
+        ->and(evRejections($quote))->toBe(['promotions.catalog|unknown_code|NOPE', 'promotions.cart|minimum_not_reached|autumn']);
 });
 
 it('reports a failed quote with the verdicts given before it failed', function (): void {

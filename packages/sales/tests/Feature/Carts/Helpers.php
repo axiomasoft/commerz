@@ -30,10 +30,21 @@ function ctCarts(): Carts
     return app(Carts::class);
 }
 
-/** Config of the carts section, applied to the modules resolved from now on. @param array<string, mixed> $carts */
+/**
+ * Config of the carts section, applied to the modules resolved from now on.
+ *
+ * @param  array<string, mixed>  $carts
+ */
 function ctConfig(array $carts): void
 {
-    config(['commerz-sales.carts' => $carts + config('commerz-sales.carts')]);
+    $current = config('commerz-sales.carts');
+
+    if (! is_array($current)) {
+        $current = [];
+    }
+
+    /** @var array<string, mixed> $current */
+    config(['commerz-sales.carts' => $carts + $current]);
     app()->forgetInstance(SalesOptions::class);
     app()->forgetInstance(Carts::class);
     app()->forgetInstance(Sales::class);

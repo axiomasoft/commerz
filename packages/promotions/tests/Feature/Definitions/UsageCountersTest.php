@@ -44,15 +44,16 @@ function pdfRedeem(string $promotion, string $order, ?string $customer, int $dis
 /** @return array{used: int, spent: int, customers: array<string, int>} */
 function pdfCounters(string $promotion): array
 {
-    $row = DB::table('cmz_promotions')->where('id', $promotion)->first();
+    $row = stanRow(DB::table('cmz_promotions')->where('id', $promotion)->first());
 
     return [
-        'used' => $row->used,
-        'spent' => $row->spent_minor,
-        'customers' => DB::table('cmz_promotion_customer_usages')->where('promotion_id', $promotion)->pluck('used', 'customer_ref')->map(static fn ($used): int => (int) $used)->all(),
+        'used' => stanInt($row->used),
+        'spent' => stanInt($row->spent_minor),
+        'customers' => stanIntMap(DB::table('cmz_promotion_customer_usages')->where('promotion_id', $promotion)->pluck('used', 'customer_ref')),
     ];
 }
 
+/** @param  array<string, mixed>  $with */
 function pdfUsedPromotion(array $with = []): string
 {
     $promotion = pdfPromotion('autumn', $with + ['currency' => Currency::of('RUB')])->id->value;

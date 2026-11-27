@@ -189,7 +189,11 @@ final readonly class CampaignBudgetLedger
         $spent = 0;
 
         if (Rows::nullableInt($campaign, 'spend_cap_minor') !== null) {
-            $sumRow = (clone $consumed)->selectRaw('coalesce(sum(u.discount_minor), 0) as total')->first();
+            // PostgreSQL sum() is numeric, which PDO returns as a string. bigint matches Rows::int.
+            $sumExpr = $db instanceof Connection && $db->getDriverName() === 'pgsql'
+                ? 'coalesce(sum(u.discount_minor), 0)::bigint as total'
+                : 'cast(coalesce(sum(u.discount_minor), 0) as integer) as total';
+            $sumRow = (clone $consumed)->selectRaw($sumExpr)->first();
             $spent = $sumRow === null ? 0 : Rows::int($sumRow, 'total');
         }
 

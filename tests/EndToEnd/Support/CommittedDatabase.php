@@ -40,8 +40,16 @@ final class CommittedDatabase
             ->pluck('table_name')
             ->all();
 
-        if ($tables !== []) {
-            DB::statement('truncate '.implode(', ', array_map(static fn (mixed $table): string => '"'.(string) $table.'"', $tables)).' restart identity cascade');
+        $names = [];
+        foreach ($tables as $table) {
+            if (! is_string($table)) {
+                throw new RuntimeException('Expected a table name.');
+            }
+            $names[] = '"'.$table.'"';
+        }
+
+        if ($names !== []) {
+            DB::statement('truncate '.implode(', ', $names).' restart identity cascade');
         }
     }
 }

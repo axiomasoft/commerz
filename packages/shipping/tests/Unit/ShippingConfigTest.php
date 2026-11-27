@@ -14,7 +14,13 @@ it('defaults to prices without tax, 2000 zone members and a 120 second booking l
 });
 
 it('reads the shipped config file', function (): void {
-    expect(ShippingOptions::fromArray(require __DIR__.'/../../config/commerz-shipping.php'))->toEqual(ShippingOptions::fromArray([]));
+    $shipped = require __DIR__.'/../../config/commerz-shipping.php';
+
+    if (! is_array($shipped)) {
+        throw new RuntimeException('commerz-shipping.php must return an array.');
+    }
+
+    expect(ShippingOptions::fromArray($shipped))->toEqual(ShippingOptions::fromArray([]));
 });
 
 it('reads every key', function (): void {

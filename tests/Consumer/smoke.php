@@ -20,16 +20,26 @@ use Commerz\Sales\SalesServiceProvider;
 use Commerz\Shipping\Shipping;
 use Commerz\Shipping\ShippingServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Packman\Plugins\Data\Plugin\PluginDescription;
 
 $base = __DIR__;
 
 require $base.'/vendor/autoload.php';
 
 $app = require $base.'/bootstrap/app.php';
+if (! $app instanceof Application) {
+    fwrite(STDERR, "smoke: FAIL bootstrap did not return the application\n");
+
+    exit(1);
+}
 $app->make(Kernel::class)->bootstrap();
 
-$profile = getenv('CONSUMER_PROFILE') ?: 'full';
+$profile = getenv('CONSUMER_PROFILE');
+if (! is_string($profile) || $profile === '') {
+    $profile = 'full';
+}
 
 $profiles = [
     'full' => [
@@ -54,6 +64,11 @@ $profiles = [
         'plugins' => ['commerz.core', 'commerz.sales'],
     ],
 ];
+
+function smokeResolves(mixed $resolved, string $class): bool
+{
+    return is_object($resolved) && is_a($resolved, $class);
+}
 
 $fail = static function (string $message): never {
     fwrite(STDERR, "smoke: FAIL {$message}\n");
@@ -87,10 +102,19 @@ foreach ($expected['providers'] as $package => $provider) {
 }
 
 // Every package must ship and run its migrations in the isolated consumer.
-$ran = array_flip(DB::table('migrations')->pluck('migration')->all());
+$ran = [];
+foreach (DB::table('migrations')->pluck('migration')->all() as $name) {
+    if (! is_string($name)) {
+        $fail('migration name is not a string');
+    }
+    $ran[$name] = true;
+}
 
 foreach (array_keys($expected['providers']) as $package) {
-    $migrations = glob($base.'/vendor/'.$package.'/database/migrations/*.php') ?: [];
+    $migrations = glob($base.'/vendor/'.$package.'/database/migrations/*.php');
+    if ($migrations === false) {
+        $migrations = [];
+    }
 
     if ($migrations === []) {
         $fail("{$package} ships no migrations");
@@ -103,7 +127,10 @@ foreach (array_keys($expected['providers']) as $package) {
     }
 }
 
-$plugins = array_map(static fn ($plugin) => $plugin->id, $app->make(Commerz::class)->plugins()->describe());
+$plugins = array_map(
+    static fn (PluginDescription $plugin): string => $plugin->id,
+    $app->make(Commerz::class)->plugins()->describe(),
+);
 sort($plugins);
 
 if ($plugins !== $expected['plugins']) {
@@ -111,7 +138,7 @@ if ($plugins !== $expected['plugins']) {
 }
 
 foreach ($expected['roots'] as $root) {
-    if (! $app->make($root) instanceof $root) {
+    if (! smokeResolves($app->make($root), $root)) {
         $fail("{$root} does not resolve");
     }
 }

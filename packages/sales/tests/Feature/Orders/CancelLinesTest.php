@@ -153,14 +153,25 @@ it('announces the refund of the share a paid order no longer owes', function ():
 
     expect([$order->state, $order->paymentState])->toBe([OrderState::Placed, PaymentState::Paid])
         ->and($order->amountDue)->toEqual(Money::of('200.00', 'RUB'))
-        ->and(json_decode((string) DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.payment_requires_refund')->sole()->payload, true))
+        ->and(slsJsonObject(DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.payment_requires_refund')->sole()->payload))
         ->toMatchArray(['amount_minor' => 10000, 'currency' => 'RUB']);
 
     slsOrders()->cancelLines(new CancelOrderLines($placed->id, [new LineQuantity(slsLine($placed, 'fake:a'), 1)], CancelReason::Customer));
 
     // Each change announces only what it adds to the refund.
-    expect(DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.payment_requires_refund')->orderBy('id')->pluck('payload')
-        ->map(static fn (string $payload): int => json_decode($payload, true)['amount_minor'])->all())->toBe([10000, 10000]);
+    $amounts = [];
+
+    foreach (DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', 'sales.payment_requires_refund')->orderBy('id')->pluck('payload') as $payload) {
+        $amount = slsJsonObject($payload)['amount_minor'] ?? null;
+
+        if (! is_int($amount)) {
+            throw new RuntimeException('Expected an integer refund amount.');
+        }
+
+        $amounts[] = $amount;
+    }
+
+    expect($amounts)->toBe([10000, 10000]);
 });
 
 it('cancels nothing when one of the lines has too few units left', function (): void {

@@ -55,20 +55,20 @@ it('creates, finds, updates, archives, and cursor-lists brands', function (): vo
     $gamma = Catalog::brands()->create(new CreateBrand('gamma', LocalizedText::of('en', 'Gamma')));
 
     $page1 = Catalog::brands()->list(new ListBrands(first: 2));
-    expect(array_map(static fn ($b): string => $b->code, $page1->items))->toBe(['acme', 'beta'])
-        ->and($page1->nextCursor)->not->toBeNull();
+    expect(array_map(static fn (object $b): string => $b->code, $page1->items))->toBe(['acme', 'beta'])
+        ->and($page1->next)->not->toBeNull();
 
-    $page2 = Catalog::brands()->list(new ListBrands(first: 2, after: $page1->nextCursor));
-    expect(array_map(static fn ($b): string => $b->code, $page2->items))->toBe(['gamma'])
-        ->and($page2->nextCursor)->toBeNull();
+    $page2 = Catalog::brands()->list(new ListBrands(first: 2, after: $page1->next));
+    expect(array_map(static fn (object $b): string => $b->code, $page2->items))->toBe(['gamma'])
+        ->and($page2->next)->toBeNull();
 
     $archived = Catalog::brands()->archive(new ArchiveBrand($beta->id));
     expect($archived->status)->toBe(BrandStatus::Archived)
         ->and(fn () => Catalog::brands()->update(new UpdateBrand($beta->id, name: LocalizedText::of('en', 'X'))))->toThrow(BrandArchived::class);
 
     $activeOnly = Catalog::brands()->list(new ListBrands(includeArchived: false));
-    expect(array_map(static fn ($b): string => $b->code, $activeOnly->items))->toBe(['acme', 'gamma']);
+    expect(array_map(static fn (object $b): string => $b->code, $activeOnly->items))->toBe(['acme', 'gamma']);
 
     $withArchived = Catalog::brands()->list(new ListBrands(includeArchived: true));
-    expect(array_map(static fn ($b): string => $b->code, $withArchived->items))->toBe(['acme', 'beta', 'gamma']);
+    expect(array_map(static fn (object $b): string => $b->code, $withArchived->items))->toBe(['acme', 'beta', 'gamma']);
 });

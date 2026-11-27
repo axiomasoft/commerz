@@ -66,13 +66,7 @@ final readonly class PickupPointLimits
 
         $offset = 3 - count($parcelDims);
 
-        foreach ($parcelDims as $index => $size) {
-            if ($size > $lockerDims[$offset + $index]) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($parcelDims, fn ($size, $index): bool => $size <= $lockerDims[$offset + $index]);
     }
 
     /**
@@ -87,12 +81,6 @@ final readonly class PickupPointLimits
             return false;
         }
 
-        foreach ($itemParcels as $item) {
-            if (! $this->fitsParcel($item, $allowRotation)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($itemParcels, fn (Parcel $item): bool => $this->fitsParcel($item, $allowRotation));
     }
 }

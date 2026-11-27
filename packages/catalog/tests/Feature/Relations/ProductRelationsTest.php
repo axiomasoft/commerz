@@ -12,6 +12,7 @@ use Commerz\Catalog\ProductTypes\Data\CreateProductType;
 use Commerz\Catalog\Relations\Contracts\ProductRelations;
 use Commerz\Catalog\Relations\Data\AddProductRelation;
 use Commerz\Catalog\Relations\Data\ListProductRelations;
+use Commerz\Catalog\Relations\Data\ProductRelationView;
 use Commerz\Catalog\Relations\Data\RemoveProductRelation;
 use Commerz\Catalog\Relations\Data\ReplaceProductRelations;
 use Commerz\Catalog\Relations\Enums\ProductRelationType;
@@ -43,7 +44,7 @@ it('adds, updates position, replaces, removes, and queries inverse product relat
         ProductRelationType::CrossSell,
         [$case->id, $battery->id],
     ));
-    expect(array_map(static fn ($r): string => $r->targetProduct->value, $replaced))
+    expect(array_map(static fn (ProductRelationView $r): string => $r->targetProduct->value, $replaced))
         ->toBe([$case->id->value, $battery->id->value]);
 
     $allForCamera = Catalog::relations()->ofProduct(new ListProductRelations($camera->id));

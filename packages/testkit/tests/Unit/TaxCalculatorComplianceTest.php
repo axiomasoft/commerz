@@ -38,7 +38,7 @@ final class TaxCalculatorComplianceTest extends TestCase
 
                 if ($request->isReverseCharge()) {
                     $zeroAmounts = array_map(
-                        static fn ($item): TaxAmount => new TaxAmount(
+                        static fn (TaxableItem $item): TaxAmount => new TaxAmount(
                             $item->target,
                             $item->lineId,
                             'reverse_charge',

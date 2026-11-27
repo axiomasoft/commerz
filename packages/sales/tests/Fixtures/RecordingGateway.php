@@ -161,7 +161,11 @@ final class RecordingGateway implements PaymentGateway
 
     private static function record(string $kind, string $reference, mixed $sleepMs): void
     {
-        $handle = fopen(self::log(), 'a') ?: throw new RuntimeException('Cannot open the gateway log.');
+        $handle = fopen(self::log(), 'a');
+
+        if ($handle === false) {
+            throw new RuntimeException('Cannot open the gateway log.');
+        }
 
         try {
             flock($handle, LOCK_EX);

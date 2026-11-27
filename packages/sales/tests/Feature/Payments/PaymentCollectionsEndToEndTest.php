@@ -51,6 +51,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 
 /**
  * End-to-end SQLite-backed feature test for {@see PaymentCollections} exercising real persistence,
@@ -86,10 +87,11 @@ final class PaymentCollectionsEndToEndTest extends TestCase
 
         AcquiringRecordingGateway::reset();
         $this->storedValue = new InMemoryStoredValueTender;
+        $app = $this->app ?? throw new RuntimeException('Expected the application.');
 
-        $this->app->instance(Clock::class, new FrozenClock(new DateTimeImmutable('2026-11-26 12:00:00+00:00')));
-        $this->app->instance(StoredValueTender::class, $this->storedValue);
-        $this->app->instance(Transactions::class, new class implements Transactions
+        $app->instance(Clock::class, new FrozenClock(new DateTimeImmutable('2026-11-26 12:00:00+00:00')));
+        $app->instance(StoredValueTender::class, $this->storedValue);
+        $app->instance(Transactions::class, new class implements Transactions
         {
             public function run(callable $work, int $lockTimeoutMs = 3000): mixed
             {
@@ -101,7 +103,7 @@ final class PaymentCollectionsEndToEndTest extends TestCase
                 return DB::connection('sqlite_payments')->transactionLevel() > 0;
             }
         });
-        $this->app->instance(OperationReceipts::class, new class implements OperationReceipts
+        $app->instance(OperationReceipts::class, new class implements OperationReceipts
         {
             /** @var array<string, array{fingerprint: string, payload: array<string, mixed>}> */
             private array $store = [];
@@ -119,7 +121,17 @@ final class PaymentCollectionsEndToEndTest extends TestCase
                 }
 
                 $result = $work();
-                $this->store[$slot] = ['fingerprint' => $fingerprint, 'payload' => $encode($result)];
+                $encoded = [];
+
+                foreach ($encode($result) as $key => $value) {
+                    if (! is_string($key)) {
+                        throw new RuntimeException('Expected string keys on the receipt payload.');
+                    }
+
+                    $encoded[$key] = $value;
+                }
+
+                $this->store[$slot] = ['fingerprint' => $fingerprint, 'payload' => $encoded];
 
                 return $result;
             }
@@ -129,7 +141,7 @@ final class PaymentCollectionsEndToEndTest extends TestCase
                 return 0;
             }
         });
-        $this->app->forgetInstance(PaymentCollections::class);
+        $app->forgetInstance(PaymentCollections::class);
 
         $schema = Schema::connection('sqlite_payments');
 
@@ -257,7 +269,6 @@ final class PaymentCollectionsEndToEndTest extends TestCase
         $collection = $collections->authorizeGatewaySession(new AuthorizeGatewaySession(
             collection: $collection->id,
             gateway: AcquiringRecordingGateway::KEY,
-            amount: null,
             autoCapture: false,
             lineItems: $l3,
             idempotencyKey: IdempotencyKey::of('gw-auth-1'),
@@ -267,13 +278,13 @@ final class PaymentCollectionsEndToEndTest extends TestCase
         $collections->authorizeGatewaySession(new AuthorizeGatewaySession(
             collection: $collection->id,
             gateway: AcquiringRecordingGateway::KEY,
-            amount: null,
             autoCapture: false,
             lineItems: $l3,
             idempotencyKey: IdempotencyKey::of('gw-auth-1'),
         ));
-        self::assertCount(1, AcquiringRecordingGateway::calls());
-        self::assertSame(1, AcquiringRecordingGateway::calls()[0]['line_items']);
+        $calls = AcquiringRecordingGateway::calls();
+        self::assertCount(1, $calls);
+        self::assertSame(1, $calls[0]['line_items'] ?? null);
         self::assertSame(PaymentCollectionStatus::Authorized, $collection->status);
         self::assertEquals(Money::of('100.00', 'USD'), $collection->authorized);
         self::assertCount(2, $collection->sessions);

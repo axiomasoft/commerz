@@ -43,7 +43,10 @@ function selRank(array $candidates, int $quantity = 1, array $groups = [], strin
     return PriceSelection::rank($candidates, 'variant:tee', $quantity, $groups, new DateTimeImmutable($at));
 }
 
-/** @param  list<RankedPrice>  $ranked */
+/**
+ * @param  list<RankedPrice>  $ranked
+ * @return list<string>
+ */
 function selIds(array $ranked): array
 {
     return array_map(static fn (RankedPrice $entry): string => $entry->price->id, $ranked);

@@ -92,10 +92,22 @@ it('refuses to archive a location with stock, reservations or an open transfer',
     $other = Inventory::locations()->create(new CreateLocation('other', 'Other'));
     $item = Inventory::items()->create(new CreateStockItem('sku-1'));
 
-    $level = fn (array $values) => $db->table($tables->table('stock_levels'))->updateOrInsert(
-        ['stock_item_id' => $item->id->value, 'location_id' => $main->id->value],
-        $values + ['id' => Uuid7::generate(), 'created_at' => now(), 'updated_at' => now()],
-    );
+    $level = static function (array $values) use ($db, $tables, $item, $main): bool {
+        $row = ['id' => Uuid7::generate(), 'created_at' => now(), 'updated_at' => now()];
+
+        foreach ($values as $column => $value) {
+            if (! is_string($column)) {
+                throw new RuntimeException('stock level column must be a string');
+            }
+
+            $row[$column] = $value;
+        }
+
+        return $db->table($tables->table('stock_levels'))->updateOrInsert(
+            ['stock_item_id' => $item->id->value, 'location_id' => $main->id->value],
+            $row,
+        );
+    };
 
     $level(['on_hand' => 3]);
     expect(fn () => Inventory::locations()->archive(new ArchiveLocation($main->id)))->toThrow(LocationNotEmpty::class);

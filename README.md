@@ -15,7 +15,7 @@ builds its storefront, API or CRM on top and keeps its own data.
 - **Extensible.** Five extension mechanisms and a closed set of plugin kinds:
   payment gateways, carriers, tax calculators, promotion rules, quote stages.
 
-Stack: PHP 8.4, Laravel 13, PostgreSQL ≥ 16.
+Stack: PHP 8.4–8.6, Laravel 13, PostgreSQL ≥ 16 (CI runs 16 and 19).
 
 ## Packages
 

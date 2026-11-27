@@ -24,7 +24,11 @@ function frInput(array $params, int $grams = 1500, string $currency = 'RUB'): Ra
     return new RateInput($request, RateParams::fromInput($params), Currency::of($currency), 'russia');
 }
 
-/** The field of the InvalidRateConfig a call fails with, or null. */
+/**
+ * The field of the InvalidRateConfig a call fails with, or null.
+ *
+ * @param  Closure(): mixed  $call
+ */
 function frField(Closure $call): ?string
 {
     try {

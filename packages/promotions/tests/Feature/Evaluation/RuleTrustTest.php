@@ -105,18 +105,23 @@ it('rejects a promotion that gives nothing on what is left', function (): void {
     expect(evVerdicts($input))->toBe(['first|applied|100.00', 'second|rejected|no_discount']);
 });
 
-it('clamps line discounts after an order discount to the remaining items total', function (array $amounts, array $expected): void {
-    evPromotion('order', PromotionStage::Cart, [evOrderFixed('90.00')], ['priority' => 10]);
-    evPromotion('line', PromotionStage::Cart, [evLineFixed('100.00', 'line')]);
+it('clamps line discounts after an order discount to the remaining items total',
+    /**
+     * @param  array<array-key, string|array<array-key, mixed>>  $amounts
+     * @param  list<string>  $expected
+     */
+    function (array $amounts, array $expected): void {
+        evPromotion('order', PromotionStage::Cart, [evOrderFixed('90.00')], ['priority' => 10]);
+        evPromotion('line', PromotionStage::Cart, [evLineFixed('100.00', 'line')]);
 
-    $result = evRun(evInput($amounts));
+        $result = evRun(evInput(evLines($amounts)));
 
-    expect(evDiscounts($result))->toBe($expected)
-        ->and($result->total->toDecimal())->toBe('0.00');
-})->with([
-    'one line' => [['100.00'], ['line:1 -10.00 line', 'order -90.00 order']],
-    'two lines' => [['100.00', '100.00'], ['line:1 -100.00 line', 'line:2 -10.00 line', 'order -90.00 order']],
-]);
+        expect(evDiscounts($result))->toBe($expected)
+            ->and($result->total->toDecimal())->toBe('0.00');
+    })->with([
+        'one line' => [['100.00'], ['line:1 -10.00 line', 'order -90.00 order']],
+        'two lines' => [['100.00', '100.00'], ['line:1 -100.00 line', 'line:2 -10.00 line', 'order -90.00 order']],
+    ]);
 
 it('rejects invalid stored rule parameters without failing the quote and reports them in reconcile', function (array $config): void {
     $promotion = evPromotion('broken', PromotionStage::Cart, [evLinePercent(1000)]);
@@ -126,7 +131,7 @@ it('rejects invalid stored rule parameters without failing the quote and reports
 
     expect(evDiscounts(evRun($input)))->toBe(['line:1 -5.00 healthy'])
         ->and(evVerdicts($input))->toBe(['broken|rejected|unsupported_rule', 'healthy|applied|5.00']);
-    $this->artisan('commerz:promotions:reconcile')->expectsOutputToContain('unsupported_rule')->assertExitCode(1);
+    $this->pendingArtisan('commerz:promotions:reconcile')->expectsOutputToContain('unsupported_rule')->assertExitCode(1);
 })->with([
     'missing rate' => [[]],
     'out of range rate' => [['rateBp' => 10001]],

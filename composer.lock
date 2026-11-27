@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "81adcbe8209b680a3cb269dd1851614a",
+    "content-hash": "c2553060c0eabacf4482a9156b393000",
     "packages": [
         {
             "name": "axiomasoft/commerz",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "0fecbc4f7f3b3eb545d95f11eb4d478da1a0e729"
+                "reference": "db354bc95f982c3dac619648d4d953243cb59530"
             },
             "require": {
                 "axiomasoft/packman": "^0.1.1",
@@ -24,7 +24,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -101,7 +101,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/b2b",
-                "reference": "ca648463ba006fac1ef962e076ccf6e8c2877c7f"
+                "reference": "331c3237c038d4edc16a1100e226cf54e11e770f"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -113,7 +113,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -178,7 +178,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/catalog",
-                "reference": "d6c966fdc18dc03458dd558e65c2758a42cbde24"
+                "reference": "7abe5768fc46a53a7d7bb4ac3fdcb9932b538858"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -190,7 +190,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -266,7 +266,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/full",
-                "reference": "db93b8e7d094609b3bf29560d1f6dc723f0b9156"
+                "reference": "ee761499709115f2ee067326c16e1047c38dc343"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -279,7 +279,7 @@
                 "axiomasoft/commerz-shipping": "^0.1",
                 "axiomasoft/commerz-stored-value": "^0.1",
                 "axiomasoft/commerz-subscriptions": "^0.1",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "metapackage",
             "extra": {
@@ -313,7 +313,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/inventory",
-                "reference": "98507ac9805b5d09309fd1a1c4ce3a120d771148"
+                "reference": "74398d0de5a97ddb91281cd0fc39b503ef36c305"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -325,7 +325,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -396,7 +396,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pricing",
-                "reference": "db0f94a615f3cd58bd257e30d853fb5251ea0895"
+                "reference": "fb65ac2a426e9516aa3994419df504217db94ce2"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -408,7 +408,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -475,7 +475,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/promotions",
-                "reference": "6645b55ecde5f61cdea8cb4b5fc791d728f0f3ab"
+                "reference": "e0f32971513034cedbb5736a072449336e604863"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -487,7 +487,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -555,7 +555,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/sales",
-                "reference": "43b4163b33a16907d1632227f375820edc4c00d5"
+                "reference": "ef8e0e22c2e20d1a713234f087f5083982da7a79"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -567,7 +567,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -640,7 +640,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/shipping",
-                "reference": "a655e6dd836130d4af0114fcecf1c1d517e6d672"
+                "reference": "d1335ba170bcc81236eedc83023b273e066bcd74"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -652,7 +652,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -722,7 +722,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/stored-value",
-                "reference": "1ae223faff9d3af0c0086d620c44e7b2d8b20c95"
+                "reference": "aebf00a9bc55554488e02d79c91a29a86c3fb9e6"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -734,7 +734,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -799,7 +799,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/subscriptions",
-                "reference": "1718c4475df430b0f8c627b0cd0812b00383f57c"
+                "reference": "03abb63f54890ae14128ce1b4d94f22619eeee32"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -812,7 +812,7 @@
                 "illuminate/contracts": "^13.0",
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "type": "library",
             "extra": {
@@ -7078,7 +7078,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testkit",
-                "reference": "9fbbbc9eaba9f3e9064fb3c5d0d9490db63e9613"
+                "reference": "5038b4caae400d3e33c63614961efb3e48647b34"
             },
             "require": {
                 "axiomasoft/commerz": "^0.1",
@@ -7089,7 +7089,7 @@
                 "illuminate/database": "^13.0",
                 "illuminate/support": "^13.0",
                 "orchestra/testbench": "^11.3",
-                "php": ">=8.4 <8.6"
+                "php": ">=8.4 <8.7"
             },
             "suggest": {
                 "axiomasoft/commerz-catalog": "Required for AssertsSearchEngineCompliance and FakeSearchEngine.",
@@ -9529,6 +9529,97 @@
                 }
             ],
             "time": "2026-08-10T11:01:27+00:00"
+        },
+        {
+            "name": "pestphp/pest-plugin-phpstan",
+            "version": "v5.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pestphp/pest-plugin-phpstan.git",
+                "reference": "a56d8e58dc8892ff89e15c4bca38e74f9f97ff99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pestphp/pest-plugin-phpstan/zipball/a56d8e58dc8892ff89e15c4bca38e74f9f97ff99",
+                "reference": "a56d8e58dc8892ff89e15c4bca38e74f9f97ff99",
+                "shasum": ""
+            },
+            "require": {
+                "pestphp/pest": "^5.0.0",
+                "php": "^8.4",
+                "phpstan/phpstan": "^2.2.5"
+            },
+            "conflict": {
+                "pestphp/pest": "<5.0.0"
+            },
+            "require-dev": {
+                "laravel/pao": "^1.1.2",
+                "laravel/pint": "^1.29.3",
+                "pestphp/pest-plugin-rector": "^5.0",
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan-strict-rules": "^2.0.12",
+                "rector/rector": "^2.5.7"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Pest\\PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Punyapal Shah",
+                    "email": "mrpunyapal@gmail.com"
+                },
+                {
+                    "name": "Nuno Maduro",
+                    "email": "enunomaduro@gmail.com"
+                }
+            ],
+            "description": "PHPStan plugin for Pest",
+            "keywords": [
+                "PHPStan",
+                "framework",
+                "pest",
+                "php",
+                "plugin",
+                "test",
+                "testing",
+                "unit"
+            ],
+            "support": {
+                "source": "https://github.com/pestphp/pest-plugin-phpstan/tree/v5.3.1"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/mrpunyapal",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nunomaduro",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/nunomaduro",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2026-11-02T07:22:57+00:00"
         },
         {
             "name": "pestphp/pest-plugin-profanity",
@@ -12181,7 +12272,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.4 <8.6"
+        "php": ">=8.4 <8.7"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"

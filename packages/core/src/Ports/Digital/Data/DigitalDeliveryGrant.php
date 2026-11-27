@@ -9,6 +9,7 @@ use Commerz\Identity\SellableRef;
 use DateTimeImmutable;
 use DateTimeZone;
 use Packman\Attributes\Api;
+use SensitiveParameter;
 
 /** Provisioned digital entitlement or download token returned by a host `DigitalDeliveryPort`. */
 #[Api(since: '0.1')]
@@ -21,7 +22,7 @@ final readonly class DigitalDeliveryGrant
         public string $reference,
         public SellableRef $sellable,
         public ?string $downloadUrl = null,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         public ?string $licenseKey = null,
         ?DateTimeImmutable $expiresAt = null,
         public ?int $remainingDownloads = null,

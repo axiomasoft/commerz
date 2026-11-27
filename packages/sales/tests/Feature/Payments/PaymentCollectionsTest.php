@@ -84,7 +84,6 @@ it('combines StoredValueTender and card gateway in one order with multicapture (
     $collection = $collections->authorizeGatewaySession(new AuthorizeGatewaySession(
         collection: $collection->id,
         gateway: AcquiringRecordingGateway::KEY,
-        amount: null,
         autoCapture: false,
         lineItems: $l3,
         idempotencyKey: IdempotencyKey::of('card-auth-1'),

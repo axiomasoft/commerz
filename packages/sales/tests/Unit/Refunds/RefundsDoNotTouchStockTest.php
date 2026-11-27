@@ -11,7 +11,7 @@ it('keeps every file of the refunds module away from the stock ports', function 
     $offenders = [];
 
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)) as $file) {
-        if ($file->getExtension() !== 'php') {
+        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
             continue;
         }
 

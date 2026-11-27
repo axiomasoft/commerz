@@ -31,9 +31,11 @@ it('leaves the inserts into orders and order lines to OrderWriter alone', functi
     $writers = [];
 
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)) as $file) {
-        if ($file->getExtension() === 'php' && owInsertsOrders((string) file_get_contents($file->getPathname()))) {
-            $writers[] = substr($file->getPathname(), strlen($src) + 1);
+        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php' || ! owInsertsOrders((string) file_get_contents($file->getPathname()))) {
+            continue;
         }
+
+        $writers[] = substr($file->getPathname(), strlen($src) + 1);
     }
 
     expect($writers)->toBe(['Common/Internal/OrderWriter.php']);

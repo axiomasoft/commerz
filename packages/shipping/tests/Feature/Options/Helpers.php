@@ -33,6 +33,7 @@ use Commerz\Shipping\Tests\Fixtures\FixedRate;
 use Commerz\Shipping\Tests\Fixtures\ForeignCurrencyRate;
 use Commerz\Shipping\Tests\Fixtures\OrderDiscountStage;
 use Commerz\Shipping\Tests\Fixtures\ThrowingRate;
+use Commerz\Shipping\Tests\TestCase;
 use Commerz\Shipping\Zones\Data\ZoneMember;
 use Commerz\Shipping\Zones\Data\ZoneView;
 use Commerz\Stores\Contracts\Channels;
@@ -57,6 +58,11 @@ trait OpEnvironment
         parent::defineEnvironment($app);
         $app['config']->set('commerz.plugins', [OpPlugin::class]);
     }
+}
+
+abstract class OpEnvironmentTestCase extends TestCase
+{
+    use OpEnvironment;
 }
 
 final class OpPlugin implements ExtensionPlugin
@@ -117,17 +123,31 @@ function opGolden(): array
  * The tariffs of `courier`; `$msk` replaces named arguments of the `msk` tariff.
  *
  * @param  array<string, ZoneView>  $zones
- * @param  array<string, mixed>  $msk
+ * @param  array{currency?: Currency, rate?: RateSpec, freeAbove?: Money|null, taxIncluded?: bool|null, etaDays?: int|null}  $msk
  * @return list<ZoneRate>
  */
 function opCourierRates(array $zones, array $msk = []): array
 {
+    $moscow = [
+        'rate' => $msk['rate'] ?? mtFlat('250.00'),
+        'freeAbove' => array_key_exists('freeAbove', $msk) ? $msk['freeAbove'] : Money::of('5000.00', 'RUB'),
+        'etaDays' => array_key_exists('etaDays', $msk) ? $msk['etaDays'] : 1,
+    ];
+
+    if (array_key_exists('currency', $msk)) {
+        $moscow['currency'] = $msk['currency'];
+    }
+
+    if (array_key_exists('taxIncluded', $msk)) {
+        $moscow['taxIncluded'] = $msk['taxIncluded'];
+    }
+
     return [
         mtRate($zones['ru']->id, ['rate' => new RateSpec('weight_table', ['steps' => [
             ['up_to_grams' => 1000, 'amount' => Money::of('300.00', 'RUB')],
             ['up_to_grams' => 5000, 'amount' => Money::of('500.00', 'RUB')],
         ]]), 'etaDays' => 3]),
-        mtRate($zones['msk']->id, array_merge(['rate' => mtFlat('250.00'), 'freeAbove' => Money::of('5000.00', 'RUB'), 'etaDays' => 1], $msk)),
+        mtRate($zones['msk']->id, $moscow),
         mtRate($zones['msk-center']->id, ['rate' => mtFlat('200.00')]),
     ];
 }

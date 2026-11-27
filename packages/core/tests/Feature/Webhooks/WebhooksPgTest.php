@@ -19,14 +19,25 @@ use Packman\Schema\Data\Compiler\ConstraintNames;
 uses(RefreshDatabase::class);
 
 it('creates canonical PostgreSQL webhook tables, constraints, and relays DatabaseOutbox events end-to-end', function (): void {
-    $subConstraints = array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select("select conname from pg_constraint where conrelid = 'cmz_webhook_subscriptions'::regclass order by conname"),
-    );
-    $delivIndexes = array_map(
-        static fn (object $row): string => $row->indexname,
-        DB::select("select indexname from pg_indexes where tablename = 'cmz_webhook_deliveries' order by indexname"),
-    );
+    $subConstraints = [];
+
+    foreach (DB::select("select conname from pg_constraint where conrelid = 'cmz_webhook_subscriptions'::regclass and contype <> 'n' order by conname") as $row) {
+        if (! $row instanceof stdClass || ! is_string($row->conname)) {
+            throw new RuntimeException('Expected a constraint name.');
+        }
+
+        $subConstraints[] = $row->conname;
+    }
+
+    $delivIndexes = [];
+
+    foreach (DB::select("select indexname from pg_indexes where tablename = 'cmz_webhook_deliveries' order by indexname") as $row) {
+        if (! $row instanceof stdClass || ! is_string($row->indexname)) {
+            throw new RuntimeException('Expected an index name.');
+        }
+
+        $delivIndexes[] = $row->indexname;
+    }
 
     expect($subConstraints)->toContain(
         'cmz_webhook_subscriptions_pk',

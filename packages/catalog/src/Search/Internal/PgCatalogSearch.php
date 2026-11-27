@@ -108,13 +108,13 @@ final readonly class PgCatalogSearch implements CatalogSearchPort
         $facets = $this->computeFacets($db, $query, $attributeDefinitions, $isPg);
 
         if ($mainConditions === null) {
-            return new CatalogSearchResult(new Page([], null), 0, $facets);
+            return new CatalogSearchResult(new Page([]), 0, $facets);
         }
 
         $total = $this->countMatches($db, $query, $mainConditions, $isPg);
 
         if ($total === 0) {
-            return new CatalogSearchResult(new Page([], null), 0, $facets);
+            return new CatalogSearchResult(new Page([]), 0, $facets);
         }
 
         $rows = $this->fetchPageRows($db, $query, $mainConditions, $cursor, $isPg);
@@ -126,7 +126,7 @@ final readonly class PgCatalogSearch implements CatalogSearchPort
 
         if ($hasMore && $pageRows !== []) {
             $lastRow = $pageRows[array_key_last($pageRows)];
-            $nextCursor = (new SearchCursor(
+            $nextCursor = new SearchCursor(
                 sort: $query->sort,
                 id: Rows::string($lastRow, 'id'),
                 handle: Rows::string($lastRow, 'handle'),
@@ -136,7 +136,7 @@ final readonly class PgCatalogSearch implements CatalogSearchPort
                 relevance: $query->sort === SearchSort::Relevance
                     ? Rows::int($lastRow, 'search_relevance')
                     : null,
-            ))->toCursor();
+            )->toCursor();
         }
 
         return new CatalogSearchResult(new Page($views, $nextCursor), $total, $facets);

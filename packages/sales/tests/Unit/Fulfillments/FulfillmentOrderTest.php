@@ -94,7 +94,7 @@ it('leaves writes of fulfillment_orders tables exclusively to FulfillmentOrderRo
     $writers = [];
 
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)) as $file) {
-        if ($file->getExtension() !== 'php') {
+        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
             continue;
         }
 

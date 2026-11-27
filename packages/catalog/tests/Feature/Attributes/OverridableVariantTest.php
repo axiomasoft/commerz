@@ -31,7 +31,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    CatalogEngineSqliteHarness::cleanup($this->sqliteDbPath);
+    CatalogEngineSqliteHarness::cleanup(CatalogEngineSqliteHarness::path($this->sqliteDbPath));
 });
 
 function ovLabel(string $text): LocalizedText
@@ -55,8 +55,24 @@ function ovVariantIndexFacts(string $attributeCode): array
     $facts = [];
 
     foreach ($rows as $row) {
-        $val = $row->choice ?? $row->term ?? $row->num ?? ($row->flag ? 'true' : 'false');
-        $facts[(string) $row->variant_id] = ['id' => (int) $row->id, 'value' => (string) $val];
+        $variantId = $row->variant_id;
+        $id = $row->id;
+        if (! is_string($variantId) || (! is_int($id) && (! is_string($id) || ! ctype_digit($id)))) {
+            throw new RuntimeException('Attribute index row is missing its id.');
+        }
+
+        $choice = $row->choice;
+        $term = $row->term;
+        $num = $row->num;
+        $flag = $row->flag;
+        $raw = $choice ?? $term ?? $num;
+        $raw ??= (in_array($flag, [true, 1, '1', 't', 'true'], true)) ? 'true' : 'false';
+        if (! is_string($raw) && ! is_int($raw) && ! is_float($raw)) {
+            throw new RuntimeException('Attribute index value must be scalar.');
+        }
+
+        $value = is_string($raw) ? $raw : (is_int($raw) ? (string) $raw : sprintf('%.10F', $raw));
+        $facts[$variantId] = ['id' => is_int($id) ? $id : (int) $id, 'value' => $value];
     }
 
     return $facts;

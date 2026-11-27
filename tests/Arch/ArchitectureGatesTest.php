@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Commerz\Arch\ArchitectureGates;
+use Commerz\Arch\GateResult;
 
 /** @var array<string, array{kind: string, nouns: list<string>, extra?: list<string>}> $map */
 $map = require __DIR__.'/ownership.php';
@@ -20,14 +21,14 @@ $gates = [
 
 foreach ($gates as $gate => [$fixture, $offender]) {
     it("{$gate} gate passes on the real tree and checks something", function () use ($gate, $map, $repository): void {
-        $result = (new ArchitectureGates($repository, $map))->{$gate}();
+        $result = runArchitectureGate(new ArchitectureGates($repository, $map), $gate);
 
         expect($result->checked)->toBeGreaterThan(0)
             ->and($result->violations)->toBe([], $result->describe());
     });
 
     it("{$gate} gate fails on its negative fixture and names the file", function () use ($gate, $fixture, $offender, $map): void {
-        $result = (new ArchitectureGates(__DIR__.'/Fixtures/'.$fixture, $map))->{$gate}();
+        $result = runArchitectureGate(new ArchitectureGates(__DIR__.'/Fixtures/'.$fixture, $map), $gate);
 
         expect($result->passes())->toBeFalse()
             ->and($result->describe())->toContain($offender);
@@ -40,3 +41,16 @@ it('fails a gate that inspects nothing', function () use ($map): void {
     expect($result->checked)->toBe(0)
         ->and($result->passes())->toBeFalse();
 });
+
+function runArchitectureGate(ArchitectureGates $gates, string $gate): GateResult
+{
+    return match ($gate) {
+        'dependencies' => $gates->dependencies(),
+        'internals' => $gates->internals(),
+        'markers' => $gates->markers(),
+        'eloquent' => $gates->eloquent(),
+        'tables' => $gates->tables(),
+        'floats' => $gates->floats(),
+        default => throw new LogicException("Unknown architecture gate {$gate}."),
+    };
+}

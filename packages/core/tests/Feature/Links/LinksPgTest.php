@@ -15,10 +15,20 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 it('creates cmz_entity_links with UUIDv7 PK, jsonb extra, forward/reverse indexes, and zero FKs', function (): void {
-    $columns = collect(DB::select("select column_name, data_type from information_schema.columns where table_name = 'cmz_entity_links'"))
-        ->keyBy('column_name');
+    $columns = [];
 
-    expect($columns->keys()->sort()->values()->all())->toBe([
+    foreach (DB::select("select column_name, data_type from information_schema.columns where table_name = 'cmz_entity_links'") as $row) {
+        if (! $row instanceof stdClass || ! is_string($row->column_name) || ! is_string($row->data_type)) {
+            throw new RuntimeException('Expected column metadata.');
+        }
+
+        $columns[$row->column_name] = $row->data_type;
+    }
+
+    $columnNames = array_keys($columns);
+    sort($columnNames);
+
+    expect($columnNames)->toBe([
         'created_at',
         'extra',
         'id',
@@ -30,14 +40,19 @@ it('creates cmz_entity_links with UUIDv7 PK, jsonb extra, forward/reverse indexe
         'right_type',
         'updated_at',
     ])
-        ->and($columns['id']->data_type)->toBe('uuid')
-        ->and($columns['extra']->data_type)->toBe('jsonb');
+        ->and($columns['id'])->toBe('uuid')
+        ->and($columns['extra'])->toBe('jsonb');
 
     $foreignKeys = DB::select("select conname from pg_constraint where conrelid = 'cmz_entity_links'::regclass and contype = 'f'");
-    $indexes = array_map(
-        static fn (object $row): string => $row->indexname,
-        DB::select("select indexname from pg_indexes where tablename = 'cmz_entity_links' order by indexname"),
-    );
+    $indexes = [];
+
+    foreach (DB::select("select indexname from pg_indexes where tablename = 'cmz_entity_links' order by indexname") as $row) {
+        if (! $row instanceof stdClass || ! is_string($row->indexname)) {
+            throw new RuntimeException('Expected an index name.');
+        }
+
+        $indexes[] = $row->indexname;
+    }
 
     expect($foreignKeys)->toBe([])
         ->and($indexes)->toHaveCount(4); // pk + unique + forward composite + reverse composite
@@ -74,11 +89,22 @@ it('executes N+1-free batch queries (2 queries for 100 entities) and whereLinked
     $loaded = $query->getLinkedForMany(
         'core.batch_items',
         $itemIds,
+        /**
+         * @param  list<string>  $storeIds
+         * @return array<string, string>
+         */
         static function (array $storeIds): array {
             $rows = DB::table('cmz_stores')->whereIn('id', $storeIds)->get();
             $map = [];
             foreach ($rows as $row) {
-                $map[$row->id] = $row->code;
+                $id = $row->id ?? null;
+                $code = $row->code ?? null;
+
+                if (! is_string($id) || ! is_string($code)) {
+                    throw new RuntimeException('Expected store id and code.');
+                }
+
+                $map[$id] = $code;
             }
 
             return $map;

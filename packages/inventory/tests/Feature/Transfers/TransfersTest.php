@@ -397,7 +397,13 @@ it('raises TransferUpdated after every committed transition and none for a repea
     } catch (InsufficientStock) {
     }
 
-    $states = Event::dispatched(TransferUpdated::class)->map(static fn (array $call): TransferState => $call[0]->transfer->state)->all();
+    $states = Event::dispatched(TransferUpdated::class)->map(static function (mixed $call): TransferState {
+        if (! is_array($call) || ! array_key_exists(0, $call) || ! $call[0] instanceof TransferUpdated) {
+            throw new RuntimeException('expected a TransferUpdated dispatch');
+        }
+
+        return $call[0]->transfer->state;
+    })->all();
 
     expect($states)->toBe([
         TransferState::Draft,

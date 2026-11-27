@@ -20,16 +20,16 @@ it('passes the doctor on a fresh install', function (): void {
 it('fails the doctor when the fingerprint row is gone', function (): void {
     DB::table('cmz_schema_state')->delete();
 
-    $this->artisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
+    $this->pendingArtisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
 });
 
 it('fails the doctor on a broken configuration', function (): void {
     config()->set('commerz.table_prefix', 'BAD');
     app()->forgetInstance(CommerzOptions::class);
 
-    $this->artisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
+    $this->pendingArtisan('packman:doctor', ['--prefix' => ['commerz']])->expectsOutputToContain('FAIL')->assertExitCode(1);
 });
 
 it('installs without migrating on request', function (): void {
-    $this->artisan('commerz:install', ['--no-migrate' => true])->assertExitCode(0);
+    $this->pendingArtisan('commerz:install', ['--no-migrate' => true])->assertExitCode(0);
 });

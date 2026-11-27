@@ -372,7 +372,7 @@ final class DatabaseLinkRegistry implements LinkRegistry
 
     private static function now(): string
     {
-        return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.uP');
+        return new DateTimeImmutable('now', new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.uP');
     }
 
     private static function assertEntityId(string $id, string $field): void

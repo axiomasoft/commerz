@@ -13,7 +13,11 @@ use Commerz\Promotions\Rules\Internal\Effects\BuyXGetY;
 use Commerz\Promotions\Rules\Internal\Effects\UnitPool;
 use Commerz\Promotions\Tests\Support\RuleStates;
 use Commerz\Quotes\Data\Adjustment;
+use Commerz\Quotes\Data\QuoteState;
 
+/**
+ * @param  array<string, mixed>  $params
+ */
 function bxgyField(array $params): ?string
 {
     try {
@@ -25,7 +29,13 @@ function bxgyField(array $params): ?string
     return null;
 }
 
-/** @return list<string> */
+/**
+ * @param  array<string, mixed>  $params
+ * @param  list<array{id: string, unit: string, qty?: int, ref?: string, categories?: list<string>}>  $lines
+ * @param  list<string>|null  $eligible
+ * @param  Closure(QuoteState): QuoteState|null  $with
+ * @return list<string>
+ */
 function bxgy(array $params, array $lines, ?array $eligible = null, RoundingMode $rounding = RoundingMode::HalfUp, ?Closure $with = null): array
 {
     $state = RuleStates::state($lines);
@@ -40,6 +50,7 @@ function bxgy(array $params, array $lines, ?array $eligible = null, RoundingMode
     );
 }
 
+/** @return list<array{id: string, unit: string, qty?: int}> */
 function g9Lines(): array
 {
     return [['id' => 'A', 'unit' => '100.00', 'qty' => 3], ['id' => 'B', 'unit' => '50.00'], ['id' => 'C', 'unit' => '80.00', 'qty' => 2]];
@@ -91,7 +102,7 @@ it('discounts the selected units by the rate (G11)', function (): void {
 });
 
 it('takes the cheapest unit of a line whose net is not divisible by its quantity (G12)', function (): void {
-    $discounted = static fn ($state) => $state->withAdjustment(Adjustment::line('A', Money::of('-0.01', 'RUB'), 'promotions.catalog', 'catalog'));
+    $discounted = static fn (QuoteState $state): QuoteState => $state->withAdjustment(Adjustment::line('A', Money::of('-0.01', 'RUB'), 'promotions.catalog', 'catalog'));
 
     expect(bxgy(['buy' => 2, 'get' => 1], [['id' => 'A', 'unit' => '100.00', 'qty' => 3]], with: $discounted))->toBe(['A: 99.99']);
 });
@@ -145,7 +156,7 @@ it('refuses a line with a negative net or no quantity', function (): void {
 });
 
 it('treats a line whose net went below zero as free units and discounts nothing for it', function (): void {
-    $negative = static fn ($state) => $state->withAdjustment(Adjustment::line('A', Money::of('-15.00', 'RUB'), 'promotions.catalog', 'catalog'));
+    $negative = static fn (QuoteState $state): QuoteState => $state->withAdjustment(Adjustment::line('A', Money::of('-15.00', 'RUB'), 'promotions.catalog', 'catalog'));
 
     expect(bxgy(['buy' => 1, 'get' => 1], [['id' => 'A', 'unit' => '10.00']], with: $negative))->toBe([])
         ->and(bxgy(['buy' => 1, 'get' => 1], [['id' => 'A', 'unit' => '10.00'], ['id' => 'B', 'unit' => '4.00']], with: $negative))->toBe([]);

@@ -3,7 +3,7 @@
 Testbench test case, in-memory fakes of every core port, plugin contract tests and a multi-process concurrency helper.
 
 Part of [Commerz](https://github.com/axiomasoft/commerz), an embeddable commerce
-engine for Laravel (PHP 8.4, Laravel 13, PostgreSQL ≥ 16).
+engine for Laravel (PHP 8.4–8.6, Laravel 13, PostgreSQL ≥ 16).
 
 ## Installation
 

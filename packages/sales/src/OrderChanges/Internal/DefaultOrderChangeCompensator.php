@@ -152,7 +152,6 @@ final readonly class DefaultOrderChangeCompensator implements OrderChangeCompens
             order: $order->id,
             amount: $overpaid,
             payment: $preference->paymentId,
-            return: null,
             reason: $preference->reason ?? 'Order change refund',
             idempotencyKey: $this->deriveKey($changeId, 'refund', $idempotencyKey),
             actor: $actor,

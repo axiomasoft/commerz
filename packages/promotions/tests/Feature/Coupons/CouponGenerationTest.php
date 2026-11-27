@@ -28,7 +28,7 @@ it('generates exactly the count of unique codes that follow the pattern', functi
 
     $batch = Promotions::coupons()->generate(new GenerateCoupons($promotion->id, 2500, 'summer-####-##', usageLimit: 3));
 
-    $codes = DB::table('cmz_coupons')->where('batch_id', $batch->id->value)->pluck('code')->all();
+    $codes = stanStrings(DB::table('cmz_coupons')->where('batch_id', $batch->id->value)->pluck('code'));
 
     expect($batch->count)->toBe(2500)
         ->and($batch->pattern)->toBe('SUMMER-####-##')

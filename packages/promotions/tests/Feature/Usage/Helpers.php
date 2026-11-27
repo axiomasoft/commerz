@@ -38,6 +38,8 @@ function usgRestore(string $order, RestoreReason $reason = RestoreReason::Cancel
 /**
  * How a call ends: `ok`, `limit:<limit>` for UsageLimitReached, `unavailable:<reason>` for PromotionUnavailable, or the
  * error code of another Commerz error.
+ *
+ * @param  Closure(): mixed  $call
  */
 function usgOutcome(Closure $call): string
 {
@@ -57,25 +59,23 @@ function usgOutcome(Closure $call): string
 /** @return array{used: int, spent: int} */
 function usgPromotionCounters(PromotionView|string $promotion): array
 {
-    $row = DB::table('cmz_promotions')->where('id', $promotion instanceof PromotionView ? $promotion->id->value : $promotion)->first(['used', 'spent_minor']);
+    $row = stanRow(DB::table('cmz_promotions')->where('id', $promotion instanceof PromotionView ? $promotion->id->value : $promotion)->first(['used', 'spent_minor']));
 
-    return ['used' => (int) $row->used, 'spent' => (int) $row->spent_minor];
+    return ['used' => stanInt($row->used), 'spent' => stanInt($row->spent_minor)];
 }
 
 function usgCouponUsed(string $code): int
 {
-    return (int) DB::table('cmz_coupons')->where('code', $code)->value('used');
+    return stanInt(DB::table('cmz_coupons')->where('code', $code)->value('used'));
 }
 
 /** @return array<string, int> used by customer ref */
 function usgCustomers(PromotionView|string $promotion): array
 {
-    return DB::table('cmz_promotion_customer_usages')
+    return stanIntMap(DB::table('cmz_promotion_customer_usages')
         ->where('promotion_id', $promotion instanceof PromotionView ? $promotion->id->value : $promotion)
         ->orderBy('customer_ref')
-        ->pluck('used', 'customer_ref')
-        ->map(static fn ($used): int => (int) $used)
-        ->all();
+        ->pluck('used', 'customer_ref'));
 }
 
 /** Usages whose redemption is still consumed, for the promotion. */

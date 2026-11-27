@@ -14,6 +14,7 @@ use Commerz\Catalog\Routes\Exceptions\RouteNotFound;
 use Commerz\Identity\Uuid7;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -39,8 +40,8 @@ it('assigns canonical slugs, retires old slugs for 301 RedirectRoute (INV-CAT-00
         ->and($first->seoMeta->title)->toBe('Blue T-Shirt');
 
     $resolved1 = Catalog::routes()->resolve(new ResolveRoute($channel, 'en', 'blue-t-shirt'));
-    expect($resolved1)->toBeInstanceOf(CanonicalRoute::class)
-        ->and($resolved1->route->slug)->toBe('blue-t-shirt');
+    Assert::assertInstanceOf(CanonicalRoute::class, $resolved1);
+    expect($resolved1->route->slug)->toBe('blue-t-shirt');
 
     // Changing canonical slug atomically sets old slug is_canonical=false
     $second = Catalog::routes()->assignCanonical(new AssignCanonicalSlug(
@@ -55,8 +56,8 @@ it('assigns canonical slugs, retires old slugs for 301 RedirectRoute (INV-CAT-00
     expect($second->isCanonical)->toBeTrue();
 
     $resolvedOld = Catalog::routes()->resolve(new ResolveRoute($channel, 'en', 'blue-t-shirt'));
-    expect($resolvedOld)->toBeInstanceOf(RedirectRoute::class)
-        ->and($resolvedOld->statusCode)->toBe(301)
+    Assert::assertInstanceOf(RedirectRoute::class, $resolvedOld);
+    expect($resolvedOld->statusCode)->toBe(301)
         ->and($resolvedOld->targetSlug)->toBe('organic-blue-t-shirt')
         ->and($resolvedOld->matchedRoute->isCanonical)->toBeFalse()
         ->and($resolvedOld->canonicalRoute->id->equals($second->id))->toBeTrue();
@@ -82,8 +83,8 @@ it('assigns canonical slugs, retires old slugs for 301 RedirectRoute (INV-CAT-00
     expect($reverted->isCanonical)->toBeTrue();
 
     $resolvedSecondAfterRevert = Catalog::routes()->resolve(new ResolveRoute($channel, 'en', 'organic-blue-t-shirt'));
-    expect($resolvedSecondAfterRevert)->toBeInstanceOf(RedirectRoute::class)
-        ->and($resolvedSecondAfterRevert->targetSlug)->toBe('blue-t-shirt');
+    Assert::assertInstanceOf(RedirectRoute::class, $resolvedSecondAfterRevert);
+    expect($resolvedSecondAfterRevert->targetSlug)->toBe('blue-t-shirt');
 
     $routes = Catalog::routes()->forEntity('product', $productId);
     expect($routes)->toHaveCount(2);

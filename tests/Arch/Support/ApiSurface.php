@@ -59,7 +59,9 @@ final class ApiSurface
     /**
      * The layer of a public type from its marker. A gate already requires one on every public type.
      *
-     * @param  ReflectionClass<object>  $type
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $type
      * @return array{layer: 'api'|'spi', since: string, spiKind?: string}
      */
     public static function classify(ReflectionClass $type): array
@@ -87,7 +89,11 @@ final class ApiSurface
     {
         $extra = $package->composer['extra'] ?? [];
         $providers = is_array($extra) && is_array($extra['laravel'] ?? null) ? ($extra['laravel']['providers'] ?? []) : [];
-        $configs = array_map(static fn (string $file): string => basename($file, '.php'), glob($package->path.'/config/*.php') ?: []);
+        $configFiles = glob($package->path.'/config/*.php');
+        if ($configFiles === false) {
+            $configFiles = [];
+        }
+        $configs = array_map(static fn (string $file): string => basename($file, '.php'), $configFiles);
         $commands = [];
         $plugins = [];
         $kinds = [];
@@ -100,13 +106,13 @@ final class ApiSurface
             }
 
             if ($reflection->implementsInterface(ExtensionPlugin::class) && $reflection->hasConstant('ID')) {
-                $plugins[] = (string) $reflection->getConstant('ID');
+                $plugins[] = self::stringConstant($reflection->getConstant('ID'), "{$type}::ID");
             }
 
             $hasSpi = $reflection->getAttributes(Spi::class) !== [];
 
             if (! SourceScanner::isInternal($type) && $reflection->isInterface() && $hasSpi && $reflection->hasConstant('KIND')) {
-                $kinds[] = (string) $reflection->getConstant('KIND');
+                $kinds[] = self::stringConstant($reflection->getConstant('KIND'), "{$type}::KIND");
             }
         }
 
@@ -115,8 +121,18 @@ final class ApiSurface
         sort($plugins);
         sort($kinds);
 
+        $providerNames = [];
+        if (is_array($providers)) {
+            foreach ($providers as $provider) {
+                if (! is_string($provider)) {
+                    throw new RuntimeException('A Laravel provider entry must be a class name.');
+                }
+                $providerNames[] = $provider;
+            }
+        }
+
         return array_filter([
-            'providers' => is_array($providers) ? array_values(array_map(strval(...), $providers)) : [],
+            'providers' => $providerNames,
             'config' => count($configs) === 1 ? $configs[0] : $configs,
             'commands' => $commands,
             'plugin' => count($plugins) === 1 ? $plugins[0] : $plugins,
@@ -185,14 +201,18 @@ final class ApiSurface
         return false;
     }
 
-    /** @param  ReflectionClass<object>  $command */
+    /**
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $command
+     */
     private static function commandName(ReflectionClass $command): string
     {
         foreach ($command->getAttributes(Signature::class) as $attribute) {
             $signature = $attribute->getArguments()[0] ?? $attribute->getArguments()['signature'] ?? null;
 
             if (is_string($signature)) {
-                return strtok($signature, " \t\n{") ?: $signature;
+                return self::commandToken($signature);
             }
         }
 
@@ -203,7 +223,23 @@ final class ApiSurface
             throw new RuntimeException("Cannot read the name of the command {$command->getName()}.");
         }
 
-        return strtok($signature, " \t\n{") ?: $signature;
+        return self::commandToken($signature);
+    }
+
+    private static function commandToken(string $signature): string
+    {
+        $token = strtok($signature, " \t\n{");
+
+        return is_string($token) ? $token : $signature;
+    }
+
+    private static function stringConstant(mixed $value, string $name): string
+    {
+        if (! is_string($value)) {
+            throw new RuntimeException("{$name} must be a string.");
+        }
+
+        return $value;
     }
 
     /** @return array<string, list<class-string>> */

@@ -392,10 +392,10 @@ it('runs the expiry sweeper as an artisan command', function (): void {
     rsvReserve($channel, 'cart:1', ['tee' => 2], new DateTimeImmutable('-1 minute'));
     rsvReserve($channel, 'cart:2', ['tee' => 2], new DateTimeImmutable('-1 minute'));
 
-    $this->artisan('commerz:inventory:expire-reservations', ['--limit' => '1'])->expectsOutputToContain('Closed 1')->assertSuccessful();
-    $this->artisan('commerz:inventory:expire-reservations')->expectsOutputToContain('Closed 1')->assertSuccessful();
-    $this->artisan('commerz:inventory:expire-reservations', ['--limit' => 'many'])->assertFailed();
-    $this->artisan('commerz:inventory:expire-reservations', ['--limit' => '0'])->assertFailed();
+    $this->pendingArtisan('commerz:inventory:expire-reservations', ['--limit' => '1'])->expectsOutputToContain('Closed 1')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:expire-reservations')->expectsOutputToContain('Closed 1')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:expire-reservations', ['--limit' => 'many'])->assertFailed();
+    $this->pendingArtisan('commerz:inventory:expire-reservations', ['--limit' => '0'])->assertFailed();
 
     expect(rsvLevel($tee, $main)->reserved)->toBe(0);
 });
@@ -465,7 +465,10 @@ it('dispatches reservation events after commit and records level changes in the 
     Inventory::reservations()->release(new ReleaseReservation('order:1', $sku, 1));
 
     Event::assertDispatched(StockReserved::class, fn (StockReserved $e): bool => $e->reservation->demand === 'order:1' && $e->reservation->lines[0]->units === 3);
-    Event::assertDispatched(StockConsumed::class, fn (StockConsumed $e): bool => $e->quantity === 1 && $e->reference === 'fulfillment:1' && $e->allocations == [new StockAllocation('main', 1)]);
+    Event::assertDispatched(StockConsumed::class, fn (StockConsumed $e): bool => $e->quantity === 1 && $e->reference === 'fulfillment:1' && array_map(
+        static fn (StockAllocation $allocation): array => [$allocation->locationCode, $allocation->quantity],
+        $e->allocations,
+    ) === [['main', 1]]);
     Event::assertDispatched(StockReleased::class, fn (StockReleased $e): bool => $e->cause === ReleaseCause::Released && $e->units === ['variant:tee' => 1]);
     expect(DB::table('cmz_outbox_messages')->count() - $outbox)->toBe(3)
         ->and(DB::table('cmz_outbox_messages')->latest('occurred_at')->value('type'))->toBe('inventory.level_changed');

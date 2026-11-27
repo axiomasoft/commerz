@@ -31,14 +31,26 @@ use Commerz\Ports\Prices\Data\ResolvedPrice;
 use Commerz\Ports\Prices\Exceptions\PriceNotFound;
 use Commerz\Ports\Stock\Contracts\StockAvailability;
 use Commerz\Ports\Stock\Data\AvailabilityAnswer;
+use Commerz\Ports\Stock\Data\AvailabilityLine;
 use Commerz\Ports\Stock\Data\CheckAvailability;
 use Commerz\Ports\Stock\Data\LineAvailability;
 use Commerz\Stores\Contracts\Channels;
 use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
+use Commerz\Testkit\Fakes\FrozenClock;
 use Illuminate\Support\Facades\DB;
 use Packman\Plugins\Contracts\Contributions\Contributions;
+
+function projectionClock(): FrozenClock
+{
+    $clock = test()->clock ?? null;
+    if (! $clock instanceof FrozenClock) {
+        throw new RuntimeException('FrozenClock was not booted.');
+    }
+
+    return $clock;
+}
 
 beforeEach(function (): void {
     $booted = CatalogEngineSqliteHarness::boot('2026-11-26T14:00:00Z');
@@ -47,7 +59,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    CatalogEngineSqliteHarness::cleanup($this->sqliteDbPath);
+    CatalogEngineSqliteHarness::cleanup(CatalogEngineSqliteHarness::path($this->sqliteDbPath));
 });
 
 it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.*) and serves single-row reads', function (): void {
@@ -73,7 +85,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
             foreach ($requests as $req) {
                 $key = (string) $req->sellable;
                 if (! isset($this->prices[$key])) {
-                    throw new PriceNotFound($req->sellable, $context->currency);
+                    throw new PriceNotFound((string) $req->sellable, (string) $context->currency);
                 }
                 $out[] = new ResolvedPrice(
                     Money::ofMinor($this->prices[$key], $context->currency),
@@ -101,7 +113,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
         public function check(CheckAvailability $query): AvailabilityAnswer
         {
             return new AvailabilityAnswer(array_map(
-                fn ($line): LineAvailability => new LineAvailability(
+                fn (AvailabilityLine $line): LineAvailability => new LineAvailability(
                     $line->sellable,
                     $line->quantity,
                     $this->stock[(string) $line->sellable] ?? 0,
@@ -174,7 +186,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
     $consumer->consume(IntegrationEvent::of('catalog.product_published', 'product:'.$product->id->value, [
         'product_id' => $product->id->value,
         'channel_id' => $channel->id->value,
-    ], occurredAt: $this->clock->now()));
+    ], occurredAt: projectionClock()->now()));
 
     // Verify single-row storefront read executes EXACTLY 1 SQL SELECT query with zero joins!
     $queries = [];
@@ -209,7 +221,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
     $pricesMinor[(string) $vSmall->sellable] = 9900;
     $consumer->consume(IntegrationEvent::of('pricing.prices_changed', 'price_list:01900000-0000-7000-8000-000000000001', [
         'sellables' => [(string) $vSmall->sellable],
-    ], occurredAt: $this->clock->now()));
+    ], occurredAt: projectionClock()->now()));
 
     $repriced = Catalog::storefront()->get($channel->id, 'en', $product->id);
     expect($repriced->priceMinMinor)->toBe(9900)
@@ -220,7 +232,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
     $consumer->consume(IntegrationEvent::of('inventory.level_changed', 'stock_level:01900000-0000-7000-8000-000000000002', [
         'sku' => 'PARKA-L',
         'available' => 0,
-    ], occurredAt: $this->clock->now()));
+    ], occurredAt: projectionClock()->now()));
 
     $outOfStock = Catalog::storefront()->get($channel->id, 'en', $product->id);
     expect($outOfStock->inStock)->toBeFalse()
@@ -232,7 +244,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
     $consumer->consume(IntegrationEvent::of('catalog.product_unpublished', 'product:'.$product->id->value, [
         'product_id' => $product->id->value,
         'channel_id' => $channel->id->value,
-    ], occurredAt: $this->clock->now()));
+    ], occurredAt: projectionClock()->now()));
 
     expect(Catalog::storefront()->find($channel->id, 'en', $product->id))->toBeNull()
         ->and(fn () => Catalog::storefront()->get($channel->id, 'en', $product->id))
@@ -245,7 +257,7 @@ it('projects storefront rows via Outbox events (catalog.*, pricing.*, inventory.
 
     Catalog::products()->update(new UpdateProduct($product->id, name: new LocalizedText(['en' => 'Parka V2', 'de' => 'Parka V2'])));
     Catalog::products()->archive(new ArchiveProduct($product->id));
-    $consumer->consume(IntegrationEvent::of('catalog.product_updated', 'product:'.$product->id->value, [], occurredAt: $this->clock->now()));
+    $consumer->consume(IntegrationEvent::of('catalog.product_updated', 'product:'.$product->id->value, [], occurredAt: projectionClock()->now()));
 
     expect(DB::connection('catalog_sqlite')->table('cmz_storefront_products')->count())->toBe(0);
 });

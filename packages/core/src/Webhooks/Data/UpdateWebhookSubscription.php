@@ -6,6 +6,7 @@ namespace Commerz\Webhooks\Data;
 
 use Commerz\Errors\InvalidCommand;
 use Packman\Attributes\Api;
+use SensitiveParameter;
 
 #[Api(since: '0.1')]
 final readonly class UpdateWebhookSubscription
@@ -23,7 +24,7 @@ final readonly class UpdateWebhookSubscription
     public function __construct(
         public WebhookSubscriptionId $subscription,
         public ?string $targetUrl = null,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         public ?string $signingSecret = null,
         ?array $eventTypes = null,
         public ?int $maxAttempts = null,

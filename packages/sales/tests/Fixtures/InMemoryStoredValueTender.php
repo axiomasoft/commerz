@@ -51,14 +51,14 @@ final class InMemoryStoredValueTender implements StoredValueTender
 
     public function balanceOf(string $accountId): Money
     {
-        $account = $this->accounts[$accountId] ?? throw new StoredValueNotFound($accountId);
+        $account = $this->accounts[$accountId] ?? throw new StoredValueNotFound('account', $accountId);
 
         return Money::ofMinor($account['balance'], $account['currency']);
     }
 
     public function heldOf(string $accountId): Money
     {
-        $account = $this->accounts[$accountId] ?? throw new StoredValueNotFound($accountId);
+        $account = $this->accounts[$accountId] ?? throw new StoredValueNotFound('account', $accountId);
 
         return Money::ofMinor($account['held'], $account['currency']);
     }
@@ -83,7 +83,7 @@ final class InMemoryStoredValueTender implements StoredValueTender
         }
 
         if (! isset($this->accounts[$command->accountId])) {
-            throw new StoredValueNotFound($command->accountId);
+            throw new StoredValueNotFound('account', $command->accountId);
         }
 
         $account = &$this->accounts[$command->accountId];
@@ -92,8 +92,9 @@ final class InMemoryStoredValueTender implements StoredValueTender
         if ($command->amount->amountMinor > $available) {
             throw new InsufficientStoredValue(
                 $command->accountId,
-                $command->amount,
-                Money::ofMinor(max(0, $available), $account['currency']),
+                $command->amount->amountMinor,
+                max(0, $available),
+                $account['currency']->code,
             );
         }
 
@@ -130,18 +131,20 @@ final class InMemoryStoredValueTender implements StoredValueTender
         }
 
         if (! isset($this->holds[$command->holdId])) {
-            throw new StoredValueNotFound($command->holdId);
+            throw new StoredValueNotFound('hold', $command->holdId);
         }
 
         $hold = &$this->holds[$command->holdId];
         $remaining = $hold['amount'] - $hold['captured'] - $hold['released'];
-        $amountMinor = $command->amount?->amountMinor ?? $remaining;
+        $requested = $command->amount;
+        $amountMinor = $requested->amountMinor ?? $remaining;
 
         if ($amountMinor > $remaining) {
             throw new InsufficientStoredValue(
                 $hold['accountId'],
-                Money::ofMinor($amountMinor, $hold['currency']),
-                Money::ofMinor(max(0, $remaining), $hold['currency']),
+                $amountMinor,
+                max(0, $remaining),
+                $hold['currency']->code,
             );
         }
 
@@ -174,7 +177,8 @@ final class InMemoryStoredValueTender implements StoredValueTender
             return;
         }
 
-        $amountMinor = min($remaining, $command->amount?->amountMinor ?? $remaining);
+        $requested = $command->amount;
+        $amountMinor = min($remaining, $requested->amountMinor ?? $remaining);
         $hold['released'] += $amountMinor;
         $this->accounts[$hold['accountId']]['held'] -= $amountMinor;
     }
@@ -185,14 +189,14 @@ final class InMemoryStoredValueTender implements StoredValueTender
         $accountId = $command->accountId ?? 'wallet';
 
         if (! isset($this->accounts[$accountId])) {
-            throw new StoredValueNotFound($accountId);
+            throw new StoredValueNotFound('account', $accountId);
         }
 
         $this->accounts[$accountId]['balance'] += $command->amount->amountMinor;
 
         return new StoredValueCredit(
             accountId: $accountId,
-            credited: $command->amount,
+            amount: $command->amount,
             balanceAfter: Money::ofMinor($this->accounts[$accountId]['balance'], $command->amount->currency),
             journalId: 'jnl-'.(++$this->sequence),
         );

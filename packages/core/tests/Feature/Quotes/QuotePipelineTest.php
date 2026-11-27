@@ -195,7 +195,7 @@ final class QtBaseAtPlugin implements ExtensionPlugin
 }
 
 /**
- * @param  array<string, array{0: string, 1?: int}>  $lines  line id => [unit price, quantity]
+ * @param  array<int|string, array{0: string, 1?: int}>  $lines  line id => [unit price, quantity]
  * @param  list<string>  $codes
  */
 function qtInput(array $lines, array $codes = [], ?DateTimeImmutable $at = null): QuoteInput
@@ -221,7 +221,10 @@ function qtRun(QuoteInput $input): QuoteResult
     return app(QuotePipeline::class)->run($input);
 }
 
-/** @return list<string> */
+/**
+ * @param  list<Money>  $amounts
+ * @return list<string>
+ */
 function qtDecimals(array $amounts): array
 {
     return array_map(static fn (Money $money): string => $money->toDecimal(), $amounts);

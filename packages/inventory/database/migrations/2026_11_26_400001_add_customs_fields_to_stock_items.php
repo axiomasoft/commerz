@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Schema\CommerzMigration;
 use Illuminate\Database\Schema\Blueprint;
-use Packman\Schema\Support\ConstraintNames;
+use Packman\Schema\Data\Compiler\ConstraintNames;
 
 return new class extends CommerzMigration
 {

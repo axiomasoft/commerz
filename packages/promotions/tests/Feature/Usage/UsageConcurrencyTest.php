@@ -9,6 +9,7 @@ use Commerz\Promotions\Definitions\Data\UsageLimits;
 use Commerz\Promotions\Facades\Promotions;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -18,10 +19,10 @@ require_once __DIR__.'/Helpers.php';
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -52,7 +53,7 @@ it('lets exactly the total limit of orders through (C1)', function (): void {
     expect(usgTally($outcomes))->toBe(['limit:total' => 30, 'ok' => 10])
         ->and(usgPromotionCounters($promotion)['used'])->toBe(10)
         ->and(usgConsumed($promotion))->toBe(10);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('lets exactly the coupon limit of orders through (C2)', function (): void {
@@ -66,7 +67,7 @@ it('lets exactly the coupon limit of orders through (C2)', function (): void {
     expect(usgTally($outcomes))->toBe(['limit:coupon' => 9, 'ok' => 3])
         ->and(usgCouponUsed('SHARED'))->toBe(3)
         ->and(usgConsumed($promotion))->toBe(3);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('lets one customer through once with a per-customer limit of 1 (C3)', function (): void {
@@ -79,7 +80,7 @@ it('lets one customer through once with a per-customer limit of 1 (C3)', functio
     expect(usgTally($outcomes))->toBe(['limit:per_customer' => 7, 'ok' => 1])
         ->and(usgCustomers($promotion))->toBe(['customer:a' => 1])
         ->and(usgConsumed($promotion))->toBe(1);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('never spends more than the budget (C4)', function (): void {
@@ -92,7 +93,7 @@ it('never spends more than the budget (C4)', function (): void {
     expect(usgTally($outcomes))->toBe(['limit:budget' => 10, 'ok' => 10])
         ->and(usgPromotionCounters($promotion))->toBe(['used' => 0, 'spent' => 100_000])
         ->and(usgConsumed($promotion))->toBe(10);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('does not deadlock orders that list two limited promotions in opposite order (C5)', function (): void {
@@ -116,7 +117,7 @@ it('does not deadlock orders that list two limited promotions in opposite order 
         ->and(usgPromotionCounters($first)['used'])->toBe(30)
         ->and(usgPromotionCounters($second)['used'])->toBe(30)
         ->and(usgConsumed($second))->toBe(30);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('counts one order once when processes consume it together (C6)', function (): void {
@@ -130,7 +131,7 @@ it('counts one order once when processes consume it together (C6)', function ():
         ->and(DB::table('cmz_promotion_redemptions')->count())->toBe(1)
         ->and(usgPromotionCounters($promotion)['used'])->toBe(1)
         ->and(usgCustomers($promotion))->toBe(['customer:a' => 1]);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');
 
 it('loses no usage when a limit is set while orders are placed (C7)', function (): void {
@@ -157,5 +158,5 @@ it('loses no usage when a limit is set while orders are placed (C7)', function (
         ->and(DB::table('cmz_promotions')->where('id', $promotion)->value('usage_limit'))->toBe(100)
         ->and(usgPromotionCounters($promotion)['used'])->toBe(80)
         ->and(usgConsumed($promotion))->toBe(80);
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 })->group('concurrency');

@@ -39,7 +39,7 @@ beforeEach(function (): void {
 });
 
 it('propagates optional SellerRef from SellableSnapshot through cart and order lines', function (): void {
-    $cart = slsCarts()->create(new CreateCart(new CommerceContext($this->channel, Currency::of('RUB'), 'en-US')));
+    $cart = slsCarts()->create(new CreateCart(CommerceContext::for($this->channel, Currency::of('RUB'), 'en-US')));
     $cart = slsCarts()->addLine(new AddCartLine($cart->id, SellableRef::fromString('fake:seller-item'), 2));
 
     expect($cart->lines)->toHaveCount(1)
@@ -54,7 +54,7 @@ it('propagates optional SellerRef from SellableSnapshot through cart and order l
 
 it('propagates optional SellerRef on draft order lines', function (): void {
     $draft = slsOrders()->draft(new DraftOrder(
-        new CommerceContext($this->channel, Currency::of('RUB'), 'en-US'),
+        CommerceContext::for($this->channel, Currency::of('RUB'), 'en-US'),
         [new DraftLine(SellableRef::fromString('fake:seller-item'), 1, $this->seller)],
     ));
 

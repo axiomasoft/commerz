@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Errors\InvalidCommand;
 use Commerz\Operations\Contracts\Transactions;
+use Commerz\Pagination\Page;
 use Commerz\Shipping\Common\Exceptions\DuplicateCode;
 use Commerz\Shipping\Configuration\ShippingOptions;
 use Commerz\Shipping\Zones\Contracts\Zones;
@@ -14,6 +15,7 @@ use Commerz\Shipping\Zones\Data\SetZoneMembers;
 use Commerz\Shipping\Zones\Data\UpdateZone;
 use Commerz\Shipping\Zones\Data\ZoneId;
 use Commerz\Shipping\Zones\Data\ZoneMember;
+use Commerz\Shipping\Zones\Data\ZoneView;
 use Commerz\Shipping\Zones\Enums\ZoneStatus;
 use Commerz\Shipping\Zones\Events\ZoneChanged;
 use Commerz\Shipping\Zones\Exceptions\ZoneArchived;
@@ -158,7 +160,19 @@ it('lists by code with filters and a cursor', function (): void {
     $d = znCreate('d', [ZoneMember::country('RU')]);
     znZones()->archive(new ArchiveZone($d->id));
 
-    $codes = static fn ($page): array => array_map(static fn ($view): string => $view->code, $page->items);
+    $codes = static function (Page $page): array {
+        $codes = [];
+
+        foreach ($page->items as $view) {
+            if (! $view instanceof ZoneView) {
+                throw new RuntimeException('expected a zone view');
+            }
+
+            $codes[] = $view->code;
+        }
+
+        return $codes;
+    };
 
     $first = znZones()->list(new ListZones(limit: 2));
     $second = znZones()->list(new ListZones(after: $first->next, limit: 2));

@@ -12,7 +12,7 @@ Public PHP surface of `packages/catalog` as recorded in `packages/catalog/resour
 | kinds | `attribute_type`, `product_kind` |
 | plugin | `commerz.catalog` |
 | providers | `Commerz\Catalog\CatalogServiceProvider` |
-| tables | `product`, `variant`, `option`, `attribute`, `category`, `listing` |
+| tables | `product`, `variant`, `option`, `attribute`, `category`, `listing`, `brand`, `asset_attachment`, `url_route`, `collection`, `storefront_product` |
 
 ## (root)
 
@@ -29,13 +29,20 @@ Root of the catalog API: accessors of the module contracts.
 
 ```php
 final readonly class Catalog {
-    __construct(\Commerz\Catalog\Options\Contracts\Options $options, \Commerz\Catalog\Attributes\Contracts\Attributes $attributes, \Commerz\Catalog\ProductTypes\Contracts\ProductTypes $productTypes, \Commerz\Catalog\Products\Contracts\Products $products, \Commerz\Catalog\Variants\Contracts\Variants $variants, \Commerz\Catalog\Categories\Contracts\Categories $categories, \Commerz\Catalog\Listings\Contracts\Listings $listings);
+    __construct(\Commerz\Catalog\Options\Contracts\Options $options, \Commerz\Catalog\Attributes\Contracts\Attributes $attributes, \Commerz\Catalog\ProductTypes\Contracts\ProductTypes $productTypes, \Commerz\Catalog\Products\Contracts\Products $products, \Commerz\Catalog\Variants\Contracts\Variants $variants, \Commerz\Catalog\Categories\Contracts\Categories $categories, \Commerz\Catalog\Listings\Contracts\Listings $listings, \Commerz\Catalog\Brands\Contracts\Brands $brands, \Commerz\Catalog\Relations\Contracts\ProductRelations $relations, \Commerz\Catalog\Media\Contracts\Media $media, \Commerz\Catalog\Routes\Contracts\UrlRoutes $routes, \Commerz\Catalog\Search\Contracts\CatalogSearchPort $search, \Commerz\Catalog\Collections\Contracts\Collections $collections, \Commerz\Catalog\Projection\Contracts\StorefrontProjection $storefront);
     attributes(): \Commerz\Catalog\Attributes\Contracts\Attributes;
+    brands(): \Commerz\Catalog\Brands\Contracts\Brands;
     categories(): \Commerz\Catalog\Categories\Contracts\Categories;
+    collections(): \Commerz\Catalog\Collections\Contracts\Collections;
     listings(): \Commerz\Catalog\Listings\Contracts\Listings;
+    media(): \Commerz\Catalog\Media\Contracts\Media;
     options(): \Commerz\Catalog\Options\Contracts\Options;
     productTypes(): \Commerz\Catalog\ProductTypes\Contracts\ProductTypes;
     products(): \Commerz\Catalog\Products\Contracts\Products;
+    relations(): \Commerz\Catalog\Relations\Contracts\ProductRelations;
+    routes(): \Commerz\Catalog\Routes\Contracts\UrlRoutes;
+    search(): \Commerz\Catalog\Search\Contracts\CatalogSearchPort;
+    storefront(): \Commerz\Catalog\Projection\Contracts\StorefrontProjection;
     variants(): \Commerz\Catalog\Variants\Contracts\Variants;
 }
 ```
@@ -46,7 +53,7 @@ final readonly class Catalog {
 
 ```php
 final class CatalogServiceProvider extends \Commerz\Laravel\CommerzPluginServiceProvider {
-    const NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing'];
+    const NOUNS = ['product', 'variant', 'option', 'attribute', 'category', 'listing', 'brand', 'asset_attachment', 'url_route', 'collection', 'storefront_product'];
 }
 ```
 
@@ -436,6 +443,167 @@ final class MissingRequiredAttributes extends \Commerz\Errors\CommerzException i
 }
 ```
 
+## Brands
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Brands`](#type-commerz-catalog-brands-contracts-brands) | interface | api | 0.1 |
+| [`ArchiveBrand`](#type-commerz-catalog-brands-data-archivebrand) | class | api | 0.1 |
+| [`BrandId`](#type-commerz-catalog-brands-data-brandid) | class | api | 0.1 |
+| [`BrandView`](#type-commerz-catalog-brands-data-brandview) | class | api | 0.1 |
+| [`CreateBrand`](#type-commerz-catalog-brands-data-createbrand) | class | api | 0.1 |
+| [`ListBrands`](#type-commerz-catalog-brands-data-listbrands) | class | api | 0.1 |
+| [`UpdateBrand`](#type-commerz-catalog-brands-data-updatebrand) | class | api | 0.1 |
+| [`BrandStatus`](#type-commerz-catalog-brands-enums-brandstatus) | enum | api | 0.1 |
+| [`BrandArchived`](#type-commerz-catalog-brands-exceptions-brandarchived) | class | api | 0.1 |
+| [`BrandNotFound`](#type-commerz-catalog-brands-exceptions-brandnotfound) | class | api | 0.1 |
+
+### Brands {#type-commerz-catalog-brands-contracts-brands}
+
+`Commerz\Catalog\Brands\Contracts\Brands`
+
+Brands: CRUD and cursor-paginated listing.
+
+```php
+interface Brands {
+    archive(\Commerz\Catalog\Brands\Data\ArchiveBrand $command): \Commerz\Catalog\Brands\Data\BrandView;
+    create(\Commerz\Catalog\Brands\Data\CreateBrand $command): \Commerz\Catalog\Brands\Data\BrandView;
+    find(\Commerz\Catalog\Brands\Data\BrandId $id): \Commerz\Catalog\Brands\Data\BrandView;
+    findByCode(string $code): \Commerz\Catalog\Brands\Data\BrandView;
+    list(\Commerz\Catalog\Brands\Data\ListBrands $query): \Commerz\Pagination\Page;
+    update(\Commerz\Catalog\Brands\Data\UpdateBrand $command): \Commerz\Catalog\Brands\Data\BrandView;
+}
+```
+
+### ArchiveBrand {#type-commerz-catalog-brands-data-archivebrand}
+
+`Commerz\Catalog\Brands\Data\ArchiveBrand`
+
+```php
+final readonly class ArchiveBrand {
+    public readonly \Commerz\Catalog\Brands\Data\BrandId $brand;
+    __construct(\Commerz\Catalog\Brands\Data\BrandId $brand);
+}
+```
+
+### BrandId {#type-commerz-catalog-brands-data-brandid}
+
+`Commerz\Catalog\Brands\Data\BrandId`
+
+```php
+final readonly class BrandId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### BrandView {#type-commerz-catalog-brands-data-brandview}
+
+`Commerz\Catalog\Brands\Data\BrandView`
+
+```php
+final readonly class BrandView {
+    public readonly string $code;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly \Commerz\Catalog\Brands\Data\BrandId $id;
+    public readonly ?string $logoAssetId;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly \Commerz\Catalog\Brands\Enums\BrandStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    public readonly ?string $websiteUrl;
+    __construct(\Commerz\Catalog\Brands\Data\BrandId $id, string $code, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description, ?string $logoAssetId, ?string $websiteUrl, \Commerz\Catalog\Brands\Enums\BrandStatus $status, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### CreateBrand {#type-commerz-catalog-brands-data-createbrand}
+
+`Commerz\Catalog\Brands\Data\CreateBrand`
+
+Creates a brand.
+
+```php
+final readonly class CreateBrand {
+    public readonly string $code;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly ?string $logoAssetId;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly ?string $websiteUrl;
+    __construct(string $code, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description = null, ?string $logoAssetId = null, ?string $websiteUrl = null);
+}
+```
+
+### ListBrands {#type-commerz-catalog-brands-data-listbrands}
+
+`Commerz\Catalog\Brands\Data\ListBrands`
+
+Brands ordered by code.
+
+```php
+final readonly class ListBrands {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $first;
+    public readonly bool $includeArchived;
+    __construct(bool $includeArchived = false, int $first = 100, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### UpdateBrand {#type-commerz-catalog-brands-data-updatebrand}
+
+`Commerz\Catalog\Brands\Data\UpdateBrand`
+
+Updates the given fields of a brand; null fields stay unchanged unless their clear flag is set.
+
+```php
+final readonly class UpdateBrand {
+    public readonly \Commerz\Catalog\Brands\Data\BrandId $brand;
+    public readonly bool $clearDescription;
+    public readonly bool $clearLogoAssetId;
+    public readonly bool $clearWebsiteUrl;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly ?string $logoAssetId;
+    public readonly ?\Commerz\Measures\LocalizedText $name;
+    public readonly ?string $websiteUrl;
+    __construct(\Commerz\Catalog\Brands\Data\BrandId $brand, ?\Commerz\Measures\LocalizedText $name = null, ?\Commerz\Measures\LocalizedText $description = null, bool $clearDescription = false, ?string $logoAssetId = null, bool $clearLogoAssetId = false, ?string $websiteUrl = null, bool $clearWebsiteUrl = false);
+}
+```
+
+### BrandStatus {#type-commerz-catalog-brands-enums-brandstatus}
+
+`Commerz\Catalog\Brands\Enums\BrandStatus`
+
+```php
+enum BrandStatus {
+    case Active = 'active';
+    case Archived = 'archived';
+}
+```
+
+### BrandArchived {#type-commerz-catalog-brands-exceptions-brandarchived}
+
+`Commerz\Catalog\Brands\Exceptions\BrandArchived`
+
+The brand is archived and cannot be modified.
+
+```php
+final class BrandArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $brand;
+    __construct(string $brand);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### BrandNotFound {#type-commerz-catalog-brands-exceptions-brandnotfound}
+
+`Commerz\Catalog\Brands\Exceptions\BrandNotFound`
+
+```php
+final class BrandNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Categories
 
 | Type | Kind | Layer | Since |
@@ -666,6 +834,343 @@ final class CategoryNotFound extends \Commerz\Errors\NotFound implements \String
 }
 ```
 
+## Collections
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Collections`](#type-commerz-catalog-collections-contracts-collections) | interface | api | 0.1 |
+| [`ArchiveCollection`](#type-commerz-catalog-collections-data-archivecollection) | class | api | 0.1 |
+| [`CollectionId`](#type-commerz-catalog-collections-data-collectionid) | class | api | 0.1 |
+| [`CollectionItem`](#type-commerz-catalog-collections-data-collectionitem) | class | api | 0.1 |
+| [`CollectionProductView`](#type-commerz-catalog-collections-data-collectionproductview) | class | api | 0.1 |
+| [`CollectionView`](#type-commerz-catalog-collections-data-collectionview) | class | api | 0.1 |
+| [`CreateCollection`](#type-commerz-catalog-collections-data-createcollection) | class | api | 0.1 |
+| [`ListCollectionProducts`](#type-commerz-catalog-collections-data-listcollectionproducts) | class | api | 0.1 |
+| [`ListCollections`](#type-commerz-catalog-collections-data-listcollections) | class | api | 0.1 |
+| [`PutCollectionProducts`](#type-commerz-catalog-collections-data-putcollectionproducts) | class | api | 0.1 |
+| [`RemoveCollectionProducts`](#type-commerz-catalog-collections-data-removecollectionproducts) | class | api | 0.1 |
+| [`SetCollectionProducts`](#type-commerz-catalog-collections-data-setcollectionproducts) | class | api | 0.1 |
+| [`SmartCollection`](#type-commerz-catalog-collections-data-smartcollection) | class | api | 0.1 |
+| [`UpdateCollection`](#type-commerz-catalog-collections-data-updatecollection) | class | api | 0.1 |
+| [`CollectionKind`](#type-commerz-catalog-collections-enums-collectionkind) | enum | api | 0.1 |
+| [`CollectionStatus`](#type-commerz-catalog-collections-enums-collectionstatus) | enum | api | 0.1 |
+| [`CollectionCreated`](#type-commerz-catalog-collections-events-collectioncreated) | class | api | 0.1 |
+| [`CollectionUpdated`](#type-commerz-catalog-collections-events-collectionupdated) | class | api | 0.1 |
+| [`CollectionArchived`](#type-commerz-catalog-collections-exceptions-collectionarchived) | class | api | 0.1 |
+| [`CollectionNotFound`](#type-commerz-catalog-collections-exceptions-collectionnotfound) | class | api | 0.1 |
+| [`InvalidCollectionOperation`](#type-commerz-catalog-collections-exceptions-invalidcollectionoperation) | class | api | 0.1 |
+
+### Collections {#type-commerz-catalog-collections-contracts-collections}
+
+`Commerz\Catalog\Collections\Contracts\Collections`
+
+Curated manual collections with explicit product positioning and dynamic smart collections backed by serialized {@see AttributeFilter} and {@see VariantFilter} rules.
+
+```php
+interface Collections {
+    archive(\Commerz\Catalog\Collections\Data\ArchiveCollection $command): \Commerz\Catalog\Collections\Data\CollectionView;
+    create(\Commerz\Catalog\Collections\Data\CreateCollection $command): \Commerz\Catalog\Collections\Data\CollectionView;
+    find(\Commerz\Catalog\Collections\Data\CollectionId $id): \Commerz\Catalog\Collections\Data\CollectionView;
+    findByCode(string $code): \Commerz\Catalog\Collections\Data\CollectionView;
+    list(\Commerz\Catalog\Collections\Data\ListCollections $query): \Commerz\Pagination\Page;
+    // Active manual collections explicitly containing the given product, ordered by `code`.
+    ofProduct(\Commerz\Catalog\Products\Data\ProductId $product): array;
+    // Resolves paginated products of a manual (by `position`, then `handle`) or smart (by `handle`) collection.
+    products(\Commerz\Catalog\Collections\Data\ListCollectionProducts $query): \Commerz\Pagination\Page;
+    // Inserts or repositions specific products in a manual collection and returns all members ordered by `(position, handle)`.
+    putProducts(\Commerz\Catalog\Collections\Data\PutCollectionProducts $command): array;
+    // Removes specific products from a manual collection.
+    removeProducts(\Commerz\Catalog\Collections\Data\RemoveCollectionProducts $command): void;
+    // Replaces all members of a manual collection and returns them ordered by `(position, handle)`.
+    setProducts(\Commerz\Catalog\Collections\Data\SetCollectionProducts $command): array;
+    update(\Commerz\Catalog\Collections\Data\UpdateCollection $command): \Commerz\Catalog\Collections\Data\CollectionView;
+}
+```
+
+### ArchiveCollection {#type-commerz-catalog-collections-data-archivecollection}
+
+`Commerz\Catalog\Collections\Data\ArchiveCollection`
+
+```php
+final readonly class ArchiveCollection {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection);
+}
+```
+
+### CollectionId {#type-commerz-catalog-collections-data-collectionid}
+
+`Commerz\Catalog\Collections\Data\CollectionId`
+
+```php
+final readonly class CollectionId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### CollectionItem {#type-commerz-catalog-collections-data-collectionitem}
+
+`Commerz\Catalog\Collections\Data\CollectionItem`
+
+Positioned product entry in a manual collection.
+
+```php
+final readonly class CollectionItem {
+    public readonly int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $product, int $position = 0);
+}
+```
+
+### CollectionProductView {#type-commerz-catalog-collections-data-collectionproductview}
+
+`Commerz\Catalog\Collections\Data\CollectionProductView`
+
+A product resolved from a collection, carrying its explicit position in manual collections (null for smart collections).
+
+```php
+final readonly class CollectionProductView {
+    public readonly ?int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductView $product;
+    __construct(\Commerz\Catalog\Products\Data\ProductView $product, ?int $position);
+}
+```
+
+### CollectionView {#type-commerz-catalog-collections-data-collectionview}
+
+`Commerz\Catalog\Collections\Data\CollectionView`
+
+```php
+final readonly class CollectionView {
+    public readonly string $code;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $id;
+    public readonly \Commerz\Catalog\Collections\Enums\CollectionKind $kind;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly ?\Commerz\Catalog\Collections\Data\SmartCollection $smart;
+    public readonly \Commerz\Catalog\Collections\Enums\CollectionStatus $status;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $id, string $code, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description, \Commerz\Catalog\Collections\Enums\CollectionKind $kind, ?\Commerz\Catalog\Collections\Data\SmartCollection $smart, \Commerz\Catalog\Collections\Enums\CollectionStatus $status, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### CreateCollection {#type-commerz-catalog-collections-data-createcollection}
+
+`Commerz\Catalog\Collections\Data\CreateCollection`
+
+Creates either a manual collection (`$smart = null`) or a smart collection (`$smart` rules given).
+
+```php
+final readonly class CreateCollection {
+    public readonly string $code;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly \Commerz\Catalog\Collections\Enums\CollectionKind $kind;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly ?\Commerz\Catalog\Collections\Data\SmartCollection $smart;
+    __construct(string $code, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description = null, ?\Commerz\Catalog\Collections\Data\SmartCollection $smart = null);
+    static manual(string $code, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description = null): self;
+    static smart(string $code, \Commerz\Measures\LocalizedText $name, \Commerz\Catalog\Collections\Data\SmartCollection $smart, ?\Commerz\Measures\LocalizedText $description = null): self;
+}
+```
+
+### ListCollectionProducts {#type-commerz-catalog-collections-data-listcollectionproducts}
+
+`Commerz\Catalog\Collections\Data\ListCollectionProducts`
+
+Products of a collection: ordered by `(position, handle)` for manual collections and by `handle` for smart collections, optionally narrowed to a channel/window and extra storefront filters.
+
+```php
+final readonly class ListCollectionProducts {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly ?\DateTimeImmutable $at;
+    public readonly ?\Commerz\Stores\Data\ChannelId $channel;
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    public readonly array $filters;
+    public readonly int $first;
+    public readonly ?\Commerz\Catalog\Products\Enums\ProductStatus $status;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection, ?\Commerz\Stores\Data\ChannelId $channel = null, ?\Commerz\Catalog\Products\Enums\ProductStatus $status = null, array $filters = [], ?\DateTimeImmutable $at = null, int $first = 24, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### ListCollections {#type-commerz-catalog-collections-data-listcollections}
+
+`Commerz\Catalog\Collections\Data\ListCollections`
+
+```php
+final readonly class ListCollections {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly int $first;
+    public readonly bool $includeArchived;
+    public readonly ?\Commerz\Catalog\Collections\Enums\CollectionKind $kind;
+    __construct(?\Commerz\Catalog\Collections\Enums\CollectionKind $kind = null, bool $includeArchived = false, int $first = 50, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### PutCollectionProducts {#type-commerz-catalog-collections-data-putcollectionproducts}
+
+`Commerz\Catalog\Collections\Data\PutCollectionProducts`
+
+Adds or repositions specific products inside a manual collection without removing other members.
+
+```php
+final readonly class PutCollectionProducts {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    public readonly array $items;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection, array $items);
+}
+```
+
+### RemoveCollectionProducts {#type-commerz-catalog-collections-data-removecollectionproducts}
+
+`Commerz\Catalog\Collections\Data\RemoveCollectionProducts`
+
+Removes products from a manual collection.
+
+```php
+final readonly class RemoveCollectionProducts {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    public readonly array $products;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection, array $products);
+}
+```
+
+### SetCollectionProducts {#type-commerz-catalog-collections-data-setcollectionproducts}
+
+`Commerz\Catalog\Collections\Data\SetCollectionProducts`
+
+Replaces the positioned product list of a manual collection. Plain {@see ProductId} items receive sequential positions (0, 1, ...); {@see CollectionItem} entries keep their explicit positions.
+
+```php
+final readonly class SetCollectionProducts {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    public readonly array $items;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection, array $products);
+}
+```
+
+### SmartCollection {#type-commerz-catalog-collections-data-smartcollection}
+
+`Commerz\Catalog\Collections\Data\SmartCollection`
+
+Dynamic collection specification backed by serialized {@see AttributeFilter} and {@see VariantFilter} conditions. Every filter holds on one and the same active variant (CAT-03).
+
+```php
+final readonly class SmartCollection {
+    const VERSION = 1;
+    public readonly array $filters;
+    __construct(array $filters);
+    // Restores a {@see SmartCollection} from its serialized rule array.
+    static fromArray(array $rules): self;
+    static of(\Commerz\Catalog\Products\Data\AttributeFilter|\Commerz\Catalog\Products\Data\VariantFilter ...$filters): self;
+    // Serializes the filter list into a canonical JSON-encodable rule array.
+    toArray(): array;
+}
+```
+
+### UpdateCollection {#type-commerz-catalog-collections-data-updatecollection}
+
+`Commerz\Catalog\Collections\Data\UpdateCollection`
+
+```php
+final readonly class UpdateCollection {
+    public readonly bool $clearDescription;
+    public readonly \Commerz\Catalog\Collections\Data\CollectionId $collection;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly ?\Commerz\Measures\LocalizedText $name;
+    public readonly ?\Commerz\Catalog\Collections\Data\SmartCollection $smart;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionId $collection, ?\Commerz\Measures\LocalizedText $name = null, ?\Commerz\Measures\LocalizedText $description = null, bool $clearDescription = false, ?\Commerz\Catalog\Collections\Data\SmartCollection $smart = null);
+}
+```
+
+### CollectionKind {#type-commerz-catalog-collections-enums-collectionkind}
+
+`Commerz\Catalog\Collections\Enums\CollectionKind`
+
+```php
+enum CollectionKind {
+    case Manual = 'manual';
+    case Smart = 'smart';
+}
+```
+
+### CollectionStatus {#type-commerz-catalog-collections-enums-collectionstatus}
+
+`Commerz\Catalog\Collections\Enums\CollectionStatus`
+
+```php
+enum CollectionStatus {
+    case Active = 'active';
+    case Archived = 'archived';
+}
+```
+
+### CollectionCreated {#type-commerz-catalog-collections-events-collectioncreated}
+
+`Commerz\Catalog\Collections\Events\CollectionCreated`
+
+Dispatched after the creating transaction commits.
+
+```php
+final readonly class CollectionCreated {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionView $collection;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionView $collection);
+}
+```
+
+### CollectionUpdated {#type-commerz-catalog-collections-events-collectionupdated}
+
+`Commerz\Catalog\Collections\Events\CollectionUpdated`
+
+Dispatched after a collection mutation commits.
+
+```php
+final readonly class CollectionUpdated {
+    public readonly \Commerz\Catalog\Collections\Data\CollectionView $collection;
+    __construct(\Commerz\Catalog\Collections\Data\CollectionView $collection);
+}
+```
+
+### CollectionArchived {#type-commerz-catalog-collections-exceptions-collectionarchived}
+
+`Commerz\Catalog\Collections\Exceptions\CollectionArchived`
+
+```php
+final class CollectionArchived extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $collection;
+    __construct(string $collection);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### CollectionNotFound {#type-commerz-catalog-collections-exceptions-collectionnotfound}
+
+`Commerz\Catalog\Collections\Exceptions\CollectionNotFound`
+
+```php
+final class CollectionNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### InvalidCollectionOperation {#type-commerz-catalog-collections-exceptions-invalidcollectionoperation}
+
+`Commerz\Catalog\Collections\Exceptions\InvalidCollectionOperation`
+
+```php
+final class InvalidCollectionOperation extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $collection;
+    public readonly string $reason;
+    __construct(string $collection, string $reason);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Common
 
 | Type | Kind | Layer | Since |
@@ -778,16 +1283,22 @@ Stable wire-level error codes emitted by `axiomasoft/commerz-catalog`.
 
 ```php
 enum CatalogErrorCode implements \Packman\Errors\Contracts\ErrorCode {
+    case AssetAttachmentNotFound = 'catalog.asset_attachment_not_found';
     case AttributeNotAllowed = 'catalog.attribute_not_allowed';
     case AttributeNotFilterable = 'catalog.attribute_not_filterable';
     case AttributeNotFound = 'catalog.attribute_not_found';
     case AttributeNotWritable = 'catalog.attribute_not_writable';
+    case BrandArchived = 'catalog.brand_archived';
+    case BrandNotFound = 'catalog.brand_not_found';
     case CategoryArchived = 'catalog.category_archived';
     case CategoryCycle = 'catalog.category_cycle';
     case CategoryHasChildren = 'catalog.category_has_children';
     case CategoryNotFound = 'catalog.category_not_found';
+    case CollectionArchived = 'catalog.collection_archived';
+    case CollectionNotFound = 'catalog.collection_not_found';
     case DuplicateCode = 'catalog.duplicate_code';
     case DuplicateCombination = 'catalog.duplicate_combination';
+    case DuplicateSlug = 'catalog.duplicate_slug';
     case InvalidAttributeConfig = 'catalog.invalid_attribute_config';
     case InvalidAttributeValue = 'catalog.invalid_attribute_value';
     case InvalidAttributes = 'catalog.invalid_attributes';
@@ -795,6 +1306,7 @@ enum CatalogErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case InvalidBarcode = 'catalog.invalid_barcode';
     case InvalidChoices = 'catalog.invalid_choices';
     case InvalidCode = 'catalog.invalid_code';
+    case InvalidCollectionOperation = 'catalog.invalid_collection_operation';
     case InvalidDimensions = 'catalog.invalid_dimensions';
     case InvalidFilter = 'catalog.invalid_filter';
     case InvalidHandle = 'catalog.invalid_handle';
@@ -809,8 +1321,11 @@ enum CatalogErrorCode implements \Packman\Errors\Contracts\ErrorCode {
     case OptionNotFound = 'catalog.option_not_found';
     case ProductArchived = 'catalog.product_archived';
     case ProductNotFound = 'catalog.product_not_found';
+    case ProductRelationNotFound = 'catalog.product_relation_not_found';
     case ProductTypeArchived = 'catalog.product_type_archived';
     case ProductTypeNotFound = 'catalog.product_type_not_found';
+    case RouteNotFound = 'catalog.route_not_found';
+    case StorefrontProductNotFound = 'catalog.storefront_product_not_found';
     case TooManyAxes = 'catalog.too_many_axes';
     case TooManyVariants = 'catalog.too_many_variants';
     case UnknownOptionValue = 'catalog.unknown_option_value';
@@ -978,6 +1493,149 @@ The product was never published in the channel.
 ```php
 final class ListingNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
     __construct(string $product, string $channel);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Media
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`Media`](#type-commerz-catalog-media-contracts-media) | interface | api | 0.1 |
+| [`AssetAttachmentId`](#type-commerz-catalog-media-data-assetattachmentid) | class | api | 0.1 |
+| [`AssetAttachmentView`](#type-commerz-catalog-media-data-assetattachmentview) | class | api | 0.1 |
+| [`AttachAsset`](#type-commerz-catalog-media-data-attachasset) | class | api | 0.1 |
+| [`DetachAsset`](#type-commerz-catalog-media-data-detachasset) | class | api | 0.1 |
+| [`ListProductAssets`](#type-commerz-catalog-media-data-listproductassets) | class | api | 0.1 |
+| [`UpdateAssetAttachment`](#type-commerz-catalog-media-data-updateassetattachment) | class | api | 0.1 |
+| [`AssetRole`](#type-commerz-catalog-media-enums-assetrole) | enum | api | 0.1 |
+| [`AssetAttachmentNotFound`](#type-commerz-catalog-media-exceptions-assetattachmentnotfound) | class | api | 0.1 |
+
+### Media {#type-commerz-catalog-media-contracts-media}
+
+`Commerz\Catalog\Media\Contracts\Media`
+
+Media asset attachments for products, with optional option-value scoping.
+
+```php
+interface Media {
+    attach(\Commerz\Catalog\Media\Data\AttachAsset $command): \Commerz\Catalog\Media\Data\AssetAttachmentView;
+    detach(\Commerz\Catalog\Media\Data\DetachAsset $command): void;
+    find(\Commerz\Catalog\Media\Data\AssetAttachmentId $id): \Commerz\Catalog\Media\Data\AssetAttachmentView;
+    ofProduct(\Commerz\Catalog\Media\Data\ListProductAssets $query): array;
+    update(\Commerz\Catalog\Media\Data\UpdateAssetAttachment $command): \Commerz\Catalog\Media\Data\AssetAttachmentView;
+}
+```
+
+### AssetAttachmentId {#type-commerz-catalog-media-data-assetattachmentid}
+
+`Commerz\Catalog\Media\Data\AssetAttachmentId`
+
+```php
+final readonly class AssetAttachmentId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### AssetAttachmentView {#type-commerz-catalog-media-data-assetattachmentview}
+
+`Commerz\Catalog\Media\Data\AssetAttachmentView`
+
+```php
+final readonly class AssetAttachmentView {
+    public readonly ?\Commerz\Measures\LocalizedText $alt;
+    public readonly string $assetId;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly \Commerz\Catalog\Media\Data\AssetAttachmentId $id;
+    public readonly ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue;
+    public readonly int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    public readonly \Commerz\Catalog\Media\Enums\AssetRole $role;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Catalog\Media\Data\AssetAttachmentId $id, \Commerz\Catalog\Products\Data\ProductId $product, string $assetId, \Commerz\Catalog\Media\Enums\AssetRole $role, ?\Commerz\Measures\LocalizedText $alt, int $position, ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### AttachAsset {#type-commerz-catalog-media-data-attachasset}
+
+`Commerz\Catalog\Media\Data\AttachAsset`
+
+Attaches a media asset to a product, optionally scoped to an option value.
+
+```php
+final readonly class AttachAsset {
+    public readonly ?\Commerz\Measures\LocalizedText $alt;
+    public readonly string $assetId;
+    public readonly ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue;
+    public readonly int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    public readonly \Commerz\Catalog\Media\Enums\AssetRole $role;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $product, string $assetId, \Commerz\Catalog\Media\Enums\AssetRole $role, ?\Commerz\Measures\LocalizedText $alt = null, int $position = 0, ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue = null);
+}
+```
+
+### DetachAsset {#type-commerz-catalog-media-data-detachasset}
+
+`Commerz\Catalog\Media\Data\DetachAsset`
+
+```php
+final readonly class DetachAsset {
+    public readonly \Commerz\Catalog\Media\Data\AssetAttachmentId $attachment;
+    __construct(\Commerz\Catalog\Media\Data\AssetAttachmentId $attachment);
+}
+```
+
+### ListProductAssets {#type-commerz-catalog-media-data-listproductassets}
+
+`Commerz\Catalog\Media\Data\ListProductAssets`
+
+```php
+final readonly class ListProductAssets {
+    public readonly ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    public readonly ?\Commerz\Catalog\Media\Enums\AssetRole $role;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $product, ?\Commerz\Catalog\Media\Enums\AssetRole $role = null, ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue = null);
+}
+```
+
+### UpdateAssetAttachment {#type-commerz-catalog-media-data-updateassetattachment}
+
+`Commerz\Catalog\Media\Data\UpdateAssetAttachment`
+
+Updates an existing asset attachment; null fields stay unchanged unless their clear flag is set.
+
+```php
+final readonly class UpdateAssetAttachment {
+    public readonly ?\Commerz\Measures\LocalizedText $alt;
+    public readonly \Commerz\Catalog\Media\Data\AssetAttachmentId $attachment;
+    public readonly bool $clearAlt;
+    public readonly bool $clearOptionValue;
+    public readonly ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue;
+    public readonly ?int $position;
+    public readonly ?\Commerz\Catalog\Media\Enums\AssetRole $role;
+    __construct(\Commerz\Catalog\Media\Data\AssetAttachmentId $attachment, ?\Commerz\Catalog\Media\Enums\AssetRole $role = null, ?\Commerz\Measures\LocalizedText $alt = null, bool $clearAlt = false, ?int $position = null, ?\Commerz\Catalog\Options\Data\OptionValueId $optionValue = null, bool $clearOptionValue = false);
+}
+```
+
+### AssetRole {#type-commerz-catalog-media-enums-assetrole}
+
+`Commerz\Catalog\Media\Enums\AssetRole`
+
+```php
+enum AssetRole {
+    case Thumbnail = 'thumbnail';
+    case Gallery = 'gallery';
+    case Swatch = 'swatch';
+    case Video = 'video';
+    case Document = 'document';
+}
+```
+
+### AssetAttachmentNotFound {#type-commerz-catalog-media-exceptions-assetattachmentnotfound}
+
+`Commerz\Catalog\Media\Exceptions\AssetAttachmentNotFound`
+
+```php
+final class AssetAttachmentNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
     errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
 }
 ```
@@ -1336,11 +1994,12 @@ final readonly class CreateProductType {
     public readonly string $code;
     public readonly string $kind;
     public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly array $overridableVariantAttributes;
     public readonly array $productAttributes;
     public readonly array $required;
     public readonly array $variantAttributes;
     public readonly array $variantAxes;
-    __construct(string $code, \Commerz\Measures\LocalizedText $name, string $kind = 'physical', array $productAttributes = [], array $variantAttributes = [], array $variantAxes = [], array $required = []);
+    __construct(string $code, \Commerz\Measures\LocalizedText $name, string $kind = 'physical', array $productAttributes = [], array $variantAttributes = [], array $variantAxes = [], array $required = [], array $overridableVariantAttributes = []);
 }
 ```
 
@@ -1394,11 +2053,12 @@ Renames a type or appends optional slots; axes, kind and existing slots are fixe
 
 ```php
 final readonly class UpdateProductType {
+    public readonly array $addOverridableVariantAttributes;
     public readonly array $addProductAttributes;
     public readonly array $addVariantAttributes;
     public readonly ?\Commerz\Measures\LocalizedText $name;
     public readonly \Commerz\Catalog\ProductTypes\Data\ProductTypeId $type;
-    __construct(\Commerz\Catalog\ProductTypes\Data\ProductTypeId $type, ?\Commerz\Measures\LocalizedText $name = null, array $addProductAttributes = [], array $addVariantAttributes = []);
+    __construct(\Commerz\Catalog\ProductTypes\Data\ProductTypeId $type, ?\Commerz\Measures\LocalizedText $name = null, array $addProductAttributes = [], array $addVariantAttributes = [], array $addOverridableVariantAttributes = []);
 }
 ```
 
@@ -1406,12 +2066,13 @@ final readonly class UpdateProductType {
 
 `Commerz\Catalog\ProductTypes\Enums\AttributeLevel`
 
-Where an attribute value lives: on the product or on each variant.
+Where an attribute value lives: on the product, on each variant, or on the product with per-variant overrides.
 
 ```php
 enum AttributeLevel {
     case Product = 'product';
     case Variant = 'variant';
+    case OverridableVariant = 'overridable_variant';
 }
 ```
 
@@ -1484,10 +2145,14 @@ final class ProductTypeNotFound extends \Commerz\Errors\NotFound implements \Str
 | [`ProductView`](#type-commerz-catalog-products-data-productview) | class | api | 0.1 |
 | [`SetProductAttributes`](#type-commerz-catalog-products-data-setproductattributes) | class | api | 0.1 |
 | [`UpdateProduct`](#type-commerz-catalog-products-data-updateproduct) | class | api | 0.1 |
+| [`UpsertProductItem`](#type-commerz-catalog-products-data-upsertproductitem) | class | api | 0.1 |
+| [`UpsertProducts`](#type-commerz-catalog-products-data-upsertproducts) | class | api | 0.1 |
+| [`UpsertProductsResult`](#type-commerz-catalog-products-data-upsertproductsresult) | class | api | 0.1 |
 | [`VariantFilter`](#type-commerz-catalog-products-data-variantfilter) | class | api | 0.1 |
 | [`ProductStatus`](#type-commerz-catalog-products-enums-productstatus) | enum | api | 0.1 |
 | [`ProductCreated`](#type-commerz-catalog-products-events-productcreated) | class | api | 0.1 |
 | [`ProductUpdated`](#type-commerz-catalog-products-events-productupdated) | class | api | 0.1 |
+| [`ProductsUpserted`](#type-commerz-catalog-products-events-productsupserted) | class | api | 0.1 |
 | [`ProductArchived`](#type-commerz-catalog-products-exceptions-productarchived) | class | api | 0.1 |
 | [`ProductNotFound`](#type-commerz-catalog-products-exceptions-productnotfound) | class | api | 0.1 |
 
@@ -1506,6 +2171,8 @@ interface Products {
     list(\Commerz\Catalog\Products\Data\ListProducts $query): \Commerz\Pagination\Page;
     setAttributes(\Commerz\Catalog\Products\Data\SetProductAttributes $command): \Commerz\Catalog\Products\Data\ProductView;
     update(\Commerz\Catalog\Products\Data\UpdateProduct $command): \Commerz\Catalog\Products\Data\ProductView;
+    // Batch upserts products by `handle` in one atomic transaction with bounded SQL queries, grouped `cmz_attribute_index` reindexing, and compressed Outbox events.
+    upsertMany(\Commerz\Catalog\Products\Data\UpsertProducts $command): \Commerz\Catalog\Products\Data\UpsertProductsResult;
 }
 ```
 
@@ -1642,6 +2309,58 @@ final readonly class UpdateProduct {
 }
 ```
 
+### UpsertProductItem {#type-commerz-catalog-products-data-upsertproductitem}
+
+`Commerz\Catalog\Products\Data\UpsertProductItem`
+
+One product entry for `Products::upsertMany()`, matched on its unique `handle`.
+
+```php
+final readonly class UpsertProductItem {
+    public readonly array $attributes;
+    public readonly ?\Commerz\Measures\LocalizedText $description;
+    public readonly string $handle;
+    public readonly \Commerz\Measures\LocalizedText $name;
+    public readonly bool $replaceAttributes;
+    public readonly \Commerz\Catalog\Products\Enums\ProductStatus $status;
+    public readonly \Commerz\Catalog\ProductTypes\Data\ProductTypeId $type;
+    __construct(\Commerz\Catalog\ProductTypes\Data\ProductTypeId $type, string $handle, \Commerz\Measures\LocalizedText $name, ?\Commerz\Measures\LocalizedText $description = null, array $attributes = [], \Commerz\Catalog\Products\Enums\ProductStatus $status = Commerz\Catalog\Products\Enums\ProductStatus::Active, bool $replaceAttributes = false);
+}
+```
+
+### UpsertProducts {#type-commerz-catalog-products-data-upsertproducts}
+
+`Commerz\Catalog\Products\Data\UpsertProducts`
+
+Batch product upsert command: validates all items upfront, performs bulk `INSERT ... ON CONFLICT (handle) DO UPDATE`, reindexes `cmz_attribute_index` in grouped statements, and emits compressed Outbox events.
+
+```php
+final readonly class UpsertProducts {
+    const MAX_ITEMS = 5000;
+    public readonly array $items;
+    __construct(array $items);
+}
+```
+
+### UpsertProductsResult {#type-commerz-catalog-products-data-upsertproductsresult}
+
+`Commerz\Catalog\Products\Data\UpsertProductsResult`
+
+Outcome of `Products::upsertMany()` in input order, with batch counters.
+
+```php
+final readonly class UpsertProductsResult {
+    public readonly int $createdCount;
+    public readonly array $createdIds;
+    public readonly int $indexedFactCount;
+    public readonly int $outboxEventCount;
+    public readonly array $products;
+    public readonly int $updatedCount;
+    public readonly array $updatedIds;
+    __construct(array $products, array $createdIds, array $updatedIds, int $createdCount, int $updatedCount, int $indexedFactCount, int $outboxEventCount);
+}
+```
+
 ### VariantFilter {#type-commerz-catalog-products-data-variantfilter}
 
 `Commerz\Catalog\Products\Data\VariantFilter`
@@ -1695,6 +2414,22 @@ final readonly class ProductUpdated {
 }
 ```
 
+### ProductsUpserted {#type-commerz-catalog-products-events-productsupserted}
+
+`Commerz\Catalog\Products\Events\ProductsUpserted`
+
+Dispatched once after a `Products::upsertMany()` transaction commits.
+
+```php
+final readonly class ProductsUpserted {
+    public readonly string $batchId;
+    public readonly int $count;
+    public readonly array $createdIds;
+    public readonly array $updatedIds;
+    __construct(string $batchId, array $createdIds, array $updatedIds, int $count);
+}
+```
+
 ### ProductArchived {#type-commerz-catalog-products-exceptions-productarchived}
 
 `Commerz\Catalog\Products\Exceptions\ProductArchived`
@@ -1723,6 +2458,422 @@ final class ProductNotFound extends \Commerz\Errors\NotFound implements \Stringa
 }
 ```
 
+## Projection
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`StorefrontProjection`](#type-commerz-catalog-projection-contracts-storefrontprojection) | interface | api | 0.1 |
+| [`ListStorefrontProducts`](#type-commerz-catalog-projection-data-liststorefrontproducts) | class | api | 0.1 |
+| [`StorefrontProductView`](#type-commerz-catalog-projection-data-storefrontproductview) | class | api | 0.1 |
+| [`StorefrontVariantView`](#type-commerz-catalog-projection-data-storefrontvariantview) | class | api | 0.1 |
+| [`StorefrontProductNotFound`](#type-commerz-catalog-projection-exceptions-storefrontproductnotfound) | class | api | 0.1 |
+
+### StorefrontProjection {#type-commerz-catalog-projection-contracts-storefrontprojection}
+
+`Commerz\Catalog\Projection\Contracts\StorefrontProjection`
+
+Denormalized single-row storefront read model over `cmz_storefront_products`, kept up to date via Outbox events (`catalog.*`, `pricing.*`, `inventory.*`) or explicit rebuild commands.
+
+```php
+interface StorefrontProjection {
+    // Single-row read by `(channel_id, locale, product_id)`, or null when not projected.
+    find(\Commerz\Stores\Data\ChannelId $channel, string $locale, \Commerz\Catalog\Products\Data\ProductId $product): ?\Commerz\Catalog\Projection\Data\StorefrontProductView;
+    // Single-table storefront read by `(channel_id, locale, handle)`.
+    findByHandle(\Commerz\Stores\Data\ChannelId $channel, string $locale, string $handle): ?\Commerz\Catalog\Projection\Data\StorefrontProductView;
+    // Single-row read by `(channel_id, locale, product_id)`.
+    get(\Commerz\Stores\Data\ChannelId $channel, string $locale, \Commerz\Catalog\Products\Data\ProductId $product): \Commerz\Catalog\Projection\Data\StorefrontProductView;
+    list(\Commerz\Catalog\Projection\Data\ListStorefrontProducts $query): \Commerz\Pagination\Page;
+    // Rebuilds all storefront rows for an entire channel across all of its configured locales. Returns the number of projected rows written.
+    projectChannel(\Commerz\Stores\Data\ChannelId $channel): int;
+    // Materializes (or deletes if unpublished/archived) storefront rows for one product across its listed channels (or a single `$channel` when specified). Returns the number of projected rows written.
+    projectProduct(\Commerz\Catalog\Products\Data\ProductId $product, ?\Commerz\Stores\Data\ChannelId $channel = null): int;
+}
+```
+
+### ListStorefrontProducts {#type-commerz-catalog-projection-data-liststorefrontproducts}
+
+`Commerz\Catalog\Projection\Data\ListStorefrontProducts`
+
+```php
+final readonly class ListStorefrontProducts {
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly int $first;
+    public readonly ?bool $inStock;
+    public readonly string $locale;
+    public readonly ?int $maxPriceMinor;
+    public readonly ?int $minPriceMinor;
+    __construct(\Commerz\Stores\Data\ChannelId $channel, string $locale, ?bool $inStock = null, ?int $minPriceMinor = null, ?int $maxPriceMinor = null, int $first = 24, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### StorefrontProductView {#type-commerz-catalog-projection-data-storefrontproductview}
+
+`Commerz\Catalog\Projection\Data\StorefrontProductView`
+
+Single-row storefront read model materialized in `cmz_storefront_products`.
+
+```php
+final readonly class StorefrontProductView {
+    public readonly array $categories;
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly array $collections;
+    public readonly ?string $currency;
+    public readonly ?string $description;
+    public readonly string $handle;
+    public readonly bool $inStock;
+    public readonly string $kind;
+    public readonly string $locale;
+    public readonly string $name;
+    public readonly ?int $priceMaxMinor;
+    public readonly ?int $priceMinMinor;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    public readonly array $productAttributes;
+    public readonly array $snapshot;
+    public readonly \DateTimeImmutable $updatedAt;
+    public readonly array $variants;
+    __construct(\Commerz\Stores\Data\ChannelId $channel, string $locale, \Commerz\Catalog\Products\Data\ProductId $product, string $handle, string $name, ?string $description, string $kind, array $productAttributes, array $categories, array $collections, array $variants, ?int $priceMinMinor, ?int $priceMaxMinor, ?string $currency, bool $inStock, array $snapshot, \DateTimeImmutable $updatedAt);
+}
+```
+
+### StorefrontVariantView {#type-commerz-catalog-projection-data-storefrontvariantview}
+
+`Commerz\Catalog\Projection\Data\StorefrontVariantView`
+
+Denormalized variant snapshot embedded inside a single storefront product row.
+
+```php
+final readonly class StorefrontVariantView {
+    public readonly ?int $compareAtMinor;
+    public readonly ?string $currency;
+    public readonly array $effectiveAttributes;
+    public readonly \Commerz\Catalog\Variants\Data\VariantId $id;
+    public readonly bool $inStock;
+    public readonly array $options;
+    public readonly int $position;
+    public readonly ?int $priceMinor;
+    public readonly string $sku;
+    public readonly bool $taxIncluded;
+    __construct(\Commerz\Catalog\Variants\Data\VariantId $id, string $sku, array $options, array $effectiveAttributes, ?int $priceMinor, ?int $compareAtMinor, ?string $currency, bool $taxIncluded, bool $inStock, int $position);
+}
+```
+
+### StorefrontProductNotFound {#type-commerz-catalog-projection-exceptions-storefrontproductnotfound}
+
+`Commerz\Catalog\Projection\Exceptions\StorefrontProductNotFound`
+
+```php
+final class StorefrontProductNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Relations
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`ProductRelations`](#type-commerz-catalog-relations-contracts-productrelations) | interface | api | 0.1 |
+| [`AddProductRelation`](#type-commerz-catalog-relations-data-addproductrelation) | class | api | 0.1 |
+| [`ListProductRelations`](#type-commerz-catalog-relations-data-listproductrelations) | class | api | 0.1 |
+| [`ProductRelationId`](#type-commerz-catalog-relations-data-productrelationid) | class | api | 0.1 |
+| [`ProductRelationView`](#type-commerz-catalog-relations-data-productrelationview) | class | api | 0.1 |
+| [`RemoveProductRelation`](#type-commerz-catalog-relations-data-removeproductrelation) | class | api | 0.1 |
+| [`ReplaceProductRelations`](#type-commerz-catalog-relations-data-replaceproductrelations) | class | api | 0.1 |
+| [`ProductRelationType`](#type-commerz-catalog-relations-enums-productrelationtype) | enum | api | 0.1 |
+| [`ProductRelationNotFound`](#type-commerz-catalog-relations-exceptions-productrelationnotfound) | class | api | 0.1 |
+
+### ProductRelations {#type-commerz-catalog-relations-contracts-productrelations}
+
+`Commerz\Catalog\Relations\Contracts\ProductRelations`
+
+Typed merchandising relations between products (upsell, cross_sell, spare_part, accessory, replacement).
+
+```php
+interface ProductRelations {
+    add(\Commerz\Catalog\Relations\Data\AddProductRelation $command): \Commerz\Catalog\Relations\Data\ProductRelationView;
+    inverseOf(\Commerz\Catalog\Products\Data\ProductId $targetProduct, ?\Commerz\Catalog\Relations\Enums\ProductRelationType $type = null): array;
+    ofProduct(\Commerz\Catalog\Relations\Data\ListProductRelations $query): array;
+    remove(\Commerz\Catalog\Relations\Data\RemoveProductRelation $command): void;
+    replace(\Commerz\Catalog\Relations\Data\ReplaceProductRelations $command): array;
+}
+```
+
+### AddProductRelation {#type-commerz-catalog-relations-data-addproductrelation}
+
+`Commerz\Catalog\Relations\Data\AddProductRelation`
+
+Adds or updates a typed relation from sourceProduct to targetProduct.
+
+```php
+final readonly class AddProductRelation {
+    public readonly int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $sourceProduct;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $targetProduct;
+    public readonly \Commerz\Catalog\Relations\Enums\ProductRelationType $type;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $sourceProduct, \Commerz\Catalog\Products\Data\ProductId $targetProduct, \Commerz\Catalog\Relations\Enums\ProductRelationType $type, int $position = 0);
+}
+```
+
+### ListProductRelations {#type-commerz-catalog-relations-data-listproductrelations}
+
+`Commerz\Catalog\Relations\Data\ListProductRelations`
+
+```php
+final readonly class ListProductRelations {
+    public readonly \Commerz\Catalog\Products\Data\ProductId $sourceProduct;
+    public readonly ?\Commerz\Catalog\Relations\Enums\ProductRelationType $type;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $sourceProduct, ?\Commerz\Catalog\Relations\Enums\ProductRelationType $type = null);
+}
+```
+
+### ProductRelationId {#type-commerz-catalog-relations-data-productrelationid}
+
+`Commerz\Catalog\Relations\Data\ProductRelationId`
+
+```php
+final readonly class ProductRelationId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### ProductRelationView {#type-commerz-catalog-relations-data-productrelationview}
+
+`Commerz\Catalog\Relations\Data\ProductRelationView`
+
+```php
+final readonly class ProductRelationView {
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly \Commerz\Catalog\Relations\Data\ProductRelationId $id;
+    public readonly int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $sourceProduct;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $targetProduct;
+    public readonly \Commerz\Catalog\Relations\Enums\ProductRelationType $type;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Catalog\Relations\Data\ProductRelationId $id, \Commerz\Catalog\Products\Data\ProductId $sourceProduct, \Commerz\Catalog\Products\Data\ProductId $targetProduct, \Commerz\Catalog\Relations\Enums\ProductRelationType $type, int $position, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### RemoveProductRelation {#type-commerz-catalog-relations-data-removeproductrelation}
+
+`Commerz\Catalog\Relations\Data\RemoveProductRelation`
+
+```php
+final readonly class RemoveProductRelation {
+    public readonly \Commerz\Catalog\Products\Data\ProductId $sourceProduct;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $targetProduct;
+    public readonly \Commerz\Catalog\Relations\Enums\ProductRelationType $type;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $sourceProduct, \Commerz\Catalog\Products\Data\ProductId $targetProduct, \Commerz\Catalog\Relations\Enums\ProductRelationType $type);
+}
+```
+
+### ReplaceProductRelations {#type-commerz-catalog-relations-data-replaceproductrelations}
+
+`Commerz\Catalog\Relations\Data\ReplaceProductRelations`
+
+Replaces all relations of a given type for a source product in the given order.
+
+```php
+final readonly class ReplaceProductRelations {
+    public readonly \Commerz\Catalog\Products\Data\ProductId $sourceProduct;
+    public readonly array $targets;
+    public readonly \Commerz\Catalog\Relations\Enums\ProductRelationType $type;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $sourceProduct, \Commerz\Catalog\Relations\Enums\ProductRelationType $type, array $targets);
+}
+```
+
+### ProductRelationType {#type-commerz-catalog-relations-enums-productrelationtype}
+
+`Commerz\Catalog\Relations\Enums\ProductRelationType`
+
+```php
+enum ProductRelationType {
+    case Upsell = 'upsell';
+    case CrossSell = 'cross_sell';
+    case SparePart = 'spare_part';
+    case Accessory = 'accessory';
+    case Replacement = 'replacement';
+}
+```
+
+### ProductRelationNotFound {#type-commerz-catalog-relations-exceptions-productrelationnotfound}
+
+`Commerz\Catalog\Relations\Exceptions\ProductRelationNotFound`
+
+```php
+final class ProductRelationNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+## Routes
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`UrlRoutes`](#type-commerz-catalog-routes-contracts-urlroutes) | interface | api | 0.1 |
+| [`AssignCanonicalSlug`](#type-commerz-catalog-routes-data-assigncanonicalslug) | class | api | 0.1 |
+| [`CanonicalRoute`](#type-commerz-catalog-routes-data-canonicalroute) | class | api | 0.1 |
+| [`RedirectRoute`](#type-commerz-catalog-routes-data-redirectroute) | class | api | 0.1 |
+| [`ResolveRoute`](#type-commerz-catalog-routes-data-resolveroute) | class | api | 0.1 |
+| [`SeoMeta`](#type-commerz-catalog-routes-data-seometa) | class | api | 0.1 |
+| [`UrlRouteId`](#type-commerz-catalog-routes-data-urlrouteid) | class | api | 0.1 |
+| [`UrlRouteView`](#type-commerz-catalog-routes-data-urlrouteview) | class | api | 0.1 |
+| [`DuplicateSlug`](#type-commerz-catalog-routes-exceptions-duplicateslug) | class | api | 0.1 |
+| [`RouteNotFound`](#type-commerz-catalog-routes-exceptions-routenotfound) | class | api | 0.1 |
+
+### UrlRoutes {#type-commerz-catalog-routes-contracts-urlroutes}
+
+`Commerz\Catalog\Routes\Contracts\UrlRoutes`
+
+SEO URL router: canonical slugs per channel/locale/entity with 301 redirect resolution for retired slugs (INV-CAT-002).
+
+```php
+interface UrlRoutes {
+    assignCanonical(\Commerz\Catalog\Routes\Data\AssignCanonicalSlug $command): \Commerz\Catalog\Routes\Data\UrlRouteView;
+    findCanonical(\Commerz\Stores\Data\ChannelId $channel, string $locale, string $entityType, string $entityId): \Commerz\Catalog\Routes\Data\UrlRouteView;
+    forEntity(string $entityType, string $entityId, ?\Commerz\Stores\Data\ChannelId $channel = null, ?string $locale = null): array;
+    resolve(\Commerz\Catalog\Routes\Data\ResolveRoute $query): \Commerz\Catalog\Routes\Data\CanonicalRoute|\Commerz\Catalog\Routes\Data\RedirectRoute;
+}
+```
+
+### AssignCanonicalSlug {#type-commerz-catalog-routes-data-assigncanonicalslug}
+
+`Commerz\Catalog\Routes\Data\AssignCanonicalSlug`
+
+Assigns the canonical slug for an entity in a channel and locale, retiring any previous canonical slug for 301 redirects.
+
+```php
+final readonly class AssignCanonicalSlug {
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly string $entityId;
+    public readonly string $entityType;
+    public readonly string $locale;
+    public readonly ?\Commerz\Catalog\Routes\Data\SeoMeta $seoMeta;
+    public readonly string $slug;
+    __construct(\Commerz\Stores\Data\ChannelId $channel, string $locale, string $slug, string $entityType, string $entityId, ?\Commerz\Catalog\Routes\Data\SeoMeta $seoMeta = null);
+}
+```
+
+### CanonicalRoute {#type-commerz-catalog-routes-data-canonicalroute}
+
+`Commerz\Catalog\Routes\Data\CanonicalRoute`
+
+Returned when a resolved slug is the entity's current canonical route.
+
+```php
+final readonly class CanonicalRoute {
+    public readonly \Commerz\Catalog\Routes\Data\UrlRouteView $route;
+    __construct(\Commerz\Catalog\Routes\Data\UrlRouteView $route);
+}
+```
+
+### RedirectRoute {#type-commerz-catalog-routes-data-redirectroute}
+
+`Commerz\Catalog\Routes\Data\RedirectRoute`
+
+Returned when a resolved slug is a retired non-canonical route that should 301-redirect to the canonical slug.
+
+```php
+final readonly class RedirectRoute {
+    public readonly \Commerz\Catalog\Routes\Data\UrlRouteView $canonicalRoute;
+    public readonly \Commerz\Catalog\Routes\Data\UrlRouteView $matchedRoute;
+    public readonly int $statusCode;
+    public readonly string $targetSlug;
+    __construct(\Commerz\Catalog\Routes\Data\UrlRouteView $matchedRoute, \Commerz\Catalog\Routes\Data\UrlRouteView $canonicalRoute, string $targetSlug, int $statusCode = 301);
+}
+```
+
+### ResolveRoute {#type-commerz-catalog-routes-data-resolveroute}
+
+`Commerz\Catalog\Routes\Data\ResolveRoute`
+
+```php
+final readonly class ResolveRoute {
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly string $locale;
+    public readonly string $slug;
+    __construct(\Commerz\Stores\Data\ChannelId $channel, string $locale, string $slug);
+}
+```
+
+### SeoMeta {#type-commerz-catalog-routes-data-seometa}
+
+`Commerz\Catalog\Routes\Data\SeoMeta`
+
+Structured SEO metadata stored in `cmz_url_routes.seo_meta`.
+
+```php
+final readonly class SeoMeta {
+    public readonly ?string $description;
+    public readonly array $extra;
+    public readonly ?string $ogDescription;
+    public readonly ?string $ogImage;
+    public readonly ?string $ogTitle;
+    public readonly ?string $robots;
+    public readonly ?string $title;
+    __construct(?string $title = null, ?string $description = null, ?string $robots = null, ?string $ogTitle = null, ?string $ogDescription = null, ?string $ogImage = null, array $extra = []);
+    static fromArray(array $data): self;
+    toArray(): array;
+}
+```
+
+### UrlRouteId {#type-commerz-catalog-routes-data-urlrouteid}
+
+`Commerz\Catalog\Routes\Data\UrlRouteId`
+
+```php
+final readonly class UrlRouteId extends \Commerz\Identity\EntityId implements \Stringable {}
+```
+
+### UrlRouteView {#type-commerz-catalog-routes-data-urlrouteview}
+
+`Commerz\Catalog\Routes\Data\UrlRouteView`
+
+```php
+final readonly class UrlRouteView {
+    public readonly \Commerz\Stores\Data\ChannelId $channel;
+    public readonly \DateTimeImmutable $createdAt;
+    public readonly string $entityId;
+    public readonly string $entityType;
+    public readonly \Commerz\Catalog\Routes\Data\UrlRouteId $id;
+    public readonly bool $isCanonical;
+    public readonly string $locale;
+    public readonly \Commerz\Catalog\Routes\Data\SeoMeta $seoMeta;
+    public readonly string $slug;
+    public readonly \DateTimeImmutable $updatedAt;
+    __construct(\Commerz\Catalog\Routes\Data\UrlRouteId $id, \Commerz\Stores\Data\ChannelId $channel, string $locale, string $slug, string $entityType, string $entityId, bool $isCanonical, \Commerz\Catalog\Routes\Data\SeoMeta $seoMeta, \DateTimeImmutable $createdAt, \DateTimeImmutable $updatedAt);
+}
+```
+
+### DuplicateSlug {#type-commerz-catalog-routes-exceptions-duplicateslug}
+
+`Commerz\Catalog\Routes\Exceptions\DuplicateSlug`
+
+The slug is already claimed by another entity in the same channel and locale.
+
+```php
+final class DuplicateSlug extends \Commerz\Errors\CommerzException implements \Stringable, \Throwable {
+    public readonly string $channel;
+    public readonly string $locale;
+    public readonly string $slug;
+    __construct(string $channel, string $locale, string $slug);
+    category(): \Packman\Errors\Enums\ErrorCategory;
+    code(): string;
+    context(): array;
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
+### RouteNotFound {#type-commerz-catalog-routes-exceptions-routenotfound}
+
+`Commerz\Catalog\Routes\Exceptions\RouteNotFound`
+
+```php
+final class RouteNotFound extends \Commerz\Errors\NotFound implements \Stringable, \Throwable {
+    __construct(string $reference);
+    errorDescriptor(): \Packman\Errors\Data\ErrorDescriptor;
+}
+```
+
 ## Schema
 
 | Type | Kind | Layer | Since |
@@ -1733,11 +2884,175 @@ final class ProductNotFound extends \Commerz\Errors\NotFound implements \Stringa
 
 `Commerz\Catalog\Schema\CatalogSchemaSets`
 
-Declares the central PostgreSQL schema set owned by `axiomasoft/commerz-catalog`.
+Declares the PostgreSQL schema set owned by `axiomasoft/commerz-catalog`.
 
 ```php
 final readonly class CatalogSchemaSets implements \Packman\Schema\Contracts\Migration\SchemaSetProvider {
+    __construct(?\Illuminate\Contracts\Config\Repository $config = null);
     sets(): array;
+}
+```
+
+## Search
+
+| Type | Kind | Layer | Since |
+|---|---|---|---|
+| [`CatalogSearchPort`](#type-commerz-catalog-search-contracts-catalogsearchport) | interface | spi (implement) | 0.1 |
+| [`CatalogSearchQuery`](#type-commerz-catalog-search-data-catalogsearchquery) | class | api | 0.1 |
+| [`CatalogSearchResult`](#type-commerz-catalog-search-data-catalogsearchresult) | class | api | 0.1 |
+| [`FacetDistribution`](#type-commerz-catalog-search-data-facetdistribution) | class | api | 0.1 |
+| [`FacetRequest`](#type-commerz-catalog-search-data-facetrequest) | class | api | 0.1 |
+| [`FacetValueCount`](#type-commerz-catalog-search-data-facetvaluecount) | class | api | 0.1 |
+| [`FacetKind`](#type-commerz-catalog-search-enums-facetkind) | enum | api | 0.1 |
+| [`SearchSort`](#type-commerz-catalog-search-enums-searchsort) | enum | api | 0.1 |
+
+### CatalogSearchPort {#type-commerz-catalog-search-contracts-catalogsearchport}
+
+`Commerz\Catalog\Search\Contracts\CatalogSearchPort`
+
+Search and faceted browsing SPI for the catalog.
+
+```php
+interface CatalogSearchPort {
+    // Indexes or refreshes the given products in the search backend.
+    indexProducts(array $productIds): void;
+    // Removes the given products from the search backend.
+    removeProducts(array $productIds): void;
+    // Searches catalog products with filters, optional disjunctive facet counts, sorting, and keyset pagination.
+    search(\Commerz\Catalog\Search\Data\CatalogSearchQuery $query): \Commerz\Catalog\Search\Data\CatalogSearchResult;
+}
+```
+
+### CatalogSearchQuery {#type-commerz-catalog-search-data-catalogsearchquery}
+
+`Commerz\Catalog\Search\Data\CatalogSearchQuery`
+
+Catalog search query with optional text search, attribute/variant filters (CAT-03), disjunctive facet requests, deterministic sorting, and keyset cursor pagination.
+
+```php
+final readonly class CatalogSearchQuery {
+    const MAX_FACETS = 20;
+    const MAX_FILTERS = 20;
+    const MAX_PAGE_SIZE = 200;
+    const MAX_TERM_LENGTH = 255;
+    public readonly ?\Commerz\Pagination\Cursor $after;
+    public readonly ?\DateTimeImmutable $at;
+    public readonly ?\Commerz\Catalog\Categories\Data\CategoryId $category;
+    public readonly ?\Commerz\Stores\Data\ChannelId $channel;
+    public readonly array $facets;
+    public readonly array $filters;
+    public readonly int $first;
+    public readonly ?string $locale;
+    public readonly \Commerz\Catalog\Search\Enums\SearchSort $sort;
+    public readonly ?\Commerz\Catalog\Products\Enums\ProductStatus $status;
+    public readonly ?string $term;
+    public readonly ?\Commerz\Catalog\ProductTypes\Data\ProductTypeId $type;
+    __construct(?string $term = null, ?string $locale = null, ?\Commerz\Stores\Data\ChannelId $channel = null, ?\Commerz\Catalog\ProductTypes\Data\ProductTypeId $type = null, ?\Commerz\Catalog\Categories\Data\CategoryId $category = null, ?\Commerz\Catalog\Products\Enums\ProductStatus $status = null, array $filters = [], array $facets = [], \Commerz\Catalog\Search\Enums\SearchSort $sort = Commerz\Catalog\Search\Enums\SearchSort::HandleAsc, ?\DateTimeImmutable $at = null, int $first = 24, ?\Commerz\Pagination\Cursor $after = null);
+}
+```
+
+### CatalogSearchResult {#type-commerz-catalog-search-data-catalogsearchresult}
+
+`Commerz\Catalog\Search\Data\CatalogSearchResult`
+
+Search response: one keyset-paginated page of products, total match count, and facet distributions.
+
+```php
+final readonly class CatalogSearchResult {
+    public readonly array $facets;
+    public readonly \Commerz\Pagination\Page $page;
+    public readonly int $total;
+    __construct(\Commerz\Pagination\Page $page, int $total, array $facets = []);
+    facet(string $code): ?\Commerz\Catalog\Search\Data\FacetDistribution;
+    hasMore(): bool;
+    items(): array;
+    nextCursor(): ?\Commerz\Pagination\Cursor;
+}
+```
+
+### FacetDistribution {#type-commerz-catalog-search-data-facetdistribution}
+
+`Commerz\Catalog\Search\Data\FacetDistribution`
+
+Facet value distribution for one attribute or variant option axis.
+
+```php
+final readonly class FacetDistribution {
+    public readonly string $code;
+    public readonly bool $disjunctive;
+    public readonly \Commerz\Catalog\Search\Enums\FacetKind $kind;
+    public readonly ?string $max;
+    public readonly ?string $min;
+    public readonly array $values;
+    __construct(string $code, \Commerz\Catalog\Search\Enums\FacetKind $kind, bool $disjunctive, array $values, ?string $min = null, ?string $max = null);
+    countFor(string $value): int;
+    counts(): array;
+}
+```
+
+### FacetRequest {#type-commerz-catalog-search-data-facetrequest}
+
+`Commerz\Catalog\Search\Data\FacetRequest`
+
+Requests value distribution counts for a filterable attribute or variant option axis.
+
+```php
+final readonly class FacetRequest {
+    const MAX_VALUES_LIMIT = 500;
+    public readonly string $code;
+    public readonly bool $disjunctive;
+    public readonly \Commerz\Catalog\Search\Enums\FacetKind $kind;
+    public readonly int $maxValues;
+    __construct(string $code, \Commerz\Catalog\Search\Enums\FacetKind $kind = Commerz\Catalog\Search\Enums\FacetKind::Auto, int $maxValues = 100, bool $disjunctive = true);
+    static attribute(string $code, int $maxValues = 100, bool $disjunctive = true): self;
+    static auto(string $code, int $maxValues = 100, bool $disjunctive = true): self;
+    static option(string $code, int $maxValues = 100, bool $disjunctive = true): self;
+}
+```
+
+### FacetValueCount {#type-commerz-catalog-search-data-facetvaluecount}
+
+`Commerz\Catalog\Search\Data\FacetValueCount`
+
+One bucket in a facet distribution: a canonical value, the distinct product count, and selection state.
+
+```php
+final readonly class FacetValueCount {
+    public readonly int $count;
+    public readonly ?\Commerz\Measures\LocalizedText $label;
+    public readonly bool $selected;
+    public readonly string $value;
+    __construct(string $value, int $count, bool $selected = false, ?\Commerz\Measures\LocalizedText $label = null);
+}
+```
+
+### FacetKind {#type-commerz-catalog-search-enums-facetkind}
+
+`Commerz\Catalog\Search\Enums\FacetKind`
+
+Source of a catalog search facet: a filterable attribute, a variant option axis, or auto-detected.
+
+```php
+enum FacetKind {
+    case Auto = 'auto';
+    case Attribute = 'attribute';
+    case Option = 'option';
+}
+```
+
+### SearchSort {#type-commerz-catalog-search-enums-searchsort}
+
+`Commerz\Catalog\Search\Enums\SearchSort`
+
+Deterministic sort orders supported by `CatalogSearchPort`; every order uses `id` as final tie-breaker.
+
+```php
+enum SearchSort {
+    case HandleAsc = 'handle_asc';
+    case HandleDesc = 'handle_desc';
+    case Newest = 'newest';
+    case Oldest = 'oldest';
+    case Relevance = 'relevance';
 }
 ```
 
@@ -1756,11 +3071,15 @@ final readonly class CatalogSchemaSets implements \Packman\Schema\Contracts\Migr
 | [`RestoreVariant`](#type-commerz-catalog-variants-data-restorevariant) | class | api | 0.1 |
 | [`SetVariantAttributes`](#type-commerz-catalog-variants-data-setvariantattributes) | class | api | 0.1 |
 | [`UpdateVariant`](#type-commerz-catalog-variants-data-updatevariant) | class | api | 0.1 |
+| [`UpsertVariantItem`](#type-commerz-catalog-variants-data-upsertvariantitem) | class | api | 0.1 |
+| [`UpsertVariants`](#type-commerz-catalog-variants-data-upsertvariants) | class | api | 0.1 |
+| [`UpsertVariantsResult`](#type-commerz-catalog-variants-data-upsertvariantsresult) | class | api | 0.1 |
 | [`VariantId`](#type-commerz-catalog-variants-data-variantid) | class | api | 0.1 |
 | [`VariantView`](#type-commerz-catalog-variants-data-variantview) | class | api | 0.1 |
 | [`VariantStatus`](#type-commerz-catalog-variants-enums-variantstatus) | enum | api | 0.1 |
 | [`VariantCreated`](#type-commerz-catalog-variants-events-variantcreated) | class | api | 0.1 |
 | [`VariantUpdated`](#type-commerz-catalog-variants-events-variantupdated) | class | api | 0.1 |
+| [`VariantsUpserted`](#type-commerz-catalog-variants-events-variantsupserted) | class | api | 0.1 |
 | [`DuplicateCombination`](#type-commerz-catalog-variants-exceptions-duplicatecombination) | class | api | 0.1 |
 | [`InvalidAxes`](#type-commerz-catalog-variants-exceptions-invalidaxes) | class | api | 0.1 |
 | [`TooManyVariants`](#type-commerz-catalog-variants-exceptions-toomanyvariants) | class | api | 0.1 |
@@ -1784,6 +3103,8 @@ interface Variants {
     restore(\Commerz\Catalog\Variants\Data\RestoreVariant $command): \Commerz\Catalog\Variants\Data\VariantView;
     setAttributes(\Commerz\Catalog\Variants\Data\SetVariantAttributes $command): \Commerz\Catalog\Variants\Data\VariantView;
     update(\Commerz\Catalog\Variants\Data\UpdateVariant $command): \Commerz\Catalog\Variants\Data\VariantView;
+    // Batch upserts variants by `sku` in one atomic transaction with bounded SQL queries, grouped `cmz_attribute_index` reindexing, and compressed Outbox events.
+    upsertMany(\Commerz\Catalog\Variants\Data\UpsertVariants $command): \Commerz\Catalog\Variants\Data\UpsertVariantsResult;
 }
 ```
 
@@ -1948,6 +3269,62 @@ final readonly class UpdateVariant {
 }
 ```
 
+### UpsertVariantItem {#type-commerz-catalog-variants-data-upsertvariantitem}
+
+`Commerz\Catalog\Variants\Data\UpsertVariantItem`
+
+One variant entry for `Variants::upsertMany()`, matched on its unique `sku`.
+
+```php
+final readonly class UpsertVariantItem {
+    public readonly array $attributes;
+    public readonly array $axes;
+    public readonly ?string $barcode;
+    public readonly ?\Commerz\Catalog\Variants\Data\Dimensions $dimensions;
+    public readonly ?int $position;
+    public readonly \Commerz\Catalog\Products\Data\ProductId $product;
+    public readonly bool $replaceAttributes;
+    public readonly string $sku;
+    public readonly \Commerz\Catalog\Variants\Enums\VariantStatus $status;
+    public readonly ?string $taxClass;
+    public readonly ?int $weightGrams;
+    __construct(\Commerz\Catalog\Products\Data\ProductId $product, string $sku, array $axes = [], ?string $barcode = null, array $attributes = [], ?string $taxClass = null, ?int $weightGrams = null, ?\Commerz\Catalog\Variants\Data\Dimensions $dimensions = null, ?int $position = null, \Commerz\Catalog\Variants\Enums\VariantStatus $status = Commerz\Catalog\Variants\Enums\VariantStatus::Active, bool $replaceAttributes = false);
+}
+```
+
+### UpsertVariants {#type-commerz-catalog-variants-data-upsertvariants}
+
+`Commerz\Catalog\Variants\Data\UpsertVariants`
+
+Batch variant upsert command: validates all SKUs upfront, performs bulk `INSERT ... ON CONFLICT (sku) DO UPDATE`, reindexes `cmz_attribute_index` in grouped statements, and emits compressed Outbox events.
+
+```php
+final readonly class UpsertVariants {
+    const MAX_ITEMS = 5000;
+    public readonly array $items;
+    __construct(array $items);
+}
+```
+
+### UpsertVariantsResult {#type-commerz-catalog-variants-data-upsertvariantsresult}
+
+`Commerz\Catalog\Variants\Data\UpsertVariantsResult`
+
+Outcome of `Variants::upsertMany()` in input order, with batch counters.
+
+```php
+final readonly class UpsertVariantsResult {
+    public readonly int $createdCount;
+    public readonly array $createdIds;
+    public readonly int $indexedFactCount;
+    public readonly int $outboxEventCount;
+    public readonly int $updatedCount;
+    public readonly array $updatedIds;
+    public readonly array $variants;
+    __construct(array $variants, array $createdIds, array $updatedIds, int $createdCount, int $updatedCount, int $indexedFactCount, int $outboxEventCount);
+}
+```
+
 ### VariantId {#type-commerz-catalog-variants-data-variantid}
 
 `Commerz\Catalog\Variants\Data\VariantId`
@@ -2016,6 +3393,23 @@ Dispatched after a variant changed (fields, attributes, archival or restore) and
 final readonly class VariantUpdated {
     public readonly \Commerz\Catalog\Variants\Data\VariantView $variant;
     __construct(\Commerz\Catalog\Variants\Data\VariantView $variant);
+}
+```
+
+### VariantsUpserted {#type-commerz-catalog-variants-events-variantsupserted}
+
+`Commerz\Catalog\Variants\Events\VariantsUpserted`
+
+Dispatched once after a `Variants::upsertMany()` transaction commits.
+
+```php
+final readonly class VariantsUpserted {
+    public readonly string $batchId;
+    public readonly int $count;
+    public readonly array $createdIds;
+    public readonly array $productIds;
+    public readonly array $updatedIds;
+    __construct(string $batchId, array $productIds, array $createdIds, array $updatedIds, int $count);
 }
 ```
 

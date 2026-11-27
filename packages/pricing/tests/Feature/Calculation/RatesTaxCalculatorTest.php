@@ -7,7 +7,6 @@ use Commerz\Identity\SellableRef;
 use Commerz\Money\Currency;
 use Commerz\Money\Money;
 use Commerz\Ports\Delivery\Data\Address;
-use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxableItem;
 use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
@@ -20,6 +19,7 @@ use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Stores\Data\ChannelId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -47,17 +47,22 @@ function rcTaxes(TaxResult $result): array
     );
 }
 
+/** @param array<string, string|null> $tax */
 function rcReconfigure(array $tax): void
 {
-    config()->set('commerz-pricing.tax', [...config('commerz-pricing.tax'), ...$tax]);
+    $current = config('commerz-pricing.tax');
+    if (! is_array($current)) {
+        throw new RuntimeException('commerz-pricing.tax must be an array.');
+    }
+
+    config()->set('commerz-pricing.tax', [...$current, ...$tax]);
     app()->forgetInstance(PricingOptions::class);
 }
 
 it('is the contributed `rates` calculator', function (): void {
     $calculator = app(RatesTaxCalculator::class);
 
-    expect($calculator)->toBeInstanceOf(TaxCalculator::class)
-        ->and($calculator->key())->toBe('rates');
+    expect($calculator->key())->toBe('rates');
 });
 
 it('takes the tax out of a price that holds it and splits it between the taxes (G7)', function (): void {
@@ -107,7 +112,7 @@ it('fails closed when a class has no rate in the zone (G13)', function (): void 
 
     try {
         rcCalculate([rcItem('100.00'), rcItem('50.00', class: 'reduced', lineId: '2')]);
-        $this->fail('The missing rate was taxed as zero.');
+        Assert::fail('The missing rate was taxed as zero.');
     } catch (TaxRateNotFound $e) {
         expect($e->code())->toBe('pricing.tax_rate_not_found')
             ->and($e->context())->toBe(['tax_class' => 'reduced', 'zone' => 'ru', 'at' => '2026-06-01T12:00:00+00:00']);

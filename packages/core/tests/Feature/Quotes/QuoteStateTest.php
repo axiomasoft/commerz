@@ -16,7 +16,7 @@ use Commerz\Stores\Data\ChannelId;
 use Commerz\Testkit\Fakes\FakeSellables;
 
 /**
- * @param  array<string, string>  $lines  line id => unit price (quantity 1)
+ * @param  array<int|string, string>  $lines  line id => unit price (quantity 1)
  */
 function qsState(array $lines): QuoteState
 {
@@ -35,7 +35,12 @@ function qsState(array $lines): QuoteState
     $state = QuoteState::start(new QuoteInput($context, $inputs));
 
     foreach ($inputs as $input) {
-        $state = $state->withLine(new QuoteLine($input->lineId, $input->sellable, 1, $input->sellable->basePrice, null, false, 'test'));
+        $unitPrice = $input->sellable->basePrice;
+        if (! $unitPrice instanceof Money) {
+            throw new RuntimeException('Expected a base price.');
+        }
+
+        $state = $state->withLine(new QuoteLine($input->lineId, $input->sellable, 1, $unitPrice, null, false, 'test'));
     }
 
     return $state;
@@ -46,7 +51,10 @@ function qsOrder(string $amount, string $explanation = 'promo'): Adjustment
     return Adjustment::order(Money::of($amount, 'RUB')->negate(), 'test', $explanation);
 }
 
-/** @param  list<Adjustment>  $shares */
+/**
+ * @param  list<Adjustment>  $shares
+ * @return list<string>
+ */
 function qsShares(array $shares): array
 {
     return array_map(static fn (Adjustment $share): string => $share->lineId.'='.$share->amount->toDecimal(), $shares);

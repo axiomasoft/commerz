@@ -28,6 +28,7 @@ use Commerz\Catalog\Variants\Data\PlannedVariant;
 use Commerz\Catalog\Variants\Data\RestoreVariant;
 use Commerz\Catalog\Variants\Data\SetVariantAttributes;
 use Commerz\Catalog\Variants\Data\UpdateVariant;
+use Commerz\Catalog\Variants\Data\UpsertVariantItem;
 use Commerz\Catalog\Variants\Data\UpsertVariants;
 use Commerz\Catalog\Variants\Data\UpsertVariantsResult;
 use Commerz\Catalog\Variants\Data\VariantId;
@@ -346,7 +347,7 @@ final readonly class DatabaseVariants implements Variants
 
             // 1. Load & lock all referenced products in deterministic id order (CAT-01, deadlock-free).
             $productIds = array_values(array_unique(array_map(
-                static fn ($item): string => $item->product->value,
+                static fn (UpsertVariantItem $item): string => $item->product->value,
                 $command->items,
             )));
             sort($productIds);
@@ -376,7 +377,7 @@ final readonly class DatabaseVariants implements Variants
             $axesByProduct = $this->resolver->axesForMany($db, $productIds);
 
             // 3. Load & lock existing variants by SKU in chunked queries.
-            $skus = array_map(static fn ($item): string => $item->sku, $command->items);
+            $skus = array_map(static fn (UpsertVariantItem $item): string => $item->sku, $command->items);
             $existingBySku = [];
 
             foreach (array_chunk($skus, self::UPSERT_CHUNK) as $chunk) {
@@ -905,7 +906,7 @@ final readonly class DatabaseVariants implements Variants
 
         if (str_contains($message, ConstraintNames::unique($table, 'barcode')) || str_contains($message, 'barcode')) {
             $barcodes = array_values(array_filter(
-                array_map(static fn ($item): ?string => $item->barcode, $command->items),
+                array_map(static fn (UpsertVariantItem $item): ?string => $item->barcode, $command->items),
                 is_string(...),
             ));
 

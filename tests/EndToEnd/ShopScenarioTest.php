@@ -19,6 +19,8 @@ use Commerz\Pricing\Facades\Pricing;
 use Commerz\Pricing\PriceLists\Data\ListPriceLists;
 use Commerz\Pricing\Prices\Data\SetPrice;
 use Commerz\Promotions\Facades\Promotions;
+use Commerz\Quotes\Data\Adjustment;
+use Commerz\Quotes\Data\QuotedLine;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 use Commerz\Sales\Carts\Data\AddCartLine;
 use Commerz\Sales\Carts\Data\CartId;
@@ -60,7 +62,11 @@ beforeEach(fn () => CommittedDatabase::prepare());
 
 afterEach(fn () => CommittedDatabase::truncate());
 
-/** A cart of the shop for a known customer, shipping to Moscow, with the lines as [sellable, quantity]. */
+/**
+ * A cart of the shop for a known customer, shipping to Moscow, with the lines as [sellable, quantity].
+ *
+ * @param  list<array{SellableRef, int}>  $lines
+ */
 function shopCart(ShopWorld $world, array $lines, string $customer = 'crm:alice'): CartId
 {
     $cart = Sales::carts()->create(new CreateCart(CommerceContext::for($world->channel, Currency::of('RUB'), 'ru')))->id;
@@ -121,10 +127,12 @@ it('sells from cart to full refund on the real packages', function (): void {
     //    total = 1720.00 + 430.00 + 300.00 = 2450.00.
     $quote = Sales::carts()->quote($cart);
     [$small, $mug] = $quote->lines;
-    $shares = static fn ($line): array => array_map(
-        static fn ($adjustment): string => $adjustment->amount->toDecimal(),
-        array_values(array_filter($line->adjustments, static fn ($adjustment): bool => $adjustment->target === AdjustmentTarget::Order)),
-    );
+    $shares = static function (QuotedLine $line): array {
+        return array_map(
+            static fn (Adjustment $adjustment): string => $adjustment->amount->toDecimal(),
+            array_values(array_filter($line->adjustments, static fn (Adjustment $adjustment): bool => $adjustment->target === AdjustmentTarget::Order)),
+        );
+    };
 
     expect($small->unitPrice)->toEqual(rub('1000.00'))
         ->and($mug->unitPrice)->toEqual(rub('500.00'))
@@ -220,7 +228,7 @@ it('sells from cart to full refund on the real packages', function (): void {
     Event::listen(IntegrationEventDelivered::class, static function (IntegrationEventDelivered $event) use (&$delivered): void {
         $delivered[] = [$event->event->eventId, $event->event->type];
     });
-    test()->artisan('commerz:outbox:relay', ['--once' => true])->assertSuccessful();
+    $this->pendingArtisan('commerz:outbox:relay', ['--once' => true])->assertSuccessful();
 
     $types = array_column($delivered, 1);
 

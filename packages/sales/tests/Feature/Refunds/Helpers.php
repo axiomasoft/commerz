@@ -73,8 +73,13 @@ function rfInitiating(PaymentView $payment, int $amountMinor, int $seconds): Ref
 /** @return list<array<string, mixed>> payloads of the outbox messages of the type, oldest first */
 function rfOutbox(string $type): array
 {
-    return DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', $type)->orderBy('id')->get()
-        ->map(static fn (object $message): array => json_decode($message->payload, true))->all();
+    $payloads = [];
+
+    foreach (DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', $type)->orderBy('id')->get() as $message) {
+        $payloads[] = slsJsonObject($message->payload);
+    }
+
+    return $payloads;
 }
 
 /** @return list<string> */

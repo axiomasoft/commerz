@@ -6,6 +6,10 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Money\Money;
 use Commerz\Money\MoneyAllocator;
 
+/**
+ * @param  list<Money>  $parts
+ * @return list<int>
+ */
 function minors(array $parts): array
 {
     return array_map(static fn (Money $m): int => $m->amountMinor, $parts);
@@ -60,5 +64,6 @@ it('does not overflow on large totals and weights', function (): void {
 });
 
 it('rejects empty, negative and all-zero weights', function (array $weights): void {
+    /** @var list<int> $weights */
     expect(fn () => MoneyAllocator::allocate(Money::ofMinor(100, 'RUB'), $weights))->toThrow(InvalidCommand::class);
 })->with([[[]], [[1, -1]], [[0, 0]]]);

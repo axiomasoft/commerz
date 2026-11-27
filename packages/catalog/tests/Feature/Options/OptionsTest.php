@@ -23,6 +23,9 @@ function optLabel(string $text): LocalizedText
     return LocalizedText::of('en', $text);
 }
 
+/**
+ * @return array<string, LocalizedText>
+ */
 function optValues(string ...$codes): array
 {
     return array_combine($codes, array_map(optLabel(...), $codes));
@@ -38,7 +41,7 @@ it('defines an option with ordered values', function (): void {
 });
 
 it('rejects invalid commands, duplicate codes and missing options', function (): void {
-    expect(fn () => new DefineOption('size', optLabel('Size'), []))->toThrow(InvalidCommand::class)
+    expect(fn () => new DefineOption('size', optLabel('Size'), optValues()))->toThrow(InvalidCommand::class)
         ->and(fn () => new DefineOption('Big Size', optLabel('Size'), optValues('s')))->toThrow(InvalidCommand::class)
         ->and(fn () => new ListOptions(first: 201))->toThrow(InvalidCommand::class);
 

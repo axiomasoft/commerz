@@ -21,7 +21,7 @@ final class PickupPointComplianceTest extends TestCase
 
     protected function pickupPointProvider(): PickupPointProvider
     {
-        return $this->provider ??= (new FakePickupPoints('fake'))->add(
+        return $this->provider ??= new FakePickupPoints('fake')->add(
             new PickupPoint(
                 id: 'pudo-sf-1',
                 provider: 'fake',

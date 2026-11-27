@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=8.4 <8.6",
+        "php": ">=8.4 <8.7",
         "axiomasoft/commerz": "^0.1",
         "axiomasoft/packman": "^0.1.1",
         "axiomasoft/packman-plugins": "^0.1.1",

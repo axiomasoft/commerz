@@ -6,6 +6,7 @@ use Commerz\Catalog\Common\Data\CatalogCodes;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Errors\InvalidCommand;
 use Packman\Errors\Enums\ErrorCategory;
+use PHPUnit\Framework\Assert;
 
 it('accepts and rejects codes', function (string $value, bool $valid): void {
     if ($valid) {
@@ -16,7 +17,7 @@ it('accepts and rejects codes', function (string $value, bool $valid): void {
 
     try {
         CatalogCodes::code('code', $value);
-        $this->fail('expected InvalidCommand');
+        Assert::fail('expected InvalidCommand');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('catalog.invalid_code')->and($e->field)->toBe('code');
     }

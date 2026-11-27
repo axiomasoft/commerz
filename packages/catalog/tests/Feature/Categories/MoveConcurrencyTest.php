@@ -9,15 +9,22 @@ use Commerz\Catalog\Facades\Catalog;
 use Commerz\Measures\LocalizedText;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Assert;
 
 // Committed data across processes: no transactional isolation; the category tables are emptied after each test.
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $pending = $this->artisan('migrate');
+    if (! $pending instanceof PendingCommand) {
+        Assert::fail('Expected a pending Artisan command.');
+    }
+
+    $pending->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -43,11 +50,13 @@ it('never closes a cycle when two processes move categories under each other', f
     sort($outcomes);
 
     // Every walk up from any category ends at a root within as many steps as there are categories.
+    /** @var object{depth: int|null, endless: bool}|null $deepest */
     $deepest = DB::selectOne(
         'with recursive up as (select id, parent_id, 0 as depth from cmz_categories'
         .' union all select up.id, c.parent_id, up.depth + 1 from up join cmz_categories c on c.id = up.parent_id where up.depth < 10)'
         .' select max(depth) as depth, bool_or(parent_id is not null and depth >= 10) as endless from up',
     );
+    Assert::assertNotNull($deepest);
 
     expect($outcomes)->toBe(['cycle', 'moved'])
         ->and($deepest->endless)->toBeFalse()

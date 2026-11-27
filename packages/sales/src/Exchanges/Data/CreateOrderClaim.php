@@ -44,7 +44,7 @@ final readonly class CreateOrderClaim
         foreach ($items as $item) {
             $key = $item->target instanceof OrderLineId
                 ? 'line:'.$item->target->value
-                : 'sellable:'.(string) $item->target;
+                : 'sellable:'.$item->target;
 
             if (isset($seen[$key])) {
                 throw new InvalidCommand('items', "'{$key}' appears more than once", 'sales.invalid_lines');

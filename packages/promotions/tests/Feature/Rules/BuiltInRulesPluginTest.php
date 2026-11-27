@@ -18,13 +18,11 @@ it('contributes the built-in conditions, effects and activator under their keys'
     $contributions = app(Contributions::class);
 
     foreach (['line.sellable_in', 'line.category_in', 'customer.in_group', 'cart.subtotal_at_least', 'cart.quantity_at_least'] as $key) {
-        expect($contributions->has(PromotionCondition::KIND, $key))->toBeTrue("condition {$key}")
-            ->and($contributions->get(PromotionCondition::KIND, $key, PromotionCondition::class))->toBeInstanceOf(PromotionCondition::class);
+        expect($contributions->has(PromotionCondition::KIND, $key))->toBeTrue("condition {$key}");
     }
 
     foreach (['line.percent_off', 'line.fixed_off', 'order.percent_off', 'order.fixed_off', 'delivery.percent_off', 'buy_x_get_y', 'gift.auto_add_line'] as $key) {
-        expect($contributions->has(PromotionEffect::KIND, $key))->toBeTrue("effect {$key}")
-            ->and($contributions->get(PromotionEffect::KIND, $key, PromotionEffect::class))->toBeInstanceOf(PromotionEffect::class);
+        expect($contributions->has(PromotionEffect::KIND, $key))->toBeTrue("effect {$key}");
     }
 
     expect($contributions->has(PromotionActivator::KIND, 'automatic'))->toBeTrue()

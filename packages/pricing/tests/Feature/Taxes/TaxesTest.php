@@ -28,6 +28,7 @@ use Commerz\Pricing\Taxes\Exceptions\TaxZoneNotFound;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -77,7 +78,7 @@ it('puts a country or region in one zone only (TAX-01)', function (): void {
     txZone('eu', [new TaxZoneMember('DE'), new TaxZoneMember('FR')]);
     txZone('uk', [new TaxZoneMember('GB')]);
 
-    $takes = static fn (string $zone, TaxZoneMember ...$members) => fn () => Pricing::taxes()->setZoneMembers(new SetTaxZoneMembers($zone, $members));
+    $takes = static fn (string $zone, TaxZoneMember ...$members) => fn () => Pricing::taxes()->setZoneMembers(new SetTaxZoneMembers($zone, array_values($members)));
 
     expect($takes('uk', new TaxZoneMember('GB'), new TaxZoneMember('FR')))->toThrow(TaxZoneMemberTaken::class)
         ->and(fn () => Pricing::taxes()->defineZone(new DefineTaxZone('dup', 'Dup', [new TaxZoneMember('DE')])))->toThrow(TaxZoneMemberTaken::class);
@@ -139,7 +140,7 @@ it('lets windows of one rate follow each other and refuses overlaps (TAX-01)', f
 
     try {
         txRate(bp: 2500, from: txAt('2025-06-01'), until: txAt('2026-06-01'));
-        $this->fail('The overlap was accepted.');
+        Assert::fail('The overlap was accepted.');
     } catch (TaxRateOverlap $e) {
         expect($e->taxClass)->toBe('standard')
             ->and($e->zone)->toBe('ru')
@@ -247,7 +248,13 @@ it('raises TaxRatesChanged once per written rate, after the commit', function ()
     Pricing::taxes()->removeRate(new RemoveTaxRate($rate->id));
     Pricing::taxes()->removeRate(new RemoveTaxRate($rate->id));
 
-    $events = Event::dispatched(TaxRatesChanged::class)->map(static fn (array $call): string => $call[0]->taxClass.'/'.$call[0]->zone)->values()->all();
+    $events = Event::dispatched(TaxRatesChanged::class)->map(static function (mixed $payload): string {
+        if (! is_array($payload) || ! isset($payload[0]) || ! $payload[0] instanceof TaxRatesChanged) {
+            throw new RuntimeException('Unexpected TaxRatesChanged payload.');
+        }
+
+        return $payload[0]->taxClass.'/'.$payload[0]->zone;
+    })->values()->all();
 
     expect($events)->toBe(['standard/ru', 'standard/ru', 'standard/ru', 'standard/ru']);
 });

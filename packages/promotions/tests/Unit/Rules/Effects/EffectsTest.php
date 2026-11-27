@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Commerz\Money\Money;
 use Commerz\Money\RoundingMode;
+use Commerz\Promotions\Rules\Contracts\PromotionEffect;
 use Commerz\Promotions\Rules\Data\Discount;
 use Commerz\Promotions\Rules\Data\RuleParams;
 use Commerz\Promotions\Rules\Enums\PromotionStage;
@@ -17,6 +18,9 @@ use Commerz\Promotions\Tests\Support\RuleStates;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Enums\AdjustmentTarget;
 
+/**
+ * @param  Closure(): mixed  $call
+ */
 function effField(Closure $call): ?string
 {
     try {
@@ -28,12 +32,21 @@ function effField(Closure $call): ?string
     return null;
 }
 
-function effNormalize(object $effect, array $params, string $currency = 'RUB'): array
+/**
+ * @param  array<string, mixed>  $params
+ * @return array<string, mixed>
+ */
+function effNormalize(PromotionEffect $effect, array $params, string $currency = 'RUB'): array
 {
     return $effect->normalize(RuleParams::fromInput($params), RuleStates::scope(PromotionStage::Cart, $currency))->toArray();
 }
 
-/** @return list<string> "line:amount" / "order:amount" / "delivery:amount" */
+/**
+ * "line:amount" / "order:amount" / "delivery:amount".
+ *
+ * @param  list<Discount>  $discounts
+ * @return list<string>
+ */
 function effDescribe(array $discounts): array
 {
     return array_map(static fn (Discount $d): string => match ($d->target) {
@@ -51,13 +64,17 @@ dataset('effects', [
     'delivery.percent_off' => [new DeliveryPercentOff, [PromotionStage::Delivery]],
 ]);
 
-it('declares version 1 and its stages and cannot upgrade', function (object $effect, array $stages): void {
-    expect($effect->version())->toBe(1)
-        ->and($effect->stages())->toBe($stages)
-        ->and(effField(fn () => $effect->upgrade(RuleParams::fromInput([]), 2)))->toBe('version');
-})->with('effects');
+it('declares version 1 and its stages and cannot upgrade',
+    /**
+     * @param  non-empty-list<PromotionStage>  $stages
+     */
+    function (PromotionEffect $effect, array $stages): void {
+        expect($effect->version())->toBe(1)
+            ->and($effect->stages())->toBe($stages)
+            ->and(effField(fn () => $effect->upgrade(RuleParams::fromInput([]), 2)))->toBe('version');
+    })->with('effects');
 
-it('normalizes the rate of the percent effects and refuses 0, over 10000, a stray key and a missing rate', function (object $effect): void {
+it('normalizes the rate of the percent effects and refuses 0, over 10000, a stray key and a missing rate', function (PromotionEffect $effect): void {
     expect(effNormalize($effect, ['rateBp' => 1000]))->toBe(['rateBp' => 1000])
         ->and(effNormalize($effect, ['rateBp' => 10_000]))->toBe(['rateBp' => 10_000])
         ->and(effField(fn () => effNormalize($effect, ['rateBp' => 0])))->toBe('rateBp')
@@ -70,7 +87,7 @@ it('normalizes the rate of the percent effects and refuses 0, over 10000, a stra
     'delivery.percent_off' => [new DeliveryPercentOff],
 ]);
 
-it('normalizes the amount of the fixed effects and refuses zero, a foreign currency and a promotion without one', function (object $effect): void {
+it('normalizes the amount of the fixed effects and refuses zero, a foreign currency and a promotion without one', function (PromotionEffect $effect): void {
     $amount = ['amount_minor' => 3000, 'currency' => 'RUB'];
 
     expect(effNormalize($effect, ['amount' => Money::of('30.00', 'RUB')]))->toHaveKey('amount', $amount)

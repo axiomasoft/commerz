@@ -34,6 +34,7 @@ use Commerz\Pricing\Prices\Exceptions\StagedPriceNotFound;
 use Commerz\Pricing\Prices\Exceptions\StagedPriceStateConflict;
 use Commerz\Quotes\Contracts\QuotePipeline;
 use Commerz\Quotes\Data\QuotedLine;
+use Commerz\Quotes\Data\QuoteResult;
 use Commerz\Quotes\Exceptions\QuoteFailed;
 use Commerz\Schema\Rows;
 use Commerz\Schema\TableNames;
@@ -122,7 +123,7 @@ final readonly class DatabaseStagedPrices implements StagedPrices
 
         $simulatedQuote = $this->overlay->withEntries(
             $overlayEntries,
-            fn () => $this->quotes->run($query->quoteInput),
+            fn (): QuoteResult => $this->quotes->run($query->quoteInput),
         );
 
         $liveLinesById = [];

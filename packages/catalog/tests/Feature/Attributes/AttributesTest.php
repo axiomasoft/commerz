@@ -17,6 +17,8 @@ use Commerz\Catalog\Attributes\Internal\AttributeIndexer;
 use Commerz\Catalog\Common\Exceptions\DuplicateCode;
 use Commerz\Catalog\Facades\Catalog;
 use Commerz\Catalog\Options\Contracts\Options;
+use Commerz\Catalog\Products\Data\ProductId;
+use Commerz\Catalog\Variants\Data\VariantId;
 use Commerz\Errors\InvalidCommand;
 use Commerz\Measures\LocalizedText;
 use Commerz\Pagination\Cursor;
@@ -36,28 +38,48 @@ it('exposes the root accessors as the bound singletons', function (): void {
         ->and(Catalog::options())->toBe(app(Options::class));
 });
 
-it('defines each built-in type with a minimal config', function (string $type, array $config, array $choices): void {
-    $view = Catalog::attributes()->define(new DefineAttribute('a_'.$type, $type, attrLabel($type), $config, $choices));
+it(
+    'defines each built-in type with a minimal config',
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  array<array-key, LocalizedText>  $choices
+     */
+    function (string $type, array $config, array $choices): void {
+        $typedConfig = [];
+        foreach ($config as $key => $value) {
+            if (! is_string($key)) {
+                throw new RuntimeException('Attribute config keys must be strings.');
+            }
+            $typedConfig[$key] = $value;
+        }
+        $typedChoices = [];
+        foreach ($choices as $key => $label) {
+            if (! $label instanceof LocalizedText) {
+                throw new RuntimeException('Attribute choices must be localized text.');
+            }
+            $typedChoices[$key] = $label;
+        }
+        $view = Catalog::attributes()->define(new DefineAttribute('a_'.$type, $type, attrLabel($type), $typedConfig, $typedChoices));
 
-    expect($view->type)->toBe($type)
-        ->and($view->supported)->toBeTrue()
-        ->and($view->status)->toBe(AttributeStatus::Active)
-        ->and($view->filterable)->toBeFalse()
-        ->and($view->configVersion)->toBe(1)
-        ->and(array_map(static fn (AttributeChoiceView $choice) => $choice->code, $view->choices))->toBe(array_keys($choices));
-    expect(Catalog::attributes()->find($view->id)->code)->toBe('a_'.$type);
-})->with([
-    'text' => ['text', [], []],
-    'localized_text' => ['localized_text', [], []],
-    'integer' => ['integer', [], []],
-    'decimal' => ['decimal', [], []],
-    'boolean' => ['boolean', [], []],
-    'date' => ['date', [], []],
-    'enum' => ['enum', [], ['red' => LocalizedText::of('en', 'Red'), 'blue' => LocalizedText::of('en', 'Blue')]],
-    'multi_enum' => ['multi_enum', [], ['a' => LocalizedText::of('en', 'A')]],
-    'measure' => ['measure', ['unit' => 'kg'], []],
-    'reference' => ['reference', ['refType' => 'brand'], []],
-]);
+        expect($view->type)->toBe($type)
+            ->and($view->supported)->toBeTrue()
+            ->and($view->status)->toBe(AttributeStatus::Active)
+            ->and($view->filterable)->toBeFalse()
+            ->and($view->configVersion)->toBe(1)
+            ->and(array_map(static fn (AttributeChoiceView $choice) => $choice->code, $view->choices))->toBe(array_keys($typedChoices));
+        expect(Catalog::attributes()->find($view->id)->code)->toBe('a_'.$type);
+    })->with([
+        'text' => ['text', [], []],
+        'localized_text' => ['localized_text', [], []],
+        'integer' => ['integer', [], []],
+        'decimal' => ['decimal', [], []],
+        'boolean' => ['boolean', [], []],
+        'date' => ['date', [], []],
+        'enum' => ['enum', [], ['red' => LocalizedText::of('en', 'Red'), 'blue' => LocalizedText::of('en', 'Blue')]],
+        'multi_enum' => ['multi_enum', [], ['a' => LocalizedText::of('en', 'A')]],
+        'measure' => ['measure', ['unit' => 'kg'], []],
+        'reference' => ['reference', ['refType' => 'brand'], []],
+    ]);
 
 it('stores the canonical config and keeps choice order', function (): void {
     $decimal = Catalog::attributes()->define(new DefineAttribute('price_step', 'decimal', attrLabel('Step'), ['scale' => 3]));
@@ -132,30 +154,35 @@ it('walks the status lifecycle and refuses illegal transitions', function (): vo
 });
 
 it('reindexes only when filterable changes or the attribute retires', function (): void {
-    $calls = [];
-    app()->instance(AttributeIndexer::class, new class($calls) implements AttributeIndexer
+    $indexer = new class implements AttributeIndexer
     {
-        public function __construct(private array &$calls) {}
+        /** @var list<string> */
+        public array $calls = [];
 
         public function reindexAttribute(AttributeId $attribute): void
         {
             $this->calls[] = $attribute->value;
         }
-    });
+
+        public function reindexProduct(ProductId $product): void {}
+
+        public function reindexVariant(VariantId $variant): void {}
+    };
+    app()->instance(AttributeIndexer::class, $indexer);
     app()->forgetInstance(Attributes::class);
     app()->forgetInstance(Commerz\Catalog\Catalog::class);
 
     $view = Catalog::attributes()->define(new DefineAttribute('idx', 'text', attrLabel('Idx')));
     Catalog::attributes()->update(new UpdateAttribute($view->id, name: attrLabel('Idx2')));
 
-    expect($calls)->toBe([]);
+    expect($indexer->calls)->toBe([]);
 
     app(Attributes::class)->update(new UpdateAttribute($view->id, filterable: true));
     app(Attributes::class)->update(new UpdateAttribute($view->id, status: AttributeStatus::Deprecated));
     app(Attributes::class)->update(new UpdateAttribute($view->id, filterable: true));
     app(Attributes::class)->update(new UpdateAttribute($view->id, status: AttributeStatus::Retired));
 
-    expect($calls)->toBe([$view->id->value, $view->id->value]);
+    expect($indexer->calls)->toBe([$view->id->value, $view->id->value]);
 });
 
 it('adds and relabels choices', function (): void {

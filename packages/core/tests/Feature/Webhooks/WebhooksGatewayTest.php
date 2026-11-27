@@ -199,7 +199,7 @@ afterEach(function (): void {
     Uuid7::reset();
     DB::purge('webhooks_sqlite');
 
-    if (isset($this->sqliteDbPath) && is_string($this->sqliteDbPath) && is_file($this->sqliteDbPath)) {
+    if (property_exists($this, 'sqliteDbPath') && is_file($this->sqliteDbPath)) {
         @unlink($this->sqliteDbPath);
     }
 });
@@ -265,9 +265,14 @@ it('dispatches Outbox events to matching subscriptions with verifiable HMAC-SHA2
         ))->toBeTrue();
 
     $decoded = json_decode($sent->body, true, 512, JSON_THROW_ON_ERROR);
-    expect($decoded['id'])->toBe($event->eventId)
-        ->and($decoded['type'])->toBe('sales.order_placed')
-        ->and($decoded['data'])->toBe(['order_number' => 'ORD-1001', 'total_minor' => 159900, 'currency' => 'USD']);
+
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Expected a webhook document.');
+    }
+
+    expect($decoded['id'] ?? null)->toBe($event->eventId)
+        ->and($decoded['type'] ?? null)->toBe('sales.order_placed')
+        ->and($decoded['data'] ?? null)->toBe(['order_number' => 'ORD-1001', 'total_minor' => 159900, 'currency' => 'USD']);
 
     $page = $subscriptions->listDeliveries(new ListWebhookDeliveries(subscription: $salesHook->id));
     expect($page->items)->toHaveCount(1)
@@ -428,7 +433,7 @@ it('auto-disables dead endpoints via circuit-breaker and supports manual replay'
     expect($queuedReplay->status)->toBe(WebhookDeliveryStatus::Pending)
         ->and($queuedReplay->attempts)->toBe(0);
 
-    $this->artisan('commerz:webhooks:dispatch', ['--batch' => 10])
+    $this->pendingArtisan('commerz:webhooks:dispatch', ['--batch' => 10])
         ->assertSuccessful()
         ->expectsOutputToContain('4 delivered');
 

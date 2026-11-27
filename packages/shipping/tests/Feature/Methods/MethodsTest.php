@@ -17,6 +17,7 @@ use Commerz\Shipping\Methods\Data\DisableMethod;
 use Commerz\Shipping\Methods\Data\EnableMethod;
 use Commerz\Shipping\Methods\Data\ListMethods;
 use Commerz\Shipping\Methods\Data\MethodId;
+use Commerz\Shipping\Methods\Data\MethodView;
 use Commerz\Shipping\Methods\Data\RateView;
 use Commerz\Shipping\Methods\Data\SetMethodRates;
 use Commerz\Shipping\Methods\Data\UnassignMethodChannels;
@@ -308,7 +309,19 @@ it('lists by status, channel and zone with a keyset cursor', function (): void {
     mtMethod('c', ['position' => 0, 'status' => MethodStatus::Disabled]);
     mtMethod('d', ['position' => -3]);
 
-    $codes = static fn (Page $page): array => array_map(static fn (object $method): string => $method->code, $page->items);
+    $codes = static function (Page $page): array {
+        $codes = [];
+
+        foreach ($page->items as $method) {
+            if (! $method instanceof MethodView) {
+                throw new RuntimeException('expected a method view');
+            }
+
+            $codes[] = $method->code;
+        }
+
+        return $codes;
+    };
 
     $first = mtMethods()->list(new ListMethods(limit: 2));
     $second = mtMethods()->list(new ListMethods(after: $first->next, limit: 2));

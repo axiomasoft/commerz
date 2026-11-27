@@ -62,7 +62,7 @@ final class CatalogScenarioTest extends TestCase
         ));
         Catalog::listings()->publish(new PublishProduct($product->id, $channel->id));
 
-        $this->assertCount(3, $generated->created);
+        self::assertCount(3, $generated->created);
 
         /** @var array<string, VariantView> $bySku */
         $bySku = [];
@@ -74,16 +74,20 @@ final class CatalogScenarioTest extends TestCase
         foreach (['TEE-red-s' => '1000.00', 'TEE-red-m' => '1200.00', 'TEE-blue-m' => '1500.00'] as $sku => $amount) {
             $prices->set($bySku[$sku]->sellable, Money::of($amount, 'RUB'));
         }
-        $this->app->instance(PriceResolver::class, $prices);
+        $app = $this->app;
+        if ($app === null) {
+            self::fail('Application was not booted.');
+        }
+        $app->instance(PriceResolver::class, $prices);
 
         $context = CommerceContext::for($channel->id, Currency::of('RUB'), 'ru');
         $refs = array_map(static fn (VariantView $variant): SellableRef => $variant->sellable, array_values($bySku));
         $sellables = Commerz::sellables()->resolveMany($refs, $context);
 
         foreach ($sellables as $snapshot) {
-            $this->assertTrue($snapshot->purchasable);
-            $this->assertSame('Футболка', $snapshot->name);
-            $this->assertSame(['material' => 'cotton'], $snapshot->attributes);
+            self::assertTrue($snapshot->purchasable);
+            self::assertSame('Футболка', $snapshot->name);
+            self::assertSame(['material' => 'cotton'], $snapshot->attributes);
         }
 
         $quote = Commerz::quotes()->run(new QuoteInput($context, [
@@ -92,8 +96,8 @@ final class CatalogScenarioTest extends TestCase
             new QuoteLineInput('3', $sellables[(string) $bySku['TEE-blue-m']->sellable], 1),
         ]));
 
-        $this->assertEquals(Money::of('4900.00', 'RUB'), $quote->total);
-        $this->assertSame(['Красный', 'S'], array_values($sellables[(string) $bySku['TEE-red-s']->sellable]->options));
+        self::assertEquals(Money::of('4900.00', 'RUB'), $quote->total);
+        self::assertSame(['Красный', 'S'], array_values($sellables[(string) $bySku['TEE-red-s']->sellable]->options));
 
         $found = Catalog::products()->list(new ListProducts(
             channel: $channel->id,
@@ -104,7 +108,7 @@ final class CatalogScenarioTest extends TestCase
             filters: [VariantFilter::axes(['color' => 'blue', 'size' => 's'])],
         ));
 
-        $this->assertSame(['basic-tee'], array_map(static fn (object $item): string => $item->handle, $found->items));
-        $this->assertSame([], $missing->items);
+        self::assertSame(['basic-tee'], array_map(static fn (object $item): string => $item->handle, $found->items));
+        self::assertSame([], $missing->items);
     }
 }

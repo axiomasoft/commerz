@@ -183,8 +183,8 @@ it('filters out small lockers for oversized or overweight items while keeping la
     $bopisOnly = Shipping::pickupPoints()->search(new PickupPointQuery(
         context: $ctx,
         country: 'DE',
-        mode: DeliveryMode::LocalPickup,
         parcel: $oversizedParcel,
+        mode: DeliveryMode::LocalPickup,
     ));
 
     expect($bopisOnly)->toHaveCount(1)

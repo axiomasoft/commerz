@@ -15,6 +15,7 @@ use Commerz\Sales\Tests\Fixtures\RecordingGateway;
 use Commerz\Sales\Tests\Fixtures\StaticSellables;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -25,7 +26,7 @@ uses(SlsEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     slsCommitted();
@@ -40,7 +41,10 @@ afterEach(function (): void {
     slsTruncate();
 });
 
-/** @param  list<string>  $outcomes */
+/**
+ * @param  list<string>  $outcomes
+ * @return array<string, int>
+ */
 function pcTally(array $outcomes): array
 {
     $tally = array_count_values($outcomes);
@@ -101,6 +105,6 @@ it('asks once for a refund of money captured while the order is cancelled (C8)',
 
     expect(slsOrders()->find($order))->state->toBe(OrderState::Cancelled)->paymentState->toBe(PaymentState::Paid)
         ->and(DB::table('cmz_outbox_messages')->where('type', 'sales.payment_requires_refund')->count())->toBe(1)
-        ->and(json_decode(DB::table('cmz_outbox_messages')->where('type', 'sales.payment_requires_refund')->value('payload'), true)['amount_minor'])
+        ->and(slsJsonObject(DB::table('cmz_outbox_messages')->where('type', 'sales.payment_requires_refund')->value('payload'))['amount_minor'])
         ->toBe($this->order->amountDue->amountMinor);
 })->group('concurrency');

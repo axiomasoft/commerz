@@ -69,14 +69,33 @@ function awFacts(ProductId $product): array
     $facts = [];
 
     foreach ($rows as $row) {
-        $value = match (true) {
-            $row->choice !== null => $row->choice,
-            $row->num !== null => rtrim(rtrim((string) $row->num, '0'), '.'),
-            $row->flag !== null => $row->flag ? 'true' : 'false',
-            $row->day !== null => $row->day,
-            default => $row->term,
-        };
-        $facts[] = "{$row->code}:{$value}";
+        $code = $row->code;
+        if (! is_string($code)) {
+            throw new RuntimeException('Attribute index row is missing a code.');
+        }
+
+        $choice = $row->choice;
+        $num = $row->num;
+        $flag = $row->flag;
+        $day = $row->day;
+        $term = $row->term;
+
+        if (is_string($choice)) {
+            $value = $choice;
+        } elseif (is_string($num) || is_int($num) || is_float($num)) {
+            $numeric = is_string($num) ? $num : (is_int($num) ? (string) $num : sprintf('%.10F', $num));
+            $value = rtrim(rtrim($numeric, '0'), '.');
+        } elseif ($flag !== null) {
+            $value = (in_array($flag, [true, 1, '1', 't', 'true'], true)) ? 'true' : 'false';
+        } elseif (is_string($day)) {
+            $value = $day;
+        } elseif (is_string($term)) {
+            $value = $term;
+        } else {
+            throw new RuntimeException('Attribute index row has no fact.');
+        }
+
+        $facts[] = $code.':'.$value;
     }
 
     sort($facts);
@@ -87,7 +106,25 @@ function awFacts(ProductId $product): array
 /** @return array<string, mixed> */
 function awDocument(ProductId $product): array
 {
-    $document = json_decode((string) DB::table('cmz_products')->where('id', $product->value)->value('attributes'), true);
+    $raw = DB::table('cmz_products')->where('id', $product->value)->value('attributes');
+    if (! is_string($raw)) {
+        throw new RuntimeException('Product attributes document must be a string.');
+    }
+
+    $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Product attributes document must be a JSON object.');
+    }
+
+    $document = [];
+    foreach ($decoded as $key => $value) {
+        if (! is_string($key)) {
+            throw new RuntimeException('Product attribute keys must be strings.');
+        }
+
+        $document[$key] = $value;
+    }
+
     ksort($document, SORT_STRING);
 
     return $document;
@@ -223,19 +260,23 @@ it('keeps a value of an uninstalled type as stored, unprojected and read-only', 
         ->and(awFacts($product->id))->toBe(['color:red', 'stock:2']);
 });
 
-it('has the attribute writer as the only writer of attribute documents and the projection (CAT-02)', function (): void {
+it('lets only the attribute writer and the batch processor write attribute documents and the projection (CAT-02)', function (): void {
     $root = dirname(__DIR__, 3).'/src';
     $writers = [];
     $readers = [];
     $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
 
     foreach ($files as $file) {
-        if ($file->getExtension() !== 'php') {
+        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
             continue;
         }
 
-        $source = (string) file_get_contents($file->getPathname());
-        $path = substr($file->getPathname(), strlen($root) + 1);
+        $pathname = $file->getPathname();
+        $source = file_get_contents($pathname);
+        if (! is_string($source)) {
+            throw new RuntimeException('Cannot read '.$pathname);
+        }
+        $path = substr($pathname, strlen($root) + 1);
         $writes = preg_match('/->(insert|insertUsing|insertOrIgnore|upsert|update|updateOrInsert|delete|truncate)\(/', $source) === 1;
 
         if (preg_match("/'attributes'\\s*=>|\\bset\\s+\"?attributes\"?\\s*=/i", $source) === 1
@@ -246,9 +287,17 @@ it('has the attribute writer as the only writer of attribute documents and the p
         }
     }
 
+    sort($writers);
+    sort($readers);
+
     // Readers of the projection (the filter compiler) issue no write statement at all.
-    expect($writers)->toBe(['Attributes/Internal/AttributeWriter.php'])
-        ->and($readers)->toBe(['Products/Internal/FilterCompiler.php']);
+    expect($writers)->toBe([
+        'Attributes/Internal/AttributeWriter.php',
+        'Common/Internal/BatchAttributeProcessor.php',
+    ])->and($readers)->toBe([
+        'Products/Internal/FilterCompiler.php',
+        'Search/Internal/PgCatalogSearch.php',
+    ]);
 });
 
 it('stores and projects the full supported decimal range exactly', function (): void {

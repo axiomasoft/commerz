@@ -8,6 +8,7 @@ use Commerz\Errors\InvalidCommand;
 use Commerz\Webhooks\Exceptions\InvalidWebhookSignature;
 use DateTimeImmutable;
 use Packman\Attributes\Api;
+use SensitiveParameter;
 use Stringable;
 
 /**
@@ -60,7 +61,7 @@ final readonly class WebhookSignature implements Stringable
         $this->signatures = array_values(array_unique($normalized));
     }
 
-    public static function sign(string $rawBody, #[\SensitiveParameter] string $secret, int $timestamp): self
+    public static function sign(string $rawBody, #[SensitiveParameter] string $secret, int $timestamp): self
     {
         if ($secret === '') {
             throw new InvalidCommand('secret', 'must not be empty', 'webhooks.invalid_secret');
@@ -73,7 +74,7 @@ final readonly class WebhookSignature implements Stringable
         return new self($timestamp, [hash_hmac('sha256', "{$timestamp}.{$rawBody}", $secret)]);
     }
 
-    public static function signPayload(string $rawBody, #[\SensitiveParameter] string $secret): string
+    public static function signPayload(string $rawBody, #[SensitiveParameter] string $secret): string
     {
         if ($secret === '') {
             throw new InvalidCommand('secret', 'must not be empty', 'webhooks.invalid_secret');
@@ -133,7 +134,7 @@ final readonly class WebhookSignature implements Stringable
     public static function verify(
         string $header,
         string $rawBody,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string|array $secrets,
         DateTimeImmutable|int $now,
         int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS,
@@ -155,7 +156,7 @@ final readonly class WebhookSignature implements Stringable
     public static function assertValid(
         string $header,
         string $rawBody,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string|array $secrets,
         DateTimeImmutable|int $now,
         int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS,
@@ -197,7 +198,7 @@ final readonly class WebhookSignature implements Stringable
     public static function verifyPayload(
         string $header,
         string $rawBody,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string|array $secrets,
     ): bool {
         try {
@@ -217,7 +218,7 @@ final readonly class WebhookSignature implements Stringable
     public static function assertPayloadValid(
         string $header,
         string $rawBody,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string|array $secrets,
         string $source = 'webhook',
     ): void {
@@ -267,7 +268,7 @@ final readonly class WebhookSignature implements Stringable
      * @param  string|list<string>  $secrets
      * @return non-empty-list<string>
      */
-    private static function normalizeSecrets(#[\SensitiveParameter] string|array $secrets): array
+    private static function normalizeSecrets(#[SensitiveParameter] string|array $secrets): array
     {
         $list = is_string($secrets) ? [$secrets] : $secrets;
         $valid = [];

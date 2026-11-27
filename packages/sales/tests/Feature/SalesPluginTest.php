@@ -34,6 +34,7 @@ final class SalesPluginTest extends PackageTestCase
         return SalesPlugin::class;
     }
 
+    /** @return array<string, list<string>> */
     protected function expectedContributions(): array
     {
         return [

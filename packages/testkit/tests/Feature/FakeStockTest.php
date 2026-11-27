@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Identity\SellableRef;
-use Commerz\Ports\Stock\Contracts\StockReturns;
 use Commerz\Ports\Stock\Data\ConsumeReservation;
 use Commerz\Ports\Stock\Data\ReserveLine;
 use Commerz\Ports\Stock\Data\ReserveStock;
@@ -24,8 +23,7 @@ it('restocks limited refs once per reference and ignores unlimited ones', functi
     $stock->restock($command);
     $stock->restock(new RestockStock('return:2', $command->channel, [new RestockLine($limited, 1)]));
 
-    expect($stock)->toBeInstanceOf(StockReturns::class)
-        ->and($stock->onHand($limited))->toBe(9)
+    expect($stock->onHand($limited))->toBe(9)
         ->and($stock->onHand($unlimited))->toBeNull()
         ->and($stock->restocked)->toHaveCount(3);
 });

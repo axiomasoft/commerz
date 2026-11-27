@@ -22,7 +22,7 @@ use Packman\Plugins\Laravel\PluginRegistrar;
 beforeEach(function (): void {
     app()->singletonIf(RecordingConsumer::class);
     CommerzPlugins::builtInFor(app(), RecordingConsumerPlugin::class);
-    $this->artisan('migrate')->assertSuccessful();
+    $this->pendingArtisan('migrate')->assertSuccessful();
 });
 
 afterEach(fn () => DB::table('cmz_outbox_messages')->truncate());
@@ -67,6 +67,28 @@ function recordEvent(IntegrationEvent $event): void
     app(Transactions::class)->run(fn () => app(Outbox::class)->record($event));
 }
 
+function outboxMessage(): stdClass
+{
+    $row = DB::table('cmz_outbox_messages')->first();
+
+    if (! $row instanceof stdClass) {
+        throw new RuntimeException('Expected an outbox row.');
+    }
+
+    return $row;
+}
+
+function databaseNow(): string
+{
+    $now = DB::scalar('select now()');
+
+    if (! is_string($now)) {
+        throw new RuntimeException('Expected database time.');
+    }
+
+    return $now;
+}
+
 afterEach(fn () => Uuid7::reset());
 
 it('validates integration events', function (): void {
@@ -85,13 +107,18 @@ it('records an event inside the transaction', function (): void {
     Uuid7::fixed('0190a0a0-0000-7000-8000-00000000000a');
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:7', ['total' => 1.0, 'lines' => [1, 2]], version: 2, occurredAt: new DateTimeImmutable('2026-10-08T10:00:00Z')));
 
-    $row = DB::table('cmz_outbox_messages')->first();
+    $row = outboxMessage();
+    $payload = $row->payload;
+
+    if (! is_string($payload)) {
+        throw new RuntimeException('Expected a JSON payload.');
+    }
 
     expect($row->event_id)->toBe('0190a0a0-0000-7000-8000-00000000000a')
         ->and($row->type)->toBe('sales.order_placed')
         ->and($row->version)->toBe(2)
         ->and($row->aggregate_ref)->toBe('order:7')
-        ->and(json_decode($row->payload, true))->toBe(['lines' => [1, 2], 'total' => 1.0])
+        ->and(json_decode($payload, true))->toBe(['lines' => [1, 2], 'total' => 1.0])
         ->and($row->attempts)->toBe(0)
         ->and($row->delivered_at)->toBeNull();
 });
@@ -119,25 +146,30 @@ it('reschedules a failed delivery with backoff and delivers it later', function 
     $consumer->failing = true;
     recordEvent(IntegrationEvent::of('sales.order_placed', 'order:1', []));
 
-    $before = new DateTimeImmutable(DB::scalar('select now()'));
+    $before = new DateTimeImmutable(databaseNow());
     $failed = app(OutboxRelay::class)->relay(10);
-    $after = new DateTimeImmutable(DB::scalar('select now()'));
-    $row = DB::table('cmz_outbox_messages')->first();
+    $after = new DateTimeImmutable(databaseNow());
+    $row = outboxMessage();
+    $availableAt = $row->available_at;
+
+    if (! is_string($availableAt)) {
+        throw new RuntimeException('Expected available_at.');
+    }
 
     expect([$failed->claimed, $failed->delivered, $failed->failed])->toBe([1, 0, 1])
         ->and($row->attempts)->toBe(1)
         ->and($row->delivered_at)->toBeNull()
         ->and($row->last_error)->toBe('RuntimeException: crm is down')
-        ->and(new DateTimeImmutable($row->available_at))->toBeGreaterThanOrEqual($before->modify('+30 seconds'))
-        ->and(new DateTimeImmutable($row->available_at))->toBeLessThanOrEqual($after->modify('+30 seconds'))
+        ->and(new DateTimeImmutable($availableAt))->toBeGreaterThanOrEqual($before->modify('+30 seconds'))
+        ->and(new DateTimeImmutable($availableAt))->toBeLessThanOrEqual($after->modify('+30 seconds'))
         ->and(app(OutboxRelay::class)->relay(10)->claimed)->toBe(0);
 
     DB::update("update cmz_outbox_messages set available_at = now() - interval '1 second'");
     $consumer->failing = false;
 
-    $this->artisan('commerz:outbox:relay', ['--once' => true])->assertSuccessful()->expectsOutputToContain('1 delivered, 0 failed');
+    $this->pendingArtisan('commerz:outbox:relay', ['--once' => true])->assertSuccessful()->expectsOutputToContain('1 delivered, 0 failed');
 
-    $row = DB::table('cmz_outbox_messages')->first();
+    $row = outboxMessage();
     expect($row->attempts)->toBe(2)->and($row->delivered_at)->not->toBeNull()->and($row->last_error)->toBeNull()
         ->and($consumer->received)->toHaveCount(1);
 });
@@ -147,7 +179,7 @@ it('caps the retry backoff at one hour', function (): void {
 });
 
 it('rejects a bad batch size', function (): void {
-    $this->artisan('commerz:outbox:relay', ['--once' => true, '--batch' => 0])->assertFailed();
+    $this->pendingArtisan('commerz:outbox:relay', ['--once' => true, '--batch' => 0])->assertFailed();
 });
 
 it('refuses delivery in a host transaction without claiming rows or calling consumers', function (): void {

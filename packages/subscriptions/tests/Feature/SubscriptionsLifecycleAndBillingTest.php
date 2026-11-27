@@ -280,7 +280,7 @@ it('ingests orders.order_placed from Outbox for SellingPlan::Recurring and autom
 
     // Advance clock to Cycle #2 due date (2026-12-26) and run billing via Artisan command
     $clock->set(new DateTimeImmutable('2026-12-26T10:05:00Z'));
-    $this->artisan('commerz:subscriptions:bill')->assertSuccessful();
+    $this->mockArtisan('commerz:subscriptions:bill')->assertSuccessful();
 
     $renewals = Subscriptions::renewals()->forContract($contract->id);
     expect($renewals)->toHaveCount(1);

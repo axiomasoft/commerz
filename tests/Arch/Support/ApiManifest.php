@@ -62,7 +62,9 @@ final readonly class ApiManifest
     /**
      * The manifest entry of a public type: its kind, its layer from the marker, then its members.
      *
-     * @param  ReflectionClass<object>  $type
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $type
      * @return array<string, mixed>
      */
     public function type(ReflectionClass $type): array
@@ -75,7 +77,9 @@ final readonly class ApiManifest
     /**
      * What a type declares, without its marker: kind, modifiers, parents, cases, constants, properties, methods.
      *
-     * @param  ReflectionClass<object>  $type
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $type
      * @return array<string, mixed>
      */
     public function members(ReflectionClass $type): array
@@ -103,6 +107,10 @@ final readonly class ApiManifest
         $cases = [];
 
         if ($type->isEnum()) {
+            if (! is_subclass_of($name, UnitEnum::class)) {
+                throw new RuntimeException("{$name} is not an enum.");
+            }
+
             foreach ((new ReflectionEnum($name))->getCases() as $case) {
                 $cases[$case->getName()] = $case instanceof ReflectionEnumBackedCase ? $case->getBackingValue() : null;
             }
@@ -134,7 +142,7 @@ final readonly class ApiManifest
                     $property->isReadOnly() ? 'readonly' : null,
                     self::typeName($property->getType()),
                     '$'.$property->getName(),
-                ])).($property->hasDefaultValue() && ! $property->isPromoted() && $property->hasType() ? ' = '.self::literal($property->getDefaultValue()) : '');
+                ], static fn (?string $part): bool => $part !== null && $part !== '')).($property->hasDefaultValue() && ! $property->isPromoted() && $property->hasType() ? ' = '.self::literal($property->getDefaultValue()) : '');
             }
         }
 
@@ -176,7 +184,7 @@ final readonly class ApiManifest
             $piece = implode(' ', array_filter([
                 ($declared['parameters'][$parameter->getName()] ?? false) ? self::asSelf($type, $class) : $type,
                 ($parameter->isPassedByReference() ? '&' : '').($parameter->isVariadic() ? '...' : '').'$'.$parameter->getName(),
-            ]));
+            ], static fn (string $part): bool => $part !== ''));
 
             if ($parameter->isDefaultValueAvailable()) {
                 $piece .= ' = '.($parameter->isDefaultValueConstant()
@@ -270,7 +278,13 @@ final readonly class ApiManifest
         };
     }
 
-    /** A method belongs to the type that declares it, or to a public type that inherits it from a non-public parent. */
+    /**
+     * A method belongs to the type that declares it, or to a public type that inherits it from a non-public parent.
+     *
+     * @template T of object
+     *
+     * @param  ReflectionClass<T>  $type
+     */
     private function declaredHere(ReflectionMethod $method, ReflectionClass $type): bool
     {
         $declaring = $method->getDeclaringClass();

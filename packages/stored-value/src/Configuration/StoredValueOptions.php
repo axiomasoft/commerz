@@ -95,7 +95,7 @@ final readonly class StoredValueOptions implements OptionsFactory
 
         $defaultExpiryDays = self::nullableInt(
             $validator,
-            array_key_exists('default_expiry_days', $giftCards) ? $giftCards['default_expiry_days'] : null,
+            $giftCards['default_expiry_days'] ?? null,
             1,
             36500,
             $path.'.gift_cards.default_expiry_days',

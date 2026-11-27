@@ -7,12 +7,18 @@ use Commerz\Inventory\Configuration\InventoryOptions;
 use Packman\Config\Exceptions\InvalidConfiguration;
 
 it('defaults to priority allocation, unavailable unlinked sellables and a 500 batch', function (): void {
+    $published = require __DIR__.'/../../config/commerz-inventory.php';
+
+    if (! is_array($published)) {
+        throw new RuntimeException('commerz-inventory.php must return an array');
+    }
+
     $config = InventoryOptions::fromArray([]);
 
     expect($config->allocationStrategy)->toBe('priority')
         ->and($config->unlinkedSellables)->toBe(UnlinkedSellables::Unavailable)
         ->and($config->expiryBatch)->toBe(500)
-        ->and(InventoryOptions::fromArray(require __DIR__.'/../../config/commerz-inventory.php'))->toEqual($config);
+        ->and(InventoryOptions::fromArray($published))->toEqual($config);
 });
 
 it('reads every key', function (): void {

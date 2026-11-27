@@ -28,7 +28,7 @@ it('round-trips SmartCollection attribute and variant filters through serialized
         AttributeFilter::equals('brand', 'acme'),
         AttributeFilter::in('tags', ['eco', 'new']),
         AttributeFilter::between('weight', Measure::of('100', 'g'), Measure::of('500', 'g')),
-        AttributeFilter::between('released', new DateTimeImmutable('2026-01-01'), null),
+        AttributeFilter::between('released', new DateTimeImmutable('2026-01-01')),
         AttributeFilter::equals('designer', SellableRef::of('designer', 'designer-1')),
         AttributeFilter::equals('organic', true),
         AttributeFilter::between('stock', 1, 50),
@@ -36,7 +36,11 @@ it('round-trips SmartCollection attribute and variant filters through serialized
     );
 
     $json = json_encode($smart->toArray(), JSON_THROW_ON_ERROR);
-    $restored = SmartCollection::fromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+    if (! is_array($decoded)) {
+        throw new RuntimeException('Smart collection rules must decode to an array.');
+    }
+    $restored = SmartCollection::fromArray($decoded);
 
     expect($restored->toArray())->toBe($smart->toArray())
         ->and($restored->filters)->toHaveCount(8);

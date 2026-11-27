@@ -62,6 +62,12 @@ it('keeps the error of a carrier storable', function (): void {
 
     $this->journal->finish($claim, BookingState::Unknown, error: new RuntimeException("bad \xff byte\0 and ".str_repeat('x', 3000)));
 
-    expect(mb_check_encoding(bkRow()->error_message, 'UTF-8'))->toBeTrue()
-        ->and(mb_strlen(bkRow()->error_message))->toBe(2000);
+    $message = bkRow()->error_message;
+
+    if (! is_string($message)) {
+        throw new RuntimeException('expected a stored error message');
+    }
+
+    expect(mb_check_encoding($message, 'UTF-8'))->toBeTrue()
+        ->and(mb_strlen($message))->toBe(2000);
 });

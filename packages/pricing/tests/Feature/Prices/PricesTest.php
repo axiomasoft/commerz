@@ -23,6 +23,7 @@ use Commerz\Pricing\Prices\Exceptions\PriceWindowOverlap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -65,7 +66,7 @@ it('rejects an overlapping window with the id of the price in the way', function
 
     try {
         plsSet($list->id, amount: '9.00', from: plsAt('2026-01-15'), until: plsAt('2026-03-01'));
-        $this->fail('The overlap was accepted.');
+        Assert::fail('The overlap was accepted.');
     } catch (PriceWindowOverlap $e) {
         expect($e->conflictingPrice)->toBe($existing->id->value)
             ->and($e->sellable)->toBe('variant:tee')
@@ -102,7 +103,7 @@ it('rejects a currency other than the one of the list', function (): void {
 
     try {
         Pricing::prices()->set(plsPrice($list->id, currency: 'USD'));
-        $this->fail('The currency mismatch was accepted.');
+        Assert::fail('The currency mismatch was accepted.');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('pricing.currency_mismatch');
     }
@@ -164,7 +165,7 @@ it('rejects the same key and window twice in one batch', function (): void {
 
     try {
         Pricing::prices()->setMany(new SetPrices($list->id, [plsPrice($list->id, 'tee', '1.00'), plsPrice($list->id, 'tee', '2.00')]));
-        $this->fail('The duplicate was accepted.');
+        Assert::fail('The duplicate was accepted.');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('pricing.duplicate_price');
     }
@@ -181,7 +182,7 @@ it('reschedules a price and rejects a move into another window', function (): vo
 
     try {
         Pricing::prices()->reschedule(new ReschedulePrice($march->id, plsAt('2026-01-20'), plsAt('2026-03-15')));
-        $this->fail('The overlap was accepted.');
+        Assert::fail('The overlap was accepted.');
     } catch (PriceWindowOverlap $e) {
         expect($e->conflictingPrice)->toBe($january->id->value);
     }
@@ -272,7 +273,13 @@ it('raises PricesChanged with the sellables after the commit', function (): void
     plsSet($list->id, 'tee');
     Pricing::prices()->setMany(new SetPrices($list->id, [plsPrice($list->id, 'b'), plsPrice($list->id, 'a'), plsPrice($list->id, 'a', group: 'vip')]));
 
-    $events = Event::dispatched(PricesChanged::class)->map(static fn (array $call): array => $call[0]->sellables)->values()->all();
+    $events = Event::dispatched(PricesChanged::class)->map(static function (mixed $payload): array {
+        if (! is_array($payload) || ! isset($payload[0]) || ! $payload[0] instanceof PricesChanged) {
+            throw new RuntimeException('Unexpected PricesChanged payload.');
+        }
+
+        return $payload[0]->sellables;
+    })->values()->all();
 
     expect($events)->toBe([['variant:tee'], ['variant:a', 'variant:b']]);
 });

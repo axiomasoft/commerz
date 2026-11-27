@@ -10,6 +10,7 @@ use Commerz\Sales\Orders\Enums\CancelReason;
 use Commerz\Sales\Tests\Fixtures\StaticSellables;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -20,7 +21,7 @@ uses(SlsEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     slsCommitted();
@@ -35,7 +36,10 @@ afterEach(function (): void {
     slsTruncate();
 });
 
-/** @param  list<string>  $outcomes */
+/**
+ * @param  list<string>  $outcomes
+ * @return array<string, int>
+ */
 function fucTally(array $outcomes): array
 {
     $tally = array_count_values($outcomes);
@@ -79,7 +83,7 @@ it('fulfils or cancels the same units, never both', function (): void {
     $view = slsOrders()->find($order)->line($line);
 
     expect(count(array_filter($outcomes, static fn (string $outcome): bool => in_array($outcome, ['fulfilled', 'cancelled'], true))))->toBe(1)
-        ->and(($view?->fulfilledQuantity ?? 0) + ($view?->cancelledQuantity ?? 0))->toBe(2)
+        ->and($view === null ? 0 : $view->fulfilledQuantity + $view->cancelledQuantity)->toBe(2)
         ->and(DB::table('cmz_fulfillments')->count())->toBe(in_array('fulfilled', $outcomes, true) ? 1 : 0);
 })->group('concurrency');
 

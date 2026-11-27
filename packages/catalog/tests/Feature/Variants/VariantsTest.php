@@ -43,6 +43,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -141,7 +142,7 @@ it('creates a variant with the full combination and refuses a second one', funct
 
     try {
         Catalog::variants()->create(new CreateVariant($tee->id, 'TEE-2', ['color' => 'red', 'size' => 'm']));
-        $this->fail('A second variant of one combination was created.');
+        Assert::fail('A second variant of one combination was created.');
     } catch (DuplicateCombination $e) {
         expect($e->axes)->toBe(['color' => 'red', 'size' => 'm'])
             ->and($e->context())->toBe(['axes' => 'color=red,size=m']);
@@ -214,7 +215,7 @@ it('refuses a generation over the limit before writing', function (): void {
 
     try {
         Catalog::variants()->generate(new GenerateVariants($tee->id, ['color' => $colors, 'size' => $sizes], 'T-{color}-{size}'));
-        $this->fail('The limit was not enforced.');
+        Assert::fail('The limit was not enforced.');
     } catch (TooManyVariants $e) {
         expect($e->requested)->toBe(110)->and($e->limit)->toBe(100);
     }
@@ -237,7 +238,7 @@ it('rolls the whole generation back on a SKU collision', function (): void {
 
     try {
         varGenerate($tee);
-        $this->fail('The SKU collision was not reported.');
+        Assert::fail('The SKU collision was not reported.');
     } catch (DuplicateCode $e) {
         expect($e->duplicate)->toBe('TEE-blue-m');
     }
@@ -248,7 +249,36 @@ it('rolls the whole generation back on a SKU collision', function (): void {
 
 it('checks the SKU pattern and the axes of a generation', function (): void {
     [$tee] = varCatalog();
-    $generate = fn (array $axes, string $pattern, array $except = []) => fn () => Catalog::variants()->generate(new GenerateVariants($tee->id, $axes, $pattern, $except));
+    $generate = function (array $axes, string $pattern, array $except = []) use ($tee): Closure {
+        $typedAxes = [];
+        foreach ($axes as $option => $values) {
+            if (! is_string($option) || ! is_array($values)) {
+                throw new RuntimeException('Axes must map option codes to value lists.');
+            }
+            $codes = [];
+            foreach ($values as $value) {
+                if (! is_string($value)) {
+                    throw new RuntimeException('Axis values must be codes.');
+                }
+                $codes[] = $value;
+            }
+            $typedAxes[$option] = $codes;
+        }
+        /** @var list<array<array-key, mixed>> $typedExcept */
+        $typedExcept = [];
+        foreach ($except as $combination) {
+            if (! is_array($combination)) {
+                throw new RuntimeException('Excluded combinations must be arrays.');
+            }
+            $normalized = [];
+            foreach ($combination as $option => $value) {
+                $normalized[$option] = $value;
+            }
+            $typedExcept[] = $normalized;
+        }
+
+        return fn () => Catalog::variants()->generate(new GenerateVariants($tee->id, $typedAxes, $pattern, $typedExcept));
+    };
     $both = ['color' => ['red', 'blue'], 'size' => ['s', 'm']];
 
     expect($generate($both, 'TEE-{color}'))->toThrow(InvalidCommand::class, 'size')
@@ -392,8 +422,10 @@ it('round trips int64 measurements and positions accepted by variant commands', 
     [, $gift] = varCatalog();
     $large = 2_147_483_648;
     $variant = Catalog::variants()->create(new CreateVariant($gift->id, 'LARGE', weightGrams: $large, dimensions: new Dimensions($large, $large, $large), position: $large));
+    $dimensions = $variant->dimensions;
+    Assert::assertNotNull($dimensions);
     expect($variant->weightGrams)->toBe($large)
-        ->and($variant->dimensions->lengthMm)->toBe($large)
+        ->and($dimensions->lengthMm)->toBe($large)
         ->and($variant->position)->toBe($large);
     $updated = Catalog::variants()->update(new UpdateVariant($variant->id, weightGrams: PHP_INT_MAX, position: PHP_INT_MAX));
     expect($updated->weightGrams)->toBe(PHP_INT_MAX)->and($updated->position)->toBe(PHP_INT_MAX);

@@ -34,7 +34,7 @@ it('reports a clean state with exit 0', function (): void {
     rcnWorld();
     Inventory::stock()->adjust(new AdjustStock(rsvItem('cap', ['cap' => 1]), Inventory::locations()->create(new CreateLocation('aux', 'Aux'))->id, 3, 'found'));
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('Stock is consistent.')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('Stock is consistent.')->assertSuccessful();
 });
 
 it('accepts active reservations without stock lines', function (string $kind): void {
@@ -49,7 +49,7 @@ it('accepts active reservations without stock lines', function (string $kind): v
     rsvReserve($channel, 'order:ebook', ['ebook' => 2]);
 
     expect(Inventory::reservations()->find('order:ebook')->lines)->toBe([]);
-    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->assertSuccessful();
 })->with(['untracked', 'unlinked-unlimited']);
 
 it('accepts a header whose last outstanding lines were lazily expired', function (): void {
@@ -62,7 +62,7 @@ it('accepts a header whose last outstanding lines were lazily expired', function
 
     $line = Inventory::reservations()->find('cart:expired')->lines[0];
     expect([$line->expired, $line->outstanding])->toBe([2, 0]);
-    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->assertSuccessful();
 });
 
 it('still flags an active settled generation with released lines', function (): void {
@@ -70,27 +70,27 @@ it('still flags an active settled generation with released lines', function (): 
     Inventory::reservations()->release(new ReleaseReservation('order:1'));
     DB::table('cmz_stock_reservations')->where('demand', 'order:1')->update(['state' => 'active']);
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('reservation_state')->assertFailed();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('reservation_state')->assertFailed();
 });
 
 it('finds a corrupted reserved and repairs only that with --repair-reserved', function (): void {
     [, $tee, $main] = rcnWorld();
     DB::table('cmz_stock_levels')->where('stock_item_id', $tee->value)->update(['reserved' => 9]);
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('reserved_sum')->assertFailed();
-    $this->artisan('commerz:inventory:reconcile', ['--repair-reserved' => true])->expectsOutputToContain('Repaired reserved stock on 1 levels.')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('reserved_sum')->assertFailed();
+    $this->pendingArtisan('commerz:inventory:reconcile', ['--repair-reserved' => true])->expectsOutputToContain('Repaired reserved stock on 1 levels.')->assertSuccessful();
 
     $level = rsvLevel($tee, $main);
 
     expect([$level->onHand, $level->reserved])->toBe([10, 4]);
-    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->assertSuccessful();
 });
 
 it('flags a corrupted on_hand and never repairs it', function (): void {
     [, $tee, $main] = rcnWorld();
     DB::table('cmz_stock_levels')->where('stock_item_id', $tee->value)->update(['on_hand' => 12]);
 
-    $this->artisan('commerz:inventory:reconcile', ['--repair-reserved' => true])
+    $this->pendingArtisan('commerz:inventory:reconcile', ['--repair-reserved' => true])
         ->expectsOutputToContain('ledger_sum')
         ->expectsOutputToContain('ledger_balance')
         ->assertFailed();
@@ -102,15 +102,15 @@ it('flags a closed reservation that still holds units', function (): void {
     rcnWorld();
     DB::table('cmz_stock_reservations')->where('demand', 'order:1')->update(['state' => 'closed']);
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('reservation_state')->assertFailed();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('reservation_state')->assertFailed();
 });
 
 it('flags a completed transfer with goods still in transit', function (): void {
     [$from, $to, $item] = trfWorld();
     $sent = Inventory::transfers()->dispatch(new DispatchTransfer(trfCreate($from, $to, [$item->value => 5])->id));
-    $this->artisan('commerz:inventory:reconcile')->assertSuccessful();
+    $this->pendingArtisan('commerz:inventory:reconcile')->assertSuccessful();
 
     DB::table('cmz_stock_transfers')->where('id', $sent->id->value)->update(['state' => 'completed']);
 
-    $this->artisan('commerz:inventory:reconcile')->expectsOutputToContain('transfer_state')->assertFailed();
+    $this->pendingArtisan('commerz:inventory:reconcile')->expectsOutputToContain('transfer_state')->assertFailed();
 });

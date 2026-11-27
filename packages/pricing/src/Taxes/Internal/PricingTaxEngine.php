@@ -12,6 +12,7 @@ use Commerz\Ports\Taxes\Data\CalculateTax;
 use Commerz\Ports\Taxes\Data\TaxExemption;
 use Commerz\Pricing\Calculation\Contracts\TaxCalculator;
 use Commerz\Pricing\Calculation\Data\TaxableItem;
+use Commerz\Pricing\Calculation\Data\TaxAmount;
 use Commerz\Pricing\Calculation\Data\TaxRequest;
 use Commerz\Pricing\Calculation\Internal\TaxResultValidator;
 use Commerz\Pricing\Configuration\PricingOptions;
@@ -87,7 +88,7 @@ final readonly class PricingTaxEngine implements TaxEngine
         $this->container->make(TaxResultValidator::class)->assertValid($options->taxCalculator, $taxRequest, $result);
 
         $lines = array_map(
-            static fn ($amount): CalculatedTaxLine => new CalculatedTaxLine(
+            static fn (TaxAmount $amount): CalculatedTaxLine => new CalculatedTaxLine(
                 target: $amount->target,
                 lineId: $amount->lineId,
                 code: $amount->code,

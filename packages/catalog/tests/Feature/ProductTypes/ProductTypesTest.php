@@ -29,6 +29,7 @@ use Commerz\Ports\Sellables\Enums\SellableKind;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Packman\Plugins\Contracts\Contributions\Contributions;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
+use PHPUnit\Framework\Assert;
 
 uses(RefreshDatabase::class);
 
@@ -37,7 +38,12 @@ function ptLabel(string $text): LocalizedText
     return LocalizedText::of('en', $text);
 }
 
-/** Defines text attributes and options with the given codes. */
+/**
+ * Defines text attributes and options with the given codes.
+ *
+ * @param  list<string>  $attributes
+ * @param  list<string>  $options
+ */
 function ptVocabulary(array $attributes = ['material', 'density', 'color_name', 'weave'], array $options = ['color', 'size']): void
 {
     foreach ($attributes as $code) {
@@ -133,7 +139,7 @@ it('validates the shape of a create command', function (): void {
 
     try {
         new CreateProductType('t', ptLabel('T'), variantAxes: $axes);
-        $this->fail('Nine axes must be refused.');
+        Assert::fail('Nine axes must be refused.');
     } catch (InvalidCommand $e) {
         expect($e->code())->toBe('catalog.too_many_axes');
     }

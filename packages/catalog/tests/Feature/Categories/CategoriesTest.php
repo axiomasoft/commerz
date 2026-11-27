@@ -33,7 +33,10 @@ function catCreate(string $code, ?CategoryId $parent = null, int $position = 0):
     return Catalog::categories()->create(new CreateCategory($code, LocalizedText::of('en', ucfirst($code)), $parent, $position));
 }
 
-/** @param  list<CategoryView>  $categories */
+/**
+ * @param  list<CategoryView>  $categories
+ * @return list<string>
+ */
 function catCodes(array $categories): array
 {
     return array_map(fn (CategoryView $category): string => $category->code, $categories);

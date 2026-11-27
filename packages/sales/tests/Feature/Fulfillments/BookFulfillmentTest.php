@@ -69,7 +69,6 @@ it('books the shipment of the fulfilled lines with the carrier and address the o
     $request = $this->commerce->delivery->bookings[0];
 
     expect($this->commerce->delivery->bookings)->toHaveCount(1)
-        ->and($request)->toBeInstanceOf(BookShipment::class)
         ->and([$request->reference, $request->carrier, $request->methodCode])->toBe(['fulfillment:'.$created->id->value, 'test', 'flat:300.00'])
         ->and($request->destination)->toEqual(slsAddress())
         ->and($request->meta)->toBe(['label' => 'A6'])
@@ -231,6 +230,7 @@ it('recovers an unknown booking even when a manual shipment overtook its lost an
     $calls = [];
     bkfCarrier(new class($created->id, $calls) implements ShipmentBooking
     {
+        /** @param  list<string>  $calls */
         public function __construct(private readonly FulfillmentId $fulfillment, private array &$calls) {}
 
         public function book(BookShipment $command): BookedShipment

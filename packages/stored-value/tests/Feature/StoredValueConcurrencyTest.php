@@ -9,13 +9,20 @@ use Commerz\StoredValue\Facades\StoredValue;
 use Commerz\StoredValue\GiftCards\Data\IssueGiftCard;
 use Commerz\Testkit\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Assert;
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
-    $this->artisan('migrate')->assertSuccessful();
+    $pending = $this->artisan('migrate');
+    if (! $pending instanceof PendingCommand) {
+        Assert::fail('Expected a pending Artisan command.');
+    }
+
+    $pending->assertSuccessful();
 });
 
 afterEach(function (): void {
@@ -48,6 +55,7 @@ it('prevents concurrent double-spend across processes and upholds INV-SV-001', f
     ksort($counts);
 
     $card = StoredValue::giftCards()->find($issued->giftCard->id);
+    Assert::assertNotNull($card);
 
     expect($counts)->toBe(['held' => 5, 'insufficient' => 3])
         ->and($card)->not->toBeNull()

@@ -29,7 +29,7 @@ function rcnUsage(): void
 it('reports no discrepancy when the counters match the usage log', function (): void {
     rcnUsage();
 
-    $this->artisan('commerz:promotions:reconcile')
+    $this->pendingArtisan('commerz:promotions:reconcile')
         ->expectsOutputToContain('Promotions are consistent.')
         ->assertExitCode(0);
 });
@@ -42,7 +42,7 @@ it('lists every counter that disagrees with the usage log', function (): void {
     DB::table('cmz_promotion_customer_usages')->where('customer_ref', 'customer:b')->delete();
     DB::table('cmz_promotion_customer_usages')->where('customer_ref', 'customer:a')->update(['used' => 2]);
 
-    $this->artisan('commerz:promotions:reconcile')
+    $this->pendingArtisan('commerz:promotions:reconcile')
         ->expectsTable(['kind', 'ref', 'expected', 'actual'], [
             ['promotion_used', 'promotion:free', '0', '1'],
             ['promotion_used', 'promotion:limited', '2', '5'],
@@ -64,7 +64,7 @@ it('lists the rules and activators no plugin can run', function (): void {
     Promotions::promotions()->archive(new ArchivePromotion($archived->id));
     DB::table('cmz_promotion_rules')->where('promotion_id', $archived->id->value)->update(['rule_key' => 'gone.rule']);
 
-    $this->artisan('commerz:promotions:reconcile')
+    $this->pendingArtisan('commerz:promotions:reconcile')
         ->expectsTable(['kind', 'ref', 'expected', 'actual'], [
             ['unsupported_activator', 'promotion:free', 'supported', "no activator contributes 'gone.activator'"],
             ['unsupported_rule', 'promotion:limited/effect.0', 'supported', "no effect contributes 'gone.rule'"],

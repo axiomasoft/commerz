@@ -36,7 +36,7 @@ final class PortMatrix
         'commerz.core', 'commerz.catalog', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.shipping', 'commerz.sales',
     ];
 
-    public const array STAGES = ['base', 'promotions.catalog', 'promotions.cart', 'delivery', 'promotions.delivery', 'tax', 'totals'];
+    public const array STAGES = ['cart_transform', 'base', 'promotions.catalog', 'promotions.cart', 'delivery', 'promotions.delivery', 'promotions.near_miss_hints', 'tax', 'totals'];
 
     /** @return array<class-string, class-string> port => the class that serves it */
     public static function resolved(): array

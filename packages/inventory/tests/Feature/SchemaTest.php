@@ -27,10 +27,33 @@ function stockTable(string $logical): string
 /** @return list<string> */
 function stockConstraints(string $logical): array
 {
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [stockTable($logical)]);
+
     return array_map(
         static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [stockTable($logical)]),
+        $rows,
     );
+}
+
+function stockRow(mixed $row): stdClass
+{
+    if (! $row instanceof stdClass) {
+        throw new RuntimeException('expected a database row');
+    }
+
+    return $row;
+}
+
+function stockComparable(object $row, string $field): int|string
+{
+    $value = get_object_vars($row)[$field] ?? null;
+
+    if (is_int($value) || is_string($value)) {
+        return $value;
+    }
+
+    throw new RuntimeException("expected comparable {$field}");
 }
 
 // RefreshDatabase wraps each test in a transaction; a savepoint keeps it usable after an expected violation.
@@ -60,19 +83,43 @@ function stockSeed(): array
     return $ids;
 }
 
-/** @return array<string, mixed> */
+/**
+ * @param  array<string, mixed>  $extra
+ * @return array{id: string}&array<string, mixed>
+ */
 function stockReservation(string $demand = 'order:1', array $extra = []): array
 {
-    return ['id' => Uuid7::generate(), 'demand' => $demand, 'state' => 'active', ...$extra];
+    $id = Uuid7::generate();
+
+    return ['id' => $id] + ['demand' => $demand, 'state' => 'active', ...$extra];
 }
 
-/** @return array<string, mixed> */
+/**
+ * @param  array{location: string, east: string, item: string, level: string}  $ids
+ * @param  array<string, mixed>  $extra
+ * @return array{id: string}&array<string, mixed>
+ */
 function stockLine(array $ids, string $reservation, array $extra = []): array
 {
-    return [
-        'id' => Uuid7::generate(), 'reservation_id' => $reservation, 'sellable_ref' => 'variant:1', 'stock_item_id' => $ids['item'],
+    $id = Uuid7::generate();
+
+    return ['id' => $id] + [
+        'reservation_id' => $reservation, 'sellable_ref' => 'variant:1', 'stock_item_id' => $ids['item'],
         'location_id' => $ids['location'], 'stock_level_id' => $ids['level'], 'generation' => 1, 'quantity_per_unit' => 1,
         'units' => 5, 'position' => 0, ...$extra,
+    ];
+}
+
+/**
+ * @param  array{location: string, east: string, item: string, level: string}  $ids
+ * @param  array<string, mixed>  $extra
+ * @return array<string, mixed>
+ */
+function stockMovement(array $ids, array $extra = []): array
+{
+    return [
+        'stock_level_id' => $ids['level'], 'stock_item_id' => $ids['item'], 'location_id' => $ids['location'],
+        'kind' => 'receipt', 'delta' => 10, 'balance_after' => 10, ...$extra,
     ];
 }
 
@@ -93,7 +140,10 @@ it('creates every table with canonical constraint names', function (): void {
             expect($name)->toMatch('/(_(pk|uq|fk|ck)|_[0-9a-f]{8})\z/'); // a name over 63 bytes ends in the hash of ConstraintNames::shorten
         }
 
-        foreach (DB::select('select indexname from pg_indexes where tablename = ?', [$physical]) as $index) {
+        /** @var list<object{indexname: string}> $indexes */
+        $indexes = DB::select('select indexname from pg_indexes where tablename = ?', [$physical]);
+
+        foreach ($indexes as $index) {
             expect($index->indexname)->toMatch('/(_(pk|uq|ix)|_[0-9a-f]{8})\z/');
         }
 
@@ -102,6 +152,7 @@ it('creates every table with canonical constraint names', function (): void {
 });
 
 it('keeps quantities in bigint and ids as uuid', function (): void {
+    /** @var list<object{table_name: string, column_name: string, data_type: string}> $columns */
     $columns = DB::select(
         "select table_name, column_name, data_type from information_schema.columns where table_name like 'cmz\\_stock\\_%' and (column_name in ('on_hand', 'reserved', 'safety_stock', 'version', 'quantity_per_unit', 'units', 'consumed_units', 'released_units', 'expired_units', 'delta', 'balance_after', 'quantity', 'received', 'lost'))",
     );
@@ -112,12 +163,22 @@ it('keeps quantities in bigint and ids as uuid', function (): void {
         expect($column->data_type)->toBe('bigint', "{$column->table_name}.{$column->column_name}");
     }
 
-    expect(DB::selectOne("select data_type from information_schema.columns where table_name = ? and column_name = 'id'", [stockTable('stock_movements')])->data_type)->toBe('bigint')
-        ->and(DB::selectOne("select data_type from information_schema.columns where table_name = ? and column_name = 'channel_id'", [stockTable('stock_sources')])->data_type)->toBe('uuid');
+    /** @var object{data_type: string}|null $movementId */
+    $movementId = DB::selectOne("select data_type from information_schema.columns where table_name = ? and column_name = 'id'", [stockTable('stock_movements')]);
+    /** @var object{data_type: string}|null $channelId */
+    $channelId = DB::selectOne("select data_type from information_schema.columns where table_name = ? and column_name = 'channel_id'", [stockTable('stock_sources')]);
+
+    if ($movementId === null || $channelId === null) {
+        throw new RuntimeException('expected stock id column types');
+    }
+
+    expect($movementId->data_type)->toBe('bigint')
+        ->and($channelId->data_type)->toBe('uuid');
 });
 
 it('has no foreign key to the core or other packages', function (): void {
     foreach (STOCK_TABLES as $logical) {
+        /** @var list<object{target: string}> $targets */
         $targets = DB::select(
             "select confrelid::regclass::text as target from pg_constraint where conrelid = ?::regclass and contype = 'f'",
             [stockTable($logical)],
@@ -147,7 +208,7 @@ it('keeps location codes and skus unique and checks their enums', function (): v
         ->and(fn () => stockUpdate('stock_items', $ids['item'], ['status' => 'gone']))
         ->toThrow(QueryException::class, 'cmz_stock_items_status_valid_ck');
 
-    $defaults = DB::table(stockTable('stock_items'))->where('id', $ids['item'])->first();
+    $defaults = stockRow(DB::table(stockTable('stock_items'))->where('id', $ids['item'])->first());
     expect($defaults->policy)->toBe('tracked')->and($defaults->status)->toBe('active');
 });
 
@@ -203,31 +264,29 @@ it('keeps one level per item and location and never lets a quantity go negative'
 
     stockUpdate('stock_levels', $ids['level'], ['on_hand' => PHP_INT_MAX, 'reserved' => PHP_INT_MAX]);
 
-    $level = DB::table(stockTable('stock_levels'))->where('id', $ids['level'])->first();
+    $level = stockRow(DB::table(stockTable('stock_levels'))->where('id', $ids['level'])->first());
     expect($level->on_hand)->toBe(PHP_INT_MAX)->and($level->version)->toBe(0);
 });
 
 it('journals movements append-only with a non-zero delta and a known kind', function (): void {
     $ids = stockSeed();
-    $movement = static fn (array $extra = []): array => [
-        'stock_level_id' => $ids['level'], 'stock_item_id' => $ids['item'], 'location_id' => $ids['location'],
-        'kind' => 'receipt', 'delta' => 10, 'balance_after' => 10, ...$extra,
-    ];
 
-    stockInsert('stock_movements', $movement());
-    stockInsert('stock_movements', $movement(['kind' => 'sale', 'delta' => -4, 'balance_after' => 6, 'reference' => 'fulfillment:1']));
+    stockInsert('stock_movements', stockMovement($ids));
+    stockInsert('stock_movements', stockMovement($ids, ['kind' => 'sale', 'delta' => -4, 'balance_after' => 6, 'reference' => 'fulfillment:1']));
 
-    expect(fn () => stockInsert('stock_movements', $movement(['delta' => 0])))
+    expect(fn () => stockInsert('stock_movements', stockMovement($ids, ['delta' => 0])))
         ->toThrow(QueryException::class, 'cmz_stock_movements_delta_non_zero_ck')
-        ->and(fn () => stockInsert('stock_movements', $movement(['balance_after' => -1])))
+        ->and(fn () => stockInsert('stock_movements', stockMovement($ids, ['balance_after' => -1])))
         ->toThrow(QueryException::class, 'cmz_stock_movements_balance_after_non_negative_ck')
-        ->and(fn () => stockInsert('stock_movements', $movement(['kind' => 'theft'])))
+        ->and(fn () => stockInsert('stock_movements', stockMovement($ids, ['kind' => 'theft'])))
         ->toThrow(QueryException::class, 'cmz_stock_movements_kind_valid_ck')
-        ->and(fn () => stockInsert('stock_movements', $movement(['id' => 99])))
+        ->and(fn () => stockInsert('stock_movements', stockMovement($ids, ['id' => 99])))
         ->toThrow(QueryException::class);
 
     $rows = DB::table(stockTable('stock_movements'))->orderBy('id')->get();
-    expect($rows)->toHaveCount(2)->and($rows[1]->id)->toBeGreaterThan($rows[0]->id);
+    $older = stockRow($rows->get(0));
+    $newer = stockRow($rows->get(1));
+    expect($rows)->toHaveCount(2)->and(stockComparable($newer, 'id'))->toBeGreaterThan(stockComparable($older, 'id'));
 });
 
 it('holds one reservation per demand and checks its state', function (): void {
@@ -242,12 +301,17 @@ it('holds one reservation per demand and checks its state', function (): void {
         ->and(fn () => stockUpdate('stock_reservations', $reservation['id'], ['state' => 'expired']))
         ->toThrow(QueryException::class, 'cmz_stock_reservations_state_valid_ck');
 
-    $row = DB::table(stockTable('stock_reservations'))->where('id', $reservation['id'])->first();
+    $row = stockRow(DB::table(stockTable('stock_reservations'))->where('id', $reservation['id'])->first());
     expect($row->generation)->toBe(1);
 });
 
 it('indexes only active reservations that expire', function (): void {
+    /** @var object{indexdef: string}|null $definition */
     $definition = DB::selectOne('select indexdef from pg_indexes where indexname = ?', ['cmz_stock_reservations_expires_at_ix']);
+
+    if ($definition === null) {
+        throw new RuntimeException('missing index cmz_stock_reservations_expires_at_ix');
+    }
 
     expect($definition->indexdef)->toContain('expires_at')->toContain("state)::text = 'active'")->toContain('expires_at IS NOT NULL');
 });
@@ -305,7 +369,12 @@ it('removes lines with their reservation but restricts deleting a level or item 
 });
 
 it('indexes only outstanding reservation lines per level', function (): void {
+    /** @var object{indexdef: string}|null $definition */
     $definition = DB::selectOne('select indexdef from pg_indexes where indexname = ?', ['cmz_stock_reservation_lines_stock_level_id_ix']);
+
+    if ($definition === null) {
+        throw new RuntimeException('missing index cmz_stock_reservation_lines_stock_level_id_ix');
+    }
 
     expect($definition->indexdef)->toContain('stock_level_id')->toContain('consumed_units')->toContain('WHERE');
 });
@@ -347,13 +416,13 @@ it('keeps a transfer line once per item with counters within its quantity', func
 it('drops and recreates the whole stock schema on rollback and migrate', function (): void {
     $options = ['--path' => realpath(__DIR__.'/../../database/migrations'), '--realpath' => true];
 
-    $this->artisan('migrate:rollback', $options)->assertExitCode(0);
+    $this->pendingArtisan('migrate:rollback', $options)->assertExitCode(0);
 
     foreach (STOCK_TABLES as $logical) {
         expect(DB::getSchemaBuilder()->hasTable(stockTable($logical)))->toBeFalse($logical);
     }
 
-    $this->artisan('migrate', $options)->assertExitCode(0);
+    $this->pendingArtisan('migrate', $options)->assertExitCode(0);
 
     foreach (STOCK_TABLES as $logical) {
         expect(DB::getSchemaBuilder()->hasTable(stockTable($logical)))->toBeTrue($logical);

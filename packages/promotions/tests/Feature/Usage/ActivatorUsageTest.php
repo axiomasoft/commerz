@@ -29,5 +29,5 @@ it('places and restores a promotion switched on by an external activation code w
 
     expect(usgPromotionCounters($promotion))->toBe(['used' => 0, 'spent' => 0])
         ->and(evRun($input)->total->toDecimal())->toBe('90.00');
-    $this->artisan('commerz:promotions:reconcile')->assertExitCode(0);
+    $this->pendingArtisan('commerz:promotions:reconcile')->assertExitCode(0);
 });

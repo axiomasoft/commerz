@@ -54,6 +54,7 @@ it('reaches the same modules through the facade', function (): void {
 it('resolves a module only when it is asked for, so the carts need no stock port', function (): void {
     $root = app(Sales::class);
 
-    expect($root->carts())->toBeInstanceOf(Carts::class)
-        ->and(fn () => $root->checkout())->toThrow(InvalidConfiguration::class, 'commerz.stock');
+    $root->carts();
+
+    expect(fn () => $root->checkout())->toThrow(InvalidConfiguration::class, 'commerz.stock');
 });

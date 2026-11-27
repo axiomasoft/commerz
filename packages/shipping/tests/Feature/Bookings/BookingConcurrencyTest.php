@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Commerz\Shipping\Bookings\Internal\BookingJournal;
 use Commerz\Shipping\Tests\Fixtures\RecordingCarrier;
 use Commerz\Testkit\Concurrency;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -15,7 +16,7 @@ uses(BkEnvironment::class);
 
 beforeEach(function (): void {
     if (! function_exists('pcntl_fork')) {
-        $this->markTestSkipped('pcntl is required.');
+        Assert::markTestSkipped('pcntl is required.');
     }
 
     bkSetUp();

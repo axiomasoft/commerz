@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Commerz\Money\Currency;
-use Commerz\Sales\Numbering\Contracts\OrderNumberGenerator;
 use Commerz\Sales\Numbering\Data\OrderNumbering;
 use Commerz\Sales\Numbering\Internal\SequenceOrderNumbers;
 use Commerz\Sales\Orders\Data\OrderId;
@@ -56,5 +55,5 @@ it('takes an empty prefix and a long one and still matches the order number patt
 });
 
 it('is the contribution `sequence` of order_number_generator', function (): void {
-    expect(app(SequenceOrderNumbers::class))->toBeInstanceOf(OrderNumberGenerator::class);
+    expect(app(SequenceOrderNumbers::class)->key())->toBe('sequence');
 });

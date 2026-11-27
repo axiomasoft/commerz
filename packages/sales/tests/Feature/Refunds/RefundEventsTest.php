@@ -154,9 +154,9 @@ it('gives the promotion usage back when an event completes the refund of the who
 
 it('keeps the success the gateway answered after a failure event overtook it, so the money is not refunded twice', function (string $answer, RefundStatus $status): void {
     RecordingGateway::scenario($answer === 'succeeded' ? [] : ['refund' => $answer]);
-    RecordingGateway::duringRefund(static fn (GatewayRefundRequest $request) => slsRefunds()->recordEvent(
-        new RecordRefundEvent('recording', 'evt-race', false, $request->reference),
-    ));
+    RecordingGateway::duringRefund(static function (GatewayRefundRequest $request): void {
+        slsRefunds()->recordEvent(new RecordRefundEvent('recording', 'evt-race', false, $request->reference));
+    });
 
     $refund = rfIssue($this->order, '200.00');
     RecordingGateway::duringRefund(null);

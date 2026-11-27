@@ -28,7 +28,8 @@ it('resolves the typed config as a singleton from the config repository', functi
 })->group('boot');
 
 it('loads the sales migrations', function (): void {
-    $paths = array_map(basename(...), glob(__DIR__.'/../../database/migrations/*.php') ?: []);
+    $found = glob(__DIR__.'/../../database/migrations/*.php');
+    $paths = array_map(basename(...), is_array($found) ? $found : []);
 
     expect($paths)->toContain(
         '2026_10_14_100001_create_commerz_cart_tables.php',

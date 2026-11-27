@@ -8,6 +8,7 @@ use Commerz\Catalog\Attributes\Enums\AttributeStatus;
 use Commerz\Catalog\Collections\Contracts\Collections;
 use Commerz\Catalog\Collections\Data\ArchiveCollection;
 use Commerz\Catalog\Collections\Data\CollectionId;
+use Commerz\Catalog\Collections\Data\CollectionItem;
 use Commerz\Catalog\Collections\Data\CollectionProductView;
 use Commerz\Catalog\Collections\Data\CollectionView;
 use Commerz\Catalog\Collections\Data\CreateCollection;
@@ -225,12 +226,12 @@ final readonly class DatabaseCollections implements Collections
         return $this->transactions->run(function () use ($command): array {
             $db = $this->db();
             $this->lockManual($command->collection);
-            $this->assertProductsExist($db, array_map(static fn ($item): string => $item->product->value, $command->items));
+            $this->assertProductsExist($db, array_map(static fn (CollectionItem $item): string => $item->product->value, $command->items));
 
             $links = $this->tables->table('collection_products');
             $db->table($links)->where('collection_id', $command->collection->value)->delete();
 
-            $rows = array_map(static fn ($item): array => [
+            $rows = array_map(static fn (CollectionItem $item): array => [
                 'collection_id' => $command->collection->value,
                 'product_id' => $item->product->value,
                 'position' => $item->position,
@@ -366,7 +367,7 @@ final readonly class DatabaseCollections implements Collections
         $conditions = $this->filters->compile($query->filters);
 
         if ($conditions === null) {
-            return new Page([], null);
+            return new Page([]);
         }
 
         $db = $this->db();

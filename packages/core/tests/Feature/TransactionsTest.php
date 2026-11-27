@@ -11,7 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 function lockTimeout(): string
 {
-    return DB::selectOne("select current_setting('lock_timeout') as value")->value;
+    $row = DB::selectOne("select current_setting('lock_timeout') as value");
+
+    if (! $row instanceof stdClass || ! is_string($row->value)) {
+        throw new RuntimeException('Expected lock_timeout.');
+    }
+
+    return $row->value;
 }
 
 it('opens a transaction with a local lock_timeout and restores it after commit', function (): void {
@@ -69,7 +75,12 @@ it('recovers the host transaction after PostgreSQL concurrency errors in nested 
             DB::insert('insert into tx_deadlock_probe values (1)');
             expect(fn () => app(Transactions::class)->run(function () use ($state): void {
                 DB::insert('insert into tx_deadlock_probe values (2)');
-                DB::unprepared("do $$ begin raise exception 'deadlock detected' using errcode = '{$state}'; end $$");
+                $deadlock = match ($state) {
+                    '40P01' => "do $$ begin raise exception 'deadlock detected' using errcode = '40P01'; end $$",
+                    '40001' => "do $$ begin raise exception 'deadlock detected' using errcode = '40001'; end $$",
+                    default => throw new InvalidArgumentException("Unexpected SQLSTATE {$state}."),
+                };
+                DB::unprepared($deadlock);
             }))->toThrow(PDOException::class);
             DB::insert('insert into tx_deadlock_probe values (3)');
         });

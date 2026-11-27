@@ -18,7 +18,8 @@ require_once __DIR__.'/../Helpers.php';
 uses(RefreshDatabase::class, SlsEnvironment::class);
 
 beforeEach(function (): void {
-    Commerce::fake()->sellables->add(slsSnapshot('fake:a', '100.00'));
+    $this->commerce = Commerce::fake();
+    $this->commerce->sellables->add(slsSnapshot('fake:a', '100.00'));
     slsConfig(['checkout' => ['require_delivery' => false]]);
     $this->channel = slsChannel();
 });
@@ -29,8 +30,8 @@ it('anonymizes personal data for a customer while preserving accounting invarian
     $target = CustomerRef::of('crm', 'gdpr-1');
     $other = CustomerRef::of('crm', 'keep-2');
 
-    Commerce::fake()->customers->add(new CustomerProfile($target, 'alice@example.com', 'Alice Doe'));
-    Commerce::fake()->customers->add(new CustomerProfile($other, 'bob@example.com', 'Bob Roe'));
+    $this->commerce->customers->add(new CustomerProfile($target, [], 'alice@example.com', 'Alice Doe'));
+    $this->commerce->customers->add(new CustomerProfile($other, [], 'bob@example.com', 'Bob Roe'));
 
     $shipping = new Address('RU', 'RU-MOW', 'Moscow', '101000', ['Tverskaya 1', 'Apt 12'], 'Alice Doe', '+79990001122');
     $billing = new Address('DE', 'DE-BE', 'Berlin', '10115', ['Torstrasse 5'], 'Alice Doe', '+4930123456');

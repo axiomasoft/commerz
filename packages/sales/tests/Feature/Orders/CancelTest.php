@@ -27,6 +27,7 @@ use Commerz\Testkit\Commerce;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -42,8 +43,13 @@ beforeEach(function (): void {
 /** @return list<array<string, mixed>> payloads of the outbox messages of the type, oldest first (jsonb: keys unordered) */
 function cnlOutbox(string $type): array
 {
-    return DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', $type)->orderBy('id')->get()
-        ->map(static fn (object $message): array => json_decode($message->payload, true))->all();
+    $payloads = [];
+
+    foreach (DB::table(app(TableNames::class)->table('outbox_messages'))->where('type', $type)->orderBy('id')->get() as $message) {
+        $payloads[] = slsJsonObject($message->payload);
+    }
+
+    return $payloads;
 }
 
 it('cancels every unit, releases the demand and gives the usage back as cancelled', function (): void {
@@ -112,7 +118,7 @@ it('refuses a completed order', function (): void {
 
     try {
         slsOrders()->cancel(new CancelOrder($placed->id, CancelReason::Customer));
-        $this->fail('cancelled a completed order');
+        Assert::fail('cancelled a completed order');
     } catch (OrderNotCancellable $e) {
         expect([$e->reason, $e->code()])->toBe(['completed', 'sales.order_not_cancellable']);
     }

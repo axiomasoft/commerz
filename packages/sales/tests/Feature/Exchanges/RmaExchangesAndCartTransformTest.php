@@ -97,6 +97,7 @@ final class SlsRmaSqliteConnection extends SQLiteConnection
         return (string) preg_replace('/\s+for\s+(?:update|share)(?:\s+nowait|\s+skip\s+locked)?\b/i', '', $normalized);
     }
 
+    /** @param  array<int|string, mixed>  $bindings */
     public function statement($query, $bindings = []): bool
     {
         if (stripos(ltrim($query), 'set local lock_timeout') === 0) {
@@ -106,28 +107,34 @@ final class SlsRmaSqliteConnection extends SQLiteConnection
         return parent::statement(self::normalizePgSql($query), $bindings);
     }
 
+    /** @param  array<int|string, mixed>  $bindings */
     public function affectingStatement($query, $bindings = []): int
     {
         return parent::affectingStatement(self::normalizePgSql($query), $bindings);
     }
 
+    /**
+     * @param  array<int|string, mixed>  $bindings
+     * @param  array<int|string, mixed>  $fetchUsing
+     * @return list<mixed>
+     */
     public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
     {
-        $rows = parent::select(self::normalizePgSql($query), $bindings, $useReadPdo, $fetchUsing);
+        $normalized = [];
 
-        foreach ($rows as $row) {
-            if (! is_object($row)) {
-                continue;
-            }
-
-            foreach (self::BOOL_COLUMNS as $col) {
-                if (property_exists($row, $col) && is_int($row->{$col})) {
-                    $row->{$col} = $row->{$col} !== 0;
+        foreach (parent::select(self::normalizePgSql($query), $bindings, $useReadPdo, $fetchUsing) as $row) {
+            if (is_object($row)) {
+                foreach (self::BOOL_COLUMNS as $col) {
+                    if (property_exists($row, $col) && is_int($row->{$col})) {
+                        $row->{$col} = $row->{$col} !== 0;
+                    }
                 }
             }
+
+            $normalized[] = $row;
         }
 
-        return $rows;
+        return $normalized;
     }
 }
 
@@ -230,7 +237,15 @@ function rmaSnap(string $ref, string $price, int $weight = 400, SellableKind $ki
 }
 
 beforeEach(function (): void {
-    Connection::resolverFor('sqlite', static function ($connection, $database, $prefix, array $config) {
+    Connection::resolverFor('sqlite', static function (mixed $connection, mixed $database, mixed $prefix, array $config): SQLiteConnection {
+        if (! $connection instanceof PDO && ! $connection instanceof Closure) {
+            throw new RuntimeException('Expected a PDO connection.');
+        }
+
+        if (! is_string($database) || ! is_string($prefix)) {
+            throw new RuntimeException('Expected sqlite connection names.');
+        }
+
         if (($config['commerz_compat'] ?? false) === true) {
             return new SlsRmaSqliteConnection($connection, $database, $prefix, $config);
         }
@@ -406,6 +421,7 @@ beforeEach(function (): void {
             completed_at text,
             cancelled_at text,
             created_by_ref text,
+            version integer not null default 1,
             created_at text not null,
             updated_at text not null,
             unique (store_id, number)
@@ -554,7 +570,13 @@ beforeEach(function (): void {
 
     // Execute our actual migration 2026_11_26_500003!
     $migration = require __DIR__.'/../../../database/migrations/2026_11_26_500003_create_exchanges_and_rma_disposition.php';
-    $migration->up();
+    $up = [$migration, 'up'];
+
+    if (! is_object($migration) || ! is_callable($up)) {
+        throw new RuntimeException('Expected the exchange migration.');
+    }
+
+    $up();
 
     $this->commerce = Commerce::fake();
     $this->commerce->sellables->add(
@@ -816,7 +838,8 @@ it('executes OrderExchange combining inbound Return and outbound Fulfillment wit
         ->and($this->commerce->stock->onHand(SellableRef::of('fake', 'jacket')))->toBe(4);
 
     // Outbound fulfillment works with Fulfillments::ship & markDelivered!
-    $shipped = SalesFacade::fulfillments()->ship(new ShipFulfillment($completedUpgrade->fulfillment, 'cdek', 'TRK-EX-1'));
+    $fulfillment = $completedUpgrade->fulfillment ?? throw new RuntimeException('Expected an outbound fulfillment.');
+    $shipped = SalesFacade::fulfillments()->ship(new ShipFulfillment($fulfillment, 'cdek', 'TRK-EX-1'));
     $delivered = SalesFacade::fulfillments()->markDelivered(new MarkFulfillmentDelivered($shipped->id));
     expect($delivered->status)->toBe(FulfillmentStatus::Delivered);
 

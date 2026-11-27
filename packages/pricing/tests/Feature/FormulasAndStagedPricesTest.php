@@ -26,6 +26,7 @@ use Commerz\Pricing\Prices\Data\StagePrice;
 use Commerz\Pricing\Prices\Data\StagePrices;
 use Commerz\Pricing\Prices\Enums\StagedPriceStatus;
 use Commerz\Pricing\Prices\Exceptions\StagedPriceStateConflict;
+use Commerz\Pricing\Tests\TestCase;
 use Commerz\Quotes\Contracts\QuoteStage;
 use Commerz\Quotes\Data\Adjustment;
 use Commerz\Quotes\Data\QuoteState;
@@ -36,6 +37,7 @@ use Commerz\Stores\Contracts\Stores;
 use Commerz\Stores\Data\CreateChannel;
 use Commerz\Stores\Data\CreateStore;
 use Commerz\Testkit\Fakes\FakeSellables;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Application;
 use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
@@ -112,8 +114,14 @@ trait FspEnvironment
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
-        $app['config']->set('commerz.plugins', [FspPromoPlugin::class]);
+
+        $app->make(Repository::class)->set('commerz.plugins', [FspPromoPlugin::class]);
     }
+}
+
+abstract class FspEnvironmentProbe extends TestCase
+{
+    use FspEnvironment;
 }
 
 uses(FspEnvironment::class);

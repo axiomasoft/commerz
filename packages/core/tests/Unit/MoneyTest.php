@@ -9,6 +9,7 @@ use Commerz\Money\InvalidCurrency;
 use Commerz\Money\Money;
 use Commerz\Money\Rate;
 use Commerz\Money\RoundingMode;
+use PHPUnit\Framework\Assert;
 
 it('parses decimal strings by currency exponent', function (string $amount, string $currency, int $minor): void {
     expect(Money::of($amount, $currency)->amountMinor)->toBe($minor);
@@ -33,7 +34,7 @@ it('rejects amounts finer than the currency allows or malformed', function (stri
 it('rejects unknown currencies with a stable code', function (): void {
     try {
         Currency::of('XXX');
-        $this->fail('expected InvalidCurrency');
+        Assert::fail('expected InvalidCurrency');
     } catch (InvalidCurrency $e) {
         expect($e->code())->toBe('money.invalid_currency')->and($e->context())->toHaveKey('reason');
     }
@@ -44,17 +45,22 @@ it('sanitizes and bounds malformed currency inputs in InvalidCurrency::errorDesc
     $exception = new InvalidCurrency($given);
     $descriptor = $exception->errorDescriptor();
 
+    $detailGiven = $descriptor->details['given'] ?? null;
+    $detailReason = $descriptor->details['reason'] ?? null;
+    $givenText = is_string($detailGiven) ? $detailGiven : '';
+    $reasonText = is_string($detailReason) ? $detailReason : '';
+
     expect($exception->given)->toBe($given)
         ->and($exception->getMessage())->toBe("Invalid currency: '{$given}' is not a known ISO 4217 code.")
         ->and($descriptor->code)->toBe('commerz.invalid_currency')
-        ->and(is_string($descriptor->details['given']))->toBeTrue()
-        ->and(is_string($descriptor->details['reason']))->toBeTrue()
-        ->and(mb_check_encoding((string) $descriptor->details['given'], 'UTF-8'))->toBeTrue()
-        ->and(mb_check_encoding((string) $descriptor->details['reason'], 'UTF-8'))->toBeTrue()
-        ->and(preg_match('/[\x00-\x1F\x7F]/', (string) $descriptor->details['given']))->toBe(0)
-        ->and(preg_match('/[\x00-\x1F\x7F]/', (string) $descriptor->details['reason']))->toBe(0)
-        ->and(mb_strlen((string) $descriptor->details['given'], 'UTF-8'))->toBeLessThanOrEqual(120)
-        ->and(mb_strlen((string) $descriptor->details['reason'], 'UTF-8'))->toBeLessThanOrEqual(120);
+        ->and(is_string($detailGiven))->toBeTrue()
+        ->and(is_string($detailReason))->toBeTrue()
+        ->and(mb_check_encoding($givenText, 'UTF-8'))->toBeTrue()
+        ->and(mb_check_encoding($reasonText, 'UTF-8'))->toBeTrue()
+        ->and(preg_match('/[\x00-\x1F\x7F]/', $givenText))->toBe(0)
+        ->and(preg_match('/[\x00-\x1F\x7F]/', $reasonText))->toBe(0)
+        ->and(mb_strlen($givenText, 'UTF-8'))->toBeLessThanOrEqual(120)
+        ->and(mb_strlen($reasonText, 'UTF-8'))->toBeLessThanOrEqual(120);
 })->with([
     'newline control char' => ["USD\n"],
     'oversized 5000-byte string' => [str_repeat('X', 5000)],
@@ -89,7 +95,7 @@ it('forbids mixing currencies', function (): void {
     foreach ([fn () => $rub->plus($usd), fn () => $rub->minus($usd), fn () => $rub->compare($usd)] as $call) {
         try {
             $call();
-            $this->fail('expected CurrencyMismatch');
+            Assert::fail('expected CurrencyMismatch');
         } catch (CurrencyMismatch $e) {
             expect($e->code())->toBe('money.currency_mismatch');
         }

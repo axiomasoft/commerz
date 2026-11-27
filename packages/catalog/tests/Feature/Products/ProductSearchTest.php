@@ -59,9 +59,26 @@ function srchTypes(): array
     Catalog::options()->define(new DefineOption('color', srchLabel('Color'), ['red' => srchLabel('Red'), 'blue' => srchLabel('Blue')]));
     Catalog::options()->define(new DefineOption('size', srchLabel('Size'), ['s' => srchLabel('S'), 'm' => srchLabel('M')]));
 
-    $define = static fn (string $code, string $type, array $config = [], array $choices = [], bool $filterable = true) => Catalog::attributes()->define(
-        new DefineAttribute($code, $type, srchLabel(ucfirst($code)), $config, array_map(srchLabel(...), $choices), $filterable),
-    );
+    $define = static function (string $code, string $type, array $config = [], array $choices = [], bool $filterable = true) {
+        $typedConfig = [];
+        foreach ($config as $key => $value) {
+            if (! is_string($key)) {
+                throw new RuntimeException('Attribute config keys must be strings.');
+            }
+            $typedConfig[$key] = $value;
+        }
+        $labels = [];
+        foreach ($choices as $valueCode => $label) {
+            if (! is_string($valueCode) || ! is_string($label)) {
+                throw new RuntimeException('Attribute choices must be code/label strings.');
+            }
+            $labels[$valueCode] = srchLabel($label);
+        }
+
+        return Catalog::attributes()->define(
+            new DefineAttribute($code, $type, srchLabel(ucfirst($code)), $typedConfig, $labels, $filterable),
+        );
+    };
 
     $define('material', 'enum', choices: ['cotton' => 'Cotton', 'linen' => 'Linen']);
     $define('fit', 'text');
@@ -122,13 +139,19 @@ function srchGadgets(ProductTypeView $gadget): void
     srchProduct($gadget, 'g3', ['count' => 10, 'weight' => '10', 'released' => '2026-06-30', 'density' => Measure::of('300', 'gsm'), 'tags' => ['sale'], 'organic' => true, 'brand' => 'acme'], [[[]]]);
 }
 
-/** @param  Page<ProductView>  $page */
+/**
+ * @param  Page<ProductView>  $page
+ * @return list<string>
+ */
 function srchHandles(Page $page): array
 {
     return array_map(static fn (ProductView $p): string => $p->handle, $page->items);
 }
 
-/** @param  list<AttributeFilter|VariantFilter>  $filters */
+/**
+ * @param  list<AttributeFilter|VariantFilter>  $filters
+ * @return list<string>
+ */
 function srchFind(array $filters): array
 {
     return srchHandles(Catalog::products()->list(new ListProducts(filters: $filters)));
@@ -141,6 +164,7 @@ function srchChannel(): ChannelView
     return app(Channels::class)->create(new CreateChannel($store->id, 'web', 'Web', [Currency::of('RUB')]));
 }
 
+/** @param  Closure(): mixed  $call */
 function srchCode(Closure $call): string
 {
     try {

@@ -76,13 +76,7 @@ final readonly class RoutingLocationProfile
             return false;
         }
 
-        foreach ($constraints->requiredLocationTags as $tag) {
-            if (! in_array($tag, $this->tags, true)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($constraints->requiredLocationTags, fn (string $tag): bool => in_array($tag, $this->tags, true));
     }
 
     public function hasDailyQuotaRemaining(): bool

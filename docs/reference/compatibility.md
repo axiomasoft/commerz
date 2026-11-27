@@ -1,10 +1,15 @@
 # Compatibility
 
+Verified on 2026-11-27: PHP 8.6.0 (Ondřej Surý `8.6.0-2`) runs the suite, and the
+`postgres:19` image (PostgreSQL 19.0) runs the PostgreSQL suite. The floor stays
+PHP 8.4 and PostgreSQL 16. Composer constraints are `>=8.4 <8.7`, so the next
+unreleased PHP major is outside the declared range until it is run the same way.
+
 | Component | Supported |
 |---|---|
-| PHP | ^8.4 (extensions `bcmath`, `intl`, `mbstring`, `pdo_pgsql`; `pcntl`/`posix` for the outbox relay's signals and the testkit's concurrency) |
+| PHP | 8.4, 8.5 and 8.6 (`>=8.4 <8.7`; extensions `bcmath`, `intl`, `mbstring`, `pdo_pgsql`; `pcntl`/`posix` for the outbox relay's signals and the testkit's concurrency). Continuous integration runs all three. |
 | Laravel | ^13 (`illuminate/contracts`, `illuminate/support`, `illuminate/database` ^13) |
-| PostgreSQL | ≥ 16; continuous integration runs 17 |
+| PostgreSQL | ≥ 16; continuous integration runs 16 and 19 |
 | `brick/math` | ^0.14.2 \|\| ^0.15 \|\| ^0.16 \|\| ^0.17 |
 | Orchestra Testbench (testkit) | ^11.3 |
 

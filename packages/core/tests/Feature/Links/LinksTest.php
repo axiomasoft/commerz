@@ -137,11 +137,22 @@ it('batch-loads linked entities for 100 entities in exactly 2 queries (N+1-free)
     $loaded = $query->getLinkedForMany(
         'catalog.product_tags',
         $productIds,
+        /**
+         * @param  list<string>  $tagIds
+         * @return array<string, string>
+         */
         static function (array $tagIds) use ($db): array {
             $rows = $db->table('test_tags')->whereIn('id', $tagIds)->get();
             $map = [];
             foreach ($rows as $row) {
-                $map[$row->id] = $row->label;
+                $id = $row->id ?? null;
+                $label = $row->label ?? null;
+
+                if (! is_string($id) || ! is_string($label)) {
+                    throw new RuntimeException('Expected tag id and label.');
+                }
+
+                $map[$id] = $label;
             }
 
             return $map;
@@ -162,11 +173,22 @@ it('batch-loads linked entities for 100 entities in exactly 2 queries (N+1-free)
     $inverse = $query->getInverseLinkedForMany(
         'catalog.product_tags',
         array_column($tagRows, 'id'),
+        /**
+         * @param  list<string>  $ids
+         * @return array<string, string>
+         */
         static function (array $ids) use ($db): array {
             $rows = $db->table('test_products')->whereIn('id', $ids)->get();
             $map = [];
             foreach ($rows as $row) {
-                $map[$row->id] = $row->name;
+                $id = $row->id ?? null;
+                $name = $row->name ?? null;
+
+                if (! is_string($id) || ! is_string($name)) {
+                    throw new RuntimeException('Expected product id and name.');
+                }
+
+                $map[$id] = $name;
             }
 
             return $map;

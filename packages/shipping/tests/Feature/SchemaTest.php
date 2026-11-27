@@ -27,10 +27,15 @@ function shpTable(string $logical): string
 /** @return list<string> */
 function shpConstraints(string $logical): array
 {
-    return array_map(
-        static fn (object $row): string => $row->conname,
-        DB::select('select conname from pg_constraint where conrelid = ?::regclass order by conname', [shpTable($logical)]),
-    );
+    /** @var list<object{conname: string}> $rows */
+    $rows = DB::select("select conname from pg_constraint where conrelid = ?::regclass and contype <> 'n' order by conname", [shpTable($logical)]);
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->conname;
+    }
+
+    return $names;
 }
 
 // RefreshDatabase wraps each test in a transaction; DB::transaction opens a savepoint that keeps it usable after an expected violation.
@@ -52,13 +57,19 @@ function shpDelete(string $logical, string $id): void
     DB::transaction(static fn () => DB::table(shpTable($logical))->where('id', $id)->delete());
 }
 
-/** The SQLSTATE a statement fails with, or null when it succeeds. */
+/**
+ * The SQLSTATE a statement fails with, or null when it succeeds.
+ *
+ * @param  Closure(): mixed  $statement
+ */
 function shpSqlState(Closure $statement): ?string
 {
     try {
         $statement();
     } catch (QueryException $e) {
-        return $e->errorInfo[0] ?? null;
+        $state = $e->errorInfo[0] ?? null;
+
+        return is_string($state) ? $state : null;
     }
 
     return null;
@@ -129,7 +140,10 @@ it('creates every table with canonical constraint names', function (): void {
             expect($name)->toMatch('/(_(pk|uq|fk|ck|ex)|_[0-9a-f]{8})\z/');
         }
 
-        foreach (DB::select('select indexname from pg_indexes where tablename = ?', [$physical]) as $index) {
+        /** @var list<object{indexname: string}> $indexes */
+        $indexes = DB::select('select indexname from pg_indexes where tablename = ?', [$physical]);
+
+        foreach ($indexes as $index) {
             expect($index->indexname)->toMatch('/(_(pk|uq|ix|ex)|_[0-9a-f]{8})\z/');
         }
 
@@ -138,10 +152,20 @@ it('creates every table with canonical constraint names', function (): void {
 });
 
 it('keeps money in bigint, ids as uuid, the tariff currency not null and parameters as jsonb', function (): void {
-    $column = static fn (string $logical, string $name): object => DB::selectOne(
-        'select data_type, is_nullable from information_schema.columns where table_name = ? and column_name = ?',
-        [shpTable($logical), $name],
-    );
+    /** @return object{data_type: string, is_nullable: string} */
+    $column = static function (string $logical, string $name): object {
+        /** @var object{data_type: string, is_nullable: string}|null $row */
+        $row = DB::selectOne(
+            'select data_type, is_nullable from information_schema.columns where table_name = ? and column_name = ?',
+            [shpTable($logical), $name],
+        );
+
+        if (! is_object($row)) {
+            throw new RuntimeException("missing column {$logical}.{$name}");
+        }
+
+        return $row;
+    };
 
     expect($column('shipping_rates', 'free_above_minor')->data_type)->toBe('bigint')
         ->and($column('shipping_rates', 'free_above_minor')->is_nullable)->toBe('YES')
@@ -159,6 +183,7 @@ it('has no foreign key to the core or other packages', function (): void {
     $prefix = substr(shpTable('shipping_zones'), 0, -strlen('shipping_zones'));
 
     foreach (SHIPPING_TABLES as $logical) {
+        /** @var list<object{target: string}> $targets */
         $targets = DB::select(
             "select confrelid::regclass::text as target from pg_constraint where conrelid = ?::regclass and contype = 'f'",
             [shpTable($logical)],
@@ -187,7 +212,19 @@ it('keeps zone codes unique and canonical and checks the status', function (): v
 
 it('checks the country, region and postal prefix of a zone member', function (): void {
     $zone = shpZone();
-    $member = static fn (array $extra): Closure => static fn () => shpMember($zone, $extra);
+    $member = static function (array $extra) use ($zone): Closure {
+        $clean = [];
+
+        foreach ($extra as $key => $value) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('member columns must be a map');
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return static fn () => shpMember($zone, $clean);
+    };
 
     expect($member(['country' => 'ru']))->toThrow(QueryException::class, 'cmz_shipping_zone_members_country_valid_ck')
         ->and($member(['country' => 'RUS']))->toThrow(QueryException::class)
@@ -243,9 +280,21 @@ it('keeps method codes unique and checks code, carrier, status and name', functi
     }
 
     $other = shpMethod('pickup');
-    $row = DB::table(shpTable('shipping_methods'))->where('id', $other)->first();
+    $record = DB::table(shpTable('shipping_methods'))->where('id', $other)->first();
 
-    expect($row->status)->toBe('active')->and($row->position)->toBe(0);
+    if (! is_object($record)) {
+        throw new RuntimeException('method row missing');
+    }
+
+    $values = get_object_vars($record);
+    $status = $values['status'] ?? null;
+    $position = $values['position'] ?? null;
+
+    if (! is_string($status) || ! is_int($position)) {
+        throw new RuntimeException('method row is incomplete');
+    }
+
+    expect($status)->toBe('active')->and($position)->toBe(0);
 });
 
 it('assigns a method to a channel once and removes the assignment with the method', function (): void {
@@ -275,7 +324,19 @@ it('keeps one rate per method, zone and currency (SHP-02)', function (): void {
 it('checks the currency, version, threshold, eta and parameters of a rate', function (): void {
     $method = shpMethod();
     $zone = shpZone();
-    $rate = static fn (array $extra): Closure => static fn () => shpRate($method, $zone, $extra);
+    $rate = static function (array $extra) use ($method, $zone): Closure {
+        $clean = [];
+
+        foreach ($extra as $key => $value) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('rate columns must be a map');
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return static fn () => shpRate($method, $zone, $clean);
+    };
 
     expect($rate(['currency' => 'rub']))->toThrow(QueryException::class, 'cmz_shipping_rates_currency_valid_ck')
         ->and($rate(['currency' => null]))->toThrow(QueryException::class)
@@ -303,7 +364,19 @@ it('removes the rates with their method but refuses to remove a zone that has ra
 
 it('keeps one booking per reference and checks the state and attempts (SHP-03)', function (): void {
     shpBooking('fulfillment:1');
-    $update = static fn (string $id, array $set): Closure => static fn () => shpUpdate('shipping_bookings', $id, $set);
+    $update = static function (string $id, array $set): Closure {
+        $clean = [];
+
+        foreach ($set as $key => $value) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('booking columns must be a map');
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return static fn () => shpUpdate('shipping_bookings', $id, $clean);
+    };
     $id = shpBooking('fulfillment:2');
 
     expect(fn () => shpBooking('fulfillment:1'))->toThrow(UniqueConstraintViolationException::class, 'cmz_shipping_bookings_reference_uq')
@@ -317,7 +390,19 @@ it('keeps one booking per reference and checks the state and attempts (SHP-03)',
 
 it('lets a booking be booked only with a tracking number and a booking time', function (): void {
     $id = shpBooking();
-    $update = static fn (array $set): Closure => static fn () => shpUpdate('shipping_bookings', $id, $set);
+    $update = static function (array $set) use ($id): Closure {
+        $clean = [];
+
+        foreach ($set as $key => $value) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('booking columns must be a map');
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return static fn () => shpUpdate('shipping_bookings', $id, $clean);
+    };
 
     expect($update(['state' => 'booked']))->toThrow(QueryException::class, 'cmz_shipping_bookings_booked_has_tracking_ck')
         ->and($update(['state' => 'booked', 'tracking' => 'T-1']))->toThrow(QueryException::class, 'cmz_shipping_bookings_booked_has_tracking_ck')

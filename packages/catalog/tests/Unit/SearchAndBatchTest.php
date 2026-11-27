@@ -73,7 +73,7 @@ it('exposes FacetDistribution and CatalogSearchResult helpers', function (): voi
         ],
     );
 
-    $result = new CatalogSearchResult(new Page([], null), 8, ['color' => $dist]);
+    $result = new CatalogSearchResult(new Page([]), 8, ['color' => $dist]);
 
     expect($dist->countFor('red'))->toBe(5)
         ->and($dist->countFor('blue'))->toBe(3)
@@ -106,7 +106,7 @@ it('round-trips SearchCursor for every SearchSort mode and rejects tampered curs
             ->and($decoded->relevance)->toBe($cursor->relevance);
     }
 
-    $handleCursor = (new SearchCursor(SearchSort::HandleAsc, $id, 'shirt-a'))->toCursor();
+    $handleCursor = new SearchCursor(SearchSort::HandleAsc, $id, 'shirt-a')->toCursor();
 
     expect(fn () => SearchCursor::decode($handleCursor, SearchSort::HandleDesc))->toThrow(InvalidCommand::class)
         ->and(fn () => SearchCursor::decode(Cursor::after('not-json'), SearchSort::HandleAsc))->toThrow(InvalidCommand::class)
@@ -145,7 +145,7 @@ it('forwards single and compressed batch outbox events to external CatalogSearch
 
         public function search(CatalogSearchQuery $query): CatalogSearchResult
         {
-            return new CatalogSearchResult(new Page([], null), 0);
+            return new CatalogSearchResult(new Page([]), 0);
         }
 
         public function indexProducts(array $productIds): void

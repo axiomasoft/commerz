@@ -23,7 +23,11 @@ beforeEach(function (): void {
     Commerce::fake();
 });
 
-/** The quote's failure as `stage reason cause verdict`. */
+/**
+ * The quote's failure as `stage reason cause verdict`.
+ *
+ * @param  Closure(): mixed  $quote
+ */
 function opQuoteFailure(Closure $quote): string
 {
     try {

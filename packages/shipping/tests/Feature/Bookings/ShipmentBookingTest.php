@@ -18,6 +18,7 @@ use Commerz\Shipping\Methods\Data\UpdateMethod;
 use Commerz\Shipping\Tests\Fixtures\RecordingCarrier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Assert;
 
 require_once __DIR__.'/Helpers.php';
 
@@ -46,7 +47,7 @@ it('records the shipment the carrier booked', function (): void {
     $row = bkRow();
 
     expect([$booked->tracking, $booked->labelRef, $booked->meta])->toBe(['TRK-fulfillment:1', 'label:fulfillment:1', ['attempt' => 1]])
-        ->and([$row->state, $row->tracking, $row->label_ref, json_decode($row->result, true), $row->error_code])
+        ->and([$row->state, $row->tracking, $row->label_ref, bkDecoded($row->result), $row->error_code])
         ->toBe(['booked', 'TRK-fulfillment:1', 'label:fulfillment:1', ['attempt' => 1], null])
         ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1']);
 });
@@ -68,6 +69,7 @@ it('replays a booked shipment after the method changes or its original carrier i
         'archive' => mtMethods()->archive(new ArchiveMethod($method->id)),
         'carrier' => mtMethods()->update(new UpdateMethod($method->id, carrier: 'manual')),
         'uninstall' => mtUsePlugins([]),
+        default => throw new LogicException("Unexpected method change '{$change}'."),
     };
     app()->forgetInstance(ShipmentBooking::class);
     app()->forgetInstance(BookingJournal::class);
@@ -194,7 +196,7 @@ it('records a rejection and lets a corrected payload book again', function (): v
 it('turns an error of the carrier into an unknown outcome', function (): void {
     try {
         bkBook(bkCommand(meta: ['fail' => 'timeout']));
-        $this->fail('The booking did not fail.');
+        Assert::fail('The booking did not fail.');
     } catch (BookingOutcomeUnknown $e) {
         expect($e->code())->toBe('shipping.booking_outcome_unknown')
             ->and($e->category()->value)->toBe('unavailable')
@@ -228,7 +230,7 @@ it('records the shipment the carrier finds instead of booking it twice', functio
 
     expect(bkOutcome($command))->toBe('booked TRK-fulfillment:1')
         ->and(RecordingCarrier::calls())->toBe(['book fulfillment:1 1', 'find fulfillment:1 2'])
-        ->and(json_decode(bkRow()->result, true))->toBe(['attempt' => 2]);
+        ->and(bkDecoded(bkRow()->result))->toBe(['attempt' => 2]);
 });
 
 it('stays unknown and books nothing while the carrier cannot be asked', function (): void {

@@ -43,6 +43,7 @@ function makeStore(string $code = 'main'): StoreView
     return Commerz::stores()->create(new CreateStore($code, 'Main', Currency::of('RUB'), 'MN-'));
 }
 
+/** @param list<string> $currencies */
 function makeChannel(StoreId $store, string $code = 'web', array $currencies = ['RUB', 'USD']): ChannelView
 {
     return Commerz::channels()->create(new CreateChannel(

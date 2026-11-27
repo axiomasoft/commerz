@@ -40,7 +40,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    CatalogEngineSqliteHarness::cleanup($this->sqliteDbPath);
+    CatalogEngineSqliteHarness::cleanup(CatalogEngineSqliteHarness::path($this->sqliteDbPath));
 });
 
 function colLabel(string $text): LocalizedText
@@ -48,7 +48,10 @@ function colLabel(string $text): LocalizedText
     return LocalizedText::of('en', $text);
 }
 
-/** @param list<CollectionProductView> $items */
+/**
+ * @param  list<CollectionProductView>  $items
+ * @return list<string>
+ */
 function colHandles(array $items): array
 {
     return array_map(static fn (CollectionProductView $item): string => $item->product->handle, $items);
