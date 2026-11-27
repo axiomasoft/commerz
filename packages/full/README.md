@@ -1,6 +1,6 @@
 # axiomasoft/commerz-full
 
-Metapackage: the core and all six feature packages, for an online store that wants everything.
+Metapackage: the core and all domain packages, for an online store that wants everything.
 
 Part of [Commerz](https://github.com/axiomasoft/commerz), an embeddable commerce
 engine for Laravel (PHP 8.4–8.6, Laravel 13, PostgreSQL ≥ 16).

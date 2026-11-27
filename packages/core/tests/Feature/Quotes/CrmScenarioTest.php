@@ -31,6 +31,7 @@ use Packman\Plugins\Contracts\Registry\ExtensionPlugin;
 use Packman\Plugins\Data\Plugin\PluginManifest;
 use Packman\Plugins\Exceptions\Registry\UnsupportedContribution;
 use Packman\Plugins\Laravel\PluginRegistrar;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
 /** A host CRM's services, priced from its own tariffs: the scenario of api-blueprint §9. */
@@ -88,6 +89,7 @@ final class CrmPlugin implements ExtensionPlugin
 }
 
 /** Installs only the core, configured the way a CRM host's config/commerz.php would be. */
+#[Group('pg')]
 final class CrmScenarioTest extends TestCase
 {
     use RefreshDatabase;

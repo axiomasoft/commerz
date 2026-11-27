@@ -5,6 +5,8 @@ declare(strict_types=1);
 // Boots a fresh Laravel 13 application that installed Commerz from composer archives only (no monorepo).
 // CONSUMER_PROFILE=full (all packages) | crm (core + sales, commerz.stock=unlimited).
 
+use Commerz\B2b\B2b;
+use Commerz\B2b\B2bServiceProvider;
 use Commerz\Catalog\Catalog;
 use Commerz\Catalog\CatalogServiceProvider;
 use Commerz\Commerz;
@@ -19,6 +21,10 @@ use Commerz\Sales\Sales;
 use Commerz\Sales\SalesServiceProvider;
 use Commerz\Shipping\Shipping;
 use Commerz\Shipping\ShippingServiceProvider;
+use Commerz\StoredValue\StoredValue;
+use Commerz\StoredValue\StoredValueServiceProvider;
+use Commerz\Subscriptions\Subscriptions;
+use Commerz\Subscriptions\SubscriptionsServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +51,9 @@ $profiles = [
     'full' => [
         'providers' => [
             'axiomasoft/commerz' => CommerzServiceProvider::class,
+            'axiomasoft/commerz-b2b' => B2bServiceProvider::class,
+            'axiomasoft/commerz-stored-value' => StoredValueServiceProvider::class,
+            'axiomasoft/commerz-subscriptions' => SubscriptionsServiceProvider::class,
             'axiomasoft/commerz-catalog' => CatalogServiceProvider::class,
             'axiomasoft/commerz-inventory' => InventoryServiceProvider::class,
             'axiomasoft/commerz-pricing' => PricingServiceProvider::class,
@@ -52,8 +61,8 @@ $profiles = [
             'axiomasoft/commerz-shipping' => ShippingServiceProvider::class,
             'axiomasoft/commerz-sales' => SalesServiceProvider::class,
         ],
-        'roots' => [Catalog::class, Inventory::class, Pricing::class, Promotions::class, Shipping::class, Sales::class],
-        'plugins' => ['commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping'],
+        'roots' => [B2b::class, Catalog::class, Inventory::class, Pricing::class, Promotions::class, Sales::class, Shipping::class, StoredValue::class, Subscriptions::class],
+        'plugins' => ['commerz.b2b', 'commerz.catalog', 'commerz.core', 'commerz.inventory', 'commerz.pricing', 'commerz.promotions', 'commerz.sales', 'commerz.shipping', 'commerz.stored-value', 'commerz.subscriptions'],
     ],
     'crm' => [
         'providers' => [
